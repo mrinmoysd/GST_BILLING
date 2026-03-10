@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: gst_billing_postgres
+    environment:
+      POSTGRES_USER: gst
+      POSTGRES_PASSWORD: gst
+      POSTGRES_DB: gst_billing
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: gst_billing_redis
+    ports:
+      - "6379:6379"
+volumes:
+  postgres_data:

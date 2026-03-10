@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+.DS_Store
+coverage/
+dist/
+apps/*/dist/
+apps/*/node_modules/
+prisma/migrations/

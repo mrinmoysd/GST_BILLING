@@ -1,0 +1,96 @@
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { JwtAccessAuthGuard } from './guards/jwt-access-auth.guard';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
+
+@ApiTags('Auth')
+@Controller('api/auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('login')
+  @HttpCode(200)
+  @ApiOkResponse({ description: 'OK' })
+  async login(
+    @Req() req: any,
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) res: any,
+  ) {
+    // DEBUG (temporary): verify body parsing and content-type.
+    // eslint-disable-next-line no-console
+    console.log('[auth.controller.login] request meta', {
+      contentType: req?.headers?.['content-type'],
+      hasBody: Boolean(req?.body),
+      bodyKeys:
+        req?.body && typeof req.body === 'object'
+          ? Object.keys(req.body)
+          : null,
+    });
+
+    const result = await this.authService.login(body);
+
+    const refreshToken: string | undefined = result?.data?.refresh_token;
+    if (refreshToken) {
+      // Option A: store refresh token in httpOnly cookie.
+      // For localhost dev we keep `secure: false`; set secure true behind HTTPS.
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        path: '/api/auth',
+      });
+
+      // Don't expose refresh token in response body.
+      delete (result as any).data.refresh_token;
+    }
+
+    return result;
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshAuthGuard)
+  @HttpCode(200)
+  @ApiOkResponse({ description: 'OK' })
+  async refresh(@Req() req: any) {
+  const token = req?.cookies?.refresh_token;
+  if (!token) throw new UnauthorizedException();
+  return this.authService.refresh({ refresh_token: token });
+  }
+
+  @Get('me')
+  @UseGuards(JwtAccessAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'OK' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  async me(@Req() req: any) {
+    return this.authService.me(req.user);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtRefreshAuthGuard)
+  @HttpCode(200)
+  @ApiOkResponse({ description: 'OK' })
+  async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
+    const out = await this.authService.logout(req.user);
+    res.clearCookie('refresh_token', { path: '/api/auth' });
+    return out;
+  }
+}

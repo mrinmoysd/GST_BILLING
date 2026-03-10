@@ -1,0 +1,3387 @@
+openapi: 3.1.0
+info:
+  title: GST Billing SaaS API
+  version: 0.1.0
+  description: |
+    Strict OpenAPI 3.1 specification for the GST Billing SaaS platform.
+
+    Notes:
+    - This spec is derived from `docs/API_SPEC.md`.
+    - Multi-tenancy is enforced by `companyId` in path params on most routes.
+    - All list endpoints support pagination via `page` and `limit`.
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: http://localhost:4000
+    description: Local
+
+tags:
+  - name: Auth
+  - name: Companies
+  - name: Users
+  - name: Customers
+  - name: Suppliers
+  - name: Products
+  - name: Inventory
+  - name: Invoices
+  - name: Purchases
+  - name: Payments
+  - name: Reports
+  - name: GST
+  - name: Accounting
+  - name: Notifications
+  - name: Files
+  - name: Billing
+  - name: Admin
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+
+  /api/companies:
+    post:
+      tags: [Companies]
+      security: []
+      summary: Create company (onboarding)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+
+  /api/companies/{companyId}:
+    get:
+      tags: [Companies]
+      summary: Get company
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Companies]
+      summary: Update company
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/companies/{companyId}/customers:
+    get:
+      tags: [Customers]
+      summary: List customers
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerResponse'
+    post:
+      tags: [Customers]
+      summary: Create customer
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /api/companies/{companyId}/customers/{customerId}:
+    get:
+      tags: [Customers]
+      summary: Get customer
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/customerId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Customers]
+      summary: Update customer
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/customerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/companies/{companyId}/products:
+    get:
+      tags: [Products]
+      summary: List products
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductResponse'
+    post:
+      tags: [Products]
+      summary: Create product
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+
+  /api/companies/{companyId}/products/{productId}/stock-adjustment:
+    post:
+      tags: [Inventory]
+      summary: Manual stock adjustment
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAdjustmentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockAdjustmentResponse'
+
+  /api/companies/{companyId}/invoices:
+    get:
+      tags: [Invoices]
+      summary: List invoices
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceResponse'
+    post:
+      tags: [Invoices]
+      summary: Create invoice
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}:
+    get:
+      tags: [Invoices]
+      summary: Get invoice
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Invoices]
+      summary: Update invoice (draft only)
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateInvoiceRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvoiceResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/payments:
+    post:
+      tags: [Payments]
+      summary: Add payment for invoice
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /api/companies/{companyId}/gst/gstr1:
+    get:
+      tags: [GST]
+      summary: Generate GSTR-1
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GstReportResponse'
+
+  /api/companies/{companyId}/verify-gstin:
+    post:
+      tags: [Companies]
+      summary: Start GSTIN verification
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /api/companies/{companyId}/logo:
+    post:
+      tags: [Companies]
+      summary: Upload company logo (multipart)
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+
+  /api/companies/{companyId}/invoice-series:
+    get:
+      tags: [Companies]
+      summary: List invoice series
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceSeriesListResponse'
+    post:
+      tags: [Companies]
+      summary: Create invoice series
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceSeriesRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceSeriesResponse'
+
+  /api/companies/{companyId}/invoice-series/{seriesId}:
+    patch:
+      tags: [Companies]
+      summary: Update invoice series
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/seriesId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvoiceSeriesRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceSeriesResponse'
+
+  /api/companies/{companyId}/users:
+    get:
+      tags: [Users]
+      summary: List users
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserResponse'
+    post:
+      tags: [Users]
+      summary: Create user
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/companies/{companyId}/roles:
+    get:
+      tags: [Users]
+      summary: List roles
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleListResponse'
+    post:
+      tags: [Users]
+      summary: Create role
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleResponse' }
+
+  /api/companies/{companyId}/roles/{roleId}:
+    patch:
+      tags: [Users]
+      summary: Update role
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/roleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRoleRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleResponse' }
+
+  /api/companies/{companyId}/permissions:
+    get:
+      tags: [Users]
+      summary: List available permissions
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PermissionListResponse' }
+
+  /api/companies/{companyId}/users/{userId}/role:
+    post:
+      tags: [Users]
+      summary: Assign role to user
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [role_id]
+              properties:
+                role_id: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+
+  /api/companies/{companyId}/suppliers:
+    get:
+      tags: [Suppliers]
+      summary: List suppliers
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedSupplierResponse' }
+    post:
+      tags: [Suppliers]
+      summary: Create supplier
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSupplierRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierResponse' }
+
+  /api/companies/{companyId}/suppliers/{supplierId}:
+    get:
+      tags: [Suppliers]
+      summary: Get supplier
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/supplierId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierResponse' }
+    patch:
+      tags: [Suppliers]
+      summary: Update supplier
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/supplierId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSupplierRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierResponse' }
+    delete:
+      tags: [Suppliers]
+      summary: Delete supplier
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/supplierId'
+      responses:
+        '204':
+          description: No Content
+
+  /api/companies/{companyId}/suppliers/{supplierId}/ledger:
+    get:
+      tags: [Suppliers]
+      summary: Supplier ledger
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/supplierId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LedgerReportResponse' }
+
+  /api/companies/{companyId}/customers/{customerId}/ledger:
+    get:
+      tags: [Customers]
+      summary: Customer ledger
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/customerId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LedgerReportResponse' }
+
+  /api/companies/{companyId}/products/{productId}:
+    patch:
+      tags: [Products]
+      summary: Update product
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProductRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductResponse' }
+    delete:
+      tags: [Products]
+      summary: Delete product
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '204':
+          description: No Content
+
+  /api/companies/{companyId}/stock-movements:
+    get:
+      tags: [Inventory]
+      summary: List stock movements
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: product_id
+          required: false
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedStockMovementResponse' }
+
+  /api/companies/{companyId}/inventory/low-stock:
+    get:
+      tags: [Inventory]
+      summary: List low stock products
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: threshold
+          required: false
+          schema: { type: number, default: 5 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LowStockResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/send:
+    post:
+      tags: [Invoices]
+      summary: Queue invoice send (email/whatsapp)
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendInvoiceRequest' }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/issue:
+    post:
+      tags: [Invoices]
+      summary: Issue invoice (draft -> issued)
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvoiceResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/cancel:
+    post:
+      tags: [Invoices]
+      summary: Cancel invoice
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reason: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InvoiceResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/pdf/regenerate:
+    post:
+      tags: [Invoices]
+      summary: Regenerate invoice PDF
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JobEnqueuedResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/pdf:
+    get:
+      tags: [Invoices]
+      summary: Get invoice PDF signed url
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileResponse' }
+
+  /api/companies/{companyId}/invoices/{invoiceId}/credit-notes:
+    post:
+      tags: [Invoices]
+      summary: Create credit note / sales return
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/invoiceId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCreditNoteRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdjustmentResponse' }
+
+  /api/companies/{companyId}/adjustments:
+    get:
+      tags: [Invoices]
+      summary: List adjustments
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: type
+          required: true
+          schema: { type: string, enum: [credit_note, sales_return] }
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdjustmentListResponse' }
+
+  /api/companies/{companyId}/payments:
+    get:
+      tags: [Payments]
+      summary: List payments
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - in: query
+          name: method
+          required: false
+          schema: { type: string }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedPaymentResponse' }
+    post:
+      tags: [Payments]
+      summary: Create payment
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateStandalonePaymentRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentResponse' }
+
+  /api/companies/{companyId}/purchases:
+    get:
+      tags: [Purchases]
+      summary: List purchases
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedPurchaseResponse' }
+    post:
+      tags: [Purchases]
+      summary: Create purchase
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePurchaseRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PurchaseResponse' }
+
+  /api/companies/{companyId}/purchases/{purchaseId}:
+    get:
+      tags: [Purchases]
+      summary: Get purchase
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/purchaseId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PurchaseResponse' }
+    patch:
+      tags: [Purchases]
+      summary: Update purchase
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/purchaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePurchaseRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PurchaseResponse' }
+
+  /api/companies/{companyId}/purchases/{purchaseId}/cancel:
+    post:
+      tags: [Purchases]
+      summary: Cancel purchase
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/purchaseId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PurchaseResponse' }
+
+  /api/companies/{companyId}/purchases/{purchaseId}/returns:
+    post:
+      tags: [Purchases]
+      summary: Create purchase return
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/purchaseId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePurchaseReturnRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusResponse' }
+
+  /api/companies/{companyId}/purchases/{purchaseId}/bill-upload:
+    post:
+      tags: [Purchases]
+      summary: Upload supplier bill (multipart)
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/purchaseId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileResponse' }
+
+  /api/companies/{companyId}/reports/sales-summary:
+    get:
+      tags: [Reports]
+      summary: Sales summary
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - in: query
+          name: group_by
+          required: false
+          schema: { type: string, enum: [day, month], default: month }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalesSummaryResponse' }
+
+  /api/companies/{companyId}/reports/purchase-summary:
+    get:
+      tags: [Reports]
+      summary: Purchase summary
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - in: query
+          name: group_by
+          required: false
+          schema: { type: string, enum: [day, month], default: month }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PurchaseSummaryResponse' }
+
+  /api/companies/{companyId}/reports/customer-outstanding:
+    get:
+      tags: [Reports]
+      summary: Customer outstanding
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: as_of
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutstandingResponse' }
+
+  /api/companies/{companyId}/reports/vendor-outstanding:
+    get:
+      tags: [Reports]
+      summary: Vendor outstanding
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: as_of
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutstandingResponse' }
+
+  /api/companies/{companyId}/reports/top-products:
+    get:
+      tags: [Reports]
+      summary: Top products
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopProductsResponse' }
+
+  /api/companies/{companyId}/reports/profit:
+    get:
+      tags: [Reports]
+      summary: Profit report
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProfitResponse' }
+
+  /api/companies/{companyId}/reports/stock:
+    get:
+      tags: [Reports]
+      summary: Stock valuation report
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: valuation_method
+          required: false
+          schema: { type: string, enum: [FIFO, WeightedAverage, LIFO], default: FIFO }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockValuationResponse' }
+
+  /api/companies/{companyId}/gst/gstr3b:
+    get:
+      tags: [GST]
+      summary: Generate GSTR-3B
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GstReportResponse' }
+
+  /api/companies/{companyId}/gst/hsn-summary:
+    get:
+      tags: [GST]
+      summary: Generate HSN summary
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GstReportResponse' }
+
+  /api/companies/{companyId}/gst/itc:
+    get:
+      tags: [GST]
+      summary: Generate ITC report
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GstReportResponse' }
+
+  /api/companies/{companyId}/gst/export:
+    post:
+      tags: [GST]
+      summary: Queue GST export
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GstExportRequest' }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GstExportQueuedResponse' }
+
+  /api/companies/{companyId}/ledgers:
+    get:
+      tags: [Accounting]
+      summary: List ledgers
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LedgerListResponse' }
+    post:
+      tags: [Accounting]
+      summary: Create ledger
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLedgerRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LedgerResponse' }
+
+  /api/companies/{companyId}/journals:
+    get:
+      tags: [Accounting]
+      summary: List journals
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedJournalResponse' }
+    post:
+      tags: [Accounting]
+      summary: Create journal
+      description: |
+        Posts a double-entry (balanced) journal into the company ledger.
+        Invariant: sum(debits) == sum(credits).
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateJournalRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JournalResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /api/companies/{companyId}/reports/trial-balance:
+    get:
+      tags: [Accounting]
+      summary: Trial balance
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: as_of
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrialBalanceResponse' }
+
+  /api/companies/{companyId}/reports/profit-loss:
+    get:
+      tags: [Accounting]
+      summary: Profit & Loss
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProfitLossResponse' }
+
+  /api/companies/{companyId}/reports/balance-sheet:
+    get:
+      tags: [Accounting]
+      summary: Balance sheet
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - in: query
+          name: as_of
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BalanceSheetResponse' }
+
+  /api/companies/{companyId}/books/cash:
+    get:
+      tags: [Accounting]
+      summary: Cash book
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookResponse' }
+
+  /api/companies/{companyId}/books/bank:
+    get:
+      tags: [Accounting]
+      summary: Bank book
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+
+  /api/admin/queues/metrics:
+    get:
+      tags: [Admin]
+      summary: Queue metrics (ops)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QueueMetricsResponse' }
+
+  /api/companies/{companyId}/notification-templates:
+    get:
+      tags: [Notifications]
+      summary: List notification templates
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationTemplateListResponse' }
+    post:
+      tags: [Notifications]
+      summary: Create notification template
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateNotificationTemplateRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationTemplateResponse' }
+
+  /api/companies/{companyId}/notification-templates/{templateId}:
+    patch:
+      tags: [Notifications]
+      summary: Update notification template
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/templateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateNotificationTemplateRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationTemplateResponse' }
+
+  /api/companies/{companyId}/notifications/test:
+    post:
+      tags: [Notifications]
+      summary: Send a test notification
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TestNotificationRequest' }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusResponse' }
+
+  /api/companies/{companyId}/files/sign-upload:
+    post:
+      tags: [Files]
+      summary: Get signed upload url for S3
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignUploadRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SignUploadResponse' }
+
+  /api/companies/{companyId}/files/{fileId}:
+    get:
+      tags: [Files]
+      summary: Get signed download url
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/fileId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileResponse' }
+
+  /api/companies/{companyId}/subscription:
+    get:
+      tags: [Billing]
+      summary: Get subscription
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubscriptionResponse' }
+
+  /api/companies/{companyId}/subscription/checkout:
+    post:
+      tags: [Billing]
+      summary: Create subscription checkout session
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/idempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscriptionCheckoutRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubscriptionCheckoutResponse' }
+
+  /api/billing/webhooks/razorpay:
+    post:
+      tags: [Billing]
+      security: []
+      summary: Razorpay webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Provider webhook payload (stored verbatim)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusResponse' }
+
+  /api/billing/webhooks/stripe:
+    post:
+      tags: [Billing]
+      security: []
+      summary: Stripe webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Provider webhook payload (stored verbatim)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatusResponse' }
+
+  /api/admin/companies:
+    get:
+      tags: [Admin]
+      summary: (SUPER-ADMIN) List companies
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedCompanyAdminResponse' }
+
+  /api/admin/subscriptions:
+    get:
+      tags: [Admin]
+      summary: (SUPER-ADMIN) List subscriptions
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - in: query
+          name: status
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedSubscriptionAdminResponse' }
+
+  /api/admin/usage:
+    get:
+      tags: [Admin]
+      summary: (SUPER-ADMIN) Usage across companies
+      parameters:
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/to'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsageAdminResponse' }
+
+  /api/admin/support-tickets:
+    get:
+      tags: [Admin]
+      summary: (SUPER-ADMIN) List support tickets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupportTicketListResponse' }
+
+  /api/admin/support-tickets/{ticketId}:
+    patch:
+      tags: [Admin]
+      summary: (SUPER-ADMIN) Update support ticket
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSupportTicketRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupportTicketResponse' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    companyId:
+      name: companyId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    customerId:
+      name: customerId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    invoiceId:
+      name: invoiceId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    seriesId:
+      name: seriesId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    roleId:
+      name: roleId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    supplierId:
+      name: supplierId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    purchaseId:
+      name: purchaseId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    templateId:
+      name: templateId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    fileId:
+      name: fileId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ticketId:
+      name: ticketId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+    q:
+      name: q
+      in: query
+      required: false
+      schema: { type: string, minLength: 1, maxLength: 200 }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, minLength: 8, maxLength: 128 }
+    from:
+      name: from
+      in: query
+      required: true
+      schema: { type: string, format: date }
+    to:
+      name: to
+      in: query
+      required: true
+      schema: { type: string, format: date }
+    format:
+      name: format
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [json, excel]
+        default: json
+
+  responses:
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unprocessable:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    JobEnqueuedResponse:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          required: [jobId, status]
+          properties:
+            jobId: { type: string }
+            status: { type: string, enum: [queued] }
+
+    QueueMetricsResponse:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+    Envelope:
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data: {}
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    Meta:
+      type: object
+      additionalProperties: false
+      properties:
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1 }
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code: { type: string, minLength: 2, maxLength: 80 }
+            message: { type: string, minLength: 1, maxLength: 500 }
+            details: { type: object }
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6, maxLength: 200 }
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [access_token, refresh_token, user, company]
+              properties:
+                access_token: { type: string, minLength: 10 }
+                refresh_token: { type: string, minLength: 10 }
+                user: { $ref: '#/components/schemas/User' }
+                company: { $ref: '#/components/schemas/Company' }
+
+    RefreshRequest:
+      type: object
+      additionalProperties: false
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, minLength: 10 }
+
+    RefreshResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [access_token]
+              properties:
+                access_token: { type: string, minLength: 10 }
+
+    Company:
+      type: object
+      additionalProperties: false
+      required: [id, name, business_type]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        pan: { type: [string, 'null'], minLength: 10, maxLength: 10 }
+        business_type:
+          type: string
+          enum: [retailer, distributor, service]
+        address: { type: [object, 'null'] }
+        state: { type: [string, 'null'] }
+        state_code: { type: [string, 'null'] }
+        contact: { type: [object, 'null'] }
+        bank_details: { type: [object, 'null'] }
+        invoice_settings: { type: [object, 'null'] }
+        logo_url: { type: [string, 'null'] }
+
+    CompanyResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Company' }
+
+    CreateCompanyRequest:
+      type: object
+      additionalProperties: false
+      required: [name, business_type]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        pan: { type: [string, 'null'], minLength: 10, maxLength: 10 }
+        business_type:
+          type: string
+          enum: [retailer, distributor, service]
+        address: { type: [object, 'null'] }
+        state: { type: [string, 'null'] }
+        bank_details: { type: [object, 'null'] }
+        invoice_settings: { type: [object, 'null'] }
+
+    UpdateCompanyRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        address: { type: [object, 'null'] }
+        state: { type: [string, 'null'] }
+        bank_details: { type: [object, 'null'] }
+        invoice_settings: { type: [object, 'null'] }
+
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email, role]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        name: { type: [string, 'null'] }
+        role: { type: string }
+        is_active: { type: boolean }
+
+    Customer:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        mobile: { type: [string, 'null'] }
+        email: { type: [string, 'null'], format: email }
+        billing_address: { type: [object, 'null'] }
+        shipping_address: { type: [object, 'null'] }
+        customer_group: { type: [string, 'null'] }
+        credit_limit: { type: number, minimum: 0 }
+        outstanding: { type: number }
+
+    CustomerResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Customer' }
+
+    PaginatedCustomerResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Customer' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    CreateCustomerRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        mobile: { type: [string, 'null'] }
+        email: { type: [string, 'null'], format: email }
+        billing_address: { type: [object, 'null'] }
+        shipping_address: { type: [object, 'null'] }
+        credit_limit: { type: number, minimum: 0, default: 0 }
+
+    UpdateCustomerRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        mobile: { type: [string, 'null'] }
+        email: { type: [string, 'null'], format: email }
+        billing_address: { type: [object, 'null'] }
+        shipping_address: { type: [object, 'null'] }
+        credit_limit: { type: number, minimum: 0 }
+
+    Product:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        sku: { type: [string, 'null'] }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        hsn_code: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        gst_percent: { type: number, minimum: 0, maximum: 100 }
+        purchase_price: { type: number, minimum: 0 }
+        selling_price: { type: number, minimum: 0 }
+        stock_qty: { type: number }
+        barcode: { type: [string, 'null'] }
+        category_id: { type: [string, 'null'], format: uuid }
+
+    ProductResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Product' }
+
+    PaginatedProductResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    CreateProductRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        sku: { type: [string, 'null'] }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        hsn_code: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        gst_percent: { type: number, minimum: 0, maximum: 100, default: 0 }
+        purchase_price: { type: number, minimum: 0, default: 0 }
+        selling_price: { type: number, minimum: 0, default: 0 }
+        stock_qty: { type: number, default: 0 }
+        barcode: { type: [string, 'null'] }
+        category_id: { type: [string, 'null'], format: uuid }
+
+    StockAdjustmentRequest:
+      type: object
+      additionalProperties: false
+      required: [change_qty, reason]
+      properties:
+        change_qty: { type: number }
+        reason: { type: string, minLength: 1, maxLength: 300 }
+        effective_at: { type: [string, 'null'], format: date-time }
+
+    StockAdjustmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [product_id, change_qty]
+              properties:
+                product_id: { type: string, format: uuid }
+                change_qty: { type: number }
+                balance_qty: { type: number }
+
+    InvoiceItemInput:
+      type: object
+      additionalProperties: false
+      required: [product_id, quantity, unit_price]
+      properties:
+        product_id: { type: string, format: uuid }
+        description: { type: [string, 'null'], maxLength: 500 }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        unit_price: { type: number, minimum: 0 }
+        discount: { type: number, minimum: 0, default: 0 }
+
+    CreateInvoiceRequest:
+      type: object
+      additionalProperties: false
+      required: [invoice_type, date, items]
+      properties:
+        invoice_type:
+          type: string
+          enum: [tax_invoice, proforma, estimate, delivery_challan]
+        date: { type: string, format: date }
+        due_date: { type: [string, 'null'], format: date }
+        customer_id: { type: [string, 'null'], format: uuid }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/InvoiceItemInput' }
+        discount: { type: number, minimum: 0, default: 0 }
+        notes: { type: [string, 'null'], maxLength: 2000 }
+        series: { type: [string, 'null'], maxLength: 64 }
+
+    InvoiceItem:
+      type: object
+      additionalProperties: false
+      required: [id, quantity, unit_price, total]
+      properties:
+        id: { type: string, format: uuid }
+        product_id: { type: [string, 'null'], format: uuid }
+        description: { type: [string, 'null'] }
+        hsn_code: { type: [string, 'null'] }
+        quantity: { type: number }
+        unit_price: { type: number }
+        discount: { type: number }
+        taxable_value: { type: number }
+        gst_percent: { type: number }
+        cgst_amount: { type: number }
+        sgst_amount: { type: number }
+        igst_amount: { type: number }
+        total: { type: number }
+
+    Invoice:
+      type: object
+      additionalProperties: false
+      required: [id, invoice_number, invoice_type, date, sub_total, total, status, items]
+      properties:
+        id: { type: string, format: uuid }
+        invoice_number: { type: string }
+        invoice_type:
+          type: string
+          enum: [tax_invoice, proforma, estimate, delivery_challan]
+        date: { type: string, format: date }
+        customer_id: { type: [string, 'null'], format: uuid }
+        sub_total: { type: number }
+        discount: { type: number }
+        cgst: { type: number }
+        sgst: { type: number }
+        igst: { type: number }
+        round_off: { type: number }
+        total: { type: number }
+        status: { type: string, enum: [draft, issued, paid, cancelled] }
+        pdf_url: { type: [string, 'null'] }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/InvoiceItem' }
+
+    InvoiceResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Invoice' }
+
+    PaginatedInvoiceResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Invoice' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    CreatePaymentRequest:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      properties:
+        amount: { type: number, exclusiveMinimum: 0 }
+        method:
+          type: string
+          enum: [cash, bank, upi, razorpay, other]
+        reference: { type: [string, 'null'], maxLength: 200 }
+        payment_date: { type: [string, 'null'], format: date-time }
+
+    Payment:
+      type: object
+      additionalProperties: false
+      required: [id, amount]
+      properties:
+        id: { type: string, format: uuid }
+        invoice_id: { type: [string, 'null'], format: uuid }
+        amount: { type: number }
+        method: { type: [string, 'null'] }
+        reference: { type: [string, 'null'] }
+        payment_date: { type: string, format: date-time }
+
+    PaymentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Payment' }
+
+    GstReportResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [format]
+              properties:
+                format: { type: string, enum: [json, excel] }
+                file_url: { type: [string, 'null'] }
+                json:
+                  description: |
+                    Portal-ready JSON payload for GST exports.
+                    Exact shape depends on the report type. See `docs/GST_PORTAL_MAPPINGS.md`.
+                  oneOf:
+                    - $ref: '#/components/schemas/Gstr1PortalPayload'
+                    - $ref: '#/components/schemas/Gstr3bPortalPayload'
+                    - $ref: '#/components/schemas/HsnPortalPayload'
+                    - $ref: '#/components/schemas/ItcPortalPayload'
+                    - type: 'null'
+
+    GstPeriod:
+      type: object
+      additionalProperties: false
+      required: [from, to]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+
+    Gstr1PortalPayload:
+      type: object
+      additionalProperties: false
+      required: [gst_portal_schema_version, company_gstin, period, b2b, b2c, cdnr, hsn]
+      properties:
+        gst_portal_schema_version: { type: string }
+        company_gstin: { type: string, minLength: 15, maxLength: 15 }
+        period: { $ref: '#/components/schemas/GstPeriod' }
+        b2b:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [ctin, inv]
+            properties:
+              ctin: { type: string, minLength: 15, maxLength: 15 }
+              inv:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [inum, idt, val, pos, rchrg, itms]
+                  properties:
+                    inum: { type: string }
+                    idt: { type: string, format: date }
+                    val: { type: number }
+                    pos: { type: string }
+                    rchrg: { type: string, enum: [Y, N] }
+                    itms:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [num, itm_det]
+                        properties:
+                          num: { type: integer }
+                          itm_det:
+                            type: object
+                            additionalProperties: false
+                            required: [txval, rt, iamt, camt, samt, csamt]
+                            properties:
+                              txval: { type: number }
+                              rt: { type: number }
+                              iamt: { type: number }
+                              camt: { type: number }
+                              samt: { type: number }
+                              csamt: { type: number }
+        b2c:
+          type: array
+          items: { type: object }
+        cdnr:
+          type: array
+          items: { type: object }
+        hsn:
+          type: object
+          additionalProperties: false
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [num, hsn_sc, uqc, qty, val, txval, iamt, camt, samt, csamt]
+                properties:
+                  num: { type: integer }
+                  hsn_sc: { type: string }
+                  desc: { type: [string, 'null'] }
+                  uqc: { type: string }
+                  qty: { type: number }
+                  val: { type: number }
+                  txval: { type: number }
+                  iamt: { type: number }
+                  camt: { type: number }
+                  samt: { type: number }
+                  csamt: { type: number }
+
+    Gstr3bPortalPayload:
+      type: object
+      additionalProperties: false
+      required: [gst_portal_schema_version, company_gstin, period, outward, itc]
+      properties:
+        gst_portal_schema_version: { type: string }
+        company_gstin: { type: string, minLength: 15, maxLength: 15 }
+        period: { $ref: '#/components/schemas/GstPeriod' }
+        outward:
+          type: object
+          additionalProperties: false
+          required: [taxable_value, igst, cgst, sgst, cess]
+          properties:
+            taxable_value: { type: number }
+            igst: { type: number }
+            cgst: { type: number }
+            sgst: { type: number }
+            cess: { type: number }
+        itc:
+          type: object
+          additionalProperties: false
+          required: [igst, cgst, sgst, cess]
+          properties:
+            igst: { type: number }
+            cgst: { type: number }
+            sgst: { type: number }
+            cess: { type: number }
+
+    HsnPortalPayload:
+      type: object
+      additionalProperties: false
+      required: [gst_portal_schema_version, company_gstin, period, items]
+      properties:
+        gst_portal_schema_version: { type: string }
+        company_gstin: { type: string, minLength: 15, maxLength: 15 }
+        period: { $ref: '#/components/schemas/GstPeriod' }
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [hsn, uqc, qty, taxable_value, igst, cgst, sgst, cess]
+            properties:
+              hsn: { type: string }
+              description: { type: [string, 'null'] }
+              uqc: { type: string }
+              qty: { type: number }
+              taxable_value: { type: number }
+              igst: { type: number }
+              cgst: { type: number }
+              sgst: { type: number }
+              cess: { type: number }
+
+    ItcPortalPayload:
+      type: object
+      additionalProperties: false
+      required: [gst_portal_schema_version, company_gstin, period, eligible_itc, ineligible_itc]
+      properties:
+        gst_portal_schema_version: { type: string }
+        company_gstin: { type: string, minLength: 15, maxLength: 15 }
+        period: { $ref: '#/components/schemas/GstPeriod' }
+        eligible_itc:
+          type: object
+          additionalProperties: false
+          required: [igst, cgst, sgst, cess]
+          properties:
+            igst: { type: number }
+            cgst: { type: number }
+            sgst: { type: number }
+            cess: { type: number }
+        ineligible_itc:
+          type: object
+          additionalProperties: false
+          required: [igst, cgst, sgst, cess]
+          properties:
+            igst: { type: number }
+            cgst: { type: number }
+            sgst: { type: number }
+            cess: { type: number }
+
+    StatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [status]
+              properties:
+                status: { type: string }
+
+    File:
+      type: object
+      additionalProperties: false
+      required: [id, type]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string }
+        url: { type: [string, 'null'] }
+        key: { type: [string, 'null'] }
+        mime_type: { type: [string, 'null'] }
+        size_bytes: { type: [integer, 'null'] }
+
+    FileResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/File' }
+
+    InvoiceSeries:
+      type: object
+      additionalProperties: false
+      required: [id, name, next_number]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        prefix: { type: [string, 'null'] }
+        next_number: { type: integer, minimum: 1 }
+        padding: { type: integer, minimum: 1, maximum: 12 }
+        format: { type: string }
+
+    InvoiceSeriesResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/InvoiceSeries' }
+
+    InvoiceSeriesListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/InvoiceSeries' }
+
+    CreateInvoiceSeriesRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 64 }
+        prefix: { type: [string, 'null'], maxLength: 32 }
+        next_number: { type: integer, minimum: 1, default: 1 }
+        padding: { type: integer, minimum: 1, maximum: 12, default: 4 }
+        format: { type: string, default: '{prefix}/{FY}/{seq}' }
+
+    UpdateInvoiceSeriesRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        prefix: { type: [string, 'null'], maxLength: 32 }
+        next_number: { type: integer, minimum: 1 }
+        padding: { type: integer, minimum: 1, maximum: 12 }
+        format: { type: string }
+
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email, role]
+      properties:
+        email: { type: string, format: email }
+        name: { type: [string, 'null'], maxLength: 200 }
+        role: { type: string, minLength: 2, maxLength: 32 }
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/User' }
+
+    PaginatedUserResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    Permission:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        description: { type: [string, 'null'] }
+
+    PermissionListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Permission' }
+
+    Role:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        permissions:
+          type: array
+          items: { type: string }
+
+    RoleResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Role' }
+
+    RoleListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Role' }
+
+    CreateRoleRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 64 }
+        permission_codes:
+          type: array
+          items: { type: string }
+          default: []
+
+    UpdateRoleRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 64 }
+        permission_codes:
+          type: array
+          items: { type: string }
+
+    Supplier:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        contact: { type: [object, 'null'] }
+        billing_address: { type: [object, 'null'] }
+
+    SupplierResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Supplier' }
+
+    PaginatedSupplierResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Supplier' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    CreateSupplierRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        contact: { type: [object, 'null'] }
+        billing_address: { type: [object, 'null'] }
+
+    UpdateSupplierRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        gstin: { type: [string, 'null'], minLength: 15, maxLength: 15 }
+        contact: { type: [object, 'null'] }
+        billing_address: { type: [object, 'null'] }
+
+    UpdateProductRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        sku: { type: [string, 'null'] }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        hsn_code: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        gst_percent: { type: number, minimum: 0, maximum: 100 }
+        purchase_price: { type: number, minimum: 0 }
+        selling_price: { type: number, minimum: 0 }
+        barcode: { type: [string, 'null'] }
+        category_id: { type: [string, 'null'], format: uuid }
+
+    StockMovement:
+      type: object
+      additionalProperties: false
+      required: [id, product_id, change_qty, balance_qty, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        product_id: { type: string, format: uuid }
+        change_qty: { type: number }
+        balance_qty: { type: number }
+        source_type: { type: [string, 'null'] }
+        source_id: { type: [string, 'null'], format: uuid }
+        note: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+
+    PaginatedStockMovementResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/StockMovement' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    LowStockResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [product_id, stock_qty]
+                properties:
+                  product_id: { type: string, format: uuid }
+                  stock_qty: { type: number }
+                  threshold: { type: number }
+
+    UpdateInvoiceRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        due_date: { type: [string, 'null'], format: date }
+        customer_id: { type: [string, 'null'], format: uuid }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/InvoiceItemInput' }
+        discount: { type: number, minimum: 0 }
+        notes: { type: [string, 'null'], maxLength: 2000 }
+
+    SendInvoiceRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email: { type: [string, 'null'], format: email }
+        whatsapp_number: { type: [string, 'null'] }
+        message: { type: [string, 'null'], maxLength: 1000 }
+
+    CreditNoteItemInput:
+      type: object
+      additionalProperties: false
+      required: [product_id, quantity]
+      properties:
+        product_id: { type: string, format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        unit_price: { type: [number, 'null'], minimum: 0 }
+
+    CreateCreditNoteRequest:
+      type: object
+      additionalProperties: false
+      required: [date, reason, items]
+      properties:
+        date: { type: string, format: date }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        adjust_stock: { type: boolean, default: true }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/CreditNoteItemInput' }
+
+    Adjustment:
+      type: object
+      additionalProperties: false
+      required: [id, type, date, total]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [credit_note, sales_return] }
+        original_invoice_id: { type: [string, 'null'], format: uuid }
+        adjustment_number: { type: string }
+        date: { type: string, format: date }
+        customer_id: { type: [string, 'null'], format: uuid }
+        reason: { type: [string, 'null'] }
+        total: { type: number }
+
+    AdjustmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Adjustment' }
+
+    AdjustmentListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Adjustment' }
+
+    CreateStandalonePaymentRequest:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      properties:
+        invoice_id: { type: [string, 'null'], format: uuid }
+        purchase_id: { type: [string, 'null'], format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+        method: { type: string }
+        reference: { type: [string, 'null'], maxLength: 200 }
+        payment_date: { type: [string, 'null'], format: date-time }
+
+    PaginatedPaymentResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Payment' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    PurchaseItemInput:
+      type: object
+      additionalProperties: false
+      required: [product_id, quantity, unit_price, gst_percent]
+      properties:
+        product_id: { type: string, format: uuid }
+        batch_id: { type: [string, 'null'], format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        unit_price: { type: number, minimum: 0 }
+        gst_percent: { type: number, minimum: 0, maximum: 100 }
+
+    CreatePurchaseRequest:
+      type: object
+      additionalProperties: false
+      required: [date, items]
+      properties:
+        supplier_id: { type: [string, 'null'], format: uuid }
+        bill_number: { type: [string, 'null'] }
+        date: { type: string, format: date }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/PurchaseItemInput' }
+        notes: { type: [string, 'null'] }
+
+    UpdatePurchaseRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        bill_number: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+
+    Purchase:
+      type: object
+      additionalProperties: false
+      required: [id, date, sub_total, total, status]
+      properties:
+        id: { type: string, format: uuid }
+        supplier_id: { type: [string, 'null'], format: uuid }
+        bill_number: { type: [string, 'null'] }
+        date: { type: string, format: date }
+        sub_total: { type: number }
+        cgst: { type: number }
+        sgst: { type: number }
+        igst: { type: number }
+        total: { type: number }
+        status: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/PurchaseItemInput' }
+
+    PurchaseResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Purchase' }
+
+    PaginatedPurchaseResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Purchase' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    CreatePurchaseReturnRequest:
+      type: object
+      additionalProperties: false
+      required: [date, reason, items, adjust_stock]
+      properties:
+        date: { type: string, format: date }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        adjust_stock: { type: boolean, default: true }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [product_id, quantity]
+            properties:
+              product_id: { type: string, format: uuid }
+              quantity: { type: number, exclusiveMinimum: 0 }
+
+    SalesSummaryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [period, total_sales]
+                properties:
+                  period: { type: string }
+                  total_sales: { type: number }
+                  invoices_count: { type: integer }
+
+    PurchaseSummaryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [period, total_purchases]
+                properties:
+                  period: { type: string }
+                  total_purchases: { type: number }
+                  purchases_count: { type: integer }
+
+    OutstandingResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [party_id, outstanding]
+                properties:
+                  party_id: { type: string, format: uuid }
+                  party_name: { type: string }
+                  outstanding: { type: number }
+
+    TopProductsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [product_id, quantity]
+                properties:
+                  product_id: { type: string, format: uuid }
+                  product_name: { type: string }
+                  quantity: { type: number }
+                  revenue: { type: number }
+
+    ProfitResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [gross_profit]
+              properties:
+                gross_profit: { type: number }
+                net_profit: { type: [number, 'null'] }
+
+    StockValuationResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [product_id, stock_qty]
+                properties:
+                  product_id: { type: string, format: uuid }
+                  stock_qty: { type: number }
+                  valuation: { type: number }
+
+    GstExportRequest:
+      type: object
+      additionalProperties: false
+      required: [report, from, to, format]
+      properties:
+        report: { type: string, enum: [gstr1, gstr3b, hsn, itc] }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        format: { type: string, enum: [json, excel] }
+
+    GstExportQueuedResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [status, file_id]
+              properties:
+                status: { type: string }
+                file_id: { type: string, format: uuid }
+
+    LedgerReportResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [entries]
+              properties:
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [date, debit, credit]
+                    properties:
+                      date: { type: string, format: date }
+                      narration: { type: [string, 'null'] }
+                      debit: { type: number }
+                      credit: { type: number }
+                closing_balance: { type: [number, 'null'] }
+
+    Ledger:
+      type: object
+      additionalProperties: false
+      required: [id, account_code, account_name, type]
+      properties:
+  id: { type: string, format: uuid }
+  account_code: { type: string }
+  account_name: { type: string }
+  type: { $ref: '#/components/schemas/LedgerType' }
+  balance: { type: number }
+
+    LedgerResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Ledger' }
+
+    LedgerListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Ledger' }
+
+    CreateLedgerRequest:
+      type: object
+      additionalProperties: false
+      required: [account_code, account_name, type]
+      properties:
+        account_code: { type: string, minLength: 1, maxLength: 64 }
+        account_name: { type: string, minLength: 1, maxLength: 200 }
+        type: { $ref: '#/components/schemas/LedgerType' }
+
+    LedgerType:
+      type: string
+      description: |
+        Canonical Chart-of-Accounts (COA) taxonomy.
+
+        Top-level: asset, liability, equity, income, expense.
+        Subtypes are allowed and are rolled up to top-level categories in financial reports.
+      enum:
+        # Top-level
+        - asset
+        - liability
+        - equity
+        - income
+        - expense
+        # Asset subtypes
+        - current_asset
+        - fixed_asset
+        - inventory
+        - accounts_receivable
+        - cash
+        - bank
+        - prepaid_expense
+        # Liability subtypes
+        - current_liability
+        - long_term_liability
+        - accounts_payable
+        - tax_payable
+        - loan
+        # Equity subtypes
+        - owner_equity
+        - retained_earnings
+        - capital
+        - drawings
+        # Income subtypes
+        - sales
+        - service_income
+        - other_income
+        - discount_received
+        - interest_income
+        # Expense subtypes
+        - cost_of_goods_sold
+        - operating_expense
+        - salary
+        - rent
+        - utilities
+        - marketing
+        - purchase
+        - discount_given
+        - tax_expense
+
+    CreateJournalRequest:
+      type: object
+      additionalProperties: false
+      required: [date, lines]
+      properties:
+        date: { type: string, format: date }
+        narration: { type: [string, 'null'], maxLength: 400 }
+        lines:
+          type: array
+          minItems: 2
+          items: { $ref: '#/components/schemas/CreateJournalLine' }
+
+    CreateJournalLine:
+      type: object
+      additionalProperties: false
+      required: [amount]
+      properties:
+        debit_ledger_id: { type: [string, 'null'], format: uuid }
+        credit_ledger_id: { type: [string, 'null'], format: uuid }
+        amount:
+          type: string
+          pattern: '^\\d+(\\.\\d{1,2})?$'
+          example: '123.45'
+
+    JournalResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Journal' }
+
+    Journal:
+      type: object
+      additionalProperties: false
+      required: [id, date]
+      properties:
+        id: { type: string, format: uuid }
+        date: { type: string, format: date }
+        narration: { type: [string, 'null'] }
+
+    PaginatedJournalResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Journal' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    TrialBalanceResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [ledger_id, debit, credit]
+                properties:
+                  ledger_id: { type: string, format: uuid }
+                  ledger_name: { type: string }
+                  debit: { type: number }
+                  credit: { type: number }
+
+    ProfitLossResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              properties:
+                income: { type: number }
+                expense: { type: number }
+                profit: { type: number }
+
+    BalanceSheetResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              properties:
+                assets: { type: number }
+                liabilities: { type: number }
+                equity: { type: number }
+
+    BookResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [date, amount]
+                properties:
+                  date: { type: string, format: date }
+                  narration: { type: [string, 'null'] }
+                  amount: { type: number }
+
+    NotificationTemplate:
+      type: object
+      additionalProperties: false
+      required: [id, code, channel, body]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        channel: { type: string, enum: [email, whatsapp, sms, inapp] }
+        subject: { type: [string, 'null'] }
+        body: { type: string }
+        is_active: { type: boolean }
+
+    NotificationTemplateResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/NotificationTemplate' }
+
+    NotificationTemplateListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/NotificationTemplate' }
+
+    CreateNotificationTemplateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, channel, body]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 64 }
+        channel: { type: string, enum: [email, whatsapp, sms, inapp] }
+        subject: { type: [string, 'null'], maxLength: 200 }
+        body: { type: string, minLength: 1 }
+        is_active: { type: boolean, default: true }
+
+    UpdateNotificationTemplateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        subject: { type: [string, 'null'], maxLength: 200 }
+        body: { type: string, minLength: 1 }
+        is_active: { type: boolean }
+
+    TestNotificationRequest:
+      type: object
+      additionalProperties: false
+      required: [template_code, channel, to_address]
+      properties:
+        template_code: { type: string }
+        channel: { type: string, enum: [email, whatsapp, sms, inapp] }
+        to_address: { type: string }
+        sample_payload: { type: [object, 'null'] }
+
+    SignUploadRequest:
+      type: object
+      additionalProperties: false
+      required: [type, mime_type, size_bytes]
+      properties:
+        type: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer, minimum: 1 }
+
+    SignUploadResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [upload_url, file_id]
+              properties:
+                upload_url: { type: string }
+                file_id: { type: string, format: uuid }
+
+    Subscription:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        plan: { type: [string, 'null'] }
+        status: { type: string }
+        started_at: { type: [string, 'null'], format: date-time }
+        expires_at: { type: [string, 'null'], format: date-time }
+
+    SubscriptionResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/Subscription' }
+
+    SubscriptionCheckoutRequest:
+      type: object
+      additionalProperties: false
+      required: [plan_code]
+      properties:
+        plan_code: { type: string }
+        success_url: { type: [string, 'null'] }
+        cancel_url: { type: [string, 'null'] }
+
+    SubscriptionCheckoutResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: object
+              additionalProperties: false
+              required: [checkout_url]
+              properties:
+                checkout_url: { type: string }
+
+    CompanyAdmin:
+      allOf:
+        - $ref: '#/components/schemas/Company'
+
+    PaginatedCompanyAdminResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/CompanyAdmin' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    SubscriptionAdmin:
+      type: object
+      additionalProperties: false
+      required: [company_id, status]
+      properties:
+        company_id: { type: string, format: uuid }
+        plan: { type: [string, 'null'] }
+        status: { type: string }
+        expires_at: { type: [string, 'null'], format: date-time }
+
+    PaginatedSubscriptionAdminResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/SubscriptionAdmin' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    UsageAdminResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [company_id, key, value]
+                properties:
+                  company_id: { type: string, format: uuid }
+                  key: { type: string }
+                  value: { type: number }
+
+    SupportTicket:
+      type: object
+      additionalProperties: false
+      required: [id, subject, status]
+      properties:
+        id: { type: string, format: uuid }
+        company_id: { type: [string, 'null'], format: uuid }
+        subject: { type: string }
+        description: { type: [string, 'null'] }
+        priority: { type: string, enum: [low, normal, high, urgent] }
+        status: { type: string, enum: [open, in_progress, resolved, closed] }
+
+    SupportTicketResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data: { $ref: '#/components/schemas/SupportTicket' }
+
+    SupportTicketListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          additionalProperties: false
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/SupportTicket' }
+
+    UpdateSupportTicketRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        status: { type: string, enum: [open, in_progress, resolved, closed] }
+        priority: { type: string, enum: [low, normal, high, urgent] }
+        reply: { type: [string, 'null'] }

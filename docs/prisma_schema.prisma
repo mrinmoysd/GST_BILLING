@@ -1,0 +1,227 @@
+// Prisma schema (SPEC-STAGE, illustrative)
+// ======================================
+//
+// IMPORTANT (Option A chosen): Prisma becomes canonical once the codebase is bootstrapped.
+//
+// - Until Phase 00 starts, `docs/DB_SCHEMA.sql` is the canonical schema reference.
+// - This file is an *illustrative* ORM view to support discussions and planning.
+// - During Phase 00 bootstrap we will create the real canonical Prisma schema at:
+//     prisma/schema.prisma
+//   and migrate the full DB schema via Prisma migrations.
+//
+// Do not wire production code directly to this file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id              String   @id @default(uuid())
+  name            String
+  gstin           String?
+  pan             String?
+  businessType    String
+  address         Json?
+  state           String?
+  stateCode       String?
+  contact         Json?
+  bankDetails     Json?
+  invoiceSettings Json?
+  logoUrl         String?
+  timezone        String   @default("Asia/Kolkata")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  users           User[]
+  customers       Customer[]
+  products        Product[]
+  invoices        Invoice[]
+}
+
+model User {
+  id         String   @id @default(uuid())
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+  email      String
+  name       String?
+  password   String
+  role       String
+  isActive   Boolean  @default(true)
+  lastLogin  DateTime?
+  createdAt  DateTime @default(now())
+}
+
+model Customer {
+  id              String   @id @default(uuid())
+  company         Company  @relation(fields: [companyId], references: [id])
+  companyId       String
+  name            String
+  gstin           String?
+  mobile          String?
+  email           String?
+  billingAddress  Json?
+  shippingAddress Json?
+  customerGroup   String?
+  creditLimit     Float    @default(0)
+  outstanding     Float    @default(0)
+  createdAt       DateTime @default(now())
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  company     Company  @relation(fields: [companyId], references: [id])
+  companyId   String
+  sku         String?
+  name        String
+  hsnCode     String?
+  unit        String?
+  gstPercent  Float    @default(0)
+  purchasePrice Float  @default(0)
+  sellingPrice  Float  @default(0)
+  stockQty    Float    @default(0)
+  barcode     String?
+  categoryId  String?
+  extra       Json?
+  createdAt   DateTime @default(now())
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  company       Company  @relation(fields: [companyId], references: [id])
+  companyId     String
+  invoiceType   String
+  invoiceNumber String
+  seriesId      String?
+  date          DateTime
+  dueDate       DateTime?
+  customerId    String?
+  subTotal      Float
+  discount      Float   @default(0)
+  taxableValue  Float   @default(0)
+  cgst          Float   @default(0)
+  sgst          Float   @default(0)
+  igst          Float   @default(0)
+  cess          Float   @default(0)
+  roundOff      Float   @default(0)
+  total         Float
+  status        String  @default("draft")
+  notes         String?
+  pdfUrl        String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+  items         InvoiceItem[]
+}
+
+model InvoiceItem {
+  id           String  @id @default(uuid())
+  invoice      Invoice @relation(fields: [invoiceId], references: [id])
+  invoiceId    String
+  productId    String?
+  description  String?
+  hsnCode      String?
+  quantity     Float   @default(1)
+  unitPrice    Float
+  discount     Float   @default(0)
+  taxableValue Float
+  gstPercent   Float
+  gstType      String?
+  cgstAmount   Float   @default(0)
+  sgstAmount   Float   @default(0)
+  igstAmount   Float   @default(0)
+  total        Float
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+  invoiceId  String?
+  amount     Float
+  method     String?
+  reference  String?
+  paymentDate DateTime @default(now())
+  createdBy  String?
+  createdAt  DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// NOTE: For 0→100% build parity, extend this schema to include ALL DB tables.
+// Below are additional models to match `DB_SCHEMA.sql` extended tables.
+// Some fields are simplified (Json) to keep the spec readable; implement fully
+// in the actual backend repo.
+// ---------------------------------------------------------------------------
+
+model Supplier {
+  id         String   @id @default(uuid())
+  companyId  String
+  name       String
+  gstin      String?
+  contact    Json?
+  billingAddress Json?
+  createdAt  DateTime @default(now())
+}
+
+model Purchase {
+  id         String   @id @default(uuid())
+  companyId  String
+  supplierId String?
+  billNumber String?
+  date       DateTime
+  subTotal   Float
+  cgst       Float @default(0)
+  sgst       Float @default(0)
+  igst       Float @default(0)
+  total      Float
+  status     String @default("received")
+  createdAt  DateTime @default(now())
+}
+
+model StockMovement {
+  id         String   @id @default(uuid())
+  companyId  String
+  productId  String
+  changeQty  Float
+  balanceQty Float
+  sourceType String?
+  sourceId   String?
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+model Ledger {
+  id          String   @id @default(uuid())
+  companyId   String
+  accountCode String
+  accountName String
+  type        String
+  balance     Float @default(0)
+  extra       Json?
+  createdAt   DateTime @default(now())
+}
+
+model JournalEntry {
+  id        String   @id @default(uuid())
+  companyId String
+  refType   String?
+  refId     String?
+  date      DateTime
+  narration String?
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id         String   @id @default(uuid())
+  companyId  String
+  plan       String?
+  status     String?
+  startedAt  DateTime?
+  expiresAt  DateTime?
+  metadata   Json?
+  provider   String?
+  providerSubscriptionId String?
+  createdAt  DateTime @default(now())
+}

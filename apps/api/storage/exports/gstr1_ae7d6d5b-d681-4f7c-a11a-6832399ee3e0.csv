@@ -1,0 +1,2 @@
+invoice_number,invoice_date,customer_name,customer_gstin,taxable_value,tax_value,invoice_value,status
+INV-1,2026-03-06,Acme,,200,0,200,issued
