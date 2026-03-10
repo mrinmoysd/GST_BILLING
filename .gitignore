@@ -7,3 +7,6 @@ dist/
 apps/*/dist/
 apps/*/node_modules/
 prisma/migrations/
+
+# Local backup of nested .git
+apps/web/.git_backup*/
