@@ -2,12 +2,15 @@
 
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useCreateNotificationTemplate,
   useNotificationTemplates,
   useTestNotification,
   useUpdateNotificationTemplate,
 } from "@/lib/settings/notificationsHooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -44,87 +47,113 @@ export default function NotificationsSettingsPage({ params }: Props) {
   const rows = list.data?.data.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Notifications" subtitle="Templates and test sends." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Settings"
+        title="Notifications"
+        subtitle="Manage template definitions and test-send flows from a more structured communications workspace."
+      />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
-        <div className="text-sm font-medium">Create template</div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{rows.length} template{rows.length === 1 ? "" : "s"}</Badge>
+            <Badge variant="outline">Email / SMS / WhatsApp</Badge>
+          </div>
+          <CardTitle>Create template</CardTitle>
+          <CardDescription>Define reusable outbound message templates for the current company.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
           <TextField label="Name" value={name} onChange={setName} />
           <div>
-            <label className="block text-sm font-medium">Channel</label>
-            <select className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
+            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
               <option value="email">Email</option>
               <option value="sms">SMS</option>
               <option value="whatsapp">WhatsApp</option>
             </select>
           </div>
-        </div>
-        <TextField label="Subject (optional)" value={subject} onChange={setSubject} />
-        <div>
-          <label className="block text-sm font-medium">Body</label>
-          <textarea className="mt-1 w-full rounded-md border px-3 py-2 text-sm min-h-32" value={body} onChange={(e) => setBody(e.target.value)} />
-        </div>
-        {error ? <InlineError message={error} /> : null}
-        <PrimaryButton
-          type="button"
-          disabled={create.isPending}
-          onClick={async () => {
-            setError(null);
-            if (!name.trim()) return setError("Enter a template name.");
-            if (!body.trim()) return setError("Enter a template body.");
-            try {
-              await create.mutateAsync({ name: name.trim(), channel, subject: subject.trim() || undefined, body });
-              setName("");
-              setSubject("");
-            } catch (e: unknown) {
-              setError(getErrorMessage(e, "Failed to create template"));
-            }
-          }}
-        >
-          {create.isPending ? "Creating…" : "Create"}
-        </PrimaryButton>
-      </div>
-
-      <div className="rounded-xl border bg-white p-4 space-y-3">
-        <div className="text-sm font-medium">Test notification</div>
-        <div className="grid gap-4 md:grid-cols-2">
+          </div>
+          <TextField label="Subject (optional)" value={subject} onChange={setSubject} />
           <div>
-            <label className="block text-sm font-medium">Channel</label>
-            <select className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Body</label>
+            <textarea
+              className="mt-2 min-h-32 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 text-sm shadow-sm"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </div>
+          {error ? <InlineError message={error} /> : null}
+          <PrimaryButton
+            type="button"
+            disabled={create.isPending}
+            onClick={async () => {
+              setError(null);
+              if (!name.trim()) return setError("Enter a template name.");
+              if (!body.trim()) return setError("Enter a template body.");
+              try {
+                await create.mutateAsync({ name: name.trim(), channel, subject: subject.trim() || undefined, body });
+                setName("");
+                setSubject("");
+              } catch (e: unknown) {
+                setError(getErrorMessage(e, "Failed to create template"));
+              }
+            }}
+          >
+            {create.isPending ? "Creating…" : "Create"}
+          </PrimaryButton>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Test notification</CardTitle>
+          <CardDescription>Send a one-off test message to validate current provider wiring and template assumptions.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
+            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
               <option value="email">Email</option>
               <option value="sms">SMS</option>
               <option value="whatsapp">WhatsApp</option>
             </select>
           </div>
           <TextField label="To" value={testTo} onChange={setTestTo} placeholder="email/phone" />
-        </div>
-        <TextField label="Subject (optional)" value={testSubject} onChange={setTestSubject} />
-        <div>
-          <label className="block text-sm font-medium">Body</label>
-          <textarea className="mt-1 w-full rounded-md border px-3 py-2 text-sm min-h-24" value={testBody} onChange={(e) => setTestBody(e.target.value)} />
-        </div>
-        {testError ? <InlineError message={testError} /> : null}
-        {testOk ? <div className="text-sm text-green-700">{testOk}</div> : null}
-        <PrimaryButton
-          type="button"
-          disabled={testNotif.isPending}
-          onClick={async () => {
-            setTestError(null);
-            setTestOk(null);
-            if (!testTo.trim()) return setTestError("Enter recipient.");
-            if (!testBody.trim()) return setTestError("Enter body.");
-            try {
-              await testNotif.mutateAsync({ channel, to: testTo.trim(), subject: testSubject.trim() || undefined, body: testBody });
-              setTestOk("Queued test notification.");
-            } catch (e: unknown) {
-              setTestError(getErrorMessage(e, "Failed to send test"));
-            }
-          }}
-        >
-          {testNotif.isPending ? "Sending…" : "Send test"}
-        </PrimaryButton>
-      </div>
+          </div>
+          <TextField label="Subject (optional)" value={testSubject} onChange={setTestSubject} />
+          <div>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Body</label>
+            <textarea
+              className="mt-2 min-h-24 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 text-sm shadow-sm"
+              value={testBody}
+              onChange={(e) => setTestBody(e.target.value)}
+            />
+          </div>
+          {testError ? <InlineError message={testError} /> : null}
+          {testOk ? <div className="text-sm text-green-700">{testOk}</div> : null}
+          <PrimaryButton
+            type="button"
+            disabled={testNotif.isPending}
+            onClick={async () => {
+              setTestError(null);
+              setTestOk(null);
+              if (!testTo.trim()) return setTestError("Enter recipient.");
+              if (!testBody.trim()) return setTestError("Enter body.");
+              try {
+                await testNotif.mutateAsync({ channel, to: testTo.trim(), subject: testSubject.trim() || undefined, body: testBody });
+                setTestOk("Queued test notification.");
+              } catch (e: unknown) {
+                setTestError(getErrorMessage(e, "Failed to send test"));
+              }
+            }}
+          >
+            {testNotif.isPending ? "Sending…" : "Send test"}
+          </PrimaryButton>
+        </CardContent>
+      </Card>
 
       <div className="space-y-3">
         <div className="text-sm font-medium">Templates</div>
@@ -133,21 +162,27 @@ export default function NotificationsSettingsPage({ params }: Props) {
         {list.data && rows.length === 0 ? <EmptyState title="No templates" hint="Create your first template above." /> : null}
 
         {list.data && rows.length > 0 ? (
-          <div className="rounded-xl border bg-white overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 font-medium">Channel</th>
-                  <th className="text-left px-4 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((t) => (
-                  <tr key={t.id} className="border-t">
-                    <td className="px-4 py-3">{t.name}</td>
-                    <td className="px-4 py-3">{t.channel}</td>
-                    <td className="px-4 py-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Templates</CardTitle>
+              <CardDescription>Current notification template catalog for the company.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTableShell>
+                <DataTable>
+                  <DataThead>
+                    <tr>
+                      <DataTh>Name</DataTh>
+                      <DataTh>Channel</DataTh>
+                      <DataTh>Actions</DataTh>
+                    </tr>
+                  </DataThead>
+                  <tbody>
+                    {rows.map((t) => (
+                      <DataTr key={t.id}>
+                        <DataTd>{t.name}</DataTd>
+                        <DataTd>{t.channel}</DataTd>
+                        <DataTd>
                       <SecondaryButton
                         type="button"
                         disabled={update.isPending}
@@ -163,12 +198,14 @@ export default function NotificationsSettingsPage({ params }: Props) {
                       >
                         Rename
                       </SecondaryButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        </DataTd>
+                      </DataTr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </DataTableShell>
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </div>

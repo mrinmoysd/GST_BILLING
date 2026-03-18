@@ -1,11 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 function envelope<T>(data: T) {
   return { data };
@@ -157,6 +163,92 @@ export class AuthService {
         company_id: user.companyId,
       },
       company: user.company,
+    });
+  }
+
+  async forgotPassword(body: ForgotPasswordDto) {
+    const email = body.email.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({
+      where: { email, isActive: true },
+      include: { company: true },
+    });
+
+    if (!user?.companyId) {
+      return envelope({
+        ok: true,
+        message:
+          'If an account exists for this email, a reset link has been prepared.',
+      });
+    }
+
+    const token = await this.jwt.signAsync(
+      {
+        sub: user.id,
+        companyId: user.companyId,
+        purpose: 'password_reset',
+      },
+      {
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: 60 * 30,
+      },
+    );
+
+    return envelope({
+      ok: true,
+      message:
+        'If an account exists for this email, a reset link has been prepared.',
+      dev: {
+        reset_token: token,
+        reset_path: `/reset-password?token=${encodeURIComponent(token)}`,
+      },
+    });
+  }
+
+  async resetPassword(body: ResetPasswordDto) {
+    let decoded: { sub?: string; companyId?: string; purpose?: string };
+    try {
+      decoded = await this.jwt.verifyAsync(body.token, {
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+      });
+    } catch {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (decoded.purpose !== 'password_reset' || !decoded.sub) {
+      throw new BadRequestException('Invalid reset token');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: decoded.sub },
+      select: { id: true, companyId: true, isActive: true },
+    });
+    if (!user?.isActive) {
+      throw new BadRequestException('User not found');
+    }
+
+    const passwordHash = await bcrypt.hash(body.password, 10);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: { passwordHash },
+      });
+
+      if (user.companyId) {
+        await tx.session.updateMany({
+          where: {
+            userId: user.id,
+            companyId: user.companyId,
+            revokedAt: null,
+          },
+          data: { revokedAt: new Date() },
+        });
+      }
+    });
+
+    return envelope({
+      ok: true,
+      message: 'Password updated successfully. Please sign in again.',
     });
   }
 

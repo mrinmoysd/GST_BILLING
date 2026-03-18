@@ -1,5 +1,19 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
@@ -26,5 +40,35 @@ export class CompaniesController {
   ) {
     const company = await this.companies.updateCompany(companyId, dto);
     return { ok: true, data: company };
+  }
+
+  @Post('/verify-gstin')
+  async verifyGstin(@Param('companyId') companyId: string) {
+    const data = await this.companies.verifyGstin(companyId);
+    return { ok: true, data };
+  }
+
+  @Post('/logo')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadLogo(
+    @Param('companyId') companyId: string,
+    @UploadedFile() file?: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('file is required');
+    }
+
+    const company = await this.companies.attachLogo(companyId, file);
+    return { ok: true, data: company };
+  }
+
+  @Get('/logo')
+  async getLogo(
+    @Param('companyId') companyId: string,
+    @Res() res: Response,
+  ) {
+    const filepath = this.companies.getLogoPath(companyId);
+    return res.sendFile(filepath);
   }
 }

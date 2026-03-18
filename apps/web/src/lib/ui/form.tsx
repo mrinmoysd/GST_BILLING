@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function TextField({
   label,
@@ -18,10 +21,9 @@ export function TextField({
   required?: boolean;
 }) {
   return (
-    <label className="block">
-      <div className="text-sm font-medium">{label}</div>
-      <input
-        className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+    <label className="block space-y-2">
+      <Label className="text-[13px] font-semibold text-[var(--muted-strong)]">{label}</Label>
+      <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -36,14 +38,7 @@ export function PrimaryButton({
   children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
-  return (
-    <button
-      className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-60"
-      {...props}
-    >
-      {children}
-    </button>
-  );
+  return <Button {...props}>{children}</Button>;
 }
 
 export function SecondaryButton({
@@ -51,11 +46,8 @@ export function SecondaryButton({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
   return (
-    <button
-      className="rounded-lg border bg-white px-4 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-60"
-      {...props}
-    >
+    <Button variant="secondary" {...props}>
       {children}
-    </button>
+    </Button>
   );
 }

@@ -6,6 +6,9 @@ import Link from "next/link";
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
 import { useAuth } from "@/lib/auth/session";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -67,10 +70,11 @@ export default function CategoriesPage({ params }: Props) {
   }, [bootstrapped, companyId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Masters"
         title="Categories"
-        subtitle="Manage product categories."
+        subtitle="Organize the product catalog with a simpler category registry and a more structured management view."
         actions={
           <div className="flex gap-3">
             <Link className="text-sm underline" href={`/c/${companyId}/masters/products`}>
@@ -80,13 +84,14 @@ export default function CategoriesPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3 max-w-xl">
-        <div className="text-sm font-medium">Create category</div>
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <TextField label="Name" value={newName} onChange={setNewName} placeholder="e.g. Batteries" />
-          </div>
-          <div className="flex items-end">
+      <Card className="max-w-3xl">
+        <CardHeader>
+          <CardTitle>Create category</CardTitle>
+          <CardDescription>Add a new grouping for products. Rename and activation controls can be expanded later.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <TextField label="Category name" value={newName} onChange={setNewName} placeholder="e.g. Batteries" />
             <PrimaryButton
               type="button"
               disabled={saving}
@@ -114,35 +119,37 @@ export default function CategoriesPage({ params }: Props) {
               {saving ? "Creating…" : "Create"}
             </PrimaryButton>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {loading ? <LoadingBlock label="Loading categories…" /> : null}
       {error ? <InlineError message={error} /> : null}
 
   {!loading && !error && safeRows.length === 0 ? (
-        <EmptyState title="No categories" hint="Create your first category." />
+        <EmptyState title="No categories" hint="Create your first category to structure the product catalog." />
       ) : null}
 
   {!loading && !error && safeRows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+        <DataTableShell>
+          <DataTable>
+            <DataThead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium">Active</th>
-                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                <DataTh>Name</DataTh>
+                <DataTh>State</DataTh>
+                <DataTh className="text-right">Actions</DataTh>
               </tr>
-            </thead>
+            </DataThead>
             <tbody>
               {safeRows.map((c) => (
-                <tr key={c.id} className="border-t">
-                  <td className="px-4 py-3">
+                <DataTr key={c.id}>
+                  <DataTd>
                     <div className="font-medium">{c.name}</div>
-                    <div className="text-xs text-neutral-500">{c.id}</div>
-                  </td>
-                  <td className="px-4 py-3">{c.is_active ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3 text-right">
+                    <div className="text-xs text-[var(--muted)]">{c.id}</div>
+                  </DataTd>
+                  <DataTd>
+                    <Badge variant={c.is_active ? "secondary" : "outline"}>{c.is_active ? "Active" : "Inactive"}</Badge>
+                  </DataTd>
+                  <DataTd className="text-right">
                     <SecondaryButton
                       type="button"
                       onClick={async () => {
@@ -163,15 +170,15 @@ export default function CategoriesPage({ params }: Props) {
                     >
                       Delete
                     </SecondaryButton>
-                  </td>
-                </tr>
+                  </DataTd>
+                </DataTr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </DataTable>
+        </DataTableShell>
       ) : null}
 
-      <div className="text-xs text-neutral-500">
+      <div className="text-xs text-[var(--muted)]">
         Note: rename/activate toggles can be added later; API supports PATCH already.
       </div>
     </div>

@@ -2,9 +2,11 @@
 
 import * as React from "react";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBalanceSheet } from "@/lib/billing/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -27,38 +29,44 @@ export default function BalanceSheetPage({ params }: Props) {
   const equity = typeof data?.equity === "number" ? data.equity : null;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Balance sheet" subtitle="Report view." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Accounting"
+        title="Balance sheet"
+        subtitle="Review assets, liabilities, and equity from a clearer statement layout."
+      />
 
-      <div className="rounded-xl border bg-white p-4 max-w-xl">
-        <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
-      </div>
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>As-of date</CardTitle>
+          <CardDescription>Select the date for the current balance sheet snapshot.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading balance sheet…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load balance sheet")} /> : null}
 
       {query.data && assets != null && liabilities != null && equity != null ? (
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border bg-white p-4">
-            <div className="text-sm text-neutral-600">Assets</div>
-            <div className="mt-1 text-2xl font-semibold">{assets.toFixed(2)}</div>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <div className="text-sm text-neutral-600">Liabilities</div>
-            <div className="mt-1 text-2xl font-semibold">{liabilities.toFixed(2)}</div>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <div className="text-sm text-neutral-600">Equity</div>
-            <div className="mt-1 text-2xl font-semibold">{equity.toFixed(2)}</div>
-          </div>
+          <StatCard label="Assets" value={assets.toFixed(2)} />
+          <StatCard label="Liabilities" value={liabilities.toFixed(2)} />
+          <StatCard label="Equity" value={equity.toFixed(2)} />
         </div>
       ) : null}
 
       {query.data && (assets == null || liabilities == null || equity == null) ? (
-        <div className="rounded-xl border bg-white p-4">
-          <div className="text-sm text-neutral-600">Unexpected response (debug)</div>
-          <pre className="mt-3 text-xs overflow-auto">{JSON.stringify(query.data.data, null, 2)}</pre>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Raw response</CardTitle>
+            <CardDescription>The API payload does not yet map to the expected balance-sheet summary contract.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

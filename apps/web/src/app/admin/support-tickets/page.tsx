@@ -2,8 +2,11 @@
 
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminSupportTickets } from "@/lib/admin/hooks";
 import { apiClient } from "@/lib/api/client";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 
@@ -37,14 +40,27 @@ export default function AdminSupportTicketsPage() {
     })?.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Admin — Support tickets" subtitle="Review and update ticket status." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Admin"
+        title="Support tickets"
+        subtitle="Review inbound support requests and move them through the current status flow."
+      />
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_200px] md:items-end">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{rows.length} ticket{rows.length === 1 ? "" : "s"} in view</Badge>
+            <Badge variant="outline">{status || "All statuses"}</Badge>
+          </div>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Filter tickets by status and refresh the current result set.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-[1fr_200px] md:items-end">
           <div>
-            <label className="block text-sm font-medium">Filter by status</label>
-            <select className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Filter by status</label>
+            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">All</option>
               <option value="open">Open</option>
               <option value="in_progress">In progress</option>
@@ -66,8 +82,9 @@ export default function AdminSupportTicketsPage() {
               Apply
             </PrimaryButton>
           </div>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load support tickets")} /> : null}
@@ -75,37 +92,43 @@ export default function AdminSupportTicketsPage() {
       {error ? <InlineError message={error} /> : null}
 
       {query.data && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Created</th>
-                <th className="text-left px-4 py-3 font-medium">From</th>
-                <th className="text-left px-4 py-3 font-medium">Subject</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Priority</th>
-                <th className="text-right px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((t) => (
-                <tr key={t.id} className="border-t">
-                  <td className="px-4 py-3 whitespace-nowrap">{t.created_at ? new Date(t.created_at).toLocaleString() : "—"}</td>
-                  <td className="px-4 py-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Ticket queue</CardTitle>
+            <CardDescription>Review request details and update status in place.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTableShell>
+              <DataTable>
+                <DataThead>
+                  <tr>
+                    <DataTh>Created</DataTh>
+                    <DataTh>From</DataTh>
+                    <DataTh>Subject</DataTh>
+                    <DataTh>Status</DataTh>
+                    <DataTh>Priority</DataTh>
+                    <DataTh className="text-right">Actions</DataTh>
+                  </tr>
+                </DataThead>
+                <tbody>
+                  {rows.map((t) => (
+                    <DataTr key={t.id}>
+                      <DataTd className="whitespace-nowrap">{t.created_at ? new Date(t.created_at).toLocaleString() : "—"}</DataTd>
+                      <DataTd>
                     <div className="font-medium">{t.name || "—"}</div>
-                    <div className="text-xs text-neutral-600">{t.email || "—"}</div>
-                  </td>
-                  <td className="px-4 py-3">
+                    <div className="text-xs text-[var(--muted)]">{t.email || "—"}</div>
+                      </DataTd>
+                      <DataTd>
                     <div className="font-medium">{t.subject || "(no subject)"}</div>
-                    <div className="mt-1 text-xs text-neutral-600 line-clamp-2">{t.message || ""}</div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full border px-2 py-0.5 text-xs">{t.status || "—"}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full border px-2 py-0.5 text-xs">{t.priority || "—"}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                    <div className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">{t.message || ""}</div>
+                      </DataTd>
+                      <DataTd>
+                        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs">{t.status || "—"}</span>
+                      </DataTd>
+                      <DataTd>
+                        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs">{t.priority || "—"}</span>
+                      </DataTd>
+                      <DataTd className="text-right">
                     <div className="inline-flex gap-2">
                       <SecondaryButton
                         type="button"
@@ -162,16 +185,20 @@ export default function AdminSupportTicketsPage() {
                         Close
                       </SecondaryButton>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      </DataTd>
+                    </DataTr>
+                  ))}
+                </tbody>
+              </DataTable>
+            </DataTableShell>
+          </CardContent>
+        </Card>
       ) : null}
 
       {query.data && rows.length === 0 ? (
-        <div className="rounded-xl border bg-white p-6 text-sm text-neutral-600">No support tickets found.</div>
+        <Card>
+          <CardContent className="p-6 text-sm text-[var(--muted)]">No support tickets found.</CardContent>
+        </Card>
       ) : null}
     </div>
   );

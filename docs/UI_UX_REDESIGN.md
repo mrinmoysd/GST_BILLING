@@ -1,5 +1,13 @@
 # UI/UX Redesign (Tailwind + shadcn) — Comprehensive Audit + Implementation Roadmap
 
+Updated: 2026-03-18
+
+Phase B planning note:
+- This document remains useful as the broad redesign audit.
+- The execution-ready spec for the active Phase B work now lives in:
+  - `docs/PHASE_B_UI_MODERNIZATION_SPEC.md`
+  - `todo/planned/PHASE_B_PAGE_BACKLOG.md`
+
 This document is the working plan to modernize the **entire GST Billing** web app UI/UX using **Tailwind CSS** and **shadcn/ui** patterns.
 
 It’s grounded in the current route structure under `apps/web/src/app/(app)/c/[companyId]/**` and in the existing UI primitives in `apps/web/src/lib/ui/*`.

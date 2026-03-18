@@ -2,12 +2,15 @@
 
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useCreateInvoiceSeries,
   useDeleteInvoiceSeries,
   useInvoiceSeries,
   useUpdateInvoiceSeries,
 } from "@/lib/settings/invoiceSeriesHooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -36,37 +39,50 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
   const rows = list.data?.data.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Invoice series" subtitle="Numbering configuration." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Settings"
+        title="Invoice series"
+        subtitle="Manage numbering codes, prefixes, and activation state from a more structured configuration screen."
+      />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
-        <div className="text-sm font-medium">Create series</div>
-        <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{rows.length} series configured</Badge>
+            <Badge variant="outline">Numbering control</Badge>
+          </div>
+          <CardTitle>Create series</CardTitle>
+          <CardDescription>Add another invoice numbering stream for a business workflow or branch.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
           <TextField label="Code" value={code} onChange={setCode} placeholder="DEFAULT" />
           <TextField label="Prefix" value={prefix} onChange={setPrefix} placeholder="INV-" />
           <TextField label="Next number" value={nextNumber} onChange={setNextNumber} type="number" />
-        </div>
-        {error ? <InlineError message={error} /> : null}
-        <PrimaryButton
-          type="button"
-          disabled={create.isPending}
-          onClick={async () => {
-            setError(null);
-            if (!code.trim()) return setError("Code is required");
-            const nn = Number(nextNumber);
-            if (!Number.isFinite(nn) || nn < 1) return setError("Next number must be >= 1");
-            try {
-              await create.mutateAsync({ code: code.trim(), prefix: prefix.trim() || undefined, next_number: nn, is_active: true });
-              setCode("");
-              setNextNumber("1");
-            } catch (e: unknown) {
-              setError(getErrorMessage(e, "Failed to create"));
-            }
-          }}
-        >
-          {create.isPending ? "Creating…" : "Create"}
-        </PrimaryButton>
-      </div>
+          </div>
+          {error ? <InlineError message={error} /> : null}
+          <PrimaryButton
+            type="button"
+            disabled={create.isPending}
+            onClick={async () => {
+              setError(null);
+              if (!code.trim()) return setError("Code is required");
+              const nn = Number(nextNumber);
+              if (!Number.isFinite(nn) || nn < 1) return setError("Next number must be >= 1");
+              try {
+                await create.mutateAsync({ code: code.trim(), prefix: prefix.trim() || undefined, next_number: nn, is_active: true });
+                setCode("");
+                setNextNumber("1");
+              } catch (e: unknown) {
+                setError(getErrorMessage(e, "Failed to create"));
+              }
+            }}
+          >
+            {create.isPending ? "Creating…" : "Create"}
+          </PrimaryButton>
+        </CardContent>
+      </Card>
 
       <div className="space-y-3">
         <div className="text-sm font-medium">Series</div>
@@ -75,25 +91,31 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
         {list.data && rows.length === 0 ? <EmptyState title="No series" hint="Create one above. (DEFAULT typically exists from seed.)" /> : null}
 
         {list.data && rows.length > 0 ? (
-          <div className="rounded-xl border bg-white overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">Code</th>
-                  <th className="text-left px-4 py-3 font-medium">Prefix</th>
-                  <th className="text-left px-4 py-3 font-medium">Next</th>
-                  <th className="text-left px-4 py-3 font-medium">Active</th>
-                  <th className="text-left px-4 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((s) => (
-                  <tr key={s.id} className="border-t">
-                    <td className="px-4 py-3 font-mono text-xs">{s.code}</td>
-                    <td className="px-4 py-3">{s.prefix ?? "—"}</td>
-                    <td className="px-4 py-3">{s.nextNumber}</td>
-                    <td className="px-4 py-3">{s.isActive ? "Yes" : "No"}</td>
-                    <td className="px-4 py-3 space-x-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configured series</CardTitle>
+              <CardDescription>Review and adjust prefixes or remove unused series.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTableShell>
+                <DataTable>
+                  <DataThead>
+                    <tr>
+                      <DataTh>Code</DataTh>
+                      <DataTh>Prefix</DataTh>
+                      <DataTh>Next</DataTh>
+                      <DataTh>Active</DataTh>
+                      <DataTh>Actions</DataTh>
+                    </tr>
+                  </DataThead>
+                  <tbody>
+                    {rows.map((s) => (
+                      <DataTr key={s.id}>
+                        <DataTd className="font-mono text-xs">{s.code}</DataTd>
+                        <DataTd>{s.prefix ?? "—"}</DataTd>
+                        <DataTd>{s.nextNumber}</DataTd>
+                        <DataTd>{s.isActive ? "Yes" : "No"}</DataTd>
+                        <DataTd className="space-x-2">
                       <SecondaryButton
                         type="button"
                         disabled={update.isPending}
@@ -123,12 +145,14 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
                       >
                         Delete
                       </SecondaryButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        </DataTd>
+                      </DataTr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </DataTableShell>
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </div>

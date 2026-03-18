@@ -3,8 +3,11 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -52,10 +55,11 @@ export default function PurchasesPage({ params }: Props) {
         : 0) ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Purchases"
         title="Purchases"
-        subtitle="Create purchases, receive stock, and attach bills."
+        subtitle="Track supplier purchases, receiving status, and attached documentation in a cleaner operational list view."
         actions={
           <Link href={`/c/${companyId}/purchases/new`}>
             <SecondaryButton type="button">New purchase</SecondaryButton>
@@ -63,47 +67,60 @@ export default function PurchasesPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-          <TextField label="Search" value={q} onChange={setQ} placeholder="Supplier / notes" />
-          <div className="text-xs text-neutral-500">{total} total</div>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <TextField label="Search purchases" value={q} onChange={setQ} placeholder="Supplier / notes" />
+            <div className="flex items-center gap-2 lg:justify-end">
+              <Badge variant="secondary">{total} total</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading purchases…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load purchases")} /> : null}
 
       {!query.isLoading && !query.isError && rows.length === 0 ? (
-        <EmptyState title="No purchases" hint="Create a purchase to record stock." />
+        <EmptyState
+          title="No purchases"
+          hint="Create a purchase to record incoming stock and supplier documents."
+          action={
+            <Link href={`/c/${companyId}/purchases/new`}>
+              <SecondaryButton type="button">Create purchase</SecondaryButton>
+            </Link>
+          }
+        />
       ) : null}
 
       {rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+        <DataTableShell>
+          <DataTable>
+            <DataThead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium">ID</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Purchase date</th>
+                <DataTh>Purchase</DataTh>
+                <DataTh>Status</DataTh>
+                <DataTh>Purchase date</DataTh>
               </tr>
-            </thead>
+            </DataThead>
             <tbody>
               {rows.map((p) => (
-                <tr key={p.id} className="border-t">
-                  <td className="px-4 py-3">
-                    <Link className="underline" href={`/c/${companyId}/purchases/${p.id}`}>
+                <DataTr key={p.id}>
+                  <DataTd>
+                    <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/purchases/${p.id}`}>
                       {p.id}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">{p.status ?? "—"}</td>
-                  <td className="px-4 py-3">{p.purchaseDate ?? p.purchase_date ?? ""}</td>
-                </tr>
+                  </DataTd>
+                  <DataTd>
+                    <Badge variant="secondary">{p.status ?? "—"}</Badge>
+                  </DataTd>
+                  <DataTd>{p.purchaseDate ?? p.purchase_date ?? "—"}</DataTd>
+                </DataTr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </DataTable>
+        </DataTableShell>
       ) : null}
     </div>
   );
 }
-

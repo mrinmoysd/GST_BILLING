@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCheckoutSubscription, useSubscription } from "@/lib/settings/subscriptionHooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
@@ -31,43 +33,58 @@ export default function SubscriptionSettingsPage({ params }: Props) {
   const data = sub.data?.data.data;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Subscription" subtitle="Plan status and checkout." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Settings"
+        title="Subscription"
+        subtitle="Review current subscription state and launch the MVP checkout flow from a clearer billing surface."
+      />
 
       {sub.isLoading ? <LoadingBlock label="Loading subscription…" /> : null}
       {sub.isError ? <InlineError message={getErrorMessage(sub.error, "Failed to load subscription")} /> : null}
 
-      <div className="rounded-xl border bg-white p-4 space-y-2">
-        <div className="text-sm font-medium">Current</div>
-        <div className="text-sm text-neutral-700">
+      <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+        <CardHeader>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{data?.status ?? "No active subscription"}</Badge>
+            <Badge variant="outline">{data?.provider ?? "Provider pending"}</Badge>
+          </div>
+          <CardTitle>Current subscription</CardTitle>
+          <CardDescription>Billing state returned by the current backend integration.</CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-[var(--foreground)]">
           {data ? (
             <ul className="space-y-1">
               <li>
-                <span className="text-neutral-500">Status:</span> {data.status ?? "—"}
+                <span className="text-[var(--muted)]">Status:</span> {data.status ?? "—"}
               </li>
               <li>
-                <span className="text-neutral-500">Plan:</span> {data.plan ?? "—"}
+                <span className="text-[var(--muted)]">Plan:</span> {data.plan ?? "—"}
               </li>
               <li>
-                <span className="text-neutral-500">Provider:</span> {data.provider ?? "—"}
+                <span className="text-[var(--muted)]">Provider:</span> {data.provider ?? "—"}
               </li>
               <li>
-                <span className="text-neutral-500">Expires:</span> {data.expiresAt ?? "—"}
+                <span className="text-[var(--muted)]">Expires:</span> {data.expiresAt ?? "—"}
               </li>
             </ul>
           ) : (
-            <div className="text-neutral-600">No active subscription found.</div>
+            <div className="text-[var(--muted)]">No active subscription found.</div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
-        <div className="text-sm font-medium">Checkout (MVP)</div>
-        <div className="grid gap-4 md:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Checkout</CardTitle>
+          <CardDescription>Create an MVP checkout session or pending subscription record.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium">Provider</label>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Provider</label>
             <select
-              className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+              className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
               value={provider}
               onChange={(e) => {
                 const v = e.target.value;
@@ -81,53 +98,52 @@ export default function SubscriptionSettingsPage({ params }: Props) {
           <TextField label="Plan code" value={planCode} onChange={setPlanCode} />
           <TextField label="Success URL" value={successUrl} onChange={setSuccessUrl} />
           <TextField label="Cancel URL" value={cancelUrl} onChange={setCancelUrl} />
-        </div>
+          </div>
 
-        {error ? <InlineError message={error} /> : null}
-        {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+          {error ? <InlineError message={error} /> : null}
+          {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
 
-        <div className="flex gap-2">
-          <PrimaryButton
-            type="button"
-            disabled={checkout.isPending}
-            onClick={async () => {
-              setError(null);
-              setOk(null);
-              try {
-                const res = await checkout.mutateAsync({
-                  provider,
-                  plan_code: planCode.trim() || undefined,
-                  success_url: successUrl.trim() || undefined,
-                  cancel_url: cancelUrl.trim() || undefined,
-                });
-                const url = res.data.data.checkout_url;
-                if (url) {
-                  window.location.href = url;
-                } else {
-                  setOk(`Created pending subscription: ${res.data.data.subscription_id}`);
+          <div className="flex flex-wrap gap-2">
+            <PrimaryButton
+              type="button"
+              disabled={checkout.isPending}
+              onClick={async () => {
+                setError(null);
+                setOk(null);
+                try {
+                  const res = await checkout.mutateAsync({
+                    provider,
+                    plan_code: planCode.trim() || undefined,
+                    success_url: successUrl.trim() || undefined,
+                    cancel_url: cancelUrl.trim() || undefined,
+                  });
+                  const url = res.data.data.checkout_url;
+                  if (url) {
+                    window.location.href = url;
+                  } else {
+                    setOk(`Created pending subscription: ${res.data.data.subscription_id}`);
+                  }
+                } catch (e: unknown) {
+                  setError(getErrorMessage(e, "Checkout failed"));
                 }
-              } catch (e: unknown) {
-                setError(getErrorMessage(e, "Checkout failed"));
-              }
-            }}
-          >
-            {checkout.isPending ? "Starting…" : "Start checkout"}
-          </PrimaryButton>
+              }}
+            >
+              {checkout.isPending ? "Starting…" : "Start checkout"}
+            </PrimaryButton>
 
-          <SecondaryButton
-            type="button"
-            onClick={() => {
-              void sub.refetch();
-            }}
-          >
-            Refresh
-          </SecondaryButton>
-        </div>
+            <SecondaryButton
+              type="button"
+              onClick={() => {
+                void sub.refetch();
+              }}
+            >
+              Refresh
+            </SecondaryButton>
+          </div>
 
-        <div className="text-xs text-neutral-500">
-          Portal/manage subscription isn’t implemented yet in the backend.
-        </div>
-      </div>
+          <div className="text-xs text-[var(--muted)]">Portal and full subscription management are not implemented in the backend yet.</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

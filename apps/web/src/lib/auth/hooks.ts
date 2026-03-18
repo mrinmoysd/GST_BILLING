@@ -46,6 +46,30 @@ export function useLogin() {
   });
 }
 
+export function useForgotPassword() {
+  return useMutation({
+    mutationKey: ["auth", "forgot-password"],
+    mutationFn: async (body: { email: string }) => {
+      const res = await apiClient.post<{
+        ok: true;
+        message: string;
+        dev?: { reset_token?: string; reset_path?: string };
+      }>("/auth/forgot-password", body);
+      return res.data;
+    },
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationKey: ["auth", "reset-password"],
+    mutationFn: async (body: { token: string; password: string }) => {
+      const res = await apiClient.post<{ ok: true; message: string }>("/auth/reset-password", body);
+      return res.data;
+    },
+  });
+}
+
 export function useLogout() {
   const { clearSession } = useAuth();
   return useMutation({

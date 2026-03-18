@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -36,7 +37,7 @@ export default function LoginPage() {
       const data = await login.mutateAsync(parsed.data);
 
       const target = new URLSearchParams(window.location.search).get("next");
-      const nextPath = target || `/c/${data.user.company_id}/dashboard`;
+      const nextPath = target && target.startsWith("/") ? target : `/c/${data.user.company_id}/dashboard`;
       React.startTransition(() => {
         router.replace(nextPath);
       });
@@ -49,65 +50,61 @@ export default function LoginPage() {
   };
 
   return (
-    <main style={{ padding: 24, maxWidth: 560, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Login</h1>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,95,140,0.08),transparent_28%),var(--app-bg)] px-4 py-10 md:px-6">
+      <div className="mx-auto max-w-xl rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)] md:p-8">
+      <h1 className="text-3xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">Login</h1>
 
-      <p style={{ marginTop: 8, opacity: 0.8 }}>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
         Sign in with your email and password. Your refresh session is stored in an httpOnly cookie.
       </p>
 
-      <form onSubmit={onSubmit} style={{ marginTop: 20 }}>
-        <label style={{ display: "block", marginBottom: 12 }}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Email</div>
+      <form onSubmit={onSubmit} className="mt-6">
+        <label className="mb-4 block">
+          <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Email</div>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             autoComplete="email"
-            style={{ width: "100%", padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+            className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
           />
         </label>
 
-        <label style={{ display: "block", marginBottom: 12 }}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Password</div>
+        <label className="mb-4 block">
+          <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Password</div>
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             autoComplete="current-password"
-            style={{ width: "100%", padding: 10, border: "1px solid #ccc", borderRadius: 8 }}
+            className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
           />
         </label>
 
         {error ? (
-          <div
-            style={{
-              marginTop: 12,
-              padding: 10,
-              borderRadius: 8,
-              background: "#fee2e2",
-              color: "#7f1d1d",
-            }}
-          >
+          <div className="mt-3 rounded-2xl border border-red-200 bg-[#fff6f3] p-4 text-sm text-[#7e3128]">
             {error}
           </div>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{
-            marginTop: 16,
-            padding: "10px 14px",
-            borderRadius: 10,
-            background: "black",
-            color: "white",
-            opacity: isSubmitting ? 0.7 : 1,
-          }}
-        >
+        <button type="submit" disabled={isSubmitting} className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:opacity-70">
           {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
+
+        <div className="mt-5 text-sm text-[var(--muted)]">
+          New here?{" "}
+          <Link href="/onboarding" className="font-medium text-[var(--accent)] hover:underline">
+            Create your company
+          </Link>
+        </div>
+        <div className="mt-2 text-sm text-[var(--muted)]">
+          Forgot your password?{" "}
+          <Link href="/forgot-password" className="font-medium text-[var(--accent)] hover:underline">
+            Reset it
+          </Link>
+        </div>
       </form>
+      </div>
     </main>
   );
 }

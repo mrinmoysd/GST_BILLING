@@ -1,5 +1,6 @@
 "use client";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminQueueMetrics } from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 
@@ -15,14 +16,24 @@ export default function AdminQueuesPage() {
   const query = useAdminQueueMetrics();
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Admin — Queues" subtitle="Queue metrics (auto-refreshes)." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Admin"
+        title="Queues"
+        subtitle="Monitor background queue metrics from a clearer operational screen."
+      />
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load queue metrics")} /> : null}
       {query.data ? (
-        <div className="rounded-xl border bg-white p-4">
-          <pre className="text-xs overflow-auto">{JSON.stringify(query.data.data, null, 2)}</pre>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Queue metrics payload</CardTitle>
+            <CardDescription>Current backend metrics response. This remains generic until queue-specific cards are introduced.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

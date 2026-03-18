@@ -283,7 +283,10 @@ export function useStockAdjustment(args: { companyId: string; productId: string 
     mutationFn: async (body: { changeQty: number; note?: string }) => {
       const res = await apiClient.post<{ ok: true }>(
         companyPath(companyId, `/products/${productId}/stock-adjustment`),
-        body,
+        {
+          change_qty: body.changeQty,
+          reason: body.note,
+        },
       );
       return res;
     },
@@ -295,20 +298,48 @@ export function useStockAdjustment(args: { companyId: string; productId: string 
   });
 }
 
+export function useInventoryAdjustment(args: { companyId: string }) {
+  const qc = useQueryClient();
+  const { companyId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "inventory", "stock-adjustment"],
+    mutationFn: async (body: { productId: string; changeQty: number; note?: string }) => {
+      const res = await apiClient.post<{ ok: true }>(
+        companyPath(companyId, `/products/${body.productId}/stock-adjustment`),
+        {
+          change_qty: body.changeQty,
+          reason: body.note,
+        },
+      );
+      return res;
+    },
+    onSuccess: async (_res, vars) => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "products"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "products", vars.productId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "stock-movements"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "inventory"] });
+    },
+  });
+}
+
 export function useStockMovements(args: {
   companyId: string;
   productId?: string;
+  from?: string;
+  to?: string;
   page?: number;
   limit?: number;
 }) {
-  const { companyId, productId, page = 1, limit = 20 } = args;
+  const { companyId, productId, from, to, page = 1, limit = 20 } = args;
   return useQuery({
-    queryKey: ["companies", companyId, "stock-movements", { productId, page, limit }],
+    queryKey: ["companies", companyId, "stock-movements", { productId, from, to, page, limit }],
     queryFn: async () => {
       const qs = new URLSearchParams();
       qs.set("page", String(page));
       qs.set("limit", String(limit));
       if (productId) qs.set("product_id", productId);
+      if (from) qs.set("from", from);
+      if (to) qs.set("to", to);
       const res = await apiClient.get<{
         data: Array<{
           id: string;

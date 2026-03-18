@@ -49,3 +49,38 @@ export function useUpdateCompany(companyId: string) {
     },
   });
 }
+
+export function useVerifyCompanyGstin(companyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["companies", companyId, "company", "verify-gstin"],
+    mutationFn: async () =>
+      apiClient.post<{
+        ok: true;
+        data: {
+          status: string;
+          requested_at: string;
+          gstin: string | null;
+          note: string;
+        };
+      }>(companyPath(companyId, "/verify-gstin"), {}),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });
+    },
+  });
+}
+
+export function useUploadCompanyLogo(companyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["companies", companyId, "company", "upload-logo"],
+    mutationFn: async (file: File) => {
+      const form = new FormData();
+      form.set("file", file);
+      return apiClient.postForm<{ ok: true; data: Company }>(companyPath(companyId, "/logo"), form);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });
+    },
+  });
+}

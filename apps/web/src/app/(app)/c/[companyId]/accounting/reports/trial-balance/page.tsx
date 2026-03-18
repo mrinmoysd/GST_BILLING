@@ -2,7 +2,9 @@
 
 import * as React from "react";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTrialBalance } from "@/lib/billing/hooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
 
@@ -24,38 +26,56 @@ export default function TrialBalancePage({ params }: Props) {
   const rows = (query.data?.data as unknown as Array<{ ledger_name?: string; debit?: string; credit?: string }>) ?? [];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Trial balance" subtitle="Report view." />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Accounting"
+        title="Trial balance"
+        subtitle="Review ledger balances at a point in time from a cleaner finance report layout."
+      />
 
-      <div className="rounded-xl border bg-white p-4">
-  <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
-      </div>
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>As-of date</CardTitle>
+          <CardDescription>Set the reporting date for the current trial balance snapshot.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading trial balance…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load trial balance")} /> : null}
       {query.data && rows.length === 0 ? <EmptyState title="No data" hint="Try a different date range." /> : null}
 
       {query.data && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Ledger</th>
-                <th className="text-right px-4 py-3 font-medium">Debit</th>
-                <th className="text-right px-4 py-3 font-medium">Credit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, idx) => (
-                <tr key={idx} className="border-t">
-                  <td className="px-4 py-3">{r.ledger_name ?? "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.debit ?? "0"}</td>
-                  <td className="px-4 py-3 text-right">{r.credit ?? "0"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Balances</CardTitle>
+            <CardDescription>Debit and credit balances by ledger.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTableShell>
+              <DataTable>
+                <DataThead>
+                  <tr>
+                    <DataTh>Ledger</DataTh>
+                    <DataTh className="text-right">Debit</DataTh>
+                    <DataTh className="text-right">Credit</DataTh>
+                  </tr>
+                </DataThead>
+                <tbody>
+                  {rows.map((r, idx) => (
+                    <DataTr key={`${r.ledger_name ?? "ledger"}-${idx}`}>
+                      <DataTd>{r.ledger_name ?? "—"}</DataTd>
+                      <DataTd className="text-right">{r.debit ?? "0"}</DataTd>
+                      <DataTd className="text-right">{r.credit ?? "0"}</DataTd>
+                    </DataTr>
+                  ))}
+                </tbody>
+              </DataTable>
+            </DataTableShell>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

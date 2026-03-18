@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreatePurchase } from "@/lib/billing/hooks";
 import { useProducts, useSuppliers } from "@/lib/masters/hooks";
 import { InlineError, PageHeader } from "@/lib/ui/state";
@@ -52,10 +54,11 @@ export default function NewPurchasePage({ params }: Props) {
   }, [lines]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Purchases"
         title="New purchase"
-        subtitle="Create a draft purchase."
+        subtitle="Capture supplier purchases with a cleaner item-entry layout and a live draft summary."
         actions={
           <Link className="text-sm underline" href={`/c/${companyId}/purchases`}>
             Back
@@ -64,7 +67,7 @@ export default function NewPurchasePage({ params }: Props) {
       />
 
       <form
-        className="rounded-xl border bg-white p-4 space-y-4 max-w-2xl"
+        className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]"
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
@@ -108,38 +111,51 @@ export default function NewPurchasePage({ params }: Props) {
           }
         }}
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium">Supplier</label>
-            <select
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-              value={supplierId}
-              onChange={(e) => setSupplierId(e.target.value)}
-            >
-              <option value="">Select…</option>
-              {(Array.isArray(suppliers.data?.data) ? suppliers.data.data : []).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Product</label>
-            <div className="mt-2 text-xs text-neutral-500">Use the lines grid below to add products.</div>
-          </div>
-        </div>
+        <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Badge variant="secondary" className="w-fit">Draft workflow</Badge>
+            <CardTitle>Purchase builder</CardTitle>
+            <CardDescription>Select the supplier, add purchased products, and review the draft before saving it.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Supplier</label>
+              <select
+                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+                value={supplierId}
+                onChange={(e) => setSupplierId(e.target.value)}
+              >
+                <option value="">Select…</option>
+                {(Array.isArray(suppliers.data?.data) ? suppliers.data.data : []).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
+              Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-lg border overflow-hidden">
+        <Card>
+          <CardHeader>
+            <CardTitle>Line items</CardTitle>
+            <CardDescription>Capture the purchased products, quantities, and unit costs before saving the draft.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+            <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
               <tr>
-                <th className="text-left px-3 py-2 font-medium">Product</th>
-                <th className="text-right px-3 py-2 font-medium">Qty</th>
-                <th className="text-right px-3 py-2 font-medium">Unit cost</th>
-                <th className="text-right px-3 py-2 font-medium">Discount</th>
-                <th className="text-right px-3 py-2 font-medium">Line total</th>
-                <th className="text-right px-3 py-2 font-medium"> </th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Product</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.12em]">Qty</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.12em]">Unit cost</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.12em]">Discount</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.12em]">Line total</th>
+                <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.12em]"> </th>
               </tr>
             </thead>
             <tbody>
@@ -149,10 +165,10 @@ export default function NewPurchasePage({ params }: Props) {
                 const disc = Number(l.discount || 0);
                 const lt = Math.max(0, q * uc - disc);
                 return (
-                  <tr key={l.id} className="border-t">
+                  <tr key={l.id} className="border-t border-[var(--border)]">
                     <td className="px-3 py-2">
                       <select
-                        className="w-full rounded-md border px-2 py-1.5 text-sm"
+                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
                         value={l.productId}
                         onChange={(e) => {
                           const next = e.target.value;
@@ -180,11 +196,11 @@ export default function NewPurchasePage({ params }: Props) {
                           </option>
                         ))}
                       </select>
-                      <div className="text-xs text-neutral-500 mt-1">Line {idx + 1}</div>
+                      <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <input
-                        className="w-24 rounded-md border px-2 py-1.5 text-sm text-right"
+                        className="w-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-sm text-right shadow-sm"
                         value={l.quantity}
                         onChange={(e) =>
                           setLines((prev) => prev.map((x) => (x.id === l.id ? { ...x, quantity: e.target.value } : x)))
@@ -193,7 +209,7 @@ export default function NewPurchasePage({ params }: Props) {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <input
-                        className="w-28 rounded-md border px-2 py-1.5 text-sm text-right"
+                        className="w-28 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-sm text-right shadow-sm"
                         value={l.unitCost}
                         onChange={(e) =>
                           setLines((prev) => prev.map((x) => (x.id === l.id ? { ...x, unitCost: e.target.value } : x)))
@@ -202,7 +218,7 @@ export default function NewPurchasePage({ params }: Props) {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <input
-                        className="w-28 rounded-md border px-2 py-1.5 text-sm text-right"
+                        className="w-28 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-sm text-right shadow-sm"
                         value={l.discount ?? ""}
                         onChange={(e) =>
                           setLines((prev) => prev.map((x) => (x.id === l.id ? { ...x, discount: e.target.value } : x)))
@@ -213,7 +229,7 @@ export default function NewPurchasePage({ params }: Props) {
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
-                        className="text-sm underline disabled:opacity-50"
+                        className="text-sm font-medium text-[var(--danger)] underline disabled:opacity-50"
                         disabled={lines.length <= 1}
                         onClick={() => setLines((prev) => prev.filter((x) => x.id !== l.id))}
                       >
@@ -239,8 +255,8 @@ export default function NewPurchasePage({ params }: Props) {
           >
             Add line
           </SecondaryButton>
-          <div className="ml-auto text-sm">
-            <span className="text-neutral-500">Sub-total:</span> <span className="font-medium">{subTotal.toFixed(2)}</span>
+          <div className="ml-auto text-sm text-[var(--muted)]">
+            Draft lines: <span className="font-semibold text-[var(--foreground)]">{lines.length}</span>
           </div>
         </div>
 
@@ -248,14 +264,34 @@ export default function NewPurchasePage({ params }: Props) {
         <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
 
         {error ? <InlineError message={error} /> : null}
+          </CardContent>
+        </Card>
+        </div>
 
-        <div className="flex gap-3">
-          <PrimaryButton type="submit" disabled={create.isPending}>
-            {create.isPending ? "Creating…" : "Create draft"}
-          </PrimaryButton>
-          <SecondaryButton type="button" onClick={() => router.back()}>
-            Cancel
-          </SecondaryButton>
+        <div className="space-y-6">
+          <Card className="sticky top-24">
+            <CardHeader>
+              <CardTitle>Draft summary</CardTitle>
+              <CardDescription>Live cost summary for the current purchase draft.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Sub-total</div>
+                <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{subTotal.toFixed(2)}</div>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--muted)]">
+                Draft purchases can be received later on the detail page. This summary block will expand further once richer totals and taxes are added.
+              </div>
+              <div className="space-y-3 pt-2">
+                <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
+                  {create.isPending ? "Creating…" : "Create draft"}
+                </PrimaryButton>
+                <SecondaryButton type="button" className="w-full" onClick={() => router.back()}>
+                  Cancel
+                </SecondaryButton>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </form>
     </div>

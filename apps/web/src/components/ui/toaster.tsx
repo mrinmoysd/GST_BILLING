@@ -9,7 +9,7 @@ export function Toaster() {
       closeButton
       position="top-right"
       toastOptions={{
-        className: "border border-neutral-200 bg-white text-neutral-950",
+        className: "border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-soft)]",
       }}
     />
   );

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDeleteProduct, useProduct, useStockAdjustment, useUpdateProduct } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
@@ -48,14 +50,11 @@ export default function ProductDetailPage({ params }: Props) {
   }, [query.data]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Masters"
         title="Product"
-        subtitle={
-          <span>
-            <code>{resolved.productId}</code>
-          </span>
-        }
+        subtitle="Review product metadata and stock controls from a more structured detail view."
         actions={
           <div className="flex gap-3">
             <Link className="text-sm underline" href={`/c/${resolved.companyId}/masters/products`}>
@@ -77,11 +76,42 @@ export default function ProductDetailPage({ params }: Props) {
       ) : null}
       {query.data ? (
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border bg-white p-4 space-y-4">
-            <div className="text-lg font-semibold">{query.data.data.name}</div>
+          <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+            <CardHeader>
+              <Badge variant="secondary" className="w-fit">Catalog profile</Badge>
+              <CardTitle>{query.data.data.name}</CardTitle>
+              <CardDescription>Product id: <code>{resolved.productId}</code></CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">SKU</div>
+                  <div className="mt-2 text-sm font-medium">{query.data.data.sku ?? "Not set"}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">HSN</div>
+                  <div className="mt-2 text-sm font-medium">{query.data.data.hsn ?? "Not set"}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Current stock</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{query.data.data.stock ?? "—"}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax rate</div>
+                  <div className="mt-2 text-sm font-medium">{query.data.data.taxRate ?? "—"}%</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Edit product</CardTitle>
+              <CardDescription>Update product pricing, GST rate, and reorder settings.</CardDescription>
+            </CardHeader>
+            <CardContent>
             <form
-              className="space-y-3"
+              className="space-y-4"
               onSubmit={async (e) => {
                 e.preventDefault();
                 setFormError(null);
@@ -99,23 +129,25 @@ export default function ProductDetailPage({ params }: Props) {
                 }
               }}
             >
-              <TextField label="Name" value={name} onChange={setName} required />
-              <TextField label="SKU" value={sku} onChange={setSku} />
-              <TextField label="HSN" value={hsn} onChange={setHsn} />
-              <TextField label="Price" value={price} onChange={setPrice} type="number" />
-              <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
-              <TextField
-                label="Reorder level"
-                value={reorderLevel}
-                onChange={setReorderLevel}
-                type="number"
-              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <TextField label="Name" value={name} onChange={setName} required />
+                <TextField label="SKU" value={sku} onChange={setSku} />
+                <TextField label="HSN" value={hsn} onChange={setHsn} />
+                <TextField label="Price" value={price} onChange={setPrice} type="number" />
+                <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
+                <TextField
+                  label="Reorder level"
+                  value={reorderLevel}
+                  onChange={setReorderLevel}
+                  type="number"
+                />
+              </div>
 
               {formError ? <InlineError message={formError} /> : null}
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <PrimaryButton type="submit" disabled={update.isPending}>
-                  {update.isPending ? "Saving…" : "Save"}
+                  {update.isPending ? "Saving…" : "Save changes"}
                 </PrimaryButton>
                 <SecondaryButton
                   type="button"
@@ -136,22 +168,20 @@ export default function ProductDetailPage({ params }: Props) {
                 </SecondaryButton>
               </div>
             </form>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border bg-white p-4 space-y-4">
-            <div>
-              <div className="text-sm text-neutral-600">Current stock</div>
-              <div className="text-2xl font-semibold">{query.data.data.stock ?? "—"}</div>
-            </div>
-
-            <div className="border-t pt-4">
-              <div className="font-medium">Stock adjustment</div>
-              <p className="text-sm text-neutral-500 mt-1">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Stock adjustment</CardTitle>
+              <CardDescription>
                 Add or remove stock for this product. Use negative values to reduce stock.
-              </p>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
 
               <form
-                className="space-y-3 mt-3"
+                className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)_auto]"
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setFormError(null);
@@ -171,13 +201,14 @@ export default function ProductDetailPage({ params }: Props) {
               >
                 <TextField label="Change quantity" value={changeQty} onChange={setChangeQty} type="number" />
                 <TextField label="Note" value={note} onChange={setNote} placeholder="Optional" />
-
-                <PrimaryButton type="submit" disabled={adjust.isPending}>
-                  {adjust.isPending ? "Applying…" : "Apply adjustment"}
-                </PrimaryButton>
+                <div className="flex items-end">
+                  <PrimaryButton type="submit" disabled={adjust.isPending}>
+                    {adjust.isPending ? "Applying…" : "Apply adjustment"}
+                  </PrimaryButton>
+                </div>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       ) : null}
       {!query.isLoading && !query.isError && !query.data ? <EmptyState title="Not found" /> : null}

@@ -30,21 +30,21 @@ export default function CompanyLayout({ params, children }: Props) {
   }, [companyId, router, session.company?.id]);
 
   return (
-    <div className="min-h-dvh bg-neutral-50">
+    <div className="min-h-dvh text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
-        <SheetContent side="left" className="md:hidden">
-          <div className="font-semibold text-lg">GST Billing</div>
-          <div className="mt-1 text-xs text-neutral-500 break-all">Company: {session.company?.name ?? companyId}</div>
+        <SheetContent side="left" className="border-[var(--border)] bg-[var(--surface-elevated)] md:hidden">
+          <div className="font-semibold text-lg tracking-[-0.02em]">GST Billing</div>
+          <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
           <CompanyNav companyId={companyId} variant="sheet" onNavigate={() => setNavOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      <div className="md:grid md:grid-cols-[280px_1fr]">
-        <aside className="hidden md:block border-r bg-white">
-          <div className="p-4">
-            <div className="font-semibold text-lg">GST Billing</div>
-            <div className="mt-1 text-xs text-neutral-500 break-all">Company: {session.company?.name ?? companyId}</div>
-            <div className="mt-4">
+      <div className="md:grid md:grid-cols-[296px_1fr]">
+        <aside className="hidden border-r border-[var(--border)] bg-[rgba(255,253,248,0.76)] backdrop-blur md:block">
+          <div className="sticky top-0 p-5">
+            <div className="font-semibold text-xl tracking-[-0.03em]">GST Billing</div>
+            <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
+            <div className="mt-6">
               <CompanyNav companyId={companyId} variant="sidebar" />
             </div>
           </div>
@@ -52,7 +52,9 @@ export default function CompanyLayout({ params, children }: Props) {
 
         <div className="min-w-0">
           <CompanyHeader companyId={companyId} onOpenNav={() => setNavOpen(true)} />
-          <main className="p-4 md:p-6">{children}</main>
+          <main className="px-4 py-5 md:px-8 md:py-8">
+            <div className="mx-auto w-full max-w-[1280px]">{children}</div>
+          </main>
         </div>
       </div>
     </div>

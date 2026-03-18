@@ -23,6 +23,7 @@ import { PlatformAdminModule } from './admin/platform-admin.module';
 import { CompaniesModule } from './companies/companies.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 
 @Module({
   imports: [
@@ -49,9 +50,10 @@ import { CategoriesModule } from './categories/categories.module';
     NotificationsModule,
     FilesModule,
     BillingModule,
-  CompaniesModule,
-  UsersModule,
-  CategoriesModule,
+    CompaniesModule,
+    UsersModule,
+    CategoriesModule,
+    OnboardingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,7 +6,7 @@ import * as React from "react";
 import { useJournal } from "@/lib/billing/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 
-type Props = { params: { companyId: string; journalId: string } };
+type Props = { params: Promise<{ companyId: string; journalId: string }> };
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -17,7 +17,8 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 export default function JournalDetailPage({ params }: Props) {
-  const query = useJournal({ companyId: params.companyId, journalId: params.journalId });
+  const { companyId, journalId } = React.use(params);
+  const query = useJournal({ companyId, journalId });
 
   const data = query.data?.data as unknown as {
     id?: string;
@@ -40,7 +41,7 @@ export default function JournalDetailPage({ params }: Props) {
       <PageHeader title="Journal" subtitle="Drill-down view." />
 
       <div className="text-sm">
-        <Link className="text-blue-700 hover:underline" href={`/c/${params.companyId}/accounting/journals`}>
+        <Link className="text-blue-700 hover:underline" href={`/c/${companyId}/accounting/journals`}>
           ← Back to journals
         </Link>
       </div>
@@ -53,7 +54,7 @@ export default function JournalDetailPage({ params }: Props) {
           <div className="grid gap-2 md:grid-cols-2">
             <div>
               <div className="text-sm text-neutral-600">Journal ID</div>
-              <div className="font-mono text-sm break-all">{data?.id ?? params.journalId}</div>
+              <div className="font-mono text-sm break-all">{data?.id ?? journalId}</div>
             </div>
             <div>
               <div className="text-sm text-neutral-600">Date</div>

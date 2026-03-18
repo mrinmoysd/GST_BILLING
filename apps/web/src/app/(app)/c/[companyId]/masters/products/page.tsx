@@ -3,6 +3,9 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { useProducts } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
@@ -25,10 +28,11 @@ export default function ProductsPage({ params }: Props) {
   const total = (query.data?.meta as { total?: number } | undefined)?.total ?? rows.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Masters"
         title="Products"
-        subtitle="Create products and track stock."
+        subtitle="Search products, inspect stock positions, and keep your catalog ready for billing."
         actions={
           <Link href={`/c/${companyId}/masters/products/new`}>
             <SecondaryButton type="button">New product</SecondaryButton>
@@ -36,12 +40,16 @@ export default function ProductsPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-          <TextField label="Search" value={q} onChange={setQ} placeholder="Name / SKU / HSN" />
-          <div className="text-xs text-neutral-500">{total} total</div>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <TextField label="Search products" value={q} onChange={setQ} placeholder="Name / SKU / HSN" />
+            <div className="flex items-center gap-2 lg:justify-end">
+              <Badge variant="secondary">{total} total</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading products…" /> : null}
       {query.isError ? (
@@ -49,39 +57,47 @@ export default function ProductsPage({ params }: Props) {
       ) : null}
 
   {!query.isLoading && !query.isError && rows.length === 0 ? (
-        <EmptyState title="No products yet" hint="Create products to build invoices and manage stock." />
+        <EmptyState
+          title="No products yet"
+          hint="Create products to build invoices, record purchases, and monitor stock."
+          action={
+            <Link href={`/c/${companyId}/masters/products/new`}>
+              <SecondaryButton type="button">Create product</SecondaryButton>
+            </Link>
+          }
+        />
       ) : null}
 
   {rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+        <DataTableShell>
+          <DataTable>
+            <DataThead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium">SKU</th>
-                <th className="text-left px-4 py-3 font-medium">HSN</th>
-                <th className="text-left px-4 py-3 font-medium">Stock</th>
+                <DataTh>Name</DataTh>
+                <DataTh>SKU</DataTh>
+                <DataTh>HSN</DataTh>
+                <DataTh className="text-right">Stock</DataTh>
               </tr>
-            </thead>
+            </DataThead>
             <tbody>
               {rows.map((p) => (
-                <tr key={p.id} className="border-t">
-                  <td className="px-4 py-3">
+                <DataTr key={p.id}>
+                  <DataTd>
                     <Link
-                      className="underline"
+                      className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
                       href={`/c/${companyId}/masters/products/${p.id}`}
                     >
                       {p.name}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">{p.sku ?? "—"}</td>
-                  <td className="px-4 py-3">{p.hsn ?? "—"}</td>
-                  <td className="px-4 py-3">{p.stock ?? ""}</td>
-                </tr>
+                  </DataTd>
+                  <DataTd>{p.sku ?? "—"}</DataTd>
+                  <DataTd>{p.hsn ?? "—"}</DataTd>
+                  <DataTd className="text-right">{p.stock ?? "—"}</DataTd>
+                </DataTr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </DataTable>
+        </DataTableShell>
       ) : null}
     </div>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import * as React from "react";
+
 import { useStockMovements } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 
@@ -11,14 +13,15 @@ function getErrorMessage(err: unknown, fallback: string) {
   return fallback;
 }
 
-type Props = { params: { companyId: string; productId: string } };
+type Props = { params: Promise<{ companyId: string; productId: string }> };
 
 export default function ProductStockMovementsPage({ params }: Props) {
-  const query = useStockMovements({ companyId: params.companyId, productId: params.productId });
+  const { companyId, productId } = React.use(params);
+  const query = useStockMovements({ companyId, productId });
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Stock movements" subtitle={<code>{params.productId}</code>} />
+      <PageHeader title="Stock movements" subtitle={<code>{productId}</code>} />
 
       {query.isLoading ? <LoadingBlock label="Loading movements…" /> : null}
       {query.isError ? (

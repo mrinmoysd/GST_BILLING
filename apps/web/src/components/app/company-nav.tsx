@@ -10,6 +10,7 @@ import {
   FileText,
   LayoutDashboard,
   Package,
+  Wallet,
   Receipt,
   Settings,
   ShoppingCart,
@@ -33,6 +34,7 @@ const nav: NavItem[] = [
   { href: "masters/products", label: "Products", icon: Package },
   { href: "sales/invoices", label: "Invoices", icon: Receipt },
   { href: "purchases", label: "Purchases", icon: FileText },
+  { href: "payments", label: "Payments", icon: Wallet },
   { href: "inventory", label: "Inventory", icon: Boxes },
   { href: "accounting", label: "Accounting", icon: BookOpen },
   { href: "reports", label: "Reports", icon: BarChart3 },
@@ -47,7 +49,7 @@ export function CompanyNav(props: {
   const pathname = usePathname();
 
   return (
-    <nav className={cn("space-y-1", props.variant === "sheet" && "mt-3")}>
+    <nav className={cn("space-y-1.5", props.variant === "sheet" && "mt-4")}>
       {nav.map((i) => {
         const fullHref = `/c/${props.companyId}/${i.href}`;
         const active = pathname === fullHref || pathname.startsWith(fullHref + "/");
@@ -58,11 +60,20 @@ export function CompanyNav(props: {
             href={fullHref}
             onClick={props.onNavigate}
             className={cn(
-              "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-neutral-100",
-              active && "bg-neutral-100 font-medium",
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--muted-strong)] hover:bg-[var(--surface-muted)]",
+              active && "bg-[var(--surface-muted)] font-semibold text-[var(--foreground)] shadow-sm",
             )}
           >
-            <Icon className="h-4 w-4 text-neutral-600" />
+            <span
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent transition-colors",
+                active
+                  ? "border-[var(--border)] bg-[var(--surface)] text-[var(--accent)]"
+                  : "text-[var(--muted)] group-hover:bg-[var(--surface)] group-hover:text-[var(--foreground)]",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+            </span>
             {i.label}
           </Link>
         );

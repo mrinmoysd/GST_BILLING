@@ -8,7 +8,7 @@ import { companyPath } from "@/lib/api/companyRoutes";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
-type Props = { params: { companyId: string; customerId: string } };
+type Props = { params: Promise<{ companyId: string; customerId: string }> };
 
 type LedgerRow = {
   date: string;
@@ -39,6 +39,7 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 export default function CustomerLedgerPage({ params }: Props) {
+  const { companyId, customerId } = React.use(params);
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
   const [page, setPage] = React.useState(1);
@@ -60,8 +61,8 @@ export default function CustomerLedgerPage({ params }: Props) {
 
       const res = await apiClient.get<LedgerResp>(
         companyPath(
-          params.companyId,
-          `/customers/${params.customerId}/ledger?${qs.toString()}`,
+          companyId,
+          `/customers/${customerId}/ledger?${qs.toString()}`,
         ),
       );
   setData(res.data.data);
@@ -89,7 +90,7 @@ export default function CustomerLedgerPage({ params }: Props) {
         title="Customer ledger"
         subtitle={
           <span>
-            <code>{params.customerId}</code>
+            <code>{customerId}</code>
             {data ? (
               <span className="ml-3 text-sm text-neutral-500">
                 Opening: {data.opening_balance} · Closing: {data.closing_balance}
@@ -101,7 +102,7 @@ export default function CustomerLedgerPage({ params }: Props) {
           <div className="flex gap-3">
             <Link
               className="text-sm underline"
-              href={`/c/${params.companyId}/masters/customers/${params.customerId}`}
+              href={`/c/${companyId}/masters/customers/${customerId}`}
             >
               Back
             </Link>

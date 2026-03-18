@@ -17,7 +17,9 @@ import {
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAccessAuthGuard } from './guards/jwt-access-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 
@@ -82,6 +84,20 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async me(@Req() req: any) {
     return this.authService.me(req.user);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  @ApiOkResponse({ description: 'OK' })
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body);
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @ApiOkResponse({ description: 'OK' })
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
   }
 
   @Post('logout')

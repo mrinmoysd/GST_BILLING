@@ -1,5 +1,19 @@
 # FE-09 — Settings (Status)
 
+## Phase A note
+
+This completion doc is historically accurate for its original scope, but the deferred section is now outdated.
+
+Later implementation added:
+- company settings UI
+- invoice series UI
+- users UI
+- subscription UI
+
+For current truth, see:
+- `docs/CURRENT_IMPLEMENTATION_STATE.md`
+- `docs/GAP_ANALYSIS_AND_EXECUTION_PLAN.md`
+
 ## Scope (from plan)
 - Company settings
 - Invoice settings (series)
@@ -29,10 +43,7 @@
   - `POST /api/companies/:companyId/notifications/test`
 
 ## Deferred (blocked by missing APIs in repo)
-- Company profile settings UI
-- Invoice series/settings UI
-- Users/roles UI
-- Subscription/checkout UI
+- Historical note: this deferred list has been superseded by later implementation.
 
 ## Quality gates
 - `apps/web` lint: PASS

@@ -187,6 +187,31 @@ export function useRegenerateInvoicePdf(args: { companyId: string; invoiceId: st
   });
 }
 
+export function useJob(args: { companyId: string; jobId?: string; enabled?: boolean }) {
+  const { companyId, jobId, enabled = true } = args;
+  return useQuery({
+    enabled: enabled && Boolean(jobId),
+    queryKey: ["companies", companyId, "jobs", jobId],
+    queryFn: async () => {
+      return apiClient.get<{
+        data: {
+          id: string;
+          name: string;
+          state: "queued" | "running" | "succeeded" | "failed" | string;
+          created_at: string | null;
+          started_at: string | null;
+          finished_at: string | null;
+          failed_reason: string | null;
+        };
+      }>(companyPath(companyId, `/jobs/${jobId}`));
+    },
+    refetchInterval: (query) => {
+      const state = query.state.data?.data.data.state;
+      return state === "succeeded" || state === "failed" ? false : 2000;
+    },
+  });
+}
+
 export function invoicePdfUrl(companyId: string, invoiceId: string) {
   return apiClient.resolveUrl(companyPath(companyId, `/invoices/${invoiceId}/pdf`));
 }

@@ -2,7 +2,9 @@
 
 import * as React from "react";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOutstandingInvoices } from "@/lib/reports/hooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
 
@@ -24,38 +26,56 @@ export default function OutstandingInvoicesPage({ params }: Props) {
   const rows = (query.data?.data as unknown as { data?: Array<{ invoice_id?: string; customer_name?: string; amount_due?: string }> })?.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Outstanding invoices" subtitle="Report" />
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Reports"
+        title="Outstanding invoices"
+        subtitle="Surface receivables and overdue exposure from a cleaner operational report layout."
+      />
 
-      <div className="rounded-xl border bg-white p-4 max-w-xl">
-        <TextField label="Search" value={q} onChange={setQ} placeholder="Customer / invoice" />
-      </div>
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Search by invoice identifier or customer name.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TextField label="Search" value={q} onChange={setQ} placeholder="Customer / invoice" />
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load report")} /> : null}
       {query.data && rows.length === 0 ? <EmptyState title="No results" hint="Try a different query." /> : null}
 
       {query.data && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Invoice</th>
-                <th className="text-left px-4 py-3 font-medium">Customer</th>
-                <th className="text-right px-4 py-3 font-medium">Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, idx) => (
-                <tr key={idx} className="border-t">
-                  <td className="px-4 py-3">{r.invoice_id ?? "—"}</td>
-                  <td className="px-4 py-3">{r.customer_name ?? "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.amount_due ?? "0"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Receivables</CardTitle>
+            <CardDescription>Current invoice balances that remain open.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTableShell>
+              <DataTable>
+                <DataThead>
+                  <tr>
+                    <DataTh>Invoice</DataTh>
+                    <DataTh>Customer</DataTh>
+                    <DataTh className="text-right">Due</DataTh>
+                  </tr>
+                </DataThead>
+                <tbody>
+                  {rows.map((r, idx) => (
+                    <DataTr key={`${r.invoice_id ?? "row"}-${idx}`}>
+                      <DataTd>{r.invoice_id ?? "—"}</DataTd>
+                      <DataTd>{r.customer_name ?? "—"}</DataTd>
+                      <DataTd className="text-right">{r.amount_due ?? "0"}</DataTd>
+                    </DataTr>
+                  ))}
+                </tbody>
+              </DataTable>
+            </DataTableShell>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

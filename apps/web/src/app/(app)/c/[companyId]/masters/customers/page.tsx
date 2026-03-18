@@ -3,6 +3,9 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { useCustomers } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
@@ -32,10 +35,11 @@ export default function CustomersPage({ params }: Props) {
     (query.data?.meta as { total?: number } | undefined)?.total ?? customers.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Masters"
         title="Customers"
-        subtitle="Search, create, and manage customers."
+        subtitle="Search, create, and manage your customer directory with a cleaner, operational list view."
         actions={
           <Link href={`/c/${companyId}/masters/customers/new`}>
             <SecondaryButton type="button">New customer</SecondaryButton>
@@ -43,12 +47,16 @@ export default function CustomersPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-          <TextField label="Search" value={q} onChange={setQ} placeholder="Name / email / phone" />
-          <div className="text-xs text-neutral-500">{total} total</div>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <TextField label="Search customers" value={q} onChange={setQ} placeholder="Name / email / phone" />
+            <div className="flex items-center gap-2 lg:justify-end">
+              <Badge variant="secondary">{total} total</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading customers…" /> : null}
       {query.isError ? (
@@ -56,37 +64,45 @@ export default function CustomersPage({ params }: Props) {
       ) : null}
 
   {!query.isLoading && !query.isError && customers.length === 0 ? (
-        <EmptyState title="No customers yet" hint="Create your first customer to start invoicing." />
+        <EmptyState
+          title="No customers yet"
+          hint="Create your first customer to start invoicing and tracking receivables."
+          action={
+            <Link href={`/c/${companyId}/masters/customers/new`}>
+              <SecondaryButton type="button">Create customer</SecondaryButton>
+            </Link>
+          }
+        />
       ) : null}
 
   {customers.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+        <DataTableShell>
+          <DataTable>
+            <DataThead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium">Email</th>
-                <th className="text-left px-4 py-3 font-medium">Phone</th>
+                <DataTh>Name</DataTh>
+                <DataTh>Email</DataTh>
+                <DataTh>Phone</DataTh>
               </tr>
-            </thead>
+            </DataThead>
             <tbody>
               {customers.map((c) => (
-                <tr key={c.id} className="border-t">
-                  <td className="px-4 py-3">
+                <DataTr key={c.id}>
+                  <DataTd>
                     <Link
-                      className="underline"
+                      className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
                       href={`/c/${companyId}/masters/customers/${c.id}`}
                     >
                       {c.name}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">{c.email ?? "—"}</td>
-                  <td className="px-4 py-3">{c.phone ?? "—"}</td>
-                </tr>
+                  </DataTd>
+                  <DataTd>{c.email ?? "—"}</DataTd>
+                  <DataTd>{c.phone ?? "—"}</DataTd>
+                </DataTr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </DataTable>
+        </DataTableShell>
       ) : null}
     </div>
   );

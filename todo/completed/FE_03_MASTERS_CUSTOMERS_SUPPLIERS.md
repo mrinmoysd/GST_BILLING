@@ -2,6 +2,19 @@
 
 Date: 2026-03-07
 
+## Phase A note
+
+This completion doc is historically accurate for 2026-03-07, but parts of it are now outdated.
+
+Later implementation added:
+- customer update/delete UI
+- customer ledger UI and backend endpoint
+- supplier ledger UI and backend endpoint
+
+For current truth, see:
+- `docs/CURRENT_IMPLEMENTATION_STATE.md`
+- `docs/GAP_ANALYSIS_AND_EXECUTION_PLAN.md`
+
 ## Scope delivered
 
 ### Customers
@@ -18,10 +31,7 @@ Date: 2026-03-07
 - ✅ Detail page: profile view + **inline edit** (update) + **delete**.
 
 ### Ledger / Purchases / Invoices tabs
-- ⚠️ Ledger pages exist as placeholders:
-  - `/(app)/c/[companyId]/masters/customers/[customerId]/ledger`
-  - `/(app)/c/[companyId]/masters/suppliers/[supplierId]/ledger`
-- Reason: ledger endpoints were not found during backend scan, so UI is intentionally stubbed.
+- Historical note: the ledger placeholder statement below is no longer current and has been superseded by later work.
 
 ## Key screens
 - `apps/web/src/app/(app)/c/[companyId]/masters/customers/page.tsx`
@@ -41,6 +51,4 @@ Date: 2026-03-07
 - ✅ `apps/web` build
 
 ## Notes / follow-ups
-- Add customer update/delete UI on `customers/[customerId]` page to match supplier parity.
-- Add pagination UI controls (API already supports `page`/`limit`).
-- Replace ledger placeholders once backend ledger APIs exist.
+- Historical follow-ups above are partially resolved by later work.

@@ -3,9 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, LogOut, ChevronsUpDown } from "lucide-react";
+import { Menu, LogOut, ChevronsUpDown, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +30,32 @@ export function CompanyHeader(props: {
 
   const label = session.company?.name ?? props.companyId;
 
+  const breadcrumbItems = React.useMemo(() => {
+    const suffix = pathname?.split(`/c/${props.companyId}`)[1] ?? "";
+    const parts = suffix.split("/").filter(Boolean);
+    const items: Array<{ href?: string; label: string }> = [
+      { href: `/c/${props.companyId}/dashboard`, label: "Workspace" },
+    ];
+    let acc = `/c/${props.companyId}`;
+    for (const part of parts) {
+      acc += `/${part}`;
+      const labelPart =
+        /^[0-9a-f-]{8,}$/i.test(part)
+          ? `${part.slice(0, 8)}...`
+          : part
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (m) => m.toUpperCase());
+      items.push({ href: acc, label: labelPart });
+    }
+    if (items.length > 0) {
+      items[items.length - 1] = { label: items[items.length - 1].label };
+    }
+    return items;
+  }, [pathname, props.companyId]);
+
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-      <div className="flex h-14 items-center gap-3 px-4">
+    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[rgba(255,253,248,0.88)] backdrop-blur supports-[backdrop-filter]:bg-[rgba(255,253,248,0.72)]">
+      <div className="flex min-h-16 items-center gap-3 px-4 md:px-6">
         <Button
           type="button"
           variant="ghost"
@@ -42,25 +67,35 @@ export function CompanyHeader(props: {
           <Menu className="h-5 w-5" />
         </Button>
 
-        <Link href={`/c/${props.companyId}/dashboard`} className="font-semibold">
-          GST Billing
-        </Link>
+        <div className="min-w-0">
+          <Link href={`/c/${props.companyId}/dashboard`} className="font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+            GST Billing
+          </Link>
+          <div className="mt-1 hidden md:block">
+            <Breadcrumbs items={breadcrumbItems} />
+          </div>
+        </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/dashboard" className="text-sm text-neutral-600 hover:underline">
+          <Link href="/dashboard" className="hidden items-center gap-1 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] md:inline-flex">
             Switch
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+
+          <Badge variant="secondary" className="hidden md:inline-flex">
+            Company scope
+          </Badge>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" className="gap-2">
+              <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
                 <span className="max-w-[18ch] truncate">{label}</span>
-                <ChevronsUpDown className="h-4 w-4 text-neutral-600" />
+                <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
               <div className="px-2 py-1.5">
-                <div className="text-xs text-neutral-500">Signed in as</div>
+                <div className="text-xs text-[var(--muted)]">Signed in as</div>
                 <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
               </div>
               <DropdownMenuSeparator />
@@ -80,9 +115,8 @@ export function CompanyHeader(props: {
         </div>
       </div>
 
-      <div className="px-4 pb-2 text-[11px] text-neutral-500 truncate">
-        /c/{props.companyId}
-        {pathname?.split(`/c/${props.companyId}`)[1] || ""}
+      <div className="px-4 pb-3 md:hidden">
+        <Breadcrumbs items={breadcrumbItems} />
       </div>
     </header>
   );

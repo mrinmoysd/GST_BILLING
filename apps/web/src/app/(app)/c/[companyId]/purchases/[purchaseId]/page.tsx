@@ -3,6 +3,9 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
   purchaseBillUrl,
   useCancelPurchase,
@@ -15,7 +18,7 @@ import {
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
-type Props = { params: { companyId: string; purchaseId: string } };
+type Props = { params: Promise<{ companyId: string; purchaseId: string }> };
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -26,12 +29,13 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 export default function PurchaseDetailPage({ params }: Props) {
-  const query = usePurchase({ companyId: params.companyId, purchaseId: params.purchaseId });
-  const receive = useReceivePurchase({ companyId: params.companyId, purchaseId: params.purchaseId });
-  const cancel = useCancelPurchase({ companyId: params.companyId, purchaseId: params.purchaseId });
-  const uploadBill = useUploadPurchaseBill({ companyId: params.companyId, purchaseId: params.purchaseId });
-  const paymentsQuery = usePayments({ companyId: params.companyId, limit: 50 });
-  const recordPayment = useRecordPayment({ companyId: params.companyId });
+  const { companyId, purchaseId } = React.use(params);
+  const query = usePurchase({ companyId, purchaseId });
+  const receive = useReceivePurchase({ companyId, purchaseId });
+  const cancel = useCancelPurchase({ companyId, purchaseId });
+  const uploadBill = useUploadPurchaseBill({ companyId, purchaseId });
+  const paymentsQuery = usePayments({ companyId, limit: 50 });
+  const recordPayment = useRecordPayment({ companyId });
 
   const [error, setError] = React.useState<string | null>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
@@ -52,16 +56,17 @@ export default function PurchaseDetailPage({ params }: Props) {
       paymentDate?: string;
       payment_date?: string;
     }>;
-    return data.filter((p) => (p.purchaseId ?? p.purchase_id) === params.purchaseId);
-  }, [params.purchaseId, paymentsQuery.data?.data.data]);
+    return data.filter((p) => (p.purchaseId ?? p.purchase_id) === purchaseId);
+  }, [purchaseId, paymentsQuery.data?.data.data]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Purchases"
         title="Purchase"
-        subtitle={<code>{params.purchaseId}</code>}
+        subtitle="Review receiving status, bill attachments, and supplier payments from a stronger operational detail layout."
         actions={
-          <Link className="text-sm underline" href={`/c/${params.companyId}/purchases`}>
+          <Link className="text-sm underline" href={`/c/${companyId}/purchases`}>
             Back
           </Link>
         }
@@ -71,99 +76,116 @@ export default function PurchaseDetailPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load purchase")} /> : null}
 
       {query.data ? (
-        <div className="space-y-6">
-          <div className="rounded-xl border bg-white p-4 space-y-4">
-          <div className="grid gap-2 md:grid-cols-3">
-            <div>
-              <div className="text-xs text-neutral-500">Status</div>
-              <div className="font-medium">{query.data.data.status ?? "—"}</div>
-            </div>
-            <div>
-              <div className="text-xs text-neutral-500">Purchase date</div>
-              <div className="font-medium">{query.data.data.purchase_date ?? "—"}</div>
-            </div>
-            <div>
-              <div className="text-xs text-neutral-500">Bill</div>
-              <a className="underline" href={purchaseBillUrl(params.companyId, params.purchaseId)} target="_blank" rel="noreferrer">
-                Download
-              </a>
-            </div>
+        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-6">
+            <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{query.data.data.status ?? "—"}</Badge>
+                  <Badge variant="outline">Purchase {purchaseId.slice(0, 8)}</Badge>
+                </div>
+                <CardTitle>Purchase detail</CardTitle>
+                <CardDescription>Track purchase state, receiving, and attached bill documents.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Purchase date</div>
+                  <div className="mt-2 text-sm font-medium">{query.data.data.purchase_date ?? "—"}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Bill</div>
+                  <div className="mt-2 text-sm font-medium">
+                    <a className="text-[var(--accent)] underline" href={purchaseBillUrl(companyId, purchaseId)} target="_blank" rel="noreferrer">
+                      Download attachment
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Document actions</CardTitle>
+                <CardDescription>Receive stock, cancel the purchase, or upload the supplier bill.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="flex flex-wrap gap-3">
+                  <PrimaryButton
+                    type="button"
+                    disabled={receive.isPending}
+                    onClick={async () => {
+                      setError(null);
+                      try {
+                        await receive.mutateAsync();
+                      } catch (e: unknown) {
+                        setError(getErrorMessage(e, "Failed to receive purchase"));
+                      }
+                    }}
+                  >
+                    {receive.isPending ? "Receiving…" : "Receive"}
+                  </PrimaryButton>
+                  <SecondaryButton
+                    type="button"
+                    disabled={cancel.isPending}
+                    onClick={async () => {
+                      setError(null);
+                      const ok = window.confirm("Cancel this purchase?");
+                      if (!ok) return;
+                      try {
+                        await cancel.mutateAsync();
+                      } catch (e: unknown) {
+                        setError(getErrorMessage(e, "Failed to cancel purchase"));
+                      }
+                    }}
+                  >
+                    {cancel.isPending ? "Cancelling…" : "Cancel"}
+                  </SecondaryButton>
+                </div>
+
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-3">
+                  <div className="text-sm font-semibold">Bill attachment</div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={async (e) => {
+                        setUploadError(null);
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          await uploadBill.mutateAsync(file);
+                          e.target.value = "";
+                        } catch (err: unknown) {
+                          setUploadError(getErrorMessage(err, "Failed to upload bill"));
+                        }
+                      }}
+                    />
+                    <a
+                      className="text-sm font-medium text-[var(--accent)] underline"
+                      href={purchaseBillUrl(companyId, purchaseId)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Download
+                    </a>
+                    <div className="text-xs text-[var(--muted)]">
+                      {uploadBill.isPending ? "Uploading…" : "PDF/JPG/PNG supported"}
+                    </div>
+                  </div>
+                  {uploadError ? <InlineError message={uploadError} /> : null}
+                </div>
+              </CardContent>
+            </Card>
+
+            {error ? <InlineError message={error} /> : null}
           </div>
 
-          {error ? <InlineError message={error} /> : null}
-
-          <div className="flex flex-wrap gap-3">
-            <PrimaryButton
-              type="button"
-              disabled={receive.isPending}
-              onClick={async () => {
-                setError(null);
-                try {
-                  await receive.mutateAsync();
-                } catch (e: unknown) {
-                  setError(getErrorMessage(e, "Failed to receive purchase"));
-                }
-              }}
-            >
-              {receive.isPending ? "Receiving…" : "Receive"}
-            </PrimaryButton>
-            <SecondaryButton
-              type="button"
-              disabled={cancel.isPending}
-              onClick={async () => {
-                setError(null);
-                const ok = window.confirm("Cancel this purchase?");
-                if (!ok) return;
-                try {
-                  await cancel.mutateAsync();
-                } catch (e: unknown) {
-                  setError(getErrorMessage(e, "Failed to cancel purchase"));
-                }
-              }}
-            >
-              {cancel.isPending ? "Cancelling…" : "Cancel"}
-            </SecondaryButton>
-          </div>
-
-          <div className="rounded-lg border bg-neutral-50 p-3 space-y-2">
-            <div className="text-sm font-medium">Bill attachment</div>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={async (e) => {
-                  setUploadError(null);
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    await uploadBill.mutateAsync(file);
-                    e.target.value = "";
-                  } catch (err: unknown) {
-                    setUploadError(getErrorMessage(err, "Failed to upload bill"));
-                  }
-                }}
-              />
-              <a
-                className="underline text-sm"
-                href={purchaseBillUrl(params.companyId, params.purchaseId)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Download
-              </a>
-              <div className="text-xs text-neutral-500">
-                {uploadBill.isPending ? "Uploading…" : "PDF/JPG/PNG supported"}
-              </div>
-            </div>
-            {uploadError ? <InlineError message={uploadError} /> : null}
-          </div>
-        </div>
-
-            <div className="rounded-xl border bg-white p-4 space-y-4">
-              <div>
-                <div className="text-base font-semibold">Payments</div>
-                <div className="text-sm text-neutral-500">Record supplier payments for this purchase.</div>
-              </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Payments</CardTitle>
+                <CardDescription>Record supplier payments and review settlement activity for this purchase.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
 
               <form
                 className="grid gap-4 md:grid-cols-4 items-end"
@@ -176,7 +198,7 @@ export default function PurchaseDetailPage({ params }: Props) {
                   }
                   try {
                     await recordPayment.mutateAsync({
-                      purchase_id: params.purchaseId,
+                      purchase_id: purchaseId,
                       amount: payAmount,
                       method: payMethod,
                       reference: payReference || undefined,
@@ -195,9 +217,9 @@ export default function PurchaseDetailPage({ params }: Props) {
               >
                 <TextField label="Amount" value={payAmount} onChange={setPayAmount} type="number" />
                 <div>
-                  <label className="block text-sm font-medium">Method</label>
+                  <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
                   <select
-                    className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+                    className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
                     value={payMethod}
                     onChange={(e) => setPayMethod(e.target.value)}
                   >
@@ -232,31 +254,32 @@ export default function PurchaseDetailPage({ params }: Props) {
               ) : null}
 
               {paymentsQuery.data ? (
-                <div className="rounded-lg border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-neutral-50 text-neutral-600">
+                <DataTableShell>
+                  <DataTable>
+                    <DataThead>
                       <tr>
-                        <th className="text-left px-3 py-2 font-medium">Date</th>
-                        <th className="text-left px-3 py-2 font-medium">Method</th>
-                        <th className="text-left px-3 py-2 font-medium">Reference</th>
-                        <th className="text-right px-3 py-2 font-medium">Amount</th>
+                        <DataTh>Date</DataTh>
+                        <DataTh>Method</DataTh>
+                        <DataTh>Reference</DataTh>
+                        <DataTh className="text-right">Amount</DataTh>
                       </tr>
-                    </thead>
+                    </DataThead>
                     <tbody>
                       {paymentsForPurchase.map((p) => (
-                        <tr key={p.id} className="border-t">
-                          <td className="px-3 py-2">{p.paymentDate ?? p.payment_date ?? "—"}</td>
-                          <td className="px-3 py-2">{p.method}</td>
-                          <td className="px-3 py-2">{p.reference ?? "—"}</td>
-                          <td className="px-3 py-2 text-right">{p.amount}</td>
-                        </tr>
+                        <DataTr key={p.id}>
+                          <DataTd>{p.paymentDate ?? p.payment_date ?? "—"}</DataTd>
+                          <DataTd>{p.method}</DataTd>
+                          <DataTd>{p.reference ?? "—"}</DataTd>
+                          <DataTd className="text-right">{p.amount}</DataTd>
+                        </DataTr>
                       ))}
                     </tbody>
-                  </table>
-                </div>
+                  </DataTable>
+                </DataTableShell>
               ) : null}
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+        </div>
       ) : null}
     </div>
   );

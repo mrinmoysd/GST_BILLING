@@ -3,8 +3,11 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { useInvoices } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -62,10 +65,11 @@ export default function InvoicesPage({ params }: Props) {
   const total = readTotal(payload);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <PageHeader
+        eyebrow="Sales"
         title="Invoices"
-        subtitle="Create, issue, and download invoice PDFs."
+        subtitle="Manage the invoice pipeline with cleaner status visibility and faster navigation into draft and issued documents."
         actions={
           <Link href={`/c/${companyId}/sales/invoices/new`}>
             <SecondaryButton type="button">New invoice</SecondaryButton>
@@ -73,45 +77,59 @@ export default function InvoicesPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-          <TextField label="Search" value={q} onChange={setQ} placeholder="Invoice no / customer" />
-          <div className="text-xs text-neutral-500">{total} total</div>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <TextField label="Search invoices" value={q} onChange={setQ} placeholder="Invoice no / customer" />
+            <div className="flex items-center gap-2 lg:justify-end">
+              <Badge variant="secondary">{total} total</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading invoices…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load invoices")} /> : null}
 
       {!query.isLoading && !query.isError && rows.length === 0 ? (
-        <EmptyState title="No invoices" hint="Create an invoice to get started." />
+        <EmptyState
+          title="No invoices"
+          hint="Create an invoice to start your billing workflow."
+          action={
+            <Link href={`/c/${companyId}/sales/invoices/new`}>
+              <SecondaryButton type="button">Create invoice</SecondaryButton>
+            </Link>
+          }
+        />
       ) : null}
 
       {rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+        <DataTableShell>
+          <DataTable>
+            <DataThead>
               <tr>
-                <th className="text-left px-4 py-3 font-medium">ID</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Issue date</th>
+                <DataTh>Invoice</DataTh>
+                <DataTh>Status</DataTh>
+                <DataTh>Issue date</DataTh>
               </tr>
-            </thead>
+            </DataThead>
             <tbody>
               {rows.map((inv) => (
-                <tr key={inv.id} className="border-t">
-                  <td className="px-4 py-3">
-                    <Link className="underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
-            {inv.invoiceNumber ?? inv.invoice_no ?? inv.id}
+                <DataTr key={inv.id}>
+                  <DataTd>
+                    <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
+                      {inv.invoiceNumber ?? inv.invoice_no ?? inv.id}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">{inv.status ?? "—"}</td>
-          <td className="px-4 py-3">{inv.issueDate ?? inv.issue_date ?? ""}</td>
-                </tr>
+                  </DataTd>
+                  <DataTd>
+                    <Badge variant="secondary">{inv.status ?? "—"}</Badge>
+                  </DataTd>
+                  <DataTd>{inv.issueDate ?? inv.issue_date ?? "—"}</DataTd>
+                </DataTr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </DataTable>
+        </DataTableShell>
       ) : null}
     </div>
   );

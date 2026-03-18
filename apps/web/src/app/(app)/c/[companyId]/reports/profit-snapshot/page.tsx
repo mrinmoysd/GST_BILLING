@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProfitSnapshot } from "@/lib/reports/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
@@ -30,12 +31,22 @@ export default function ProfitSnapshotPage({ params }: Props) {
   const netProfit = typeof data?.net_profit === "number" ? (data.net_profit as number) : null;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Profit snapshot" subtitle="Report" />
-      <div className="rounded-xl border bg-white p-4 grid gap-4 md:grid-cols-2">
-        <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-        <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Reports"
+        title="Profit snapshot"
+        subtitle="Review revenue, cost of goods, and margin in a clearer executive summary layout."
+      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Reporting window</CardTitle>
+          <CardDescription>Select the period you want to compare for gross and net performance.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
+          <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+        </CardContent>
+      </Card>
 
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load report")} /> : null}
@@ -50,10 +61,15 @@ export default function ProfitSnapshotPage({ params }: Props) {
       ) : null}
 
       {query.data && revenue == null && cogs == null && grossProfit == null && netProfit == null ? (
-        <div className="rounded-xl border bg-white p-4">
-          <div className="text-sm text-neutral-600">Raw response (temporary)</div>
-          <pre className="mt-3 text-xs overflow-auto">{JSON.stringify(query.data.data, null, 2)}</pre>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Raw response</CardTitle>
+            <CardDescription>The response shape does not yet match the expected summary contract for this screen.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );
