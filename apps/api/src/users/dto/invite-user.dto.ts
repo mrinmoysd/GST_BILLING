@@ -1,4 +1,6 @@
 import {
+  ArrayUnique,
+  IsArray,
   IsBoolean,
   IsEmail,
   IsOptional,
@@ -22,6 +24,18 @@ export class InviteUserDto {
   @MinLength(2)
   @MaxLength(32)
   role?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(32)
+  primary_role?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  role_ids?: string[];
 
   @IsOptional()
   @IsBoolean()

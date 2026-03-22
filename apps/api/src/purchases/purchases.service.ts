@@ -7,9 +7,12 @@ import {
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+import { AccountingService } from '../accounting/accounting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { GstService } from '../gst/gst.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { CreatePurchaseReturnDto } from './dto/create-purchase-return.dto';
 import { PatchPurchaseDto } from './dto/patch-purchase.dto';
 
 function toDecimal(value: string | undefined, fallback = '0'): Decimal {
@@ -22,6 +25,8 @@ export class PurchasesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
+    private readonly gst: GstService,
+    private readonly accounting: AccountingService,
   ) {}
 
   async list(args: {
@@ -73,7 +78,15 @@ export class PurchasesService {
   async get(args: { companyId: string; purchaseId: string }) {
     const purchase = await this.prisma.purchase.findFirst({
       where: { companyId: args.companyId, id: args.purchaseId },
-      include: { supplier: true, items: { include: { product: true } } },
+      include: {
+        supplier: true,
+        items: { include: { product: true } },
+        purchaseReturns: {
+          include: { items: { include: { product: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+        lifecycleEvents: { orderBy: { createdAt: 'desc' } },
+      },
     });
     if (!purchase) throw new NotFoundException('Purchase not found');
     return { data: purchase };
@@ -94,6 +107,11 @@ export class PurchasesService {
           },
         });
         if (!supplier) throw new NotFoundException('Supplier not found');
+
+        const gstContext = await this.gst.resolvePurchaseContext(
+          args.companyId,
+          supplier.id,
+        );
 
         const productIds = args.dto.items.map((i) => i.product_id);
         const products = await tx.product.findMany({
@@ -124,17 +142,27 @@ export class PurchasesService {
             (p: (typeof products)[number]) => p.id === item.product_id,
           )!;
           const taxRate = product.taxRate;
-          const lineTaxTotal = taxRate
-            ? lineSubTotal.mul(taxRate).div(100)
-            : new Decimal(0);
+          const split = this.gst.computeTaxSplit({
+            companyStateCode: gstContext.companyStateCode,
+            placeOfSupplyStateCode: gstContext.placeOfSupplyStateCode,
+            taxableValue: lineSubTotal,
+            taxRate,
+          });
+          const lineTaxTotal = split.taxTotal;
           const lineTotal = lineSubTotal.add(lineTaxTotal);
 
           return {
             productId: item.product_id,
+            hsnCode: product.hsn,
             quantity,
             unitCost,
             discount,
             taxRate,
+            taxableValue: split.taxableValue,
+            cgstAmount: split.cgstAmount,
+            sgstAmount: split.sgstAmount,
+            igstAmount: split.igstAmount,
+            cessAmount: split.cessAmount,
             lineSubTotal,
             lineTaxTotal,
             lineTotal,
@@ -154,11 +182,12 @@ export class PurchasesService {
           new Decimal(0),
         );
 
-        const purchase = await tx.purchase.create({
-          data: {
+        const purchaseData = {
             companyId: args.companyId,
             supplierId: supplier.id,
             status: 'draft',
+            supplierGstin: gstContext.supplierGstin,
+            placeOfSupplyStateCode: gstContext.placeOfSupplyStateCode,
             purchaseDate: args.dto.purchase_date
               ? new Date(args.dto.purchase_date)
               : null,
@@ -167,20 +196,40 @@ export class PurchasesService {
             taxTotal,
             total,
             items: {
-              create: itemsComputed.map((i) => ({
-                companyId: args.companyId,
-                productId: i.productId,
-                quantity: i.quantity,
-                unitCost: i.unitCost,
-                discount: i.discount,
-                taxRate: i.taxRate,
-                lineSubTotal: i.lineSubTotal,
-                lineTaxTotal: i.lineTaxTotal,
-                lineTotal: i.lineTotal,
+                create: itemsComputed.map((i) => ({
+                  companyId: args.companyId,
+                  productId: i.productId,
+                  hsnCode: i.hsnCode,
+                  quantity: i.quantity,
+                  unitCost: i.unitCost,
+                  discount: i.discount,
+                  taxRate: i.taxRate,
+                  taxableValue: i.taxableValue,
+                  cgstAmount: i.cgstAmount,
+                  sgstAmount: i.sgstAmount,
+                  igstAmount: i.igstAmount,
+                  cessAmount: i.cessAmount,
+                  lineSubTotal: i.lineSubTotal,
+                  lineTaxTotal: i.lineTaxTotal,
+                  lineTotal: i.lineTotal,
               })),
             },
-          },
+          } satisfies Prisma.PurchaseUncheckedCreateInput;
+
+        const purchase = await tx.purchase.create({
+          data: purchaseData,
           include: { items: true },
+        });
+
+        await this.createLifecycleEvent(tx, {
+          companyId: args.companyId,
+          purchaseId: purchase.id,
+          eventType: 'purchase.draft_created',
+          summary: 'Draft purchase created',
+          payload: {
+            item_count: purchase.items.length,
+            total: purchase.total.toString(),
+          },
         });
 
         return { data: purchase };
@@ -233,6 +282,17 @@ export class PurchasesService {
         data: { status: 'received', receivedAt: new Date() },
       });
 
+      await this.accounting.postPurchaseReceived(tx, {
+        companyId: args.companyId,
+        purchase: {
+          id: purchase.id,
+          purchaseDate: purchase.purchaseDate,
+          total: purchase.total,
+          subTotal: purchase.subTotal,
+          items: purchase.items,
+        },
+      });
+
       // Increase stock for each item
       for (const item of purchase.items) {
         await this.inventory.adjustStock({
@@ -244,6 +304,13 @@ export class PurchasesService {
           note: 'Purchase received',
         });
       }
+
+      await this.createLifecycleEvent(tx, {
+        companyId: args.companyId,
+        purchaseId: purchase.id,
+        eventType: 'purchase.received',
+        summary: `Purchase ${purchase.id} received into stock`,
+      });
 
       return { data: updated };
     });
@@ -265,6 +332,12 @@ export class PurchasesService {
         const updated = await tx.purchase.update({
           where: { id: purchase.id },
           data: { status: 'cancelled', cancelledAt: new Date() },
+        });
+        await this.createLifecycleEvent(tx, {
+          companyId: args.companyId,
+          purchaseId: purchase.id,
+          eventType: 'purchase.cancelled',
+          summary: `Draft purchase ${purchase.id} cancelled`,
         });
         return { data: updated };
       }
@@ -292,6 +365,24 @@ export class PurchasesService {
         data: { status: 'cancelled', cancelledAt: new Date() },
       });
 
+      await this.accounting.postPurchaseCancelled(tx, {
+        companyId: args.companyId,
+        purchase: {
+          id: purchase.id,
+          cancelledAt: updated.cancelledAt,
+          total: purchase.total,
+          subTotal: purchase.subTotal,
+          items: purchase.items,
+        },
+      });
+
+      await this.createLifecycleEvent(tx, {
+        companyId: args.companyId,
+        purchaseId: purchase.id,
+        eventType: 'purchase.cancelled',
+        summary: `Purchase ${purchase.id} cancelled and stock reversed`,
+      });
+
       return { data: updated };
     });
   }
@@ -315,6 +406,298 @@ export class PurchasesService {
       },
     });
 
+    await this.prisma.documentLifecycleEvent.create({
+      data: {
+        companyId: args.companyId,
+        purchaseId: purchase.id,
+        eventType: 'purchase.bill_attached',
+        summary: `Supplier bill attached${args.originalName ? ` (${args.originalName})` : ''}`,
+        payload: {
+          bill_url: args.billUrl,
+          original_name: args.originalName ?? null,
+        },
+      },
+    });
+
     return { data: updated };
+  }
+
+  async createReturn(args: {
+    companyId: string;
+    purchaseId: string;
+    dto: CreatePurchaseReturnDto;
+  }) {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const purchase = await tx.purchase.findFirst({
+        where: { companyId: args.companyId, id: args.purchaseId },
+        include: {
+          items: {
+            select: {
+              id: true,
+              productId: true,
+              quantity: true,
+              unitCost: true,
+              hsnCode: true,
+              taxRate: true,
+              taxableValue: true,
+              cgstAmount: true,
+              sgstAmount: true,
+              igstAmount: true,
+              cessAmount: true,
+              lineSubTotal: true,
+              lineTaxTotal: true,
+              lineTotal: true,
+            },
+          },
+          purchaseReturns: {
+            include: {
+              items: {
+                select: {
+                  purchaseItemId: true,
+                  productId: true,
+                  quantity: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      if (!purchase) throw new NotFoundException('Purchase not found');
+      if (!['received', 'returned_partial', 'returned'].includes(purchase.status)) {
+        throw new ConflictException('Purchase returns require a received purchase');
+      }
+      if (!args.dto.items?.length) {
+        throw new BadRequestException('Purchase return must have at least one item');
+      }
+
+      const priorReturnedByItem = new Map<string, Decimal>();
+      for (const purchaseReturn of purchase.purchaseReturns) {
+        for (const item of purchaseReturn.items) {
+          const key = item.purchaseItemId ?? `${item.productId}`;
+          const current = priorReturnedByItem.get(key) ?? new Decimal(0);
+          priorReturnedByItem.set(key, current.add(new Decimal(item.quantity)));
+        }
+      }
+
+      const computedItems = args.dto.items.map((item) => {
+        const purchaseItem =
+          (item.purchase_item_id
+            ? purchase.items.find((candidate) => candidate.id === item.purchase_item_id)
+            : purchase.items.find((candidate) => candidate.productId === item.product_id)) ??
+          null;
+        if (!purchaseItem) {
+          throw new BadRequestException('Purchase item not found for return');
+        }
+
+        const quantity = toDecimal(item.quantity);
+        if (quantity.lte(0)) {
+          throw new BadRequestException('quantity must be > 0');
+        }
+
+        const alreadyReturned =
+          priorReturnedByItem.get(purchaseItem.id) ??
+          priorReturnedByItem.get(String(purchaseItem.productId)) ??
+          new Decimal(0);
+        const available = new Decimal(purchaseItem.quantity).sub(alreadyReturned);
+        if (quantity.gt(available)) {
+          throw new BadRequestException(
+            `Requested quantity exceeds returnable quantity for product ${purchaseItem.productId}`,
+          );
+        }
+
+        const perUnitSubTotal = new Decimal(purchaseItem.lineSubTotal).div(
+          purchaseItem.quantity,
+        );
+        const perUnitTaxTotal = new Decimal(purchaseItem.lineTaxTotal).div(
+          purchaseItem.quantity,
+        );
+        const perUnitTaxableValue = new Decimal(purchaseItem.taxableValue).div(
+          purchaseItem.quantity,
+        );
+        const perUnitCgst = new Decimal(purchaseItem.cgstAmount).div(
+          purchaseItem.quantity,
+        );
+        const perUnitSgst = new Decimal(purchaseItem.sgstAmount).div(
+          purchaseItem.quantity,
+        );
+        const perUnitIgst = new Decimal(purchaseItem.igstAmount).div(
+          purchaseItem.quantity,
+        );
+        const perUnitCess = new Decimal(purchaseItem.cessAmount).div(
+          purchaseItem.quantity,
+        );
+        const lineSubTotal = perUnitSubTotal.mul(quantity);
+        const lineTaxTotal = perUnitTaxTotal.mul(quantity);
+        const lineTotal = lineSubTotal.add(lineTaxTotal);
+
+        return {
+          purchaseItemId: purchaseItem.id,
+          productId: purchaseItem.productId,
+          quantity,
+          unitCost: new Decimal(purchaseItem.unitCost),
+          hsnCode: purchaseItem.hsnCode,
+          taxRate: purchaseItem.taxRate,
+          taxableValue: perUnitTaxableValue.mul(quantity),
+          cgstAmount: perUnitCgst.mul(quantity),
+          sgstAmount: perUnitSgst.mul(quantity),
+          igstAmount: perUnitIgst.mul(quantity),
+          cessAmount: perUnitCess.mul(quantity),
+          lineSubTotal,
+          lineTaxTotal,
+          lineTotal,
+        };
+      });
+
+      const subTotal = computedItems.reduce(
+        (acc, item) => acc.add(item.lineSubTotal),
+        new Decimal(0),
+      );
+      const taxTotal = computedItems.reduce(
+        (acc, item) => acc.add(item.lineTaxTotal),
+        new Decimal(0),
+      );
+      const total = computedItems.reduce(
+        (acc, item) => acc.add(item.lineTotal),
+        new Decimal(0),
+      );
+
+      const returnNumber = `PR-${Date.now()}-${crypto.randomUUID().slice(0, 6)}`;
+
+      const purchaseReturnData = {
+          companyId: args.companyId,
+          purchaseId: purchase.id,
+          returnNumber,
+          returnDate: args.dto.return_date ? new Date(args.dto.return_date) : new Date(),
+          notes: args.dto.notes ?? null,
+          subTotal,
+          taxTotal,
+          total,
+          items: {
+            create: computedItems.map((item) => ({
+              companyId: args.companyId,
+              purchaseItemId: item.purchaseItemId,
+              productId: item.productId,
+              quantity: item.quantity,
+              unitCost: item.unitCost,
+              hsnCode: item.hsnCode,
+              taxRate: item.taxRate,
+              taxableValue: item.taxableValue,
+              cgstAmount: item.cgstAmount,
+              sgstAmount: item.sgstAmount,
+              igstAmount: item.igstAmount,
+              cessAmount: item.cessAmount,
+              lineSubTotal: item.lineSubTotal,
+              lineTaxTotal: item.lineTaxTotal,
+              lineTotal: item.lineTotal,
+            })),
+          },
+        } satisfies Prisma.PurchaseReturnUncheckedCreateInput;
+
+      const purchaseReturn = await tx.purchaseReturn.create({
+        data: purchaseReturnData,
+        include: { items: true },
+      });
+
+      for (const item of computedItems) {
+        await this.inventory.adjustStock({
+          companyId: args.companyId,
+          productId: item.productId,
+          delta: item.quantity.mul(-1),
+          sourceType: 'purchase_return',
+          sourceId: purchaseReturn.id,
+          note: `Purchase return ${purchaseReturn.returnNumber}`,
+        });
+      }
+
+      const nextStatus = this.derivePurchaseStatusAfterReturn({
+        purchaseItems: purchase.items.map((item) => ({
+          id: item.id,
+          quantity: new Decimal(item.quantity),
+        })),
+        priorReturns: purchase.purchaseReturns.flatMap((purchaseReturn) => purchaseReturn.items),
+        nextItems: computedItems.map((item) => ({
+          purchaseItemId: item.purchaseItemId,
+          quantity: item.quantity,
+        })),
+      });
+
+      await tx.purchase.update({
+        where: { id: purchase.id },
+        data: { status: nextStatus },
+      });
+
+      await this.accounting.postPurchaseReturn(tx, {
+        companyId: args.companyId,
+        purchase: {
+          id: purchase.id,
+        },
+        purchaseReturn: {
+          id: purchaseReturn.id,
+          returnNumber: purchaseReturn.returnNumber,
+          returnDate: purchaseReturn.returnDate,
+          total: purchaseReturn.total,
+          subTotal: purchaseReturn.subTotal,
+          items: purchaseReturn.items,
+        },
+      });
+
+      await this.createLifecycleEvent(tx, {
+        companyId: args.companyId,
+        purchaseId: purchase.id,
+        eventType: 'purchase.return_created',
+        summary: `Purchase return ${purchaseReturn.returnNumber} created`,
+        payload: {
+          purchase_return_id: purchaseReturn.id,
+          return_number: purchaseReturn.returnNumber,
+          total: purchaseReturn.total.toString(),
+        },
+      });
+
+      return { data: purchaseReturn };
+    });
+  }
+
+  private derivePurchaseStatusAfterReturn(args: {
+    purchaseItems: Array<{ id: string; quantity: Decimal }>;
+    priorReturns: Array<{ purchaseItemId: string | null; productId: string; quantity: Decimal }>;
+    nextItems: Array<{ purchaseItemId: string; quantity: Decimal }>;
+  }) {
+    const returnedByItem = new Map<string, Decimal>();
+    for (const item of args.priorReturns) {
+      if (!item.purchaseItemId) continue;
+      const current = returnedByItem.get(item.purchaseItemId) ?? new Decimal(0);
+      returnedByItem.set(item.purchaseItemId, current.add(new Decimal(item.quantity)));
+    }
+    for (const item of args.nextItems) {
+      const current = returnedByItem.get(item.purchaseItemId) ?? new Decimal(0);
+      returnedByItem.set(item.purchaseItemId, current.add(item.quantity));
+    }
+
+    const fullyReturned = args.purchaseItems.every((item) => {
+      const returned = returnedByItem.get(item.id) ?? new Decimal(0);
+      return returned.gte(item.quantity);
+    });
+    return fullyReturned ? 'returned' : 'returned_partial';
+  }
+
+  private async createLifecycleEvent(
+    tx: Prisma.TransactionClient,
+    args: {
+      companyId: string;
+      purchaseId?: string;
+      eventType: string;
+      summary: string;
+      payload?: Prisma.InputJsonValue;
+    },
+  ) {
+    await tx.documentLifecycleEvent.create({
+      data: {
+        companyId: args.companyId,
+        purchaseId: args.purchaseId,
+        eventType: args.eventType,
+        summary: args.summary,
+        payload: args.payload,
+      },
+    });
   }
 }

@@ -5,9 +5,15 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  getInternalAdminPermissions,
+  isInternalAdminRole,
+} from '../admin/super/admin-roles.constants';
+import { RbacService } from '../rbac/rbac.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -17,153 +23,172 @@ function envelope<T>(data: T) {
   return { data };
 }
 
+type TokenPayload = {
+  sub: string;
+  email?: string;
+  companyId?: string | null;
+  scope?: 'tenant' | 'admin';
+  isSuperAdmin?: boolean;
+  roles?: string[];
+  permissions?: string[];
+};
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly rbac: RbacService,
   ) {}
 
   async login(body: LoginDto) {
-    // Fail fast: never query users when credentials are missing.
-    // This also prevents Prisma from accidentally returning an arbitrary active user
-    // if `email` is undefined.
-    const rawBody = body as any;
-    // eslint-disable-next-line no-console
-    console.log('[auth.login] incoming body keys', {
-      keys:
-        rawBody && typeof rawBody === 'object' ? Object.keys(rawBody) : null,
-    });
-
     if (!body?.email || !body?.password) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // MVP assumption: email is unique per company. We'll pick the first user with that email.
-    const user = await this.prisma.user.findFirst({
-      where: { email: body.email, isActive: true },
-      include: { company: true },
-    });
+    const user = await this.validateCredentials(body);
+    if (!user?.companyId) throw new UnauthorizedException('Invalid credentials');
 
-    // DEBUG (temporary): helps diagnose why seeded credentials return 401.
-    // Do not log the raw password.
-    // eslint-disable-next-line no-console
-    console.log('[auth.login]', {
-      email: body?.email,
-      hasPassword: Boolean(body?.password),
-      foundUser: Boolean(user),
-      isActive: user?.isActive,
-      userId: user?.id,
-      companyId: user?.companyId,
-      hasPasswordHash: Boolean(user?.passwordHash),
-    });
-
-    // bcrypt.compare throws if any arg is undefined, so validate inputs first.
-    if (!user?.passwordHash || !body.password)
-      throw new UnauthorizedException('Invalid credentials');
-
-    const ok = await bcrypt.compare(body.password, user.passwordHash);
-    if (!ok) throw new UnauthorizedException('Invalid credentials');
-
-    const accessToken = await this.signAccessToken({
+    const payload: TokenPayload = {
       sub: user.id,
       companyId: user.companyId,
-    });
+      scope: 'tenant',
+    };
 
-    const refreshToken = await this.signRefreshToken({
-      sub: user.id,
-      companyId: user.companyId,
-    });
-
-    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-
-    const refreshTtl = this.config.get<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-      60 * 60 * 24 * 30,
-    );
-    const expiresAt = new Date(Date.now() + refreshTtl * 1000);
-
-    // One active session per user for now (simple). We'll revoke previous ones.
-    if (user.companyId) {
-      await this.prisma.session.updateMany({
-        where: { userId: user.id, companyId: user.companyId, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
-
-      await this.prisma.session.create({
-        data: {
-          userId: user.id,
-          companyId: user.companyId,
-          refreshTokenHash,
-          expiresAt,
-        },
-      });
-    }
+    const tokens = await this.issueSession(user.id, user.companyId, payload);
+    const sessionAccess = await this.rbac.getSessionAccess(user.id);
 
     return envelope({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        company_id: user.companyId,
-      },
-      company: user.company,
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      user: sessionAccess.user,
+      company: sessionAccess.company,
+    });
+  }
+
+  async adminLogin(body: LoginDto) {
+    if (!body?.email || !body?.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const user = await this.validateCredentials(body);
+    if (!isInternalAdminRole(user.role) || user.companyId) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const payload = this.buildAdminTokenPayload(user);
+    const tokens = await this.issueSession(user.id, null, payload);
+
+    return envelope({
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      user: this.buildAdminSessionUser(user),
     });
   }
 
   async refresh(body: RefreshDto) {
-    // We validate refresh token via JwtRefreshStrategy (signature + revocation via Session).
-    // For simplicity we re-verify by attempting to find a matching stored session hash here too.
-    const decoded = await this.jwt.verifyAsync<any>(body.refresh_token, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-    });
+    const decoded = await this.verifyRefreshToken(body.refresh_token);
+    if (decoded.scope === 'admin' || decoded.isSuperAdmin) {
+      throw new UnauthorizedException();
+    }
 
-    const companyId: string | undefined = decoded?.companyId;
+    const companyId: string | undefined = decoded?.companyId ?? undefined;
     const userId: string | undefined = decoded?.sub;
     if (!companyId || !userId) throw new UnauthorizedException();
 
-    const session = await this.prisma.session.findFirst({
-      where: {
-        companyId,
-        userId,
-        revokedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
+    await this.assertValidSession(userId, companyId, body.refresh_token);
+
+    const accessToken = await this.signAccessToken({
+      sub: userId,
+      companyId,
+      scope: 'tenant',
     });
-    if (!session) throw new UnauthorizedException();
-
-    const ok = await bcrypt.compare(
-      body.refresh_token,
-      session.refreshTokenHash,
-    );
-    if (!ok) throw new UnauthorizedException();
-
-    const accessToken = await this.signAccessToken({ sub: userId, companyId });
     return envelope({ access_token: accessToken });
   }
 
-  async me(accessPayload: { sub: string; companyId?: string | null }) {
+  async adminRefresh(body: RefreshDto) {
+    const decoded = await this.verifyRefreshToken(body.refresh_token);
+    const userId: string | undefined = decoded?.sub;
+    const isAdminScope =
+      decoded.scope === 'admin' ||
+      decoded.isSuperAdmin === true ||
+      Array.isArray(decoded.roles);
+    if (!userId || !isAdminScope) throw new UnauthorizedException();
+
+    await this.assertValidSession(userId, null, body.refresh_token);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        companyId: true,
+        isActive: true,
+      },
+    });
+    if (!user || !user.isActive || !isInternalAdminRole(user.role) || user.companyId) {
+      throw new UnauthorizedException();
+    }
+
+    const accessToken = await this.signAccessToken(
+      this.buildAdminTokenPayload(user),
+    );
+    return envelope({ access_token: accessToken });
+  }
+
+  async me(accessPayload: TokenPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: accessPayload.sub },
       include: { company: true },
     });
     if (!user) throw new UnauthorizedException();
 
+    if (accessPayload.scope === 'admin' || accessPayload.isSuperAdmin) {
+      throw new UnauthorizedException();
+    }
+
+    const sessionAccess = await this.rbac.getSessionAccess(user.id);
+
     return envelope({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        company_id: user.companyId,
-      },
-      company: user.company,
+      user: sessionAccess.user,
+      company: sessionAccess.company,
     });
+  }
+
+  async adminMe(accessPayload: TokenPayload) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: accessPayload.sub },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        companyId: true,
+        isActive: true,
+      },
+    });
+    if (!user) throw new UnauthorizedException();
+    if (
+      accessPayload.scope !== 'admin' &&
+      accessPayload.isSuperAdmin !== true &&
+      !Array.isArray(accessPayload.roles)
+    ) {
+      throw new UnauthorizedException();
+    }
+    if (!isInternalAdminRole(user.role) || user.companyId) {
+      throw new UnauthorizedException();
+    }
+
+    return envelope({
+      user: this.buildAdminSessionUser(user),
+    });
+  }
+
+  async getSessionAccess(userId: string) {
+    return this.rbac.getSessionAccess(userId);
   }
 
   async forgotPassword(body: ForgotPasswordDto) {
@@ -256,14 +281,18 @@ export class AuthService {
     sub: string;
     companyId?: string | null;
     jti?: string;
+    scope?: 'tenant' | 'admin';
+    isSuperAdmin?: boolean;
   }) {
-    // For MVP we revoke all active sessions for the user in the company.
-    if (!refreshPayload.companyId) return envelope({ ok: true });
+    const companyFilter: Prisma.SessionWhereInput['companyId'] =
+      refreshPayload.scope === 'admin' || refreshPayload.isSuperAdmin
+        ? { equals: null }
+        : refreshPayload.companyId;
 
     await this.prisma.session.updateMany({
       where: {
         userId: refreshPayload.sub,
-        companyId: refreshPayload.companyId,
+        companyId: companyFilter,
         revokedAt: null,
       },
       data: { revokedAt: new Date() },
@@ -272,18 +301,147 @@ export class AuthService {
     return envelope({ ok: true });
   }
 
-  async signAccessToken(payload: { sub: string; companyId?: string | null }) {
+  async adminLogout(refreshPayload: TokenPayload) {
+    return this.logout(refreshPayload);
+  }
+
+  async signAccessToken(payload: TokenPayload) {
     const secret = this.config.get<string>('JWT_ACCESS_SECRET');
     const ttl = this.config.get<number>('JWT_ACCESS_TTL_SECONDS', 900);
     return this.jwt.signAsync(payload, { secret, expiresIn: ttl });
   }
 
-  async signRefreshToken(payload: { sub: string; companyId?: string | null }) {
+  async signRefreshToken(payload: TokenPayload) {
     const secret = this.config.get<string>('JWT_REFRESH_SECRET');
     const ttl = this.config.get<number>(
       'JWT_REFRESH_TTL_SECONDS',
       60 * 60 * 24 * 30,
     );
     return this.jwt.signAsync(payload, { secret, expiresIn: ttl });
+  }
+
+  private async validateCredentials(body: LoginDto) {
+    const user = await this.prisma.user.findFirst({
+      where: { email: body.email.trim().toLowerCase(), isActive: true },
+      include: { company: true },
+    });
+
+    if (!user?.passwordHash || !body.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const ok = await bcrypt.compare(body.password, user.passwordHash);
+    if (!ok) throw new UnauthorizedException('Invalid credentials');
+
+    return user;
+  }
+
+  private async issueSession(
+    userId: string,
+    companyId: string | null,
+    payload: TokenPayload,
+  ) {
+    const companyFilter: Prisma.SessionWhereInput['companyId'] =
+      companyId === null ? { equals: null } : companyId;
+
+    const accessToken = await this.signAccessToken(payload);
+    const refreshToken = await this.signRefreshToken(payload);
+    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+
+    const refreshTtl = this.config.get<number>(
+      'JWT_REFRESH_TTL_SECONDS',
+      60 * 60 * 24 * 30,
+    );
+    const expiresAt = new Date(Date.now() + refreshTtl * 1000);
+
+    await this.prisma.session.updateMany({
+      where: { userId, companyId: companyFilter, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+
+    await this.prisma.session.create({
+      data: {
+        userId,
+        ...(companyId === null ? {} : { companyId }),
+        refreshTokenHash,
+        expiresAt,
+      },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastLogin: new Date() },
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  private async verifyRefreshToken(token: string) {
+    return this.jwt.verifyAsync<TokenPayload>(token, {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+    });
+  }
+
+  private async assertValidSession(
+    userId: string,
+    companyId: string | null,
+    refreshToken: string,
+  ) {
+    const companyFilter: Prisma.SessionWhereInput['companyId'] =
+      companyId === null ? { equals: null } : companyId;
+
+    const session = await this.prisma.session.findFirst({
+      where: {
+        userId,
+        companyId: companyFilter,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!session) throw new UnauthorizedException();
+
+    const ok = await bcrypt.compare(refreshToken, session.refreshTokenHash);
+    if (!ok) throw new UnauthorizedException();
+
+    return session;
+  }
+
+  private buildAdminSessionUser(user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: string;
+    companyId?: string | null;
+    isActive?: boolean;
+  }) {
+    const permissions = getInternalAdminPermissions(user.role);
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      assigned_roles: [user.role],
+      permissions,
+      company_id: null,
+      is_super_admin: user.role === 'super_admin',
+      is_active: user.isActive ?? true,
+    };
+  }
+
+  private buildAdminTokenPayload(user: {
+    id: string;
+    email: string;
+    role: string;
+  }): TokenPayload {
+    return {
+      sub: user.id,
+      email: user.email,
+      companyId: null,
+      scope: 'admin',
+      isSuperAdmin: user.role === 'super_admin',
+      roles: [user.role],
+      permissions: getInternalAdminPermissions(user.role),
+    };
   }
 }

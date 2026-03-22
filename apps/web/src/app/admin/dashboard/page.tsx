@@ -1,16 +1,41 @@
+"use client";
+
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/lib/ui/state";
+import { useAdminDashboard } from "@/lib/admin/hooks";
+import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+
+function getErrorMessage(err: unknown, fallback: string) {
+  if (err && typeof err === "object" && "message" in err) {
+    const message = (err as { message?: unknown }).message;
+    if (typeof message === "string") return message;
+  }
+  return fallback;
+}
 
 export default function AdminDashboardPage() {
+  const query = useAdminDashboard();
+  const data = query.data?.data as
+    | {
+        kpis?: Record<string, number>;
+        subscription_mix?: { by_status?: Record<string, number>; by_provider?: Record<string, number> };
+        platform_health?: Record<string, number>;
+        recent_companies?: Array<{ id: string; name: string; created_at: string }>;
+        recent_support_tickets?: Array<{ id: string; subject?: string | null; status: string; priority: string; created_at: string }>;
+        recent_webhook_failures?: Array<{ id: string; provider: string; event_type: string; error?: string | null; received_at: string }>;
+      }
+    | undefined;
+
   const cards = [
     { href: "/admin/companies", title: "Companies", hint: "Search and review tenants." },
     { href: "/admin/subscriptions", title: "Subscriptions", hint: "Inspect billing records and provider state." },
     { href: "/admin/usage", title: "Usage", hint: "Review platform activity within a selected date range." },
     { href: "/admin/support-tickets", title: "Support tickets", hint: "Triage and update ticket status." },
     { href: "/admin/queues", title: "Queue metrics", hint: "Watch background job health and queue pressure." },
+    { href: "/admin/internal-users", title: "Internal users", hint: "Manage admin operators and role assignments." },
+    { href: "/admin/audit-logs", title: "Audit logs", hint: "Review privileged actions across the admin console." },
   ];
 
   return (
@@ -18,27 +43,88 @@ export default function AdminDashboardPage() {
       <PageHeader
         eyebrow="Platform"
         title="Admin dashboard"
-        subtitle="A clearer operations hub for tenant oversight, support, usage, and queue health."
+        subtitle="A live operations hub for tenant growth, billing pressure, support load, and platform health."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-          <CardHeader>
-            <CardTitle>Operations overview</CardTitle>
-            <CardDescription>Use the admin area to manage the platform rather than exposing raw debugging surfaces.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">5 admin workspaces</Badge>
-            <Badge variant="outline">Tenants + support + queue health</Badge>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Priority path</CardTitle>
-            <CardDescription>Companies, subscriptions, usage, support, and queues are now grouped as the main operating loop.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      {query.isLoading ? <LoadingBlock label="Loading admin dashboard..." /> : null}
+      {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load dashboard")} /> : null}
+
+      {data ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-5">
+            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Companies</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.companies ?? 0}</div></CardContent></Card>
+            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Active subs</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.active_subscriptions ?? 0}</div></CardContent></Card>
+            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Past due</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.past_due_subscriptions ?? 0}</div></CardContent></Card>
+            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Open tickets</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.open_support_tickets ?? 0}</div></CardContent></Card>
+            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Platform failures</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.platform_failures ?? 0}</div></CardContent></Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+              <CardHeader>
+                <CardTitle>Subscription mix</CardTitle>
+                <CardDescription>Current platform distribution by billing status and provider.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {Object.entries(data.subscription_mix?.by_status ?? {}).map(([key, value]) => (
+                  <Badge key={`status-${key}`} variant="secondary">{key}: {value}</Badge>
+                ))}
+                {Object.entries(data.subscription_mix?.by_provider ?? {}).map(([key, value]) => (
+                  <Badge key={`provider-${key}`} variant="outline">{key}: {value}</Badge>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform health</CardTitle>
+                <CardDescription>Recent failed operational signals.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div>Export failures: {data.platform_health?.export_failures ?? 0}</div>
+                <div>Notification failures: {data.platform_health?.notification_failures ?? 0}</div>
+                <div>Webhook failures: {data.platform_health?.webhook_failures ?? 0}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent companies</CardTitle>
+                <CardDescription>Latest tenant additions to the platform.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(data.recent_companies ?? []).map((company) => (
+                  <Link key={company.id} href={`/admin/companies/${company.id}`} className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 hover:border-[var(--accent-soft)]">
+                    <div className="font-semibold">{company.name}</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{new Date(company.created_at).toLocaleString()}</div>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent support and incidents</CardTitle>
+                <CardDescription>Fresh operator items from support and webhook failures.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(data.recent_support_tickets ?? []).map((ticket) => (
+                  <div key={`ticket-${ticket.id}`} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                    <div className="font-semibold">{ticket.subject || "(no subject)"}</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{ticket.status} · {ticket.priority} · {new Date(ticket.created_at).toLocaleString()}</div>
+                  </div>
+                ))}
+                {(data.recent_webhook_failures ?? []).map((event) => (
+                  <div key={`webhook-${event.id}`} className="rounded-2xl border border-red-200 bg-[#fff6f3] p-4">
+                    <div className="font-semibold">{event.provider}: {event.event_type}</div>
+                    <div className="mt-1 text-xs text-[#7e3128]">{event.error || "Webhook failure"}</div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (

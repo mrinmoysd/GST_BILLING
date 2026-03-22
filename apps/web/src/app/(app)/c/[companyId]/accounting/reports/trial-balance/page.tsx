@@ -4,9 +4,10 @@ import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTrialBalance } from "@/lib/billing/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -23,7 +24,8 @@ export default function TrialBalancePage({ params }: Props) {
   const [asOf, setAsOf] = React.useState("");
   const query = useTrialBalance({ companyId: companyId, as_of: asOf || undefined });
 
-  const rows = (query.data?.data as unknown as Array<{ ledger_name?: string; debit?: string; credit?: string }>) ?? [];
+  const report = query.data?.data;
+  const rows = report?.rows ?? [];
 
   return (
     <div className="space-y-7">
@@ -47,11 +49,20 @@ export default function TrialBalancePage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load trial balance")} /> : null}
       {query.data && rows.length === 0 ? <EmptyState title="No data" hint="Try a different date range." /> : null}
 
+      {report ? (
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard label="As of" value={report.as_of} />
+          <StatCard label="Total debit" value={report.totals.debit.toFixed(2)} />
+          <StatCard label="Total credit" value={report.totals.credit.toFixed(2)} />
+          <StatCard label="Difference" value={report.totals.difference.toFixed(2)} />
+        </div>
+      ) : null}
+
       {query.data && rows.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Balances</CardTitle>
-            <CardDescription>Debit and credit balances by ledger.</CardDescription>
+            <CardDescription>Debit and credit balances by ledger with classification and net balance.</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTableShell>
@@ -59,18 +70,26 @@ export default function TrialBalancePage({ params }: Props) {
                 <DataThead>
                   <tr>
                     <DataTh>Ledger</DataTh>
+                    <DataTh>Class</DataTh>
                     <DataTh className="text-right">Debit</DataTh>
                     <DataTh className="text-right">Credit</DataTh>
+                    <DataTh className="text-right">Net</DataTh>
                   </tr>
                 </DataThead>
                 <tbody>
-                  {rows.map((r, idx) => (
-                    <DataTr key={`${r.ledger_name ?? "ledger"}-${idx}`}>
-                      <DataTd>{r.ledger_name ?? "—"}</DataTd>
-                      <DataTd className="text-right">{r.debit ?? "0"}</DataTd>
-                      <DataTd className="text-right">{r.credit ?? "0"}</DataTd>
-                    </DataTr>
-                  ))}
+                  {rows.length === 0 ? (
+                    <DataEmptyRow colSpan={5} title="No ledgers posted as of this date." />
+                  ) : (
+                    rows.map((r, idx) => (
+                      <DataTr key={`${r.ledger_name ?? "ledger"}-${idx}`}>
+                        <DataTd>{r.ledger_name ?? "—"}</DataTd>
+                        <DataTd>{r.top_level ?? "unknown"}</DataTd>
+                        <DataTd className="text-right">{Number(r.debit ?? 0).toFixed(2)}</DataTd>
+                        <DataTd className="text-right">{Number(r.credit ?? 0).toFixed(2)}</DataTd>
+                        <DataTd className="text-right">{Number(r.net_balance ?? 0).toFixed(2)}</DataTd>
+                      </DataTr>
+                    ))
+                  )}
                 </tbody>
               </DataTable>
             </DataTableShell>

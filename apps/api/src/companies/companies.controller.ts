@@ -17,23 +17,27 @@ import { Response } from 'express';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CompaniesService } from './companies.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @ApiTags('Companies')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
 export class CompaniesController {
   constructor(private readonly companies: CompaniesService) {}
 
   @Get()
+  @RequirePermissions('settings.view')
   async getCompany(@Param('companyId') companyId: string) {
     const company = await this.companies.getCompany(companyId);
     return { ok: true, data: company };
   }
 
   @Patch()
+  @RequirePermissions('settings.company.manage')
   async updateCompany(
     @Param('companyId') companyId: string,
     @Body() dto: UpdateCompanyDto,
@@ -43,6 +47,7 @@ export class CompaniesController {
   }
 
   @Post('/verify-gstin')
+  @RequirePermissions('settings.company.manage')
   async verifyGstin(@Param('companyId') companyId: string) {
     const data = await this.companies.verifyGstin(companyId);
     return { ok: true, data };
@@ -51,6 +56,7 @@ export class CompaniesController {
   @Post('/logo')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
+  @RequirePermissions('settings.company.manage')
   async uploadLogo(
     @Param('companyId') companyId: string,
     @UploadedFile() file?: any,
@@ -64,6 +70,7 @@ export class CompaniesController {
   }
 
   @Get('/logo')
+  @RequirePermissions('settings.view')
   async getLogo(
     @Param('companyId') companyId: string,
     @Res() res: Response,

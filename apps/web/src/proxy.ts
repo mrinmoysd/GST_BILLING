@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
  *
  * Guarding is handled client-side (AuthProvider refresh + access token) on the app pages.
  */
-export function middleware() {
+export function proxy() {
   return NextResponse.next();
 }
 

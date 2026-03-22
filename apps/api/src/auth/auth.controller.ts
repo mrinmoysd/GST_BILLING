@@ -32,21 +32,9 @@ export class AuthController {
   @HttpCode(200)
   @ApiOkResponse({ description: 'OK' })
   async login(
-    @Req() req: any,
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: any,
   ) {
-    // DEBUG (temporary): verify body parsing and content-type.
-    // eslint-disable-next-line no-console
-    console.log('[auth.controller.login] request meta', {
-      contentType: req?.headers?.['content-type'],
-      hasBody: Boolean(req?.body),
-      bodyKeys:
-        req?.body && typeof req.body === 'object'
-          ? Object.keys(req.body)
-          : null,
-    });
-
     const result = await this.authService.login(body);
 
     const refreshToken: string | undefined = result?.data?.refresh_token;

@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminApiClient } from "@/lib/admin/api-client";
 import { useAdminSupportTickets } from "@/lib/admin/hooks";
-import { apiClient } from "@/lib/api/client";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
@@ -36,6 +37,10 @@ export default function AdminSupportTicketsPage() {
         status?: string;
         priority?: string;
         created_at?: string;
+        assignee?: string | null;
+        internal_note?: string | null;
+        company_id?: string | null;
+        company_name?: string | null;
       }>;
     })?.data ?? [];
 
@@ -107,6 +112,8 @@ export default function AdminSupportTicketsPage() {
                     <DataTh>Subject</DataTh>
                     <DataTh>Status</DataTh>
                     <DataTh>Priority</DataTh>
+                    <DataTh>Company</DataTh>
+                    <DataTh>Ops note</DataTh>
                     <DataTh className="text-right">Actions</DataTh>
                   </tr>
                 </DataThead>
@@ -128,6 +135,19 @@ export default function AdminSupportTicketsPage() {
                       <DataTd>
                         <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs">{t.priority || "—"}</span>
                       </DataTd>
+                      <DataTd>
+                        {t.company_id ? (
+                          <Link href={`/admin/companies/${t.company_id}`} className="font-medium hover:text-[var(--accent)] hover:underline">
+                            {t.company_name || "Linked company"}
+                          </Link>
+                        ) : (
+                          <span className="text-[var(--muted)]">Unlinked</span>
+                        )}
+                      </DataTd>
+                      <DataTd>
+                        <div className="text-xs text-[var(--muted)]">{t.assignee ? `Assignee: ${t.assignee}` : "No assignee"}</div>
+                        <div className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">{t.internal_note || "No internal note"}</div>
+                      </DataTd>
                       <DataTd className="text-right">
                     <div className="inline-flex gap-2">
                       <SecondaryButton
@@ -137,7 +157,11 @@ export default function AdminSupportTicketsPage() {
                           try {
                             setError(null);
                             setBusyId(t.id);
-                            await apiClient.patch(`/admin/support-tickets/${t.id}`, { status: "in_progress" });
+                            await adminApiClient.patch(`/admin/support-tickets/${t.id}`, {
+                              status: "in_progress",
+                              assignee: "operations_admin",
+                              internal_note: "Picked up for triage",
+                            });
                             await query.refetch();
                           } catch (e: unknown) {
                             setError(getErrorMessage(e, "Failed to update ticket"));
@@ -155,7 +179,10 @@ export default function AdminSupportTicketsPage() {
                           try {
                             setError(null);
                             setBusyId(t.id);
-                            await apiClient.patch(`/admin/support-tickets/${t.id}`, { status: "resolved" });
+                            await adminApiClient.patch(`/admin/support-tickets/${t.id}`, {
+                              status: "resolved",
+                              internal_note: "Resolved from admin support workspace",
+                            });
                             await query.refetch();
                           } catch (e: unknown) {
                             setError(getErrorMessage(e, "Failed to update ticket"));
@@ -173,7 +200,10 @@ export default function AdminSupportTicketsPage() {
                           try {
                             setError(null);
                             setBusyId(t.id);
-                            await apiClient.patch(`/admin/support-tickets/${t.id}`, { status: "closed" });
+                            await adminApiClient.patch(`/admin/support-tickets/${t.id}`, {
+                              status: "closed",
+                              internal_note: "Closed from admin support workspace",
+                            });
                             await query.refetch();
                           } catch (e: unknown) {
                             setError(getErrorMessage(e, "Failed to update ticket"));

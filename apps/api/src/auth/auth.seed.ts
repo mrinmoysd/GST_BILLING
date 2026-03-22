@@ -7,6 +7,10 @@ async function main() {
   const email = process.env.SEED_ADMIN_EMAIL ?? 'owner@example.com';
   const password = process.env.SEED_ADMIN_PASSWORD ?? 'password123';
   const companyName = process.env.SEED_COMPANY_NAME ?? 'Demo Company';
+  const superAdminEmail =
+    process.env.SEED_SUPER_ADMIN_EMAIL ?? 'superadmin@example.com';
+  const superAdminPassword =
+    process.env.SEED_SUPER_ADMIN_PASSWORD ?? 'password123';
 
   const company = await prisma.company.upsert({
     where: {
@@ -23,6 +27,7 @@ async function main() {
   });
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const superAdminPasswordHash = await bcrypt.hash(superAdminPassword, 10);
 
   await prisma.user.upsert({
     where: {
@@ -42,6 +47,33 @@ async function main() {
       email,
       passwordHash,
       role: 'owner',
+      isActive: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: {
+      id:
+        process.env.SEED_SUPER_ADMIN_USER_ID ??
+        '00000000-0000-0000-0000-0000000000aa',
+    },
+    create: {
+      id:
+        process.env.SEED_SUPER_ADMIN_USER_ID ??
+        '00000000-0000-0000-0000-0000000000aa',
+      companyId: null,
+      email: superAdminEmail,
+      name: 'Super Admin',
+      passwordHash: superAdminPasswordHash,
+      role: 'super_admin',
+      isActive: true,
+    },
+    update: {
+      companyId: null,
+      email: superAdminEmail,
+      name: 'Super Admin',
+      passwordHash: superAdminPasswordHash,
+      role: 'super_admin',
       isActive: true,
     },
   });
@@ -67,7 +99,9 @@ async function main() {
   await prisma.$disconnect();
 
   // eslint-disable-next-line no-console
-  console.log(`Seeded company=${company.id} user=${email}`);
+  console.log(
+    `Seeded company=${company.id} user=${email} super_admin=${superAdminEmail}`,
+  );
 }
 
 main().catch((e) => {

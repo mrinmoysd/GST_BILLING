@@ -24,6 +24,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { GstModule } from './gst/gst.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     UsersModule,
     CategoriesModule,
     OnboardingModule,
+    GstModule,
   ],
   controllers: [AppController],
   providers: [AppService],

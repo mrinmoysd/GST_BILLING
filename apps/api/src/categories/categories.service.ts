@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -11,6 +12,13 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private isDuplicateCategoryNameError(error: unknown) {
+    return (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    );
+  }
 
   async list(companyId: string) {
     const items = await this.prisma.category.findMany({
@@ -36,13 +44,24 @@ export class CategoriesService {
   }
 
   async create(companyId: string, dto: CreateCategoryDto) {
-    const created = await this.prisma.category.create({
-      data: {
-        companyId,
-        name: dto.name.trim(),
-        isActive: dto.is_active ?? true,
-      },
-    });
+    const name = dto.name.trim();
+    let created;
+    try {
+      created = await this.prisma.category.create({
+        data: {
+          companyId,
+          name,
+          isActive: dto.is_active ?? true,
+        },
+      });
+    } catch (error) {
+      if (this.isDuplicateCategoryNameError(error)) {
+        throw new ConflictException(
+          `Category '${name}' already exists for this company`,
+        );
+      }
+      throw error;
+    }
 
     return {
       id: created.id,
@@ -60,13 +79,23 @@ export class CategoriesService {
     });
     if (!existing) throw new NotFoundException('Category not found');
 
-    const updated = await this.prisma.category.update({
-      where: { id: categoryId },
-      data: {
-        name: dto.name ? dto.name.trim() : undefined,
-        isActive: dto.is_active,
-      },
-    });
+    let updated;
+    try {
+      updated = await this.prisma.category.update({
+        where: { id: categoryId },
+        data: {
+          name: dto.name ? dto.name.trim() : undefined,
+          isActive: dto.is_active,
+        },
+      });
+    } catch (error) {
+      if (this.isDuplicateCategoryNameError(error)) {
+        throw new ConflictException(
+          `Category '${dto.name?.trim()}' already exists for this company`,
+        );
+      }
+      throw error;
+    }
 
     return {
       id: updated.id,

@@ -3,8 +3,11 @@ import "./globals.css";
 import { Providers } from "@/app/providers";
 
 export const metadata: Metadata = {
-  title: "GST Billing",
-  description: "GST billing, purchases, inventory, accounting, and reporting workspace.",
+  title: {
+    default: "GST Billing",
+    template: "%s | GST Billing",
+  },
+  description: "GST billing, purchases, inventory, accounting, POS, and reporting workspace for India-first business operations.",
 };
 
 export default function RootLayout({

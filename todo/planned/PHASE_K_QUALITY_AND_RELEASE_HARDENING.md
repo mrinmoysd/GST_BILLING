@@ -1,6 +1,6 @@
 # Phase K — Quality and Release Hardening
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P0 before major release
 
 ## Goal
@@ -31,3 +31,11 @@ Raise confidence and operational readiness before large-scale release.
 
 - All major business phases
 
+## Completion Notes
+
+- Added GST and billing unit-level regression coverage for tax-split logic and webhook-signature processing.
+- Added platform-integration e2e coverage covering notifications, files, and admin audit history.
+- Added POS Playwright coverage for the new retail workflow and receipt surface.
+- Added release-readiness and testing documentation for build, migration, env, and operational checks.
+- Replaced deprecated Next.js `middleware` usage with `proxy`.
+- Added validation for the newer billing, file-storage, and notification environment variables.

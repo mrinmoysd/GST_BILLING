@@ -3,6 +3,8 @@ export type SessionUser = {
   email: string;
   name: string | null;
   role: string;
+  assigned_roles: string[];
+  permissions: string[];
   company_id: string;
 };
 

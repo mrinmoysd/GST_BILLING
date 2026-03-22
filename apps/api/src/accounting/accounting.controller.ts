@@ -5,6 +5,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { AccountingService } from './accounting.service';
 import { CreateLedgerDto } from './dto/create-ledger.dto';
 import { CreateJournalDto } from './dto/create-journal.dto';
+import { UpdatePeriodLockDto } from './dto/update-period-lock.dto';
 
 @ApiTags('Accounting')
 @Controller('/api/companies/:companyId')
@@ -69,6 +71,21 @@ export class AccountingController {
     @Body() dto: CreateJournalDto,
   ) {
     const data = await this.accounting.createJournal(companyId, dto);
+    return { ok: true, data };
+  }
+
+  @Get('/accounting/period-lock')
+  async getPeriodLock(@Param('companyId') companyId: string) {
+    const data = await this.accounting.getPeriodLock(companyId);
+    return { ok: true, data };
+  }
+
+  @Put('/accounting/period-lock')
+  async updatePeriodLock(
+    @Param('companyId') companyId: string,
+    @Body() dto: UpdatePeriodLockDto,
+  ) {
+    const data = await this.accounting.updatePeriodLock(companyId, dto);
     return { ok: true, data };
   }
 

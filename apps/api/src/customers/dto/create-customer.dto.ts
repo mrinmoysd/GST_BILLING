@@ -23,6 +23,16 @@ export class CreateCustomerDto {
   @IsString()
   phone?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  gstin?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  state_code?: string;
+
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   @IsObject()

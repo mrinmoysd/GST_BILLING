@@ -68,7 +68,22 @@ export class ReportsService {
       },
     );
 
-    return { data: { ...totals, currency: 'INR' } };
+    const grossSales = totals.total;
+    const netSales = totals.sub_total;
+    const averageInvoice = totals.count > 0 ? totals.total / totals.count : 0;
+
+    return {
+      data: {
+        gross_sales: grossSales,
+        net_sales: netSales,
+        tax_total: totals.tax_total,
+        invoices_count: totals.count,
+        average_invoice: averageInvoice,
+        amount_paid: totals.amount_paid,
+        balance_due: totals.balance_due,
+        currency: 'INR',
+      },
+    };
   }
 
   async purchasesSummary(args: {
@@ -119,7 +134,21 @@ export class ReportsService {
       { count: 0, sub_total: 0, tax_total: 0, total: 0 },
     );
 
-    return { data: { ...totals, currency: 'INR' } };
+    const grossPurchases = totals.total;
+    const netPurchases = totals.sub_total;
+    const averagePurchase =
+      totals.count > 0 ? totals.total / totals.count : 0;
+
+    return {
+      data: {
+        gross_purchases: grossPurchases,
+        net_purchases: netPurchases,
+        tax_total: totals.tax_total,
+        purchases_count: totals.count,
+        average_purchase: averagePurchase,
+        currency: 'INR',
+      },
+    };
   }
 
   async outstandingInvoices(args: {
@@ -155,7 +184,34 @@ export class ReportsService {
       this.prisma.invoice.count({ where }),
     ]);
 
-    return { data, meta: { page: args.page, limit: args.limit, total } };
+    const now = new Date();
+
+    return {
+      data: data.map((invoice) => {
+        const issueDate = invoice.issueDate?.toISOString().slice(0, 10) ?? null;
+        const dueDate = invoice.dueDate?.toISOString().slice(0, 10) ?? null;
+        const dueAt = invoice.dueDate ? new Date(invoice.dueDate) : null;
+        const overdueDays =
+          dueAt && dueAt.getTime() < now.getTime()
+            ? Math.floor((now.getTime() - dueAt.getTime()) / 86_400_000)
+            : 0;
+
+        return {
+          invoice_id: invoice.id,
+          invoice_number: invoice.invoiceNumber ?? null,
+          customer_id: invoice.customerId,
+          customer_name: invoice.customer.name,
+          issue_date: issueDate,
+          due_date: dueDate,
+          total: Number(invoice.total.toString()),
+          amount_paid: Number(invoice.amountPaid.toString()),
+          amount_due: Number(invoice.balanceDue.toString()),
+          overdue_days: overdueDays,
+          status: invoice.status,
+        };
+      }),
+      meta: { page: args.page, limit: args.limit, total },
+    };
   }
 
   async topProducts(args: {
@@ -225,7 +281,13 @@ export class ReportsService {
       return by === 'quantity' ? b.quantity - a.quantity : b.amount - a.amount;
     });
 
-    return { data: data.slice(0, args.limit) };
+    return {
+      data: data.slice(0, args.limit),
+      meta: {
+        limit: args.limit,
+        sort_by: args.sortBy ?? 'amount',
+      },
+    };
   }
 
   /**
@@ -286,13 +348,17 @@ export class ReportsService {
     );
 
     // grossProfit is approximation until accounting/COGS is implemented.
+    const grossProfit = revenue - purchaseTotal;
+
     return {
       data: {
         revenue,
-        purchases: purchaseTotal,
-        gross_profit_estimate: revenue - purchaseTotal,
+        cogs: purchaseTotal,
+        gross_profit: grossProfit,
+        net_profit: grossProfit,
         currency: 'INR',
-        note: 'Gross profit is an approximation until COGS/accounting is implemented.',
+        is_estimate: true,
+        note: 'Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.',
       },
     };
   }

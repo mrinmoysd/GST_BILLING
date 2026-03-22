@@ -24,6 +24,9 @@ export default function JournalDetailPage({ params }: Props) {
     id?: string;
     date?: string;
     narration?: string | null;
+    source_type?: string | null;
+    source_id?: string | null;
+    is_system_generated?: boolean;
     lines?: Array<{
       id?: string;
       amount?: number;
@@ -59,6 +62,16 @@ export default function JournalDetailPage({ params }: Props) {
             <div>
               <div className="text-sm text-neutral-600">Date</div>
               <div className="text-sm">{data?.date ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-sm text-neutral-600">Mode</div>
+              <div className="text-sm">{data?.is_system_generated ? "System generated" : "Manual"}</div>
+            </div>
+            <div>
+              <div className="text-sm text-neutral-600">Source</div>
+              <div className="font-mono text-sm break-all">
+                {data?.source_type ? `${data.source_type}${data.source_id ? `:${data.source_id}` : ""}` : "—"}
+              </div>
             </div>
           </div>
 

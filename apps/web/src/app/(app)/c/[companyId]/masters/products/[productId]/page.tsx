@@ -32,6 +32,7 @@ export default function ProductDetailPage({ params }: Props) {
   const [sku, setSku] = React.useState("");
   const [hsn, setHsn] = React.useState("");
   const [price, setPrice] = React.useState("");
+  const [costPrice, setCostPrice] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("");
   const [reorderLevel, setReorderLevel] = React.useState("");
   const [changeQty, setChangeQty] = React.useState("");
@@ -45,6 +46,9 @@ export default function ProductDetailPage({ params }: Props) {
     setSku(p.sku ?? "");
     setHsn(p.hsn ?? "");
     setPrice(p.price !== null && p.price !== undefined ? String(p.price) : "");
+    setCostPrice(
+      p.costPrice !== null && p.costPrice !== undefined ? String(p.costPrice) : "",
+    );
   setTaxRate(p.taxRate !== null && p.taxRate !== undefined ? String(p.taxRate) : "");
     setReorderLevel(p.reorderLevel !== null && p.reorderLevel !== undefined ? String(p.reorderLevel) : "");
   }, [query.data]);
@@ -121,6 +125,7 @@ export default function ProductDetailPage({ params }: Props) {
                     sku: sku || null,
                     hsn: hsn || null,
                     price: price ? Number(price) : null,
+                    costPrice: costPrice ? Number(costPrice) : null,
                     taxRate: taxRate ? Number(taxRate) : null,
                     reorderLevel: reorderLevel ? Number(reorderLevel) : null,
                   });
@@ -134,6 +139,7 @@ export default function ProductDetailPage({ params }: Props) {
                 <TextField label="SKU" value={sku} onChange={setSku} />
                 <TextField label="HSN" value={hsn} onChange={setHsn} />
                 <TextField label="Price" value={price} onChange={setPrice} type="number" />
+                <TextField label="Cost price" value={costPrice} onChange={setCostPrice} type="number" />
                 <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
                 <TextField
                   label="Reorder level"

@@ -18,6 +18,7 @@ export default function NewProductPage({ params }: Props) {
   const [sku, setSku] = React.useState("");
   const [hsn, setHsn] = React.useState("");
   const [price, setPrice] = React.useState("");
+  const [costPrice, setCostPrice] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -36,6 +37,7 @@ export default function NewProductPage({ params }: Props) {
               sku: sku || undefined,
               hsn: hsn || undefined,
               price: price ? Number(price) : undefined,
+              costPrice: costPrice ? Number(costPrice) : undefined,
               taxRate: taxRate ? Number(taxRate) : undefined,
             });
             router.replace(`/c/${companyId}/masters/products/${res.data.id}`);
@@ -52,6 +54,7 @@ export default function NewProductPage({ params }: Props) {
         <TextField label="SKU" value={sku} onChange={setSku} />
         <TextField label="HSN" value={hsn} onChange={setHsn} />
         <TextField label="Price" value={price} onChange={setPrice} type="number" />
+        <TextField label="Cost price" value={costPrice} onChange={setCostPrice} type="number" />
   <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
 
         {error ? <InlineError message={error} /> : null}

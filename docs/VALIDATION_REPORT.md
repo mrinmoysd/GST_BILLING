@@ -1,99 +1,142 @@
-Validation Report: Docs completeness for 100% development
-=========================================================
+# End-to-End Validation Report
 
-Generated: 2026-03-05
+**Generated**: 2026-03-22
 
-## What I validated
-- All files in `docs/` exist and are internally consistent at a high level.
-- DB schema supports multi-tenant scoping (`company_id`) across business tables.
-- Core flows (invoice create, payment record, PDF generation) are described.
-- Infra, security, testing and roadmap are present.
+## Scope
 
-## Current state (truth)
+Validate the current implementation state of the solution after the A-K execution track and reports phases R1-R5, then identify what is still missing.
 
-As of 2026-03-05, the documentation set is strong and internally consistent at a high level.
+This pass used:
 
-- DB schema includes extended production tables: RBAC, notifications, files/uploads, metering, webhooks, adjustments, support tickets.
-- `API_SPEC.md` includes expanded endpoint inventory across modules.
-- `API_OPENAPI.yaml` has been expanded to cover the endpoint inventory with strict schemas for most routes.
-- `LLD.md` includes core flows (invoice, payment, purchase, returns, cancel, credit note) and key invariants.
-- `UI_UX_ROUTE_MAP.md` is present.
+- code inspection across `apps/api`, `apps/web`, `docs`, and `todo`
+- route inventory review
+- latest successful build/typecheck/lint/test evidence already produced in the repo workstream
+- local reachability check for `http://127.0.0.1:3000` and `http://127.0.0.1:4000`
 
-The remaining gaps are now concentrated in *hard-spec addenda* (GST portal mappings, accounting posting rules, POS/printing/offline) and parity decisions (Prisma vs SQL).
+## Validation result
 
-## Critical gaps to close (must-have for 100% build-ready)
+The tenant product is broadly implemented and no longer in MVP-planning-only state. Core billing, GST, accounting, platform integration, POS, and reports are materially present in code.
 
-### 1) Single source of truth drift
-Status: **Open items**.
+However, this is **not yet a fully finished end-to-end product** because one validation track remains incomplete:
 
-- `SPECIFICATION.md` and this report must stay aligned with the latest OpenAPI + DB schema.
+1. live staging validation
 
-Acceptance criteria:
-- Only *current true gaps* listed.
-- All references point to the canonical doc.
+## What was validated as working at codebase level
 
-### 2) DB ↔ Prisma parity
-Status: **Decision pending**.
+- core auth and onboarding flows exist
+- company bootstrap exists
+- tenant shell, dashboard, masters, sales, purchases, inventory, payments, GST, accounting, settings, POS, and reports routes exist
+- report pages are now shaped and tested at contract level
+- admin data routes exist for auth, companies, subscriptions, usage, support tickets, queue metrics, internal admin users, and audit logs
+- API build/typecheck and web build/lint have passing evidence
+- report, GST, and accounting unit tests have passing evidence
+- admin Playwright smoke coverage now exists for dashboard, governance, and core operational routes
 
-`prisma_schema.prisma` is currently partial/simplified.
+## What could not be fully validated live
 
-Pick one path:
-- A) Make Prisma schema fully match `DB_SCHEMA.sql` (recommended once code scaffolding starts)
-- B) Mark Prisma schema as illustrative only and keep SQL migrations as the only canonical truth
+- no live local web server responded on port `3000`
+- no live local API server responded on port `4000`
+- full Playwright execution therefore could not be run as a real browser validation pass in this environment
+- DB-backed API e2e still depends on reachable Postgres and Redis
 
-### 3) GST portal export contracts
-Status: **Open items**.
+This means the current validation is strong at code/build/test level, but **not a substitute for a staging run with real services**.
 
-OpenAPI currently represents GST export payloads generically (JSON object). For compliance-grade exports, we need strict, versioned JSON schema mappings.
+## Admin validation findings
 
-Acceptance criteria:
-- Add `docs/GST_PORTAL_MAPPINGS.md` with versioned schemas:
-	- GSTR-1, GSTR-3B, HSN Summary, ITC
-- Update OpenAPI to use `oneOf` payload schemas per report type.
+### Confirmed implemented
 
-### 4) Accounting rulebook
-Status: **Open items**.
+- real admin auth endpoints now exist under `/api/admin/auth`
+- `/admin/login` is now a working super-admin login screen
+- admin routes are now wrapped in a protected admin auth layout on the web app
+- admin pages now live under a dedicated shell with sidebar navigation, breadcrumbs, and operator actions
+- backend admin endpoints exist for:
+  - companies
+  - company detail
+  - company lifecycle actions
+  - subscriptions
+  - subscription detail
+  - subscription admin operations
+  - subscription plans
+  - usage
+  - support tickets
+  - queue metrics
+  - internal admin users
+  - internal admin role catalog
+  - audit logs
+- frontend admin pages exist for:
+  - dashboard
+  - companies
+  - company create
+  - company detail
+  - subscriptions
+  - subscription detail
+  - usage
+  - support tickets
+  - queues
+  - internal users
+  - audit logs
+- admin dashboard, usage, support, and queues now render shaped operator views rather than raw JSON/debug payloads
+- admin governance is now present:
+  - internal admin login supports multiple internal roles
+  - internal admin users can be created, updated, activated, and deactivated
+  - privileged admin actions write to the dedicated `internal_admin_audit_logs` table
+  - audit explorer renders those actions from the admin UI
 
-We have accounting primitives (ledgers, journals) and endpoints, but need a rulebook to prevent design drift.
+### Confirmed backend correction
 
-Acceptance criteria:
-- Add `docs/ACCOUNTING_RULES.md` covering:
-	- default chart of accounts (COA)
-	- posting rules per transaction type
-	- period close/locking
-	- precision + rounding policy (storage scale, line vs invoice-level)
+- [apps/api/src/admin/queues.controller.ts](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/api/src/admin/queues.controller.ts)
+  - now uses super-admin protection instead of tenant company scoping
+  - the earlier guard mismatch on `/api/admin/queues/metrics` is resolved
 
-### 5) POS / printing / offline
-Status: **Open items**.
+### Residual admin limitations
 
-We have UI route intentions but not a locked POS/printing spec.
+- admin governance roles currently use the shared `users.role` field rather than a separate internal-role schema
+- admin acceptance coverage is smoke-level, not a full environment-backed operator regression suite
+- advanced internal features such as impersonation, approval workflows, and provider-side action replay are not implemented
 
-Acceptance criteria:
-- Add `docs/POS_PRINTING.md` covering:
-	- printing formats (A4 vs thermal 58/80mm) and template requirements
-	- barcode scanner handling
-	- offline queue + conflict resolution (if enabled)
-	- locked MVP decision (browser print only vs ESC/POS agent)
+## Public-site validation findings
 
-## Go / No-Go by implementation phase
+### Confirmed implemented
 
-- Phase 00 (bootstrap): **GO**
-- Phase 01 (auth/tenant/RBAC): **GO**
-- Phase 02 (masters): **GO**
-- Phase 03 (sales): **GO** (requires rounding/precision decisions early)
-- Phase 04 (purchases/inventory): **GO** (requires valuation policy decisions early)
-- Phase 05 (reports/GST): **NO-GO for portal-grade exports** until GST mappings are added; **GO** for internal reports
-- Phase 06 (accounting statements): **NO-GO** until the accounting rulebook is added; **GO** for basic ledgers/journals
-- Phase 07 (platform/admin): **GO** (webhook signature spec should be locked during implementation)
-- Phase 08 (frontend/POS): **GO** for standard UI; **NO-GO** for offline/POS printing until POS spec is locked
+- [apps/web/src/app/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/page.tsx)
+  - production-style landing page
+- [apps/web/src/app/features/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/features/page.tsx)
+- [apps/web/src/app/pricing/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/pricing/page.tsx)
+- [apps/web/src/app/about/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/about/page.tsx)
+- [apps/web/src/app/contact/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/contact/page.tsx)
+- [apps/web/src/app/help/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/help/page.tsx)
+- [apps/web/src/app/security/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/security/page.tsx)
+- [apps/web/src/app/demo/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/demo/page.tsx)
+- [apps/web/src/app/privacy/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/privacy/page.tsx)
+- [apps/web/src/app/terms/page.tsx](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/terms/page.tsx)
+- [apps/web/src/app/robots.ts](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/robots.ts)
+- [apps/web/src/app/sitemap.ts](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/apps/web/src/app/sitemap.ts)
 
-## Immediate next actions (doc lock)
-1) Add missing addenda docs: GST mappings, accounting rules, POS/printing.
-2) Decide Prisma parity strategy.
-3) Lock rounding/precision, negative stock default, and valuation method.
+### Remaining public-site note
 
-## File-by-file notes (as of 2026-03-05)
-- `DB_SCHEMA.sql`: good base with extended production tables.
-- `prisma_schema.prisma`: intentionally partial; needs parity decision.
-- `API_SPEC.md`: comprehensive endpoint inventory.
-- `API_OPENAPI.yaml`: expanded; remaining strictness work is mostly GST portal payload schemas.
+The public perimeter is now structurally complete. The remaining work on that surface is copy refinement and replacing starter legal text with approved policy text before production launch.
+
+## Remaining implementation gaps after validation
+
+### Highest priority
+
+1. live staging validation
+2. environment-backed e2e execution evidence
+3. production-readiness proof around real provider integrations and seeded flows
+
+### Medium priority
+
+1. public copy/legal refinement
+2. broader admin acceptance coverage
+3. admin observability polish
+
+## Recommended next phase order
+
+1. Phase M — Admin completion and super-admin auth
+2. Staging deployment + full live validation pass
+
+## Conclusion
+
+The core GST Billing application is substantially built. The main missing work is no longer the tenant billing engine; it is the product perimeter:
+
+- live environment validation

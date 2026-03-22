@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,10 +22,22 @@ export default function AdminSubscriptionsPage() {
   const query = useAdminSubscriptions({ status: status || undefined, page: 1, limit: 50 });
   const rows = (query.data?.data as unknown as { data?: Array<Record<string, unknown>>; meta?: { total?: number } })?.data ?? [];
   const total = (query.data?.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length;
+  const summary = (query.data as unknown as { summary?: { by_status?: Record<string, number>; by_provider?: Record<string, number> } } | undefined)?.summary;
 
   return (
     <div className="space-y-7">
-      <PageHeader eyebrow="Admin" title="Subscriptions" subtitle="Review subscription records with cleaner filters and table structure." />
+      <PageHeader
+        eyebrow="Admin"
+        title="Subscriptions"
+        subtitle="Inspect provider state, move into remediation workflows, and review plan distribution across tenants."
+      />
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Active</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.active ?? 0}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Past due</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.past_due ?? 0}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Checkout created</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.checkout_created ?? 0}</div></CardContent></Card>
+        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Stripe</div><div className="mt-2 text-2xl font-semibold">{summary?.by_provider?.stripe ?? 0}</div></CardContent></Card>
+      </div>
 
       <Card>
         <CardContent className="p-5">
@@ -55,20 +68,29 @@ export default function AdminSubscriptionsPage() {
           <DataTable>
             <DataThead>
               <tr>
+                <DataTh>Company</DataTh>
                 <DataTh>Plan</DataTh>
                 <DataTh>Provider</DataTh>
                 <DataTh>Status</DataTh>
+                <DataTh>Provider ref</DataTh>
                 <DataTh>Created</DataTh>
               </tr>
             </DataThead>
             <tbody>
               {rows.map((row, index) => (
                 <DataTr key={String(row.id ?? index)}>
+                  <DataTd>
+                    <Link href={`/admin/subscriptions/${String(row.id)}`} className="font-semibold hover:text-[var(--accent)] hover:underline">
+                      {String(row.company_name ?? "—")}
+                    </Link>
+                    <div className="text-xs text-[var(--muted)]">{String(row.owner_email ?? "—")}</div>
+                  </DataTd>
                   <DataTd className="font-semibold">{String(row.plan ?? row.planId ?? row.plan_id ?? "—")}</DataTd>
                   <DataTd>{String(row.provider ?? "—")}</DataTd>
                   <DataTd>
-                    <Badge variant="secondary">{String(row.status ?? "—")}</Badge>
+                    <Badge variant={String(row.status ?? "") === "past_due" ? "outline" : "secondary"}>{String(row.status ?? "—")}</Badge>
                   </DataTd>
+                  <DataTd className="max-w-[18ch] truncate text-xs text-[var(--muted)]">{String(row.provider_subscription_id ?? "—")}</DataTd>
                   <DataTd>{row.createdAt ? new Date(String(row.createdAt)).toLocaleDateString() : "—"}</DataTd>
                 </DataTr>
               ))}

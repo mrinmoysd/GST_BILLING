@@ -22,10 +22,10 @@ export default function ReportsPage({ params }: Props) {
     },
     {
       title: "Profit and compliance",
-      description: "High-level margin monitoring and the current GST export workflow.",
+      description: "High-level margin monitoring and GST filing workspaces with summary, tables, and export tracking.",
       items: [
         { href: `/c/${companyId}/reports/profit-snapshot`, title: "Profit snapshot", hint: "Quick margin view for a selected period." },
-        { href: `/c/${companyId}/reports/gst/gstr1`, title: "GSTR1 export", hint: "Create export jobs and track download readiness." },
+        { href: `/c/${companyId}/reports/gst/gstr1`, title: "GST compliance center", hint: "GSTR-1, GSTR-3B, HSN, ITC, and export job tracking." },
       ],
     },
   ];
@@ -42,11 +42,11 @@ export default function ReportsPage({ params }: Props) {
         <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
           <CardHeader>
             <CardTitle>Reporting workspace</CardTitle>
-            <CardDescription>Use business summaries for day-to-day control and route formal books to the accounting area.</CardDescription>
+            <CardDescription>Use business summaries for day-to-day control, GST filing review, and route formal books to the accounting area.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             <Badge variant="secondary">6 live report routes</Badge>
-            <Badge variant="outline">Business + GST</Badge>
+            <Badge variant="outline">Business + GST filing</Badge>
           </CardContent>
         </Card>
         <Card>

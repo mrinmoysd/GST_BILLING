@@ -1,6 +1,6 @@
 # Phase F — Sales and Purchase Lifecycle Completion
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P1
 
 ## Goal
@@ -31,3 +31,13 @@ Close the remaining business-document lifecycle gaps so the application can hand
 - Phase E
 - Phase G and H should be coordinated where tax and accounting impact lifecycle behavior
 
+## Progress note
+
+Completed in the current slice:
+- added persisted credit note, sales return, purchase return, share-log, and document lifecycle event models
+- added invoice credit note and share APIs
+- added purchase return API
+- extended invoice and purchase detail APIs with lifecycle history and related corrective documents
+- added lifecycle-event logging for issue, cancel, receive, bill upload, payments, credit notes, returns, and shares
+- upgraded invoice detail UI for credit notes, sales returns, share history, and lifecycle history
+- upgraded purchase detail UI for purchase returns and lifecycle history

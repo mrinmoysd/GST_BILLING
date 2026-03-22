@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOutstandingInvoices } from "@/lib/reports/hooks";
@@ -23,7 +24,7 @@ export default function OutstandingInvoicesPage({ params }: Props) {
   const [q, setQ] = React.useState("");
   const query = useOutstandingInvoices({ companyId: companyId, q: q || undefined, page: 1, limit: 50 });
 
-  const rows = (query.data?.data as unknown as { data?: Array<{ invoice_id?: string; customer_name?: string; amount_due?: string }> })?.data ?? [];
+  const rows = query.data?.data.data ?? [];
 
   return (
     <div className="space-y-7">
@@ -60,15 +61,29 @@ export default function OutstandingInvoicesPage({ params }: Props) {
                   <tr>
                     <DataTh>Invoice</DataTh>
                     <DataTh>Customer</DataTh>
+                    <DataTh>Issue date</DataTh>
+                    <DataTh>Due date</DataTh>
                     <DataTh className="text-right">Due</DataTh>
+                    <DataTh className="text-right">Overdue days</DataTh>
                   </tr>
                 </DataThead>
                 <tbody>
                   {rows.map((r, idx) => (
                     <DataTr key={`${r.invoice_id ?? "row"}-${idx}`}>
-                      <DataTd>{r.invoice_id ?? "—"}</DataTd>
+                      <DataTd>
+                        {r.invoice_id ? (
+                          <Link className="font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/sales/invoices/${r.invoice_id}`}>
+                            {r.invoice_number ?? r.invoice_id}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </DataTd>
                       <DataTd>{r.customer_name ?? "—"}</DataTd>
-                      <DataTd className="text-right">{r.amount_due ?? "0"}</DataTd>
+                      <DataTd>{r.issue_date ?? "—"}</DataTd>
+                      <DataTd>{r.due_date ?? "—"}</DataTd>
+                      <DataTd className="text-right">{Number(r.amount_due ?? 0).toFixed(2)}</DataTd>
+                      <DataTd className="text-right">{r.overdue_days ?? 0}</DataTd>
                     </DataTr>
                   ))}
                 </tbody>

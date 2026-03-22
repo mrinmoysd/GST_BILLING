@@ -21,6 +21,7 @@ import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { CreatePurchaseReturnDto } from './dto/create-purchase-return.dto';
 import { PatchPurchaseDto } from './dto/patch-purchase.dto';
 
 @ApiTags('purchases')
@@ -92,6 +93,15 @@ export class PurchasesController {
     @Param('purchaseId') purchaseId: string,
   ) {
     return this.purchases.cancel({ companyId, purchaseId });
+  }
+
+  @Post(':purchaseId/returns')
+  async createReturn(
+    @Param('companyId') companyId: string,
+    @Param('purchaseId') purchaseId: string,
+    @Body() dto: CreatePurchaseReturnDto,
+  ) {
+    return this.purchases.createReturn({ companyId, purchaseId, dto });
   }
 
   @Post(':purchaseId/bill')

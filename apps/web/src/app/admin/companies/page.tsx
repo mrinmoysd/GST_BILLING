@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { useAdminCompanies } from "@/lib/admin/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
+import { PrimaryButton, TextField } from "@/lib/ui/form";
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -26,7 +27,16 @@ export default function AdminCompaniesPage() {
 
   return (
     <div className="space-y-7">
-      <PageHeader eyebrow="Admin" title="Companies" subtitle="Monitor tenant companies on the platform with a clearer operational table." />
+      <PageHeader
+        eyebrow="Admin"
+        title="Companies"
+        subtitle="Monitor tenant companies, review owner identity, and move into lifecycle operations."
+        actions={
+          <PrimaryButton asChild>
+            <Link href="/admin/companies/new">New company</Link>
+          </PrimaryButton>
+        }
+      />
 
       <Card>
         <CardContent className="p-5">
@@ -49,17 +59,39 @@ export default function AdminCompaniesPage() {
             <DataThead>
               <tr>
                 <DataTh>Name</DataTh>
+                <DataTh>Status</DataTh>
+                <DataTh>Owner</DataTh>
                 <DataTh>GSTIN</DataTh>
                 <DataTh>Business type</DataTh>
+                <DataTh>Usage</DataTh>
                 <DataTh>Created</DataTh>
               </tr>
             </DataThead>
             <tbody>
               {rows.map((row, index) => (
                 <DataTr key={String(row.id ?? index)}>
-                  <DataTd className="font-semibold">{String(row.name ?? "—")}</DataTd>
+                  <DataTd className="font-semibold">
+                    <Link href={`/admin/companies/${String(row.id)}`} className="hover:text-[var(--accent)] hover:underline">
+                      {String(row.name ?? "—")}
+                    </Link>
+                  </DataTd>
+                  <DataTd>
+                    <Badge variant={String(row.admin_status ?? "active") === "suspended" ? "outline" : "secondary"}>
+                      {String(row.admin_status ?? "active")}
+                    </Badge>
+                  </DataTd>
+                  <DataTd>
+                    <div className="font-medium">{String(row.owner_name ?? "—")}</div>
+                    <div className="text-xs text-[var(--muted)]">{String(row.owner_email ?? "—")}</div>
+                  </DataTd>
                   <DataTd>{String(row.gstin ?? "—")}</DataTd>
                   <DataTd>{String(row.businessType ?? row.business_type ?? "—")}</DataTd>
+                  <DataTd>
+                    <div>{String(row.users_count ?? 0)} users</div>
+                    <div className="text-xs text-[var(--muted)]">
+                      {String(row.invoices_count ?? 0)} invoices · {String(row.purchases_count ?? 0)} purchases
+                    </div>
+                  </DataTd>
                   <DataTd>{row.createdAt ? new Date(String(row.createdAt)).toLocaleDateString() : "—"}</DataTd>
                 </DataTr>
               ))}

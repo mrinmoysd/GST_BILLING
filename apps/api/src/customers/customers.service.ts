@@ -64,19 +64,23 @@ export class CustomersService {
   }
 
   async create(companyId: string, dto: CreateCustomerDto) {
+    const data = {
+      companyId,
+      name: dto.name,
+      email: dto.email ?? null,
+      phone: dto.phone ?? null,
+      gstin: dto.gstin ?? null,
+      stateCode: dto.state_code ?? null,
+      billingAddress: dto.billing_address
+        ? (dto.billing_address as any)
+        : (Prisma as any).JsonNull,
+      shippingAddress: dto.shipping_address
+        ? (dto.shipping_address as any)
+        : (Prisma as any).JsonNull,
+    } satisfies Prisma.CustomerUncheckedCreateInput;
+
     return this.prisma.customer.create({
-      data: {
-        companyId,
-        name: dto.name,
-        email: dto.email ?? null,
-        phone: dto.phone ?? null,
-        billingAddress: dto.billing_address
-          ? (dto.billing_address as any)
-          : (Prisma as any).JsonNull,
-        shippingAddress: dto.shipping_address
-          ? (dto.shipping_address as any)
-          : (Prisma as any).JsonNull,
-      },
+      data,
     });
   }
 
@@ -92,19 +96,21 @@ export class CustomersService {
   async update(companyId: string, customerId: string, dto: UpdateCustomerDto) {
     await this.get(companyId, customerId);
 
+    const data = {
+      name: dto.name,
+      email: dto.email,
+      phone: dto.phone,
+      gstin: dto.gstin,
+      stateCode: dto.state_code,
+      billingAddress: dto.billing_address ? (dto.billing_address as any) : undefined,
+      shippingAddress: dto.shipping_address
+        ? (dto.shipping_address as any)
+        : undefined,
+    } satisfies Prisma.CustomerUncheckedUpdateInput;
+
     return this.prisma.customer.update({
       where: { id: customerId },
-      data: {
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone,
-        billingAddress: dto.billing_address
-          ? (dto.billing_address as any)
-          : undefined,
-        shippingAddress: dto.shipping_address
-          ? (dto.shipping_address as any)
-          : undefined,
-      },
+      data,
     });
   }
 

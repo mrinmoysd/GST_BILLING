@@ -24,11 +24,11 @@ export default function ProfitSnapshotPage({ params }: Props) {
   const [to, setTo] = React.useState("");
   const query = useProfitSnapshot({ companyId: companyId, from: from || undefined, to: to || undefined });
 
-  const data = query.data?.data as unknown as Record<string, unknown>;
-  const revenue = typeof data?.revenue === "number" ? (data.revenue as number) : null;
-  const cogs = typeof data?.cogs === "number" ? (data.cogs as number) : null;
-  const grossProfit = typeof data?.gross_profit === "number" ? (data.gross_profit as number) : null;
-  const netProfit = typeof data?.net_profit === "number" ? (data.net_profit as number) : null;
+  const data = query.data?.data;
+  const revenue = data?.revenue ?? null;
+  const cogs = data?.cogs ?? null;
+  const grossProfit = data?.gross_profit ?? null;
+  const netProfit = data?.net_profit ?? null;
 
   return (
     <div className="space-y-7">
@@ -60,14 +60,16 @@ export default function ProfitSnapshotPage({ params }: Props) {
         </div>
       ) : null}
 
-      {query.data && revenue == null && cogs == null && grossProfit == null && netProfit == null ? (
+      {query.data ? (
         <Card>
           <CardHeader>
-            <CardTitle>Raw response</CardTitle>
-            <CardDescription>The response shape does not yet match the expected summary contract for this screen.</CardDescription>
+            <CardTitle>Estimation note</CardTitle>
+            <CardDescription>Current profitability is derived from an interim costing approach.</CardDescription>
           </CardHeader>
           <CardContent>
-            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--foreground)]">
+              {data?.note ?? "Profitability notes are unavailable for the selected range."}
+            </div>
           </CardContent>
         </Card>
       ) : null}

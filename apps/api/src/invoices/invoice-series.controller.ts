@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvoiceSeriesDto } from './invoice-series/dto/create-invoice-series.dto';
 import { UpdateInvoiceSeriesDto } from './invoice-series/dto/update-invoice-series.dto';
@@ -20,11 +22,12 @@ import { UpdateInvoiceSeriesDto } from './invoice-series/dto/update-invoice-seri
 @ApiTags('Invoice Series')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/invoice-series')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
 export class InvoiceSeriesController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
+  @RequirePermissions('settings.view')
   async list(@Param('companyId') companyId: string) {
     const rows = await this.prisma.invoiceSeries.findMany({
       where: { companyId },
@@ -34,6 +37,7 @@ export class InvoiceSeriesController {
   }
 
   @Post()
+  @RequirePermissions('settings.invoice_series.manage')
   async create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateInvoiceSeriesDto,
@@ -58,6 +62,7 @@ export class InvoiceSeriesController {
   }
 
   @Patch('/:seriesId')
+  @RequirePermissions('settings.invoice_series.manage')
   async update(
     @Param('companyId') companyId: string,
     @Param('seriesId') seriesId: string,
@@ -82,6 +87,7 @@ export class InvoiceSeriesController {
   }
 
   @Delete('/:seriesId')
+  @RequirePermissions('settings.invoice_series.manage')
   async remove(
     @Param('companyId') companyId: string,
     @Param('seriesId') seriesId: string,

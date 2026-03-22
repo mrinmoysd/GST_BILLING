@@ -24,11 +24,14 @@ export default function SalesSummaryPage({ params }: Props) {
   const [to, setTo] = React.useState("");
   const query = useSalesSummary({ companyId: companyId, from: from || undefined, to: to || undefined });
 
-  const data = query.data?.data as unknown as Record<string, unknown>;
-  const grossSales = typeof data?.gross_sales === "number" ? (data.gross_sales as number) : null;
-  const netSales = typeof data?.net_sales === "number" ? (data.net_sales as number) : null;
-  const invoicesCount = typeof data?.invoices_count === "number" ? (data.invoices_count as number) : null;
-  const averageInvoice = typeof data?.average_invoice === "number" ? (data.average_invoice as number) : null;
+  const data = query.data?.data;
+  const grossSales = data?.gross_sales ?? null;
+  const netSales = data?.net_sales ?? null;
+  const invoicesCount = data?.invoices_count ?? null;
+  const averageInvoice = data?.average_invoice ?? null;
+  const taxTotal = data?.tax_total ?? null;
+  const amountPaid = data?.amount_paid ?? null;
+  const balanceDue = data?.balance_due ?? null;
 
   return (
     <div className="space-y-7">
@@ -53,7 +56,7 @@ export default function SalesSummaryPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load report")} /> : null}
 
       {query.data && (grossSales != null || netSales != null || invoicesCount != null || averageInvoice != null) ? (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {grossSales != null ? <StatCard label="Gross sales" value={grossSales.toFixed(2)} /> : null}
           {netSales != null ? <StatCard label="Net sales" value={netSales.toFixed(2)} /> : null}
           {invoicesCount != null ? <StatCard label="Invoices" value={invoicesCount} /> : null}
@@ -61,14 +64,16 @@ export default function SalesSummaryPage({ params }: Props) {
         </div>
       ) : null}
 
-      {query.data && grossSales == null && netSales == null && invoicesCount == null && averageInvoice == null ? (
+      {query.data ? (
         <Card>
           <CardHeader>
-            <CardTitle>Raw response</CardTitle>
-            <CardDescription>The response shape does not yet match the expected summary contract for this screen.</CardDescription>
+            <CardTitle>Collection performance</CardTitle>
+            <CardDescription>Track tax, collections, and open receivables for the selected period.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <StatCard label="Tax total" value={taxTotal != null ? taxTotal.toFixed(2) : "0.00"} />
+            <StatCard label="Amount paid" value={amountPaid != null ? amountPaid.toFixed(2) : "0.00"} />
+            <StatCard label="Balance due" value={balanceDue != null ? balanceDue.toFixed(2) : "0.00"} />
           </CardContent>
         </Card>
       ) : null}

@@ -5,7 +5,7 @@ import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCreateJournal, useJournals, useLedgers } from "@/lib/billing/hooks";
+import { useAccountingPeriodLock, useCreateJournal, useJournals, useLedgers, useUpdateAccountingPeriodLock } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
@@ -29,9 +29,13 @@ export default function JournalsPage({ params }: Props) {
   const query = useJournals({ companyId: companyId, from: from || undefined, to: to || undefined, page: 1, limit: 20 });
   const ledgers = useLedgers(companyId);
   const create = useCreateJournal(companyId);
+  const periodLock = useAccountingPeriodLock(companyId);
+  const updatePeriodLock = useUpdateAccountingPeriodLock(companyId);
 
   const [date, setDate] = React.useState("");
   const [narration, setNarration] = React.useState("");
+  const [lockUntil, setLockUntil] = React.useState("");
+  const [lockReason, setLockReason] = React.useState("");
   const [lines, setLines] = React.useState<LineDraft[]>([
     { side: "debit", ledgerId: "", amount: "" },
     { side: "credit", ledgerId: "", amount: "" },
@@ -41,6 +45,12 @@ export default function JournalsPage({ params }: Props) {
 
   const ledgerRows = ledgers.data?.data ?? [];
   const journals = query.data?.data.data ?? [];
+  const lockData = periodLock.data?.data.data;
+
+  React.useEffect(() => {
+    setLockUntil(lockData?.lock_until ?? "");
+    setLockReason(lockData?.reason ?? "");
+  }, [lockData?.lock_until, lockData?.reason]);
 
   const totals = lines.reduce(
     (acc, l) => {
@@ -59,6 +69,57 @@ export default function JournalsPage({ params }: Props) {
         title="Journals"
         subtitle="Create balanced journal entries and review recent posting activity from a stronger workspace layout."
       />
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Badge variant={lockData?.lock_until ? "secondary" : "outline"}>
+              {lockData?.lock_until ? `Locked through ${lockData.lock_until}` : "Period open"}
+            </Badge>
+          </div>
+          <CardTitle>Period lock</CardTitle>
+          <CardDescription>Close completed books by preventing new journal and auto-posted activity up to a specific date.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <TextField label="Lock until (YYYY-MM-DD)" value={lockUntil} onChange={setLockUntil} />
+            <TextField label="Reason (optional)" value={lockReason} onChange={setLockReason} />
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <PrimaryButton
+              type="button"
+              disabled={updatePeriodLock.isPending}
+              onClick={async () => {
+                setError(null);
+                try {
+                  await updatePeriodLock.mutateAsync({
+                    lock_until: lockUntil.trim() || null,
+                    reason: lockReason.trim() || null,
+                  });
+                } catch (e: unknown) {
+                  setError(getErrorMessage(e, "Failed to update period lock"));
+                }
+              }}
+            >
+              {updatePeriodLock.isPending ? "Saving…" : "Save period lock"}
+            </PrimaryButton>
+            <SecondaryButton
+              type="button"
+              disabled={updatePeriodLock.isPending}
+              onClick={async () => {
+                setError(null);
+                try {
+                  await updatePeriodLock.mutateAsync({ lock_until: null, reason: null });
+                } catch (e: unknown) {
+                  setError(getErrorMessage(e, "Failed to clear period lock"));
+                }
+              }}
+            >
+              Clear lock
+            </SecondaryButton>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -200,6 +261,8 @@ export default function JournalsPage({ params }: Props) {
                   <tr>
                     <DataTh>ID</DataTh>
                     <DataTh>Date</DataTh>
+                    <DataTh>Mode</DataTh>
+                    <DataTh>Source</DataTh>
                   </tr>
                 </DataThead>
                 <tbody>
@@ -211,6 +274,8 @@ export default function JournalsPage({ params }: Props) {
                         </Link>
                       </DataTd>
                       <DataTd>{j.date ?? "—"}</DataTd>
+                      <DataTd>{j.is_system_generated ? "Auto" : "Manual"}</DataTd>
+                      <DataTd>{j.source_type ? `${j.source_type}${j.source_id ? `:${j.source_id}` : ""}` : "—"}</DataTd>
                     </DataTr>
                   ))}
                 </tbody>

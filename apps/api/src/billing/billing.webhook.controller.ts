@@ -23,6 +23,8 @@ export class BillingWebhookController {
   async webhook(
     @Param('provider') provider: string,
     @Req() req: Request,
+    @Headers('stripe-signature') stripeSignature?: string,
+    @Headers('x-razorpay-signature') razorpaySignature?: string,
     @Headers('x-signature') xSignature?: string,
   ) {
     if (provider !== 'stripe' && provider !== 'razorpay') {
@@ -39,20 +41,32 @@ export class BillingWebhookController {
     const verified = this.billing.verifyWebhookSignature({
       provider,
       payloadRaw,
-      signatureHeader: xSignature,
+      signatureHeader:
+        provider === 'stripe'
+          ? stripeSignature ?? xSignature
+          : razorpaySignature ?? xSignature,
     });
 
-    await this.billing.storeWebhookEvent({
+    const event = await this.billing.storeWebhookEvent({
       provider,
       eventType: String((req.body as any)?.type ?? 'unknown'),
       providerEventId: String((req.body as any)?.id ?? ''),
       companyId: (req.body as any)?.company_id ?? null,
       payload: (req.body ?? {}) as object,
-      signature: xSignature ?? null,
+      signature:
+        provider === 'stripe'
+          ? stripeSignature ?? xSignature ?? null
+          : razorpaySignature ?? xSignature ?? null,
       verified,
     });
 
     if (!verified) throw new BadRequestException('Invalid signature');
+
+    await this.billing.processWebhookEvent({
+      eventId: event.id,
+      provider,
+      payload: req.body ?? {},
+    });
 
     return { ok: true };
   }

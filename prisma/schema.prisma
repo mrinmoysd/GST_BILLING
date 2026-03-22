@@ -48,11 +48,17 @@ model Company {
 
   purchases     Purchase[]
   purchaseItems PurchaseItem[]
+  purchaseReturns PurchaseReturn[]
+  purchaseReturnItems PurchaseReturnItem[]
 
   exportJobs ExportJob[]
 
   invoiceSeries InvoiceSeries[]
   invoices      Invoice[]
+  creditNotes   DocumentCreditNote[]
+  creditNoteItems DocumentCreditNoteItem[]
+  documentShares DocumentShare[]
+  documentLifecycleEvents DocumentLifecycleEvent[]
   payments      Payment[]
   invoiceItems  InvoiceItem[]
   idempotencyKeys IdempotencyKey[]
@@ -60,6 +66,8 @@ model Company {
   ledgers      Ledger[]
   journals     Journal[]
   journalLines JournalLine[]
+  adminAuditLogs AdminAuditLog[]
+  internalAdminActions InternalAdminAuditLog[] @relation("InternalAdminTargetCompany")
 
   files                 File[]
   notificationTemplates NotificationTemplate[]
@@ -266,6 +274,8 @@ model Invoice {
   seriesId    String?  @map("series_id") @db.Uuid
   invoiceNumber String? @map("invoice_number") @db.VarChar(64)
   status      String   @default("draft") @db.VarChar(16)
+  customerGstin String? @map("customer_gstin") @db.VarChar(15)
+  placeOfSupplyStateCode String? @map("place_of_supply_state_code") @db.VarChar(5)
   issueDate   DateTime? @map("issue_date") @db.Date
   dueDate     DateTime? @map("due_date") @db.Date
   notes       String?
@@ -287,6 +297,9 @@ model Invoice {
   series   InvoiceSeries? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
 
   items    InvoiceItem[]
+  creditNotes DocumentCreditNote[]
+  shares      DocumentShare[]
+  lifecycleEvents DocumentLifecycleEvent[] @relation("InvoiceLifecycleEvents")
   payments Payment[]
 
   @@index([companyId])
@@ -304,7 +317,13 @@ model InvoiceItem {
   quantity   Decimal
   unitPrice  Decimal @map("unit_price")
   discount   Decimal @default(0)
+  hsnCode    String? @map("hsn_code") @db.VarChar(32)
   taxRate    Decimal? @map("tax_rate")
+  taxableValue Decimal @default(0) @map("taxable_value")
+  cgstAmount Decimal @default(0) @map("cgst_amount")
+  sgstAmount Decimal @default(0) @map("sgst_amount")
+  igstAmount Decimal @default(0) @map("igst_amount")
+  cessAmount Decimal @default(0) @map("cess_amount")
 
   lineSubTotal Decimal @default(0) @map("line_sub_total")
   lineTaxTotal Decimal @default(0) @map("line_tax_total")
@@ -315,11 +334,108 @@ model InvoiceItem {
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  creditNoteItems DocumentCreditNoteItem[]
 
   @@index([companyId])
   @@index([invoiceId])
   @@index([productId])
   @@map("invoice_items")
+}
+
+model DocumentCreditNote {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyId   String   @map("company_id") @db.Uuid
+  invoiceId   String   @map("invoice_id") @db.Uuid
+  kind        String   @default("credit_note") @db.VarChar(32)
+  status      String   @default("created") @db.VarChar(32)
+  noteNumber  String   @map("note_number") @db.VarChar(64)
+  noteDate    DateTime @map("note_date") @db.Date
+  notes       String?
+  restock     Boolean  @default(false)
+  subTotal    Decimal  @default(0) @map("sub_total")
+  taxTotal    Decimal  @default(0) @map("tax_total")
+  total       Decimal  @default(0)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  items   DocumentCreditNoteItem[]
+
+  @@index([companyId])
+  @@index([companyId, invoiceId])
+  @@index([companyId, kind])
+  @@map("document_credit_notes")
+}
+
+model DocumentCreditNoteItem {
+  id            String   @id @default(uuid()) @db.Uuid
+  companyId     String   @map("company_id") @db.Uuid
+  creditNoteId  String   @map("credit_note_id") @db.Uuid
+  invoiceItemId String?  @map("invoice_item_id") @db.Uuid
+  productId     String   @map("product_id") @db.Uuid
+  quantity      Decimal
+  unitPrice     Decimal  @map("unit_price")
+  hsnCode       String?  @map("hsn_code") @db.VarChar(32)
+  taxRate       Decimal? @map("tax_rate")
+  taxableValue  Decimal  @default(0) @map("taxable_value")
+  cgstAmount    Decimal  @default(0) @map("cgst_amount")
+  sgstAmount    Decimal  @default(0) @map("sgst_amount")
+  igstAmount    Decimal  @default(0) @map("igst_amount")
+  cessAmount    Decimal  @default(0) @map("cess_amount")
+  lineSubTotal  Decimal  @default(0) @map("line_sub_total")
+  lineTaxTotal  Decimal  @default(0) @map("line_tax_total")
+  lineTotal     Decimal  @default(0) @map("line_total")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company    Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creditNote DocumentCreditNote @relation(fields: [creditNoteId], references: [id], onDelete: Cascade)
+  invoiceItem InvoiceItem?      @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
+  product    Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([companyId])
+  @@index([creditNoteId])
+  @@index([productId])
+  @@map("document_credit_note_items")
+}
+
+model DocumentShare {
+  id        String   @id @default(uuid()) @db.Uuid
+  companyId String   @map("company_id") @db.Uuid
+  invoiceId String   @map("invoice_id") @db.Uuid
+  channel   String   @db.VarChar(32)
+  recipient String   @db.VarChar(255)
+  message   String?
+  status    String   @default("logged") @db.VarChar(32)
+  sentAt    DateTime @map("sent_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([companyId, invoiceId])
+  @@map("document_shares")
+}
+
+model DocumentLifecycleEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  companyId  String   @map("company_id") @db.Uuid
+  invoiceId  String?  @map("invoice_id") @db.Uuid
+  purchaseId String?  @map("purchase_id") @db.Uuid
+  eventType  String   @map("event_type") @db.VarChar(64)
+  summary    String
+  payload    Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoice  Invoice? @relation("InvoiceLifecycleEvents", fields: [invoiceId], references: [id], onDelete: Cascade)
+  purchase Purchase? @relation("PurchaseLifecycleEvents", fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([companyId, invoiceId])
+  @@index([companyId, purchaseId])
+  @@map("document_lifecycle_events")
 }
 
 model Payment {
@@ -374,6 +490,7 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   sessions Session[]
+  internalAdminActions InternalAdminAuditLog[] @relation("InternalAdminActor")
 
   userRoles UserRole[]
 
@@ -388,14 +505,14 @@ model User {
 
 model Session {
   id              String   @id @default(uuid()) @db.Uuid
-  companyId       String   @map("company_id") @db.Uuid
+  companyId       String?  @map("company_id") @db.Uuid
   userId          String   @map("user_id") @db.Uuid
   refreshTokenHash String  @map("refresh_token_hash")
   expiresAt       DateTime @map("expires_at") @db.Timestamptz(6)
   revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
@@ -461,6 +578,8 @@ model Customer {
   name       String   @db.VarChar(200)
   email      String?  @db.VarChar(200)
   phone      String?  @db.VarChar(32)
+  gstin      String?  @db.VarChar(15)
+  stateCode  String?  @map("state_code") @db.VarChar(5)
   billingAddress Json? @map("billing_address")
   shippingAddress Json? @map("shipping_address")
   contact    Json?
@@ -483,6 +602,8 @@ model Supplier {
   name       String   @db.VarChar(200)
   email      String?  @db.VarChar(200)
   phone      String?  @db.VarChar(32)
+  gstin      String?  @db.VarChar(15)
+  stateCode  String?  @map("state_code") @db.VarChar(5)
   address    Json?
   contact    Json?
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -503,6 +624,8 @@ model Purchase {
   companyId   String   @map("company_id") @db.Uuid
   supplierId  String   @map("supplier_id") @db.Uuid
   status      String   @default("draft") @db.VarChar(16)
+  supplierGstin String? @map("supplier_gstin") @db.VarChar(15)
+  placeOfSupplyStateCode String? @map("place_of_supply_state_code") @db.VarChar(5)
   purchaseDate DateTime? @map("purchase_date") @db.Date
   notes       String?
 
@@ -522,6 +645,8 @@ model Purchase {
   supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
 
   items    PurchaseItem[]
+  purchaseReturns PurchaseReturn[]
+  lifecycleEvents DocumentLifecycleEvent[] @relation("PurchaseLifecycleEvents")
 
   payments Payment[]
 
@@ -540,7 +665,13 @@ model PurchaseItem {
   quantity   Decimal
   unitCost   Decimal @map("unit_cost")
   discount   Decimal @default(0)
+  hsnCode    String? @map("hsn_code") @db.VarChar(32)
   taxRate    Decimal? @map("tax_rate")
+  taxableValue Decimal @default(0) @map("taxable_value")
+  cgstAmount Decimal @default(0) @map("cgst_amount")
+  sgstAmount Decimal @default(0) @map("sgst_amount")
+  igstAmount Decimal @default(0) @map("igst_amount")
+  cessAmount Decimal @default(0) @map("cess_amount")
 
   lineSubTotal Decimal @default(0) @map("line_sub_total")
   lineTaxTotal Decimal @default(0) @map("line_tax_total")
@@ -551,11 +682,66 @@ model PurchaseItem {
   company  Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   product  Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  returnItems PurchaseReturnItem[]
 
   @@index([companyId])
   @@index([purchaseId])
   @@index([productId])
   @@map("purchase_items")
+}
+
+model PurchaseReturn {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @map("company_id") @db.Uuid
+  purchaseId   String   @map("purchase_id") @db.Uuid
+  returnNumber String   @map("return_number") @db.VarChar(64)
+  status       String   @default("created") @db.VarChar(32)
+  returnDate   DateTime @map("return_date") @db.Date
+  notes        String?
+  subTotal     Decimal  @default(0) @map("sub_total")
+  taxTotal     Decimal  @default(0) @map("tax_total")
+  total        Decimal  @default(0)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  company  Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  items    PurchaseReturnItem[]
+
+  @@index([companyId])
+  @@index([companyId, purchaseId])
+  @@map("purchase_returns")
+}
+
+model PurchaseReturnItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  companyId       String   @map("company_id") @db.Uuid
+  purchaseReturnId String  @map("purchase_return_id") @db.Uuid
+  purchaseItemId  String?  @map("purchase_item_id") @db.Uuid
+  productId       String   @map("product_id") @db.Uuid
+  quantity        Decimal
+  unitCost        Decimal  @map("unit_cost")
+  hsnCode         String?  @map("hsn_code") @db.VarChar(32)
+  taxRate         Decimal? @map("tax_rate")
+  taxableValue    Decimal  @default(0) @map("taxable_value")
+  cgstAmount      Decimal  @default(0) @map("cgst_amount")
+  sgstAmount      Decimal  @default(0) @map("sgst_amount")
+  igstAmount      Decimal  @default(0) @map("igst_amount")
+  cessAmount      Decimal  @default(0) @map("cess_amount")
+  lineSubTotal    Decimal  @default(0) @map("line_sub_total")
+  lineTaxTotal    Decimal  @default(0) @map("line_tax_total")
+  lineTotal       Decimal  @default(0) @map("line_total")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  purchaseReturn PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
+  purchaseItem   PurchaseItem?  @relation(fields: [purchaseItemId], references: [id], onDelete: SetNull)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([companyId])
+  @@index([purchaseReturnId])
+  @@index([productId])
+  @@map("purchase_return_items")
 }
 
 model Product {
@@ -566,6 +752,7 @@ model Product {
   sku        String?  @db.VarChar(64)
   hsn        String?  @db.VarChar(32)
   price      Decimal
+  costPrice  Decimal  @default(0) @map("cost_price")
   taxRate    Decimal? @map("tax_rate")
   stock      Decimal  @default(0)
   reorderLevel Decimal? @map("reorder_level")
@@ -577,6 +764,8 @@ model Product {
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stockMovements StockMovement[]
+  creditNoteItems DocumentCreditNoteItem[]
+  purchaseReturnItems PurchaseReturnItem[]
 
   invoiceItems InvoiceItem[]
   purchaseItems PurchaseItem[]
@@ -648,6 +837,9 @@ model Journal {
   companyId String   @map("company_id") @db.Uuid
   date      DateTime @db.Date
   narration String?
+  sourceType String? @map("source_type") @db.VarChar(64)
+  sourceId   String? @map("source_id") @db.VarChar(128)
+  isSystemGenerated Boolean @default(false) @map("is_system_generated")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -656,6 +848,8 @@ model Journal {
 
   @@index([companyId])
   @@index([companyId, date])
+  @@index([companyId, sourceType])
+  @@unique([companyId, sourceType, sourceId])
   @@map("journals")
 }
 
@@ -678,4 +872,46 @@ model JournalLine {
   @@index([debitLedgerId])
   @@index([creditLedgerId])
   @@map("journal_lines")
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyId   String   @map("company_id") @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  actorEmail  String?  @map("actor_email") @db.VarChar(255)
+  action      String   @db.VarChar(128)
+  targetType  String   @map("target_type") @db.VarChar(64)
+  targetId    String?  @map("target_id") @db.VarChar(128)
+  summary     String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([companyId, createdAt])
+  @@map("admin_audit_logs")
+}
+
+model InternalAdminAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  actorEmail  String?  @map("actor_email") @db.VarChar(255)
+  adminRole   String?  @map("admin_role") @db.VarChar(64)
+  action      String   @db.VarChar(128)
+  targetType  String   @map("target_type") @db.VarChar(64)
+  targetId    String?  @map("target_id") @db.VarChar(128)
+  companyId   String?  @map("company_id") @db.Uuid
+  summary     String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor   User?    @relation("InternalAdminActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  company Company? @relation("InternalAdminTargetCompany", fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([companyId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("internal_admin_audit_logs")
 }

@@ -1,4 +1,5 @@
 import {
+  Req,
   Controller,
   Get,
   Param,
@@ -9,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
+import { AdminGovernanceService } from './admin-governance.service';
 import { SuperAdminGuard } from './super-admin.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -17,7 +19,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 @Controller('/api/admin/support-tickets')
 @UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
 export class AdminSupportTicketsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly governance: AdminGovernanceService,
+  ) {}
 
   @Get()
   async list(
@@ -31,7 +36,7 @@ export class AdminSupportTicketsController {
 
     const where = status ? { status: String(status) } : {};
 
-    const [total, rows] = await Promise.all([
+    const [total, rows, companyUsers] = await Promise.all([
       this.prisma.supportTicket.count({ where }),
       this.prisma.supportTicket.findMany({
         where,
@@ -39,7 +44,30 @@ export class AdminSupportTicketsController {
         skip,
         take: limitNum,
       }),
+      this.prisma.user.findMany({
+        select: {
+          email: true,
+          companyId: true,
+          company: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      }),
     ]);
+
+    const companyByEmail = new Map(
+      companyUsers
+        .filter((row) => row.email && row.companyId)
+        .map((row) => [
+          String(row.email).toLowerCase(),
+          {
+            company_id: row.companyId,
+            company_name: row.company?.name ?? null,
+          },
+        ]),
+    );
 
     return {
       data: rows.map(
@@ -51,19 +79,37 @@ export class AdminSupportTicketsController {
           message: string;
           status: string;
           priority: string;
+          metadata?: unknown;
           createdAt: Date;
           updatedAt: Date;
-        }) => ({
-          id: t.id,
-          email: t.email,
-          name: t.name,
-          subject: t.subject,
-          message: t.message,
-          status: t.status,
-          priority: t.priority,
-          created_at: t.createdAt.toISOString(),
-          updated_at: t.updatedAt.toISOString(),
-        }),
+        }) => {
+          const metadata =
+            t.metadata && typeof t.metadata === 'object'
+              ? (t.metadata as Record<string, unknown>)
+              : {};
+          const company = t.email
+            ? companyByEmail.get(String(t.email).toLowerCase()) ?? null
+            : null;
+
+          return {
+            id: t.id,
+            email: t.email,
+            name: t.name,
+            subject: t.subject,
+            message: t.message,
+            status: t.status,
+            priority: t.priority,
+            created_at: t.createdAt.toISOString(),
+            updated_at: t.updatedAt.toISOString(),
+            assignee: typeof metadata.assignee === 'string' ? metadata.assignee : null,
+            internal_note:
+              typeof metadata.internal_note === 'string'
+                ? metadata.internal_note
+                : null,
+            company_id: company?.company_id ?? null,
+            company_name: company?.company_name ?? null,
+          };
+        },
       ),
       meta: { total, page: pageNum, limit: limitNum },
     };
@@ -76,13 +122,51 @@ export class AdminSupportTicketsController {
     body: {
       status?: string;
       priority?: string;
+      assignee?: string;
+      internal_note?: string;
     },
+    @Req() req: any,
   ) {
+    const current = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      select: { metadata: true },
+    });
+    const metadata =
+      current?.metadata && typeof current.metadata === 'object'
+        ? ({ ...(current.metadata as Record<string, unknown>) } as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    if (typeof body.assignee === 'string') {
+      metadata.assignee = body.assignee.trim();
+    }
+    if (typeof body.internal_note === 'string') {
+      metadata.internal_note = body.internal_note.trim();
+    }
+
     const updated = await this.prisma.supportTicket.update({
       where: { id },
       data: {
         status: body.status ? String(body.status) : undefined,
         priority: body.priority ? String(body.priority) : undefined,
+        metadata: metadata as object,
+      },
+    });
+
+    await this.governance.logAction({
+      actorUserId: req.user?.sub ?? null,
+      actorEmail: req.user?.email ?? null,
+      adminRole: Array.isArray(req.user?.roles) ? req.user.roles[0] : null,
+      action: 'admin.support_ticket.updated',
+      targetType: 'support_ticket',
+      targetId: updated.id,
+      summary: `Updated support ticket ${updated.id}`,
+      metadata: {
+        status: updated.status,
+        priority: updated.priority,
+        assignee: body.assignee ?? null,
       },
     });
 

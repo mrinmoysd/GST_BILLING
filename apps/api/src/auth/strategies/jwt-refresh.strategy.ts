@@ -28,17 +28,23 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
   async validate(req: any, payload: any) {
     const token: string | undefined =
-      req?.cookies?.refresh_token ?? req?.body?.refresh_token;
+      req?.cookies?.refresh_token ??
+      req?.cookies?.admin_refresh_token ??
+      req?.body?.refresh_token;
     if (!token) throw new UnauthorizedException();
 
     const companyId = payload.companyId;
     const userId = payload.sub;
-    if (!companyId || !userId) throw new UnauthorizedException();
+    const isAdminScope =
+      payload?.scope === 'admin' ||
+      payload?.isSuperAdmin === true ||
+      Array.isArray(payload?.roles);
+    if (!userId) throw new UnauthorizedException();
 
     const session = await this.prisma.session.findFirst({
       where: {
-        companyId,
         userId,
+        companyId: isAdminScope ? null : companyId,
         revokedAt: null,
         expiresAt: { gt: new Date() },
       },
@@ -46,8 +52,9 @@ export class JwtRefreshStrategy extends PassportStrategy(
     });
 
     if (!session) throw new UnauthorizedException();
+    if (!isAdminScope && !companyId) throw new UnauthorizedException();
 
-  const ok = await bcrypt.compare(token, session.refreshTokenHash);
+    const ok = await bcrypt.compare(token, session.refreshTokenHash);
     if (!ok) throw new UnauthorizedException();
 
     return payload;

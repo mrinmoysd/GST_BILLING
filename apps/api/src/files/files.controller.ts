@@ -6,9 +6,11 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
@@ -39,6 +41,17 @@ export class FilesController {
   ) {
     const data = await this.files.getFile(companyId, fileId);
     return { ok: true, data };
+  }
+
+  @Get('/files/:fileId/content')
+  async content(
+    @Param('companyId') companyId: string,
+    @Param('fileId') fileId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.files.getFileContent(companyId, fileId);
+    res.setHeader('content-type', data.mimeType);
+    return data.bytes;
   }
 
   @Post('/files/upload')

@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 
+import { AccountingService } from '../accounting/accounting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { BootstrapOnboardingDto } from './dto/bootstrap-onboarding.dto';
@@ -12,6 +13,7 @@ export class OnboardingService {
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly accounting: AccountingService,
   ) {}
 
   async bootstrap(dto: BootstrapOnboardingDto) {
@@ -59,6 +61,8 @@ export class OnboardingService {
         },
       });
 
+      await this.accounting.ensureDefaultLedgers(createdCompany.id, tx);
+
       const user = await tx.user.create({
         data: {
           companyId: createdCompany.id,
@@ -105,20 +109,13 @@ export class OnboardingService {
       },
     });
 
+    const sessionAccess = await this.auth.getSessionAccess(company.userId);
+
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
-      user: {
-        id: company.userId,
-        email: company.userEmail,
-        name: company.userName,
-        role: company.userRole,
-        company_id: company.id,
-      },
-      company: {
-        id: company.id,
-        name: company.name,
-      },
+      user: sessionAccess.user,
+      company: sessionAccess.company,
       onboarding: {
         completed: true,
         gstin_verification_status: dto.gstin ? 'pending' : 'not_started',

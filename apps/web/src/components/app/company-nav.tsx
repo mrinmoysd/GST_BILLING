@@ -10,6 +10,7 @@ import {
   FileText,
   LayoutDashboard,
   Package,
+  ScanBarcode,
   Wallet,
   Receipt,
   Settings,
@@ -18,27 +19,31 @@ import {
   Users,
 } from "lucide-react";
 
+import { useAuth } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  permission: string;
 };
 
 const nav: NavItem[] = [
-  { href: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "masters/customers", label: "Customers", icon: Users },
-  { href: "masters/suppliers", label: "Suppliers", icon: ShoppingCart },
-  { href: "masters/categories", label: "Categories", icon: Tags },
-  { href: "masters/products", label: "Products", icon: Package },
-  { href: "sales/invoices", label: "Invoices", icon: Receipt },
-  { href: "purchases", label: "Purchases", icon: FileText },
-  { href: "payments", label: "Payments", icon: Wallet },
-  { href: "inventory", label: "Inventory", icon: Boxes },
-  { href: "accounting", label: "Accounting", icon: BookOpen },
-  { href: "reports", label: "Reports", icon: BarChart3 },
-  { href: "settings", label: "Settings", icon: Settings },
+  { href: "dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
+  { href: "masters/customers", label: "Customers", icon: Users, permission: "masters.view" },
+  { href: "masters/suppliers", label: "Suppliers", icon: ShoppingCart, permission: "masters.view" },
+  { href: "masters/categories", label: "Categories", icon: Tags, permission: "masters.view" },
+  { href: "masters/products", label: "Products", icon: Package, permission: "masters.view" },
+  { href: "sales/invoices", label: "Invoices", icon: Receipt, permission: "sales.view" },
+  { href: "pos", label: "POS", icon: ScanBarcode, permission: "sales.view" },
+  { href: "purchases", label: "Purchases", icon: FileText, permission: "purchases.view" },
+  { href: "payments", label: "Payments", icon: Wallet, permission: "payments.view" },
+  { href: "inventory", label: "Inventory", icon: Boxes, permission: "inventory.view" },
+  { href: "accounting", label: "Accounting", icon: BookOpen, permission: "accounting.view" },
+  { href: "reports", label: "Reports", icon: BarChart3, permission: "reports.view" },
+  { href: "settings", label: "Settings", icon: Settings, permission: "settings.view" },
 ];
 
 export function CompanyNav(props: {
@@ -47,10 +52,12 @@ export function CompanyNav(props: {
   variant?: "sidebar" | "sheet";
 }) {
   const pathname = usePathname();
+  const { session } = useAuth();
+  const visibleNav = nav.filter((item) => hasPermission(session, item.permission));
 
   return (
     <nav className={cn("space-y-1.5", props.variant === "sheet" && "mt-4")}>
-      {nav.map((i) => {
+      {visibleNav.map((i) => {
         const fullHref = `/c/${props.companyId}/${i.href}`;
         const active = pathname === fullHref || pathname.startsWith(fullHref + "/");
         const Icon = i.icon;

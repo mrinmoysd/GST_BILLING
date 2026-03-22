@@ -15,7 +15,9 @@ import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { Headers } from '@nestjs/common';
 import type { Response } from 'express';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { CreateCreditNoteDto } from './dto/create-credit-note.dto';
 import { IssueInvoiceDto } from './dto/issue-invoice.dto';
+import { ShareInvoiceDto } from './dto/share-invoice.dto';
 import { InvoicesService } from './invoices.service';
 import { InvoicePdfService } from './pdf/invoice-pdf.service';
 import { JobsService } from '../jobs/jobs.service';
@@ -110,6 +112,24 @@ export class InvoicesController {
     @Param('invoiceId') invoiceId: string,
   ) {
     return this.invoices.cancel({ companyId, invoiceId });
+  }
+
+  @Post('/:invoiceId/credit-notes')
+  createCreditNote(
+    @Param('companyId') companyId: string,
+    @Param('invoiceId') invoiceId: string,
+    @Body() dto: CreateCreditNoteDto,
+  ) {
+    return this.invoices.createCreditNote({ companyId, invoiceId, dto });
+  }
+
+  @Post('/:invoiceId/share')
+  share(
+    @Param('companyId') companyId: string,
+    @Param('invoiceId') invoiceId: string,
+    @Body() dto: ShareInvoiceDto,
+  ) {
+    return this.invoices.shareInvoice({ companyId, invoiceId, dto });
   }
 
   @Post('/:invoiceId/pdf/regenerate')

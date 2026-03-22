@@ -23,6 +23,7 @@ export type Product = {
   hsn: string | null;
   categoryId?: string | null;
   price?: string | number | null;
+  costPrice?: string | number | null;
   taxRate?: string | number | null;
   stock?: string | number;
   reorderLevel?: string | number | null;

@@ -61,14 +61,18 @@ export class SuppliersService {
   }
 
   async create(companyId: string, dto: CreateSupplierDto) {
+    const data = {
+      companyId,
+      name: dto.name,
+      email: dto.email ?? null,
+      phone: dto.phone ?? null,
+      gstin: dto.gstin ?? null,
+      stateCode: dto.state_code ?? null,
+      address: dto.address ? (dto.address as any) : (Prisma as any).JsonNull,
+    } satisfies Prisma.SupplierUncheckedCreateInput;
+
     return this.prisma.supplier.create({
-      data: {
-        companyId,
-        name: dto.name,
-        email: dto.email ?? null,
-        phone: dto.phone ?? null,
-        address: dto.address ? (dto.address as any) : (Prisma as any).JsonNull,
-      },
+      data,
     });
   }
 
@@ -84,14 +88,18 @@ export class SuppliersService {
   async update(companyId: string, supplierId: string, dto: UpdateSupplierDto) {
     await this.get(companyId, supplierId);
 
+    const data = {
+      name: dto.name,
+      email: dto.email,
+      phone: dto.phone,
+      gstin: dto.gstin,
+      stateCode: dto.state_code,
+      address: dto.address ? (dto.address as any) : undefined,
+    } satisfies Prisma.SupplierUncheckedUpdateInput;
+
     return this.prisma.supplier.update({
       where: { id: supplierId },
-      data: {
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone,
-        address: dto.address ? (dto.address as any) : undefined,
-      },
+      data,
     });
   }
 

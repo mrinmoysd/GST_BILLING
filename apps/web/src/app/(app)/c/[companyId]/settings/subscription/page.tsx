@@ -37,7 +37,7 @@ export default function SubscriptionSettingsPage({ params }: Props) {
       <PageHeader
         eyebrow="Settings"
         title="Subscription"
-        subtitle="Review current subscription state and launch the MVP checkout flow from a clearer billing surface."
+        subtitle="Review current subscription state and launch the live provider checkout flow from a clearer billing surface."
       />
 
       {sub.isLoading ? <LoadingBlock label="Loading subscription…" /> : null}
@@ -77,7 +77,7 @@ export default function SubscriptionSettingsPage({ params }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Checkout</CardTitle>
-          <CardDescription>Create an MVP checkout session or pending subscription record.</CardDescription>
+          <CardDescription>Create a provider checkout session for Stripe or Razorpay using the configured billing credentials.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -141,7 +141,7 @@ export default function SubscriptionSettingsPage({ params }: Props) {
             </SecondaryButton>
           </div>
 
-          <div className="text-xs text-[var(--muted)]">Portal and full subscription management are not implemented in the backend yet.</div>
+          <div className="text-xs text-[var(--muted)]">Webhook-driven activation and subscription status sync now run through the backend integration layer.</div>
         </CardContent>
       </Card>
     </div>

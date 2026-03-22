@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTopProducts } from "@/lib/reports/hooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
 
@@ -31,12 +32,8 @@ export default function TopProductsPage({ params }: Props) {
     sort_by: sortBy,
   });
 
-  const reportData = query.data?.data;
-  const rows = Array.isArray(reportData)
-    ? reportData
-    : Array.isArray((reportData as { data?: unknown[] } | undefined)?.data)
-      ? ((reportData as { data?: unknown[] }).data ?? [])
-      : [];
+  const rows = query.data?.data.data ?? [];
+  const meta = query.data?.data.meta;
 
   return (
     <div className="space-y-7">
@@ -74,11 +71,36 @@ export default function TopProductsPage({ params }: Props) {
       {query.data ? (
         <Card>
           <CardHeader>
-            <CardTitle>Result payload</CardTitle>
-            <CardDescription>{rows.length > 0 ? `${rows.length} record(s) returned.` : "The API did not return a normalized list shape for this screen yet."}</CardDescription>
+            <CardTitle>Leaderboard</CardTitle>
+            <CardDescription>
+              {rows.length > 0 ? `${rows.length} product record(s) ranked by ${meta?.sort_by ?? sortBy}.` : "No products matched the current filter window."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+            <DataTableShell>
+              <DataTable>
+                <DataThead>
+                  <tr>
+                    <DataTh>Product</DataTh>
+                    <DataTh>SKU</DataTh>
+                    <DataTh>HSN</DataTh>
+                    <DataTh className="text-right">Quantity</DataTh>
+                    <DataTh className="text-right">Amount</DataTh>
+                  </tr>
+                </DataThead>
+                <tbody>
+                  {rows.map((row) => (
+                    <DataTr key={row.product_id}>
+                      <DataTd>{row.name}</DataTd>
+                      <DataTd>{row.sku ?? "—"}</DataTd>
+                      <DataTd>{row.hsn ?? "—"}</DataTd>
+                      <DataTd className="text-right">{row.quantity.toFixed(2)}</DataTd>
+                      <DataTd className="text-right">{row.amount.toFixed(2)}</DataTd>
+                    </DataTr>
+                  ))}
+                </tbody>
+              </DataTable>
+            </DataTableShell>
           </CardContent>
         </Card>
       ) : null}

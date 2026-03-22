@@ -1,6 +1,6 @@
 # Phase J — POS and Print
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P2
 
 ## Goal
@@ -31,3 +31,9 @@ Deliver retail-mode billing and browser-based receipt printing.
 - Phase G tax behavior
 - Phase E workflow-quality foundations
 
+## Completion Notes
+
+- Added the POS route group with a landing page, billing workspace, and receipt page.
+- Implemented scan/search-first retail billing on top of invoice draft creation, invoice issue, and payment capture.
+- Added browser-based thermal receipt printing through a dedicated receipt route and print stylesheet.
+- Wired POS entry points into the main company navigation and invoice detail actions.

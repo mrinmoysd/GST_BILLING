@@ -174,6 +174,42 @@ export function useCancelInvoice(args: { companyId: string; invoiceId: string })
   });
 }
 
+export function useCreateCreditNote(args: { companyId: string; invoiceId: string }) {
+  const qc = useQueryClient();
+  const { companyId, invoiceId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "invoices", invoiceId, "credit-notes", "create"],
+    mutationFn: async (body: {
+      note_date?: string;
+      notes?: string;
+      restock?: boolean;
+      kind?: "credit_note" | "sales_return";
+      items: Array<{ invoice_item_id?: string; product_id: string; quantity: string }>;
+    }) => {
+      return apiClient.post<{ id: string }>(companyPath(companyId, `/invoices/${invoiceId}/credit-notes`), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices", invoiceId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "payments"] });
+    },
+  });
+}
+
+export function useShareInvoice(args: { companyId: string; invoiceId: string }) {
+  const qc = useQueryClient();
+  const { companyId, invoiceId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "invoices", invoiceId, "share"],
+    mutationFn: async (body: { channel: "email" | "whatsapp" | "sms"; recipient: string; message?: string }) => {
+      return apiClient.post<{ share: { id: string }; pdf_url?: string }>(companyPath(companyId, `/invoices/${invoiceId}/share`), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices", invoiceId] });
+    },
+  });
+}
+
 export function useRegenerateInvoicePdf(args: { companyId: string; invoiceId: string }) {
   const { companyId, invoiceId } = args;
   return useMutation({
@@ -317,6 +353,26 @@ export function useCancelPurchase(args: { companyId: string; purchaseId: string 
   });
 }
 
+export function useCreatePurchaseReturn(args: { companyId: string; purchaseId: string }) {
+  const qc = useQueryClient();
+  const { companyId, purchaseId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "purchases", purchaseId, "returns", "create"],
+    mutationFn: async (body: {
+      return_date?: string;
+      notes?: string;
+      items: Array<{ purchase_item_id?: string; product_id: string; quantity: string }>;
+    }) => {
+      return apiClient.post<{ id: string }>(companyPath(companyId, `/purchases/${purchaseId}/returns`), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "purchases", purchaseId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "purchases"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "payments"] });
+    },
+  });
+}
+
 export function purchaseBillUrl(companyId: string, purchaseId: string) {
   return apiClient.resolveUrl(companyPath(companyId, `/purchases/${purchaseId}/bill`));
 }
@@ -397,6 +453,32 @@ export function useCreateJournal(companyId: string) {
   });
 }
 
+export function useAccountingPeriodLock(companyId: string) {
+  return useQuery({
+    queryKey: ["companies", companyId, "accounting", "period-lock"],
+    queryFn: async () =>
+      apiClient.get<{ ok: true; data: { lock_until?: string | null; reason?: string | null } }>(
+        companyPath(companyId, `/accounting/period-lock`),
+      ),
+  });
+}
+
+export function useUpdateAccountingPeriodLock(companyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["companies", companyId, "accounting", "period-lock", "update"],
+    mutationFn: async (body: { lock_until?: string | null; reason?: string | null }) =>
+      apiClient.put<{ ok: true; data: { lock_until?: string | null; reason?: string | null } }>(
+        companyPath(companyId, `/accounting/period-lock`),
+        body,
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "accounting", "period-lock"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "journals"] });
+    },
+  });
+}
+
 export function useTrialBalance(args: { companyId: string; as_of?: string }) {
   const { companyId, as_of } = args;
   return useQuery({
@@ -404,7 +486,19 @@ export function useTrialBalance(args: { companyId: string; as_of?: string }) {
     queryFn: async () => {
       const qs = new URLSearchParams();
       if (as_of) qs.set("as_of", as_of);
-      return apiClient.get<{ ok: true; data: unknown }>(companyPath(companyId, `/reports/trial-balance?${qs.toString()}`));
+      return apiClient.get<{
+        as_of: string;
+        rows: Array<{
+          ledger_id: string;
+          ledger_name: string;
+          ledger_type?: string;
+          top_level?: string;
+          debit: number;
+          credit: number;
+          net_balance: number;
+        }>;
+        totals: { debit: number; credit: number; difference: number };
+      }>(companyPath(companyId, `/reports/trial-balance?${qs.toString()}`));
     },
   });
 }
@@ -417,7 +511,12 @@ export function useProfitLoss(args: { companyId: string; from?: string; to?: str
       const qs = new URLSearchParams();
       if (from) qs.set("from", from);
       if (to) qs.set("to", to);
-      return apiClient.get<{ ok: true; data: unknown }>(companyPath(companyId, `/reports/profit-loss?${qs.toString()}`));
+      return apiClient.get<{
+        period: { from: string; to: string };
+        summary: { income: number; expense: number; profit: number };
+        income: Array<{ ledger_id: string; ledger_name: string; amount: number }>;
+        expenses: Array<{ ledger_id: string; ledger_name: string; amount: number }>;
+      }>(companyPath(companyId, `/reports/profit-loss?${qs.toString()}`));
     },
   });
 }
@@ -429,7 +528,19 @@ export function useBalanceSheet(args: { companyId: string; as_of?: string }) {
     queryFn: async () => {
       const qs = new URLSearchParams();
       if (as_of) qs.set("as_of", as_of);
-      return apiClient.get<{ ok: true; data: unknown }>(companyPath(companyId, `/reports/balance-sheet?${qs.toString()}`));
+      return apiClient.get<{
+        as_of: string;
+        summary: {
+          assets: number;
+          liabilities: number;
+          equity: number;
+          liabilities_and_equity: number;
+          difference: number;
+        };
+        assets: Array<{ ledger_id: string; ledger_name: string; amount: number }>;
+        liabilities: Array<{ ledger_id: string; ledger_name: string; amount: number }>;
+        equity: Array<{ ledger_id: string; ledger_name: string; amount: number }>;
+      }>(companyPath(companyId, `/reports/balance-sheet?${qs.toString()}`));
     },
   });
 }

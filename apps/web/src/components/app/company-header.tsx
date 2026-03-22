@@ -83,7 +83,7 @@ export function CompanyHeader(props: {
           </Link>
 
           <Badge variant="secondary" className="hidden md:inline-flex">
-            Company scope
+            {session.user?.role ?? "User"}
           </Badge>
 
           <DropdownMenu>
@@ -97,6 +97,9 @@ export function CompanyHeader(props: {
               <div className="px-2 py-1.5">
                 <div className="text-xs text-[var(--muted)]">Signed in as</div>
                 <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
+                <div className="mt-1 text-xs text-[var(--muted)]">
+                  Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+                </div>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem

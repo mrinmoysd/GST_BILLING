@@ -1,9 +1,9 @@
 # Current Implementation State
 
-**Date**: 2026-03-18
-**Purpose**: Working baseline for Phase A truth alignment.
+**Date**: 2026-03-22  
+**Purpose**: Current truth snapshot after execution phases A-K and reports phases R1-R5.
 
-This document summarizes what is currently implemented, what is partial, and what remains missing in the codebase as of the latest review.
+This document summarizes what is implemented, what is partial, and what remains missing in the codebase based on the current repository state.
 
 ---
 
@@ -11,91 +11,95 @@ This document summarizes what is currently implemented, what is partial, and wha
 
 ### Backend
 
-- Auth: login, refresh, me, logout
-- Company settings: get and patch existing company
+- Auth: login, refresh, me, logout, forgot-password, reset-password
+- Onboarding: public bootstrap flow for company + owner creation
+- Company setup: company read/update, GSTIN verification trigger, company logo upload/download
+- RBAC: role catalog, role CRUD, role assignment, permission-aware session access
 - Masters: customers, suppliers, products, categories
-- Inventory: stock adjustment, stock movements, low stock
-- Sales: invoice draft, issue, cancel, payment recording, PDF regenerate, PDF download
-- Purchases: draft, receive, cancel, bill upload/download, purchase-linked payments via generic payment flow
-- Reports: sales summary, purchases summary, outstanding, top products, profit snapshot
-- GST exports: MVP GSTR1-like CSV export job
-- Accounting: ledgers, journals, trial balance, P&L, balance sheet, cash book, bank book
-- Settings/platform: notification templates, test send, files, subscription read/checkout placeholder, users, built-in roles listing
-- Admin: companies, subscriptions, usage, support tickets, queue metrics
+- Inventory: stock adjustment, stock movements, low stock, inventory workflow routes
+- Sales: invoice draft, issue, cancel, payments, credit notes, sales returns, share logging, PDF jobs/download
+- Purchases: draft, receive, cancel, purchase returns, bill upload/download, payments
+- GST: GSTR-1, GSTR-3B, HSN summary, ITC reports, GST export jobs/downloads
+- Accounting: ledgers, journals, auto-posted business transactions, trial balance, P&L, balance sheet, cash book, bank book, period lock
+- Platform: files, notifications, billing/webhooks, admin audit logs, queue metrics, subscription flows
+- Admin APIs: auth, companies, subscriptions, usage, support tickets, queue metrics, internal admin users, audit logs
+- Admin company lifecycle APIs: company create, company detail, suspend/reactivate
+- Admin subscription operation APIs: subscription detail, plan/status update, plan catalog
+- Admin dashboard API and enriched observability APIs for support, usage, queue/job failures, webhooks, notifications, and file storage
+- POS: retail billing and receipt route support
 
 ### Frontend
 
-- Auth login and refresh-based session bootstrap
-- Company-scoped app shell
-- Dashboard route
-- Customers, suppliers, products, categories
-- Invoices list/create/detail
-- Purchases list/create/detail
-- Inventory page
-- Reports pages
-- Accounting pages
-- Settings pages for company, invoice series, users, notifications, subscription
-- Admin pages for dashboard, companies, subscriptions, usage, queues, support tickets
+- Auth and onboarding pages
+- Company-scoped shell and modernized UI foundation
+- Dashboard, payments, inventory, masters, invoices, purchases, reports, GST, accounting, settings
+- Roles and user access management pages
+- POS routes and receipt print page
+- Admin pages for dashboard, companies, subscriptions, usage, queues, and support tickets
+- Admin governance pages for internal users and audit logs
+- Admin company create page and company detail workspace
+- Admin subscription detail workspace
+- Admin dashboard, usage, support, and queues are now data-backed operator screens rather than raw payload previews
+- Report pages now render shaped business, GST, and accounting outputs rather than JSON payload previews
+
+### Quality
+
+- API build and typecheck pass
+- Web lint and production build pass
+- Unit coverage exists for GST, accounting, billing, and reports service contracts
+- Playwright specs exist for smoke, customers, POS, and reports route coverage
 
 ---
 
 ## Partial
 
-### Backend
+### Public / marketing surface
 
-- RBAC is MVP-only and not permissions-driven
-- Billing checkout is placeholder-only
-- Notifications stop at templates and test send, not full provider delivery
-- Files are local-first and not production storage-grade
-- GST export is minimal and not compliance-grade
-- Accounting exists but is not auto-posted from business transactions
-- Profit reporting is approximate rather than valuation-accurate
+- Public route set now exists for landing, features, pricing, about, contact, help, security, demo, privacy, and terms
+- Public pages now share a marketing shell, navigation, footer, CTA structure, and sitemap/robots support
+- Public content and legal pages are now structurally present, but copy and legal text should still be finalized before production launch
 
-### Frontend
+### Admin surface
 
-- Dashboard is operationally light and visually placeholder-grade
-- Invoice builder is functional but below planned UX depth
-- Purchase UX is functional but below planned UX depth
-- Accounting report presentation is only partially polished
-- Route guarding relies heavily on client session bootstrap
-- Route structure has drifted from canonical docs
+- `/admin/login` is now implemented with a dedicated internal-admin auth flow
+- admin route protection now exists for `/admin/*`
+- admin shell/navigation is now implemented with a dedicated sidebar, header, and mobile admin navigation
+- Companies now have admin create and detail/action workflows
+- Subscriptions now have detail and admin operations workflows
+- Usage, support, and queue observability now have operator-grade dashboards and failure feeds
+- Internal admin users now have a dedicated management workspace with role assignment and activation controls
+- Audit logs now have a dedicated explorer backed by the `internal_admin_audit_logs` table
+- Usage analytics are functional, but deeper revenue/cohort analytics are still a future enhancement rather than a missing admin foundation
+- Queue metrics route is now aligned with super-admin protection instead of tenant company scoping
+
+### Validation / release confidence
+
+- Browser-level end-to-end execution depends on a live API + web environment plus seeded credentials
+- DB-backed API e2e requires reachable Postgres and Redis
+- No live staging validation evidence is stored in the repo yet
 
 ---
 
 ## Missing
 
-### Backend
+### Admin completion
 
-- Public company creation/onboarding endpoint
-- GSTIN verification flow
-- Full permissions model
-- Role create/update/assign flows
-- Credit notes and sales returns
-- Purchase returns
-- Invoice send/share endpoint
-- GST engine with CGST/SGST/IGST breakdown
-- GSTR-3B, HSN, ITC, portal-grade GST exports
-- Auto-posting accounting engine
-- Real provider-driven billing completion flow
-- Full entitlement updates from webhooks
-- Production notification delivery integrations
-- POS APIs/contract if required
+- No major admin implementation slice remains open after Phase M
+- Remaining admin work is now validation-oriented:
+  - live seeded environment execution
+  - deeper admin e2e coverage beyond smoke routes
+  - optional future enhancements like impersonation, cohort analytics, or provider-operation drilldowns
 
-### Frontend
+### Environment / validation
 
-- Onboarding routes and flow
-- Reset-password route
-- Logout route parity
-- Dedicated roles page
-- Dedicated payments page
-- Dedicated inventory stock/movements/adjustments route group
-- GST hub with full report set
-- POS routes and print experience
-- Fully modernized/pixel-perfect design system rollout
+- Full API e2e execution in a reachable integration environment
+- Full Playwright execution against a live seeded app
+- Staging validation checklist results captured in docs
 
 ---
 
-## Notes
+## Conclusion
 
-- Some older planning docs are now stale because they still mark implemented items as deferred.
-- This file should be used to drive updates to legacy docs during Phase A.
+The product application itself is broad and largely implemented across tenant workflows, GST, accounting, platform integrations, POS, reports, and public-facing pages. The largest remaining gaps are now:
+
+- live environment validation and deployment confidence

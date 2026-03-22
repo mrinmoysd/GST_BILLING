@@ -2,112 +2,48 @@ import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
-import { CompanyAdminGuard } from '../common/auth/company-admin.guard';
+import { AuthUser } from '../common/auth/auth-user.decorator';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
-import { PrismaService } from '../prisma/prisma.service';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
+import { RbacService } from '../rbac/rbac.service';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { PatchUserDto } from './dto/patch-user.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/users')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, CompanyAdminGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
 export class CompaniesUsersController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly rbac: RbacService) {}
 
   @Get()
+  @RequirePermissions('settings.users.manage')
   async list(@Param('companyId') companyId: string) {
-    const rows = await this.prisma.user.findMany({
-      where: { companyId },
-      orderBy: [{ createdAt: 'desc' }],
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        lastLogin: true,
-      },
-    });
+    const rows = await this.rbac.listUsers(companyId);
     return { ok: true, data: rows };
   }
 
   @Post()
+  @RequirePermissions('settings.users.manage')
   async invite(
     @Param('companyId') companyId: string,
     @Body() dto: InviteUserDto,
+    @AuthUser() user: { sub: string },
   ) {
-    // MVP/dev-mode: create a user with a generated password and return it.
-    // TODO: replace with email invite token flow.
-    const { default: bcrypt } = await import('bcryptjs');
-
-    const tempPassword =
-      dto.temp_password ?? Math.random().toString(36).slice(2) + 'A1!';
-    const passwordHash = await bcrypt.hash(tempPassword, 10);
-
-    const created = await this.prisma.user.create({
-      data: {
-        companyId,
-        email: dto.email,
-        name: dto.name ?? null,
-        role: dto.role ?? 'staff',
-        isActive: dto.is_active ?? true,
-        passwordHash,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
-    return {
-      ok: true,
-      data: {
-        user: created,
-        dev: {
-          temporary_password: tempPassword,
-        },
-      },
-    };
+    const data = await this.rbac.inviteUser(companyId, dto, user.sub);
+    return { ok: true, data };
   }
 
   @Patch('/:userId')
+  @RequirePermissions('settings.users.manage')
   async patch(
     @Param('companyId') companyId: string,
     @Param('userId') userId: string,
     @Body() dto: PatchUserDto,
+    @AuthUser() user: { sub: string },
   ) {
-    // Ensure user belongs to company
-    const exists = await this.prisma.user.findFirst({
-      where: { id: userId, companyId },
-      select: { id: true },
-    });
-    if (!exists)
-      return { ok: false, error: { code: 'NOT_FOUND', message: 'User not found' } };
-
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        role: dto.role ?? undefined,
-        isActive: dto.is_active ?? undefined,
-        name: dto.name ?? undefined,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        lastLogin: true,
-      },
-    });
-
+    const updated = await this.rbac.patchUser(companyId, userId, dto, user.sub);
     return { ok: true, data: updated };
   }
 }

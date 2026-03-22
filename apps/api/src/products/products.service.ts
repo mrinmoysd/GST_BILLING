@@ -50,8 +50,7 @@ export class ProductsService {
       if (!cat) throw new BadRequestException('Invalid categoryId');
     }
 
-    return this.prisma.product.create({
-      data: {
+    const data = {
         companyId,
         name: dto.name,
         sku: dto.sku ?? null,
@@ -61,13 +60,20 @@ export class ProductsService {
           dto.price !== undefined && dto.price !== null
             ? new this.d(dto.price as any)
             : new this.d(0),
+        costPrice:
+          dto.costPrice !== undefined && dto.costPrice !== null
+            ? new this.d(dto.costPrice as any)
+            : new this.d(0),
         taxRate:
           dto.gstRate !== undefined && dto.gstRate !== null
             ? new this.d(dto.gstRate as any)
             : null,
         stock: new this.d(0),
         metadata: dto.meta ? (dto.meta as any) : (Prisma as any).JsonNull,
-      },
+      } satisfies Prisma.ProductUncheckedCreateInput;
+
+    return this.prisma.product.create({
+      data,
     });
   }
 
@@ -107,6 +113,11 @@ export class ProductsService {
 
     if (dto.price !== undefined) {
       data.price = dto.price === null ? null : new this.d(dto.price as any);
+    }
+
+    if (dto.costPrice !== undefined) {
+      data.costPrice =
+        dto.costPrice === null ? null : new this.d(dto.costPrice as any);
     }
 
     return this.prisma.product.update({

@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useCreateNotificationTemplate,
+  useNotificationOutbox,
   useNotificationTemplates,
+  useProcessNotifications,
+  useRetryNotification,
   useTestNotification,
   useUpdateNotificationTemplate,
 } from "@/lib/settings/notificationsHooks";
@@ -30,21 +33,32 @@ export default function NotificationsSettingsPage({ params }: Props) {
   const create = useCreateNotificationTemplate(companyId);
   const update = useUpdateNotificationTemplate(companyId);
   const testNotif = useTestNotification(companyId);
+  const outbox = useNotificationOutbox(companyId);
+  const processOutbox = useProcessNotifications(companyId);
+  const retryNotification = useRetryNotification(companyId);
 
   const [error, setError] = React.useState<string | null>(null);
 
-  const [name, setName] = React.useState("");
+  const [code, setCode] = React.useState("");
   const [channel, setChannel] = React.useState("email");
   const [subject, setSubject] = React.useState("");
   const [body, setBody] = React.useState("Hi {{name}},\n\nThis is a test notification.\n");
 
   const [testTo, setTestTo] = React.useState("");
-  const [testSubject, setTestSubject] = React.useState("Test notification");
-  const [testBody, setTestBody] = React.useState("Hello! This is a test.");
+  const [testTemplateCode, setTestTemplateCode] = React.useState("");
+  const [testPayload, setTestPayload] = React.useState('{"name":"Demo User"}');
   const [testError, setTestError] = React.useState<string | null>(null);
   const [testOk, setTestOk] = React.useState<string | null>(null);
 
   const rows = list.data?.data.data ?? [];
+  const outboxRows = outbox.data?.data.data ?? [];
+  const firstTemplateCode = rows[0]?.code ?? "";
+
+  React.useEffect(() => {
+    if (!testTemplateCode && firstTemplateCode) {
+      setTestTemplateCode(firstTemplateCode);
+    }
+  }, [firstTemplateCode, testTemplateCode]);
 
   return (
     <div className="space-y-7">
@@ -65,7 +79,7 @@ export default function NotificationsSettingsPage({ params }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-          <TextField label="Name" value={name} onChange={setName} />
+          <TextField label="Code" value={code} onChange={setCode} />
           <div>
             <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
             <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
@@ -90,11 +104,11 @@ export default function NotificationsSettingsPage({ params }: Props) {
             disabled={create.isPending}
             onClick={async () => {
               setError(null);
-              if (!name.trim()) return setError("Enter a template name.");
+              if (!code.trim()) return setError("Enter a template code.");
               if (!body.trim()) return setError("Enter a template body.");
               try {
-                await create.mutateAsync({ name: name.trim(), channel, subject: subject.trim() || undefined, body });
-                setName("");
+                await create.mutateAsync({ code: code.trim(), channel, subject: subject.trim() || undefined, body });
+                setCode("");
                 setSubject("");
               } catch (e: unknown) {
                 setError(getErrorMessage(e, "Failed to create template"));
@@ -109,7 +123,7 @@ export default function NotificationsSettingsPage({ params }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Test notification</CardTitle>
-          <CardDescription>Send a one-off test message to validate current provider wiring and template assumptions.</CardDescription>
+          <CardDescription>Queue a test notification from an existing template, then process the outbox to validate provider wiring.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -123,35 +137,73 @@ export default function NotificationsSettingsPage({ params }: Props) {
           </div>
           <TextField label="To" value={testTo} onChange={setTestTo} placeholder="email/phone" />
           </div>
-          <TextField label="Subject (optional)" value={testSubject} onChange={setTestSubject} />
           <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Body</label>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Template</label>
+            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={testTemplateCode} onChange={(e) => setTestTemplateCode(e.target.value)}>
+              <option value="">Select template</option>
+              {rows
+                .filter((row) => row.channel === channel)
+                .map((row) => (
+                  <option key={row.id} value={row.code}>
+                    {row.code}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Sample payload JSON</label>
             <textarea
               className="mt-2 min-h-24 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 text-sm shadow-sm"
-              value={testBody}
-              onChange={(e) => setTestBody(e.target.value)}
+              value={testPayload}
+              onChange={(e) => setTestPayload(e.target.value)}
             />
           </div>
           {testError ? <InlineError message={testError} /> : null}
           {testOk ? <div className="text-sm text-green-700">{testOk}</div> : null}
-          <PrimaryButton
-            type="button"
-            disabled={testNotif.isPending}
-            onClick={async () => {
-              setTestError(null);
-              setTestOk(null);
-              if (!testTo.trim()) return setTestError("Enter recipient.");
-              if (!testBody.trim()) return setTestError("Enter body.");
-              try {
-                await testNotif.mutateAsync({ channel, to: testTo.trim(), subject: testSubject.trim() || undefined, body: testBody });
-                setTestOk("Queued test notification.");
-              } catch (e: unknown) {
-                setTestError(getErrorMessage(e, "Failed to send test"));
-              }
-            }}
-          >
-            {testNotif.isPending ? "Sending…" : "Send test"}
-          </PrimaryButton>
+          <div className="flex flex-wrap gap-2">
+            <PrimaryButton
+              type="button"
+              disabled={testNotif.isPending}
+              onClick={async () => {
+                setTestError(null);
+                setTestOk(null);
+                if (!testTo.trim()) return setTestError("Enter recipient.");
+                if (!testTemplateCode.trim()) return setTestError("Select a template.");
+                try {
+                  const payload = testPayload.trim() ? JSON.parse(testPayload) : {};
+                  await testNotif.mutateAsync({
+                    channel,
+                    to_address: testTo.trim(),
+                    template_code: testTemplateCode.trim(),
+                    sample_payload: payload,
+                  });
+                  setTestOk("Queued test notification.");
+                  void outbox.refetch();
+                } catch (e: unknown) {
+                  setTestError(getErrorMessage(e, "Failed to queue test"));
+                }
+              }}
+            >
+              {testNotif.isPending ? "Queueing…" : "Queue test"}
+            </PrimaryButton>
+            <SecondaryButton
+              type="button"
+              disabled={processOutbox.isPending}
+              onClick={async () => {
+                setTestError(null);
+                setTestOk(null);
+                try {
+                  await processOutbox.mutateAsync();
+                  setTestOk("Processed pending notifications.");
+                  void outbox.refetch();
+                } catch (e: unknown) {
+                  setTestError(getErrorMessage(e, "Failed to process outbox"));
+                }
+              }}
+            >
+              {processOutbox.isPending ? "Processing…" : "Process outbox"}
+            </SecondaryButton>
+          </div>
         </CardContent>
       </Card>
 
@@ -180,17 +232,17 @@ export default function NotificationsSettingsPage({ params }: Props) {
                   <tbody>
                     {rows.map((t) => (
                       <DataTr key={t.id}>
-                        <DataTd>{t.name}</DataTd>
+                        <DataTd>{t.code}</DataTd>
                         <DataTd>{t.channel}</DataTd>
                         <DataTd>
                       <SecondaryButton
                         type="button"
                         disabled={update.isPending}
                         onClick={async () => {
-                          const newName = window.prompt("Rename template", t.name);
+                          const newName = window.prompt("Update subject", t.subject ?? "");
                           if (!newName || !newName.trim()) return;
                           try {
-                            await update.mutateAsync({ templateId: t.id, patch: { name: newName.trim() } });
+                            await update.mutateAsync({ templateId: t.id, patch: { subject: newName.trim() } });
                           } catch (e: unknown) {
                             window.alert(getErrorMessage(e, "Failed to update template"));
                           }
@@ -198,6 +250,66 @@ export default function NotificationsSettingsPage({ params }: Props) {
                       >
                         Rename
                       </SecondaryButton>
+                        </DataTd>
+                      </DataTr>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </DataTableShell>
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-medium">Delivery outbox</div>
+          <SecondaryButton type="button" onClick={() => void outbox.refetch()}>
+            Refresh
+          </SecondaryButton>
+        </div>
+        {outbox.isLoading ? <LoadingBlock label="Loading outbox…" /> : null}
+        {outbox.isError ? <InlineError message={getErrorMessage(outbox.error, "Failed to load outbox")} /> : null}
+        {outbox.data && outboxRows.length === 0 ? <EmptyState title="No notifications yet" hint="Queued test notifications will appear here." /> : null}
+        {outbox.data && outboxRows.length > 0 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Outbox</CardTitle>
+              <CardDescription>Track delivery attempts, failures, and manual retries.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTableShell>
+                <DataTable>
+                  <DataThead>
+                    <tr>
+                      <DataTh>Template</DataTh>
+                      <DataTh>To</DataTh>
+                      <DataTh>Status</DataTh>
+                      <DataTh>Attempts</DataTh>
+                      <DataTh>Actions</DataTh>
+                    </tr>
+                  </DataThead>
+                  <tbody>
+                    {outboxRows.map((row) => (
+                      <DataTr key={row.id}>
+                        <DataTd>{row.template_code ?? "Manual"}</DataTd>
+                        <DataTd>{row.to_address ?? "—"}</DataTd>
+                        <DataTd>{row.status}</DataTd>
+                        <DataTd>{row.attempts}</DataTd>
+                        <DataTd>
+                          <SecondaryButton
+                            type="button"
+                            disabled={retryNotification.isPending || row.status === "sent"}
+                            onClick={async () => {
+                              try {
+                                await retryNotification.mutateAsync(row.id);
+                              } catch (e: unknown) {
+                                window.alert(getErrorMessage(e, "Retry failed"));
+                              }
+                            }}
+                          >
+                            Retry
+                          </SecondaryButton>
                         </DataTd>
                       </DataTr>
                     ))}

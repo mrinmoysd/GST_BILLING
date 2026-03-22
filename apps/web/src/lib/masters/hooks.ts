@@ -225,6 +225,7 @@ export function useCreateProduct(args: { companyId: string }) {
       hsn?: string;
   categoryId?: string | null;
       price?: string | number;
+      costPrice?: string | number;
   taxRate?: number;
     }) => {
       const res = await apiClient.post<Product>(companyPath(companyId, `/products`), body);
@@ -247,6 +248,7 @@ export function useUpdateProduct(args: { companyId: string; productId: string })
       hsn?: string | null;
   categoryId?: string | null;
       price?: string | number | null;
+      costPrice?: string | number | null;
   taxRate?: number | null;
       reorderLevel?: number | null;
     }) => {
@@ -380,11 +382,48 @@ export function useCategories(args: { companyId: string }) {
   return useQuery({
     queryKey: ["companies", companyId, "categories"],
     queryFn: async () => {
-      // Categories API is a slightly different envelope: { ok: true, data: Category[] }
-      const res = await apiClient.get<{ ok: true; data: Category[] }>(
+      const res = await apiClient.get<{ ok?: true; data?: Category[] } | Category[]>(
         companyPath(companyId, `/categories`),
       );
+
+      const payload = res.data as { ok?: true; data?: Category[] } | Category[];
+      if (Array.isArray(payload)) return payload;
+      return Array.isArray(payload?.data) ? payload.data : [];
+    },
+  });
+}
+
+export function useCreateCategory(args: { companyId: string }) {
+  const qc = useQueryClient();
+  const { companyId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "categories", "create"],
+    mutationFn: async (body: { name: string; is_active?: boolean }) => {
+      const res = await apiClient.post<{ ok: true; data: Category }>(
+        companyPath(companyId, `/categories`),
+        body,
+      );
       return res;
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "categories"] });
+    },
+  });
+}
+
+export function useDeleteCategory(args: { companyId: string }) {
+  const qc = useQueryClient();
+  const { companyId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "categories", "delete"],
+    mutationFn: async (categoryId: string) => {
+      const res = await apiClient.del<{ ok: true; data: { id: string } }>(
+        companyPath(companyId, `/categories/${categoryId}`),
+      );
+      return res;
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "categories"] });
     },
   });
 }

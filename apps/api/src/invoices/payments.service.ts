@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { AccountingService } from '../accounting/accounting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { IdempotencyService } from '../idempotency/idempotency.service';
@@ -14,6 +15,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly idempotency: IdempotencyService,
+    private readonly accounting: AccountingService,
   ) {}
 
   async list(args: {
@@ -135,6 +137,53 @@ export class PaymentsService {
                   amountPaid: nextPaid,
                   balanceDue: nextDue,
                   status: nextDue.lte(0) ? 'paid' : 'issued',
+                },
+              });
+
+              await this.accounting.postInvoicePayment(tx, {
+                companyId: args.companyId,
+                payment,
+                invoice: {
+                  id: invoice.id,
+                  invoiceNumber: invoice.invoiceNumber,
+                },
+              });
+
+              await tx.documentLifecycleEvent.create({
+                data: {
+                  companyId: args.companyId,
+                  invoiceId: invoice.id,
+                  eventType: 'invoice.payment_recorded',
+                  summary: `Payment of ${amount.toString()} recorded for invoice`,
+                  payload: {
+                    payment_id: payment.id,
+                    amount: amount.toString(),
+                    method: payment.method,
+                  },
+                },
+              });
+            }
+
+            if (purchase) {
+              await this.accounting.postPurchasePayment(tx, {
+                companyId: args.companyId,
+                payment,
+                purchase: {
+                  id: purchase.id,
+                },
+              });
+
+              await tx.documentLifecycleEvent.create({
+                data: {
+                  companyId: args.companyId,
+                  purchaseId: purchase.id,
+                  eventType: 'purchase.payment_recorded',
+                  summary: `Payment of ${amount.toString()} recorded for purchase`,
+                  payload: {
+                    payment_id: payment.id,
+                    amount: amount.toString(),
+                    method: payment.method,
+                  },
                 },
               });
             }

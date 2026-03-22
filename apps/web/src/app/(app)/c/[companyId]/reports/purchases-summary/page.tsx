@@ -24,11 +24,12 @@ export default function PurchasesSummaryPage({ params }: Props) {
   const [to, setTo] = React.useState("");
   const query = usePurchasesSummary({ companyId: companyId, from: from || undefined, to: to || undefined });
 
-  const data = query.data?.data as unknown as Record<string, unknown>;
-  const grossPurchases = typeof data?.gross_purchases === "number" ? (data.gross_purchases as number) : null;
-  const netPurchases = typeof data?.net_purchases === "number" ? (data.net_purchases as number) : null;
-  const purchasesCount = typeof data?.purchases_count === "number" ? (data.purchases_count as number) : null;
-  const averagePurchase = typeof data?.average_purchase === "number" ? (data.average_purchase as number) : null;
+  const data = query.data?.data;
+  const grossPurchases = data?.gross_purchases ?? null;
+  const netPurchases = data?.net_purchases ?? null;
+  const purchasesCount = data?.purchases_count ?? null;
+  const averagePurchase = data?.average_purchase ?? null;
+  const taxTotal = data?.tax_total ?? null;
 
   return (
     <div className="space-y-7">
@@ -52,7 +53,7 @@ export default function PurchasesSummaryPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load report")} /> : null}
 
       {query.data && (grossPurchases != null || netPurchases != null || purchasesCount != null || averagePurchase != null) ? (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {grossPurchases != null ? <StatCard label="Gross purchases" value={grossPurchases.toFixed(2)} /> : null}
           {netPurchases != null ? <StatCard label="Net purchases" value={netPurchases.toFixed(2)} /> : null}
           {purchasesCount != null ? <StatCard label="Purchases" value={purchasesCount} /> : null}
@@ -60,14 +61,14 @@ export default function PurchasesSummaryPage({ params }: Props) {
         </div>
       ) : null}
 
-      {query.data && grossPurchases == null && netPurchases == null && purchasesCount == null && averagePurchase == null ? (
+      {query.data ? (
         <Card>
           <CardHeader>
-            <CardTitle>Raw response</CardTitle>
-            <CardDescription>The response shape does not yet match the expected summary contract for this screen.</CardDescription>
+            <CardTitle>Tax overview</CardTitle>
+            <CardDescription>Monitor the tax component embedded in the selected purchase range.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <pre className="overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{JSON.stringify(query.data.data, null, 2)}</pre>
+          <CardContent className="grid gap-4 md:grid-cols-1">
+            <StatCard label="Tax total" value={taxTotal != null ? taxTotal.toFixed(2) : "0.00"} />
           </CardContent>
         </Card>
       ) : null}

@@ -33,6 +33,11 @@ export class CreateProductDto {
   @ValidateIf((o) => o.price !== undefined)
   price?: string | number;
 
+  @ApiPropertyOptional({ description: 'Unit cost as string/number (Decimal)' })
+  @IsOptional()
+  @ValidateIf((o) => o.costPrice !== undefined)
+  costPrice?: string | number;
+
   @ApiPropertyOptional({ description: 'GST rate percent' })
   @IsOptional()
   @IsNumber()

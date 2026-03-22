@@ -1,6 +1,6 @@
 # POS / Printing / Offline (MVP lock)
 
-**Status**: Draft (spec addendum)
+**Status**: Implemented MVP
 
 ## MVP decision (locked)
 
@@ -8,6 +8,16 @@
 - **Offline**: Disabled in MVP.
 
 Rationale: keeps initial build simple and cross-platform.
+
+## Implemented in Phase J
+
+- POS route group is live:
+  - `/(app)/c/[companyId]/pos`
+  - `/(app)/c/[companyId]/pos/billing`
+  - `/(app)/c/[companyId]/pos/receipt/[invoiceId]`
+- Retail billing is implemented on top of the existing invoice and payment engine.
+- Receipt printing uses browser print with a thermal-friendly CSS layout.
+- Product lookup uses SKU and name search, with Enter-to-add behavior on the billing screen.
 
 ## Printing formats
 

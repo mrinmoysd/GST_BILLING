@@ -1,98 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { GstService } from '../gst/gst.service';
 
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { toCsv } from './csv.util';
-
 @Injectable()
 export class ExportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gst: GstService,
+  ) {}
 
   async createGstr1Export(args: {
     companyId: string;
     from?: string;
     to?: string;
   }) {
-    const job = await this.prisma.exportJob.create({
-      data: {
-        companyId: args.companyId,
-        type: 'gstr1_csv',
-        status: 'running',
-        params: { from: args.from ?? null, to: args.to ?? null },
-        startedAt: new Date(),
-      },
+    return this.gst.createExport({
+      companyId: args.companyId,
+      report: 'gstr1',
+      format: 'csv',
+      from: args.from,
+      to: args.to,
     });
-
-    try {
-      // MVP: GSTR-1 like export from invoices.
-      // Limitations: no CGST/SGST/IGST split, POS rules, etc.
-      const where: any = {
-        companyId: args.companyId,
-        status: { in: ['issued', 'paid'] },
-      };
-
-      if (args.from || args.to) {
-        where.issueDate = {
-          ...(args.from ? { gte: new Date(args.from) } : {}),
-          ...(args.to ? { lte: new Date(args.to) } : {}),
-        };
-      }
-
-      const invoices = await this.prisma.invoice.findMany({
-        where,
-        include: { customer: true },
-        orderBy: { issueDate: 'asc' },
-      });
-
-      const rows = invoices.map((inv: (typeof invoices)[number]) => ({
-        invoice_number: inv.invoiceNumber ?? '',
-        invoice_date: inv.issueDate
-          ? inv.issueDate.toISOString().slice(0, 10)
-          : '',
-        customer_name: inv.customer.name,
-        customer_gstin: '',
-        taxable_value: inv.subTotal.toString(),
-        tax_value: inv.taxTotal.toString(),
-        invoice_value: inv.total.toString(),
-        status: inv.status,
-      }));
-
-      const csv = toCsv(rows);
-
-      const storageDir = path.join(process.cwd(), 'storage', 'exports');
-      fs.mkdirSync(storageDir, { recursive: true });
-      const filename = `gstr1_${job.id}.csv`;
-      const filepath = path.join(storageDir, filename);
-      fs.writeFileSync(filepath, csv);
-
-      const resultFileUrl = `/api/companies/${args.companyId}/exports/${job.id}/download`;
-
-      const updated = await this.prisma.exportJob.update({
-        where: { id: job.id },
-        data: {
-          status: 'succeeded',
-          finishedAt: new Date(),
-          resultFileUrl,
-          resultFileName: filename,
-          error: null,
-        },
-      });
-
-      return { data: updated };
-    } catch (e: any) {
-      const updated = await this.prisma.exportJob.update({
-        where: { id: job.id },
-        data: {
-          status: 'failed',
-          finishedAt: new Date(),
-          error: String(e?.message ?? e),
-        },
-      });
-
-      return { data: updated };
-    }
   }
 
   async getJob(args: { companyId: string; jobId: string }) {
@@ -104,7 +35,12 @@ export class ExportsService {
   }
 
   getDownloadPath(jobId: string) {
-    const storageDir = path.join(process.cwd(), 'storage', 'exports');
-    return path.join(storageDir, `gstr1_${jobId}.csv`);
+    const job = fs
+      .readdirSync(this.gst.getExportStorageDir(), { withFileTypes: true })
+      .find((entry) => entry.isFile() && entry.name.includes(jobId));
+    if (!job) {
+      throw new NotFoundException('Export file missing on disk');
+    }
+    return path.join(this.gst.getExportStorageDir(), job.name);
   }
 }

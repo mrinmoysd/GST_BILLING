@@ -3,34 +3,44 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { hasPermission } from "@/lib/auth/permissions";
+import { useAuth } from "@/lib/auth/session";
 import { PageHeader } from "@/lib/ui/state";
 
 type Props = { params: Promise<{ companyId: string }> };
 
 export default function SettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
+  const { session } = useAuth();
   const sections = [
     {
       title: "Business identity",
       items: [
-        { href: `/c/${companyId}/settings/company`, title: "Company", hint: "Profile, GSTIN, state, timezone, and stock policy." },
-        { href: `/c/${companyId}/settings/invoice-series`, title: "Invoice series", hint: "Numbering rules and active series management." },
+        { href: `/c/${companyId}/settings/company`, title: "Company", hint: "Profile, GSTIN, state, timezone, and stock policy.", permission: "settings.company.manage" },
+        { href: `/c/${companyId}/settings/invoice-series`, title: "Invoice series", hint: "Numbering rules and active series management.", permission: "settings.invoice_series.manage" },
       ],
     },
     {
       title: "People and messaging",
       items: [
-        { href: `/c/${companyId}/settings/users`, title: "Users", hint: "Invite teammates and adjust current role assignments." },
-        { href: `/c/${companyId}/settings/notifications`, title: "Notifications", hint: "Template configuration and test-send workspace." },
+        { href: `/c/${companyId}/settings/users`, title: "Users", hint: "Invite teammates and adjust current role assignments.", permission: "settings.users.manage" },
+        { href: `/c/${companyId}/settings/roles`, title: "Roles", hint: "Create custom roles and choose their permission inventory.", permission: "settings.roles.manage" },
+        { href: `/c/${companyId}/settings/notifications`, title: "Notifications", hint: "Template configuration and test-send workspace.", permission: "settings.notifications.manage" },
       ],
     },
     {
       title: "Commercial",
       items: [
-        { href: `/c/${companyId}/settings/subscription`, title: "Subscription", hint: "Current plan status and provider checkout flow." },
+        { href: `/c/${companyId}/settings/subscription`, title: "Subscription", hint: "Current plan status and provider checkout flow.", permission: "settings.subscription.manage" },
       ],
     },
   ];
+  const visibleSections = sections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => hasPermission(session, item.permission)),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <div className="space-y-7">
@@ -47,8 +57,8 @@ export default function SettingsPage({ params }: Props) {
             <CardDescription>Settings are grouped by company identity, people and communication, and commercial controls.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">5 active settings screens</Badge>
-            <Badge variant="outline">Company + users + billing</Badge>
+            <Badge variant="secondary">{visibleSections.reduce((count, section) => count + section.items.length, 0)} active settings screens</Badge>
+            <Badge variant="outline">Permission-aware controls</Badge>
           </CardContent>
         </Card>
         <Card>
@@ -60,7 +70,7 @@ export default function SettingsPage({ params }: Props) {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-3">
-        {sections.map((section) => (
+        {visibleSections.map((section) => (
           <Card key={section.title}>
             <CardHeader>
               <CardTitle>{section.title}</CardTitle>

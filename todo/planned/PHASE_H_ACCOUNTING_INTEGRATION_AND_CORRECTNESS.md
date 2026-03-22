@@ -1,6 +1,6 @@
 # Phase H — Accounting Integration and Correctness
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P0
 
 ## Goal
@@ -27,9 +27,16 @@ Tie accounting directly to business transactions and enforce the product’s fin
 
 - Financial statements derive from business events with controlled manual adjustments, not from disconnected workflows
 
+## Completion notes
+
+- Added a posting engine with default chart-of-accounts seeding and source-linked system journals
+- Wired invoice issue, invoice cancellation, credit notes, purchase receipt, purchase cancellation, purchase returns, and payment flows into accounting journal creation
+- Added accounting period lock APIs and enforcement so manual and automatic postings are blocked for closed periods
+- Added journal traceability fields and surfaced auto/manual mode plus source references in the accounting UI
+- Added explicit `cost_price` support on products so inventory and COGS postings use a dedicated cost basis instead of selling price
+
 ## Dependencies
 
 - Phase A
 - Phase G for tax/accounting consistency
 - Phase F for return/reversal behaviors
-

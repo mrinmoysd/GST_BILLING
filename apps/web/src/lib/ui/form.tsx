@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -37,14 +37,14 @@ export function TextField({
 export function PrimaryButton({
   children,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
+}: ButtonProps & { children: React.ReactNode }) {
   return <Button {...props}>{children}</Button>;
 }
 
 export function SecondaryButton({
   children,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
+}: ButtonProps & { children: React.ReactNode }) {
   return (
     <Button variant="secondary" {...props}>
       {children}
