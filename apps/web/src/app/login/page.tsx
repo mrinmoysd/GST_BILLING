@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
+import { AuthShell } from "@/components/public/auth-shell";
 import type { NormalizedApiError } from "@/lib/api/types";
 import { useLogin } from "@/lib/auth/hooks";
 
@@ -50,61 +51,78 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,95,140,0.08),transparent_28%),var(--app-bg)] px-4 py-10 md:px-6">
-      <div className="mx-auto max-w-xl rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)] md:p-8">
-      <h1 className="text-3xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">Login</h1>
-
-      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-        Sign in with your email and password. Your refresh session is stored in an httpOnly cookie.
-      </p>
-
-      <form onSubmit={onSubmit} className="mt-6">
-        <label className="mb-4 block">
-          <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Email</div>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-            className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-          />
-        </label>
-
-        <label className="mb-4 block">
-          <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Password</div>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-            className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-          />
-        </label>
-
-        {error ? (
-          <div className="mt-3 rounded-2xl border border-red-200 bg-[#fff6f3] p-4 text-sm text-[#7e3128]">
-            {error}
-          </div>
-        ) : null}
-
-        <button type="submit" disabled={isSubmitting} className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:opacity-70">
-          {isSubmitting ? "Signing in..." : "Sign in"}
-        </button>
-
-        <div className="mt-5 text-sm text-[var(--muted)]">
+    <AuthShell
+      eyebrow="Workspace access"
+      title="Enter the operating surface."
+      subtitle="Sign in to continue into your company workspace, where billing, stock, GST, payments, and books stay connected."
+      asideTitle="What happens after sign-in"
+      asideBody="This is the tenant entry path. Use it when you are moving into day-to-day operations rather than public evaluation or internal platform administration."
+      asidePoints={[
+        "Resume a protected tenant route if you were redirected here",
+        "Use one login to move across billing, GST, accounting, inventory, and POS",
+        "Password recovery stays inside the same secure session flow",
+      ]}
+      footer={
+        <>
           New here?{" "}
           <Link href="/onboarding" className="font-medium text-[var(--accent)] hover:underline">
             Create your company
           </Link>
-        </div>
-        <div className="mt-2 text-sm text-[var(--muted)]">
+          {" · "}
           Forgot your password?{" "}
           <Link href="/forgot-password" className="font-medium text-[var(--accent)] hover:underline">
             Reset it
           </Link>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Tenant login</div>
+          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] text-[var(--foreground)]">Sign in</h1>
+          <p className="text-sm leading-6 text-[var(--muted)]">
+            Your refresh session is stored in an httpOnly cookie so the workspace can restore state securely.
+          </p>
         </div>
-      </form>
+
+        <form onSubmit={onSubmit} className="space-y-4">
+          <label className="block">
+            <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Email</div>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="email"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+            />
+          </label>
+
+          <label className="block">
+            <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Password</div>
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+            />
+          </label>
+
+          {error ? (
+            <div className="rounded-[22px] border border-red-200 bg-[#fff6f3] px-4 py-3 text-sm text-[#7e3128]">
+              {error}
+            </div>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-94 disabled:opacity-70"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
       </div>
-    </main>
+    </AuthShell>
   );
 }

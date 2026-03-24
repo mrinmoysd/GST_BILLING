@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { gstExportDownloadUrl, useCreateGstExport, useGstExportJob, useGstReport } from "@/lib/reports/hooks";
 import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { PrimaryButton, TextField } from "@/lib/ui/form";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { DateField, PrimaryButton, SelectField } from "@/lib/ui/form";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 type ViewKey = "gstr1" | "gstr3b" | "hsn-summary" | "itc";
@@ -215,49 +216,37 @@ export default function GstCompliancePage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="GST"
         title="GST compliance center"
-        subtitle="Review GSTR-1, GSTR-3B, HSN summary, and ITC data from a single compliance workspace with filing-ready sections."
+        subtitle="Review outward tax, filing summaries, HSN exposure, and ITC through one calmer compliance surface built for dense reading."
+        badges={[
+          <WorkspaceStatBadge key="view" label="View" value={view.toUpperCase()} />,
+          <WorkspaceStatBadge key="export" label="Latest export" value={job?.status ?? "Not started"} variant="outline" />,
+        ]}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Controls</CardTitle>
-            <CardDescription>Choose a GST view, period, and export format.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <WorkspacePanel title="Controls" subtitle="Choose a GST view, period, and export format." tone="muted">
+          <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-              <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+              <DateField label="From" value={from} onChange={setFrom} />
+              <DateField label="To" value={to} onChange={setTo} />
             </div>
 
-            <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Report</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={view}
-                onChange={(e) => setView(e.target.value as ViewKey)}
-              >
+            <div className="grid gap-4 md:grid-cols-2">
+              <SelectField label="Report" value={view} onChange={(value) => setView(value as ViewKey)}>
                 <option value="gstr1">GSTR-1</option>
                 <option value="gstr3b">GSTR-3B</option>
                 <option value="hsn-summary">HSN summary</option>
                 <option value="itc">ITC</option>
-              </select>
-            </div>
+              </SelectField>
 
-            <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Export format</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={exportFormat}
-                onChange={(e) => setExportFormat(e.target.value as "json" | "csv" | "excel")}
-              >
+              <SelectField label="Export format" value={exportFormat} onChange={(value) => setExportFormat(value as "json" | "csv" | "excel")}>
                 <option value="json">Portal JSON</option>
                 <option value="csv">CSV</option>
                 <option value="excel">Excel</option>
-              </select>
+              </SelectField>
             </div>
 
             {error ? <InlineError message={error} /> : null}
@@ -288,8 +277,8 @@ export default function GstCompliancePage({ params }: Props) {
             >
               {createExport.isPending ? "Creating…" : "Create export"}
             </PrimaryButton>
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
         <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
           <CardHeader>

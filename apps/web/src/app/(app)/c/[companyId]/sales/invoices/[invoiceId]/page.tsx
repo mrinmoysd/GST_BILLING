@@ -4,7 +4,6 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
@@ -19,8 +18,9 @@ import {
   useRegenerateInvoicePdf,
   useShareInvoice,
 } from "@/lib/billing/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; invoiceId: string }> };
 
@@ -138,14 +138,28 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Sales"
-        title="Invoice"
+      <WorkspaceDetailHero
+        eyebrow="Sales detail"
+        title={invoice?.invoice_no ?? "Invoice"}
         subtitle="Handle issuance, sharing, credit notes, sales returns, payments, and lifecycle history from one operational surface."
+        badges={[
+          <WorkspaceStatBadge key="status" label="Status" value={invoice?.status ?? "—"} />,
+          <WorkspaceStatBadge key="credited" label="Credited" value={totalCredited.toFixed(2)} variant="outline" />,
+        ]}
         actions={
           <Link className="text-sm underline" href={`/c/${companyId}/sales/invoices`}>
             Back
           </Link>
+        }
+        metrics={
+          invoice
+            ? [
+                { label: "Issue date", value: invoice.issue_date ?? "—" },
+                { label: "Due date", value: invoice.due_date ?? "—" },
+                { label: "Invoice total", value: Number(invoice.total ?? 0).toFixed(2) },
+                { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
+              ]
+            : []
         }
       />
 
@@ -155,17 +169,8 @@ export default function InvoiceDetailPage({ params }: Props) {
       {invoice ? (
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
           <div className="space-y-6">
-            <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-              <CardHeader>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">{invoice.status ?? "—"}</Badge>
-                  <Badge variant="outline">{invoice.invoice_no ?? "Draft invoice"}</Badge>
-                  <Badge variant="outline">Credited {totalCredited.toFixed(2)}</Badge>
-                </div>
-                <CardTitle>{invoice.invoice_no ?? `Invoice ${invoiceId.slice(0, 8)}`}</CardTitle>
-                <CardDescription>Issue, cancel, share, or credit the document while keeping a visible lifecycle trail.</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-3 sm:grid-cols-2">
+            <WorkspacePanel title="Invoice actions" subtitle="Issue, cancel, share, or credit the document while keeping a visible lifecycle trail.">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Issue date</div>
                   <div className="mt-2 text-sm font-medium">{invoice.issue_date ?? "—"}</div>
@@ -210,15 +215,11 @@ export default function InvoiceDetailPage({ params }: Props) {
                     </PrimaryButton>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Document actions</CardTitle>
-                <CardDescription>PDF and lifecycle actions for the current invoice.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-3">
+            <WorkspacePanel title="Document actions" subtitle="PDF and lifecycle actions for the current invoice." tone="muted">
+              <div className="flex flex-wrap gap-3">
                 <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
                   <SecondaryButton type="button">Receipt view</SecondaryButton>
                 </Link>
@@ -266,8 +267,8 @@ export default function InvoiceDetailPage({ params }: Props) {
                 >
                   {regen.isPending ? "Enqueueing…" : "Regenerate PDF"}
                 </SecondaryButton>
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
 
             <Card>
               <CardHeader>

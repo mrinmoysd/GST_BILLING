@@ -3,12 +3,11 @@
 import * as React from "react";
 import Image from "next/image";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
 import { useCompany, useUpdateCompany, useUploadCompanyLogo, useVerifyCompanyGstin } from "@/lib/settings/companyHooks";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -57,10 +56,14 @@ export default function CompanySettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Settings"
+      <WorkspaceConfigHero
+        eyebrow="Business identity"
         title="Company"
-        subtitle="Manage the company identity, tax profile, and stock-policy defaults from a more structured settings surface."
+        subtitle="Manage the company identity, tax profile, and stock-policy defaults from a clearer configuration surface."
+        badges={[
+          <WorkspaceStatBadge key="gst" label="GST profile" value={gstin ? "Present" : "Incomplete"} />,
+          <WorkspaceStatBadge key="timezone" label="Timezone" value={timezone || "Asia/Kolkata"} variant="outline" />,
+        ]}
       />
 
       {company.isLoading ? <LoadingBlock label="Loading company…" /> : null}
@@ -69,16 +72,8 @@ export default function CompanySettingsPage({ params }: Props) {
 
       {companyRecord ? (
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-            <CardHeader>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">{gstin ? "GST profile present" : "GST profile incomplete"}</Badge>
-                <Badge variant="outline">{timezone || "Asia/Kolkata"}</Badge>
-              </div>
-              <CardTitle>Current profile</CardTitle>
-              <CardDescription>Use the form to the right to update the current company record.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+          <WorkspacePanel title="Current profile" subtitle="Use the form to the right to update the current company record." tone="muted">
+            <div className="space-y-4 text-sm">
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Company name</div>
                 <div className="mt-2 font-semibold text-[var(--foreground)]">{name || "—"}</div>
@@ -129,15 +124,11 @@ export default function CompanySettingsPage({ params }: Props) {
                   {gstVerifyMessage}
                 </div>
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Edit company settings</CardTitle>
-              <CardDescription>Update the current tenant-scoped company record.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <WorkspacePanel title="Edit company settings" subtitle="Update the current tenant-scoped company record.">
+            <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
             <TextField label="Name" value={name} onChange={setName} required />
             <TextField label="GSTIN" value={gstin} onChange={setGstin} placeholder="15-char GSTIN" />
@@ -234,8 +225,8 @@ export default function CompanySettingsPage({ params }: Props) {
               </div>
 
               <div className="text-xs text-[var(--muted)]">GSTIN verification is staged and ready for external integration later.</div>
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         </div>
       ) : null}
     </div>

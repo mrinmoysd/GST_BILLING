@@ -4,10 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { useAdminSubscriptions } from "@/lib/admin/hooks";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { SelectField } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -35,77 +37,89 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Admin"
+      <WorkspaceHero
+        tone="admin"
+        eyebrow="Billing list"
         title="Subscriptions"
-        subtitle="Inspect provider state, move into remediation workflows, and review plan distribution across tenants."
+        subtitle="Inspect provider state, move into remediation workflows, and keep subscription oversight in a denser billing control plane."
+        badges={[
+          <WorkspaceStatBadge key="subscriptions" label="Subscriptions" value={total} />,
+          <WorkspaceStatBadge key="filter" label="Status" value={status || "All"} variant="outline" />,
+        ]}
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Active</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.active ?? 0}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Past due</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.past_due ?? 0}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Checkout created</div><div className="mt-2 text-2xl font-semibold">{summary?.by_status?.checkout_created ?? 0}</div></CardContent></Card>
-        <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Stripe</div><div className="mt-2 text-2xl font-semibold">{summary?.by_provider?.stripe ?? 0}</div></CardContent></Card>
-      </div>
+      <WorkspaceSection
+        eyebrow="Overview"
+        title="Subscription pressure"
+        subtitle="Use the KPI strip to read current billing mix before drilling into individual tenant subscriptions."
+      >
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard label="Active" value={summary?.by_status?.active ?? 0} />
+          <StatCard label="Past due" value={summary?.by_status?.past_due ?? 0} tone="quiet" />
+          <StatCard label="Checkout created" value={summary?.by_status?.checkout_created ?? 0} tone="quiet" />
+          <StatCard label="Stripe" value={summary?.by_provider?.stripe ?? 0} />
+        </div>
+      </WorkspaceSection>
 
-      <Card>
-        <CardContent className="p-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Status</label>
-              <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="">All</option>
-                <option value="active">Active</option>
-                <option value="trial">Trial</option>
-                <option value="canceled">Canceled</option>
-                <option value="past_due">Past due</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2 lg:justify-end">
-              <Badge variant="secondary">{total} total</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <WorkspaceFilterBar summary={<Badge variant="secondary">{total} total</Badge>}>
+        <SelectField
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          options={[
+            { value: "", label: "All" },
+            { value: "active", label: "Active" },
+            { value: "trial", label: "Trial" },
+            { value: "canceled", label: "Canceled" },
+            { value: "past_due", label: "Past due" },
+          ]}
+        />
+      </WorkspaceFilterBar>
 
       {query.isLoading ? <LoadingBlock label="Loading subscriptions…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load subscriptions")} /> : null}
       {query.data && rows.length === 0 ? <EmptyState title="No subscriptions" hint="Try a different filter." /> : null}
 
       {query.data && rows.length > 0 ? (
-        <DataTableShell>
-          <DataTable>
-            <DataThead>
-              <tr>
-                <DataTh>Company</DataTh>
-                <DataTh>Plan</DataTh>
-                <DataTh>Provider</DataTh>
-                <DataTh>Status</DataTh>
-                <DataTh>Provider ref</DataTh>
-                <DataTh>Created</DataTh>
-              </tr>
-            </DataThead>
-            <tbody>
-              {rows.map((row, index) => (
-                <DataTr key={String(row.id ?? index)}>
-                  <DataTd>
-                    <Link href={`/admin/subscriptions/${String(row.id)}`} className="font-semibold hover:text-[var(--accent)] hover:underline">
-                      {String(row.company_name ?? "—")}
-                    </Link>
-                    <div className="text-xs text-[var(--muted)]">{String(row.owner_email ?? "—")}</div>
-                  </DataTd>
-                  <DataTd className="font-semibold">{String(row.plan ?? row.planId ?? row.plan_id ?? "—")}</DataTd>
-                  <DataTd>{String(row.provider ?? "—")}</DataTd>
-                  <DataTd>
-                    <Badge variant={String(row.status ?? "") === "past_due" ? "outline" : "secondary"}>{String(row.status ?? "—")}</Badge>
-                  </DataTd>
-                  <DataTd className="max-w-[18ch] truncate text-xs text-[var(--muted)]">{String(row.provider_subscription_id ?? "—")}</DataTd>
-                  <DataTd>{row.createdAt ? new Date(String(row.createdAt)).toLocaleDateString() : "—"}</DataTd>
-                </DataTr>
-              ))}
-            </tbody>
-          </DataTable>
-        </DataTableShell>
+        <WorkspaceSection
+          eyebrow="Billing plane"
+          title="Subscriptions in view"
+          subtitle="The table is the primary remediation and drill-in surface for plan, provider, and billing status review."
+        >
+          <DataTableShell>
+            <DataTable>
+              <DataThead>
+                <tr>
+                  <DataTh>Company</DataTh>
+                  <DataTh>Plan</DataTh>
+                  <DataTh>Provider</DataTh>
+                  <DataTh>Status</DataTh>
+                  <DataTh>Provider ref</DataTh>
+                  <DataTh>Created</DataTh>
+                </tr>
+              </DataThead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <DataTr key={String(row.id ?? index)}>
+                    <DataTd>
+                      <Link href={`/admin/subscriptions/${String(row.id)}`} className="font-semibold hover:text-[var(--accent)] hover:underline">
+                        {String(row.company_name ?? "—")}
+                      </Link>
+                      <div className="text-xs text-[var(--muted)]">{String(row.owner_email ?? "—")}</div>
+                    </DataTd>
+                    <DataTd className="font-semibold">{String(row.plan ?? row.planId ?? row.plan_id ?? "—")}</DataTd>
+                    <DataTd>{String(row.provider ?? "—")}</DataTd>
+                    <DataTd>
+                      <Badge variant={String(row.status ?? "") === "past_due" ? "outline" : "secondary"}>{String(row.status ?? "—")}</Badge>
+                    </DataTd>
+                    <DataTd className="max-w-[18ch] truncate text-xs text-[var(--muted)]">{String(row.provider_subscription_id ?? "—")}</DataTd>
+                    <DataTd>{row.createdAt ? new Date(String(row.createdAt)).toLocaleDateString() : "—"}</DataTd>
+                  </DataTr>
+                ))}
+              </tbody>
+            </DataTable>
+          </DataTableShell>
+        </WorkspaceSection>
       ) : null}
     </div>
   );

@@ -3,11 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasPermission } from "@/lib/auth/permissions";
 import { useAuth } from "@/lib/auth/session";
-import { PageHeader } from "@/lib/ui/state";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -46,38 +44,31 @@ export default function SettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceConfigHero
         eyebrow="Configuration"
         title="Settings"
-        subtitle="Use a cleaner control surface for company setup, users, notifications, and subscription state."
+        subtitle="Use a clearer policy and setup surface for company identity, access, communication, and subscription state."
+        badges={[
+          <WorkspaceStatBadge key="screens" label="Active screens" value={visibleSections.reduce((count, section) => count + section.items.length, 0)} />,
+          <WorkspaceStatBadge key="permissions" label="Controls" value="Permission-aware" variant="outline" />,
+        ]}
+        aside={
+          <WorkspacePanel
+            title="Configuration model"
+            subtitle="Settings are grouped by business identity, people and messaging, and commercial controls so they read as policy rather than miscellaneous tools."
+            tone="muted"
+          >
+            <div className="text-sm leading-7 text-[var(--muted-strong)]">
+              This structure keeps room for invoice design, tax defaults, and later policy surfaces without flattening everything into one route hub.
+            </div>
+          </WorkspacePanel>
+        }
       />
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-          <CardHeader>
-            <CardTitle>Configuration areas</CardTitle>
-            <CardDescription>Settings are grouped by company identity, people and communication, and commercial controls.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{visibleSections.reduce((count, section) => count + section.items.length, 0)} active settings screens</Badge>
-            <Badge variant="outline">Permission-aware controls</Badge>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Future fit</CardTitle>
-            <CardDescription>This structure leaves room for RBAC, invoice design, tax defaults, and portal-grade billing later.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
 
       <div className="grid gap-5 xl:grid-cols-3">
         {visibleSections.map((section) => (
-          <Card key={section.title}>
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
+          <WorkspacePanel key={section.title} title={section.title}>
+            <div className="grid gap-3">
               {section.items.map((item) => (
                 <Link
                   key={item.href}
@@ -88,8 +79,8 @@ export default function SettingsPage({ params }: Props) {
                   <div className="mt-1 text-sm text-[var(--muted)]">{item.hint}</div>
                 </Link>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         ))}
       </div>
     </div>

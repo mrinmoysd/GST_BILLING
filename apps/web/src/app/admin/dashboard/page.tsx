@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAdminDashboard } from "@/lib/admin/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
+import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -40,10 +41,45 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Platform"
+      <WorkspaceHero
+        tone="admin"
+        eyebrow="Platform control"
         title="Admin dashboard"
-        subtitle="A live operations hub for tenant growth, billing pressure, support load, and platform health."
+        subtitle="A live operations surface for tenant growth, billing pressure, support load, platform failures, and privileged governance."
+        badges={[
+          <WorkspaceStatBadge key="scope" label="Scope" value="Platform-wide" />,
+          <WorkspaceStatBadge key="governance" label="Governance" value="Enabled" variant="outline" />,
+        ]}
+        actions={
+          <>
+            <Button asChild>
+              <Link href="/admin/companies/new">Create company</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/admin/queues">View queues</Link>
+            </Button>
+          </>
+        }
+        aside={
+          <WorkspacePanel
+            tone="strong"
+            title="Operator priorities"
+            subtitle="Use this surface to decide whether the next move is tenant intervention, billing correction, support triage, or governance review."
+          >
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Open tickets</div>
+                <div className="mt-2 text-2xl font-semibold">{data?.kpis?.open_support_tickets ?? 0}</div>
+                <div className="mt-1 text-sm text-white/72">Support items currently need operator review.</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Platform failures</div>
+                <div className="mt-2 text-2xl font-semibold">{data?.kpis?.platform_failures ?? 0}</div>
+                <div className="mt-1 text-sm text-white/72">Recent operational failures across jobs and webhooks.</div>
+              </div>
+            </div>
+          </WorkspacePanel>
+        }
       />
 
       {query.isLoading ? <LoadingBlock label="Loading admin dashboard..." /> : null}
@@ -51,63 +87,53 @@ export default function AdminDashboardPage() {
 
       {data ? (
         <>
-          <div className="grid gap-4 md:grid-cols-5">
-            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Companies</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.companies ?? 0}</div></CardContent></Card>
-            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Active subs</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.active_subscriptions ?? 0}</div></CardContent></Card>
-            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Past due</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.past_due_subscriptions ?? 0}</div></CardContent></Card>
-            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Open tickets</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.open_support_tickets ?? 0}</div></CardContent></Card>
-            <Card><CardContent className="p-5"><div className="text-xs uppercase tracking-[0.12em] text-[var(--muted)]">Platform failures</div><div className="mt-2 text-3xl font-semibold">{data.kpis?.platform_failures ?? 0}</div></CardContent></Card>
-          </div>
+          <WorkspaceSection
+            eyebrow="Overview"
+            title="Current platform pressure"
+            subtitle="Use the KPI band first, then move into subscription health, company growth, support, and incident detail."
+          >
+            <div className="grid gap-4 md:grid-cols-5">
+              <StatCard label="Companies" value={data.kpis?.companies ?? 0} />
+              <StatCard label="Active subs" value={data.kpis?.active_subscriptions ?? 0} />
+              <StatCard label="Past due" value={data.kpis?.past_due_subscriptions ?? 0} tone="quiet" />
+              <StatCard label="Open tickets" value={data.kpis?.open_support_tickets ?? 0} tone="quiet" />
+              <StatCard label="Platform failures" value={data.kpis?.platform_failures ?? 0} tone="strong" />
+            </div>
+          </WorkspaceSection>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-              <CardHeader>
-                <CardTitle>Subscription mix</CardTitle>
-                <CardDescription>Current platform distribution by billing status and provider.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
+          <section className="grid gap-4 md:grid-cols-[1.35fr_0.65fr]">
+            <WorkspacePanel title="Subscription mix" subtitle="Current platform distribution by billing status and provider.">
+              <div className="flex flex-wrap gap-2">
                 {Object.entries(data.subscription_mix?.by_status ?? {}).map(([key, value]) => (
-                  <Badge key={`status-${key}`} variant="secondary">{key}: {value}</Badge>
+                  <WorkspaceStatBadge key={`status-${key}`} label={key} value={value} />
                 ))}
                 {Object.entries(data.subscription_mix?.by_provider ?? {}).map(([key, value]) => (
-                  <Badge key={`provider-${key}`} variant="outline">{key}: {value}</Badge>
+                  <WorkspaceStatBadge key={`provider-${key}`} label={key} value={value} variant="outline" />
                 ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Platform health</CardTitle>
-                <CardDescription>Recent failed operational signals.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              </div>
+            </WorkspacePanel>
+            <WorkspacePanel title="Platform health" subtitle="Recent failed operational signals." tone="muted">
+              <div className="space-y-2 text-sm">
                 <div>Export failures: {data.platform_health?.export_failures ?? 0}</div>
                 <div>Notification failures: {data.platform_health?.notification_failures ?? 0}</div>
                 <div>Webhook failures: {data.platform_health?.webhook_failures ?? 0}</div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </WorkspacePanel>
+          </section>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent companies</CardTitle>
-                <CardDescription>Latest tenant additions to the platform.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+          <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <WorkspacePanel title="Recent companies" subtitle="Latest tenant additions to the platform.">
+              <div className="space-y-3">
                 {(data.recent_companies ?? []).map((company) => (
                   <Link key={company.id} href={`/admin/companies/${company.id}`} className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 hover:border-[var(--accent-soft)]">
                     <div className="font-semibold">{company.name}</div>
                     <div className="mt-1 text-xs text-[var(--muted)]">{new Date(company.created_at).toLocaleString()}</div>
                   </Link>
                 ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent support and incidents</CardTitle>
-                <CardDescription>Fresh operator items from support and webhook failures.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </div>
+            </WorkspacePanel>
+            <WorkspacePanel title="Recent support and incidents" subtitle="Fresh operator items from support and webhook failures." tone="muted">
+              <div className="space-y-3">
                 {(data.recent_support_tickets ?? []).map((ticket) => (
                   <div key={`ticket-${ticket.id}`} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                     <div className="font-semibold">{ticket.subject || "(no subject)"}</div>
@@ -120,24 +146,30 @@ export default function AdminDashboardPage() {
                     <div className="mt-1 text-xs text-[#7e3128]">{event.error || "Webhook failure"}</div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </WorkspacePanel>
+          </section>
         </>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => (
-          <Link
-            key={card.href}
-            className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-muted)]"
-            href={card.href}
-          >
-            <div className="font-semibold text-[var(--foreground)]">{card.title}</div>
-            <div className="mt-1 text-sm text-[var(--muted)]">{card.hint}</div>
-          </Link>
-        ))}
-      </div>
+      <WorkspaceSection
+        eyebrow="Operator routes"
+        title="Move from overview into action"
+        subtitle="These routes handle the recurring jobs platform operators need for growth, billing, support, queues, and governance."
+      >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {cards.map((card) => (
+            <Link
+              key={card.href}
+              className="rounded-[28px] border border-[var(--border)] bg-[rgba(255,255,255,0.9)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-muted)]"
+              href={card.href}
+            >
+              <div className="font-semibold text-[var(--foreground)]">{card.title}</div>
+              <div className="mt-1 text-sm leading-6 text-[var(--muted)]">{card.hint}</div>
+            </Link>
+          ))}
+        </div>
+      </WorkspaceSection>
     </div>
   );
 }

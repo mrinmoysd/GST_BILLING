@@ -5,11 +5,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthShell } from "@/components/public/auth-shell";
 import type { NormalizedApiError } from "@/lib/api/types";
 import { useResetPassword } from "@/lib/auth/hooks";
-import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, TextField } from "@/lib/ui/form";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -23,50 +21,90 @@ function ResetPasswordContent() {
   const [ok, setOk] = React.useState<string | null>(null);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,95,140,0.08),transparent_28%),var(--app-bg)] px-4 py-10 md:px-6">
-      <div className="mx-auto max-w-xl">
-        <PageHeader
-          eyebrow="Auth"
-          title="Reset password"
-          subtitle="Set a new password using the reset token from the forgot-password flow."
-          actions={<Link className="text-sm underline" href="/login">Back to login</Link>}
-        />
+    <AuthShell
+      eyebrow="Credential recovery"
+      title="Set a new password and return to the workspace."
+      subtitle="Use the reset token from the recovery flow to establish a new password and hand the user back into the secure login path."
+      asideTitle="Recovery flow"
+      asideBody="This route is part of the tenant authentication journey. It should feel controlled, quiet, and explicit about the next step."
+      asidePoints={[
+        "The reset token is read from the URL query string",
+        "A successful reset returns the user to standard login",
+        "This route is for credential recovery, not onboarding",
+      ]}
+      footer={
+        <>
+          Back to{" "}
+          <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
+            login
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Reset password</div>
+          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] text-[var(--foreground)]">Choose a new password</h1>
+          <p className="text-sm leading-6 text-[var(--muted)]">Set the new password, confirm it, then return to the workspace login.</p>
+        </div>
 
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Choose a new password</CardTitle>
-            <CardDescription>The reset token is read from the URL query string.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <TextField label="New password" value={password} onChange={setPassword} type="password" />
-            <TextField label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} type="password" />
-            {error ? <InlineError message={error} /> : null}
-            {ok ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{ok}</div> : null}
-            <PrimaryButton
-              type="button"
-              disabled={resetPassword.isPending}
-              onClick={async () => {
-                setError(null);
-                setOk(null);
-                if (!token) return setError("Missing reset token.");
-                if (!password.trim() || password.length < 6) return setError("Password must be at least 6 characters.");
-                if (password !== confirmPassword) return setError("Passwords do not match.");
-                try {
-                  const data = await resetPassword.mutateAsync({ token, password });
-                  setOk(data.message);
-                  window.setTimeout(() => router.replace("/login"), 900);
-                } catch (err: unknown) {
-                  const apiError = err as NormalizedApiError;
-                  setError(apiError.message ?? "Failed to reset password");
-                }
-              }}
-            >
-              {resetPassword.isPending ? "Updating…" : "Update password"}
-            </PrimaryButton>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <label className="block">
+            <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">New password</div>
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+            />
+          </label>
+
+          <label className="block">
+            <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Confirm password</div>
+            <input
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              type="password"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+            />
+          </label>
+
+          {error ? (
+            <div className="rounded-[22px] border border-red-200 bg-[#fff6f3] px-4 py-3 text-sm text-[#7e3128]">
+              {error}
+            </div>
+          ) : null}
+          {ok ? (
+            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              {ok}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            disabled={resetPassword.isPending}
+            className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-94 disabled:opacity-70"
+            onClick={async () => {
+              setError(null);
+              setOk(null);
+              if (!token) return setError("Missing reset token.");
+              if (!password.trim() || password.length < 6) return setError("Password must be at least 6 characters.");
+              if (password !== confirmPassword) return setError("Passwords do not match.");
+              try {
+                const data = await resetPassword.mutateAsync({ token, password });
+                setOk(data.message);
+                window.setTimeout(() => router.replace("/login"), 900);
+              } catch (err: unknown) {
+                const apiError = err as NormalizedApiError;
+                setError(apiError.message ?? "Failed to reset password");
+              }
+            }}
+          >
+            {resetPassword.isPending ? "Updating..." : "Update password"}
+          </button>
+        </div>
       </div>
-    </main>
+    </AuthShell>
   );
 }
 

@@ -3,15 +3,15 @@
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useCompanyRoles,
   useCreateCompanyRole,
   useDeleteCompanyRole,
   usePatchCompanyRole,
 } from "@/lib/settings/usersHooks";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -58,26 +58,26 @@ export default function RolesSettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Settings"
+      <WorkspaceConfigHero
+        eyebrow="Access policy"
         title="Roles"
         subtitle="Define custom roles with explicit permission bundles and review recent admin-side access changes."
+        badges={[
+          <WorkspaceStatBadge key="roles" label="Custom roles" value={customRoles.length} />,
+          <WorkspaceStatBadge key="permissions" label="Permissions" value={permissions.length} variant="outline" />,
+        ]}
       />
 
       {rolesQuery.isLoading ? <LoadingBlock label="Loading roles…" /> : null}
       {rolesQuery.isError ? <InlineError message={getErrorMessage(rolesQuery.error, "Failed to load roles")} /> : null}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <Card>
-          <CardHeader>
+        <WorkspacePanel title="Create role" subtitle="Custom roles stack on top of a user’s built-in primary role.">
+          <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{customRoles.length} custom role{customRoles.length === 1 ? "" : "s"}</Badge>
               <Badge variant="outline">{permissions.length} permissions</Badge>
             </div>
-            <CardTitle>Create role</CardTitle>
-            <CardDescription>Custom roles stack on top of a user&apos;s built-in primary role.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <TextField label="Role name" value={name} onChange={setName} placeholder="e.g. warehouse-manager" />
 
             <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -128,15 +128,11 @@ export default function RolesSettingsPage({ params }: Props) {
             >
               {createRole.isPending ? "Creating…" : "Create role"}
             </PrimaryButton>
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Existing roles</CardTitle>
-            <CardDescription>Choose a role to edit its permission bundle or remove it.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <WorkspacePanel title="Existing roles" subtitle="Choose a role to edit its permission bundle or remove it." tone="muted">
+          <div className="space-y-4">
             {customRoles.length === 0 ? (
               <EmptyState title="No custom roles" hint="Create the first one from the panel on the left." />
             ) : (
@@ -223,16 +219,12 @@ export default function RolesSettingsPage({ params }: Props) {
                 ) : null}
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent admin activity</CardTitle>
-          <CardDescription>Lightweight auditability for role and user administration changes.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <WorkspacePanel title="Recent admin activity" subtitle="Lightweight auditability for role and user administration changes.">
+        <div className="space-y-3">
           {auditEntries.length === 0 ? (
             <EmptyState title="No admin changes yet" hint="Role and user changes will appear here." />
           ) : (
@@ -245,8 +237,8 @@ export default function RolesSettingsPage({ params }: Props) {
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
     </div>
   );
 }

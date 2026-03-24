@@ -73,9 +73,12 @@ export function CompanyHeader(props: {
         </Button>
 
         <div className="min-w-0">
-          <Link href={`/c/${props.companyId}/dashboard`} className="font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-            GST Billing
-          </Link>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="hidden md:inline-flex">Tenant</Badge>
+            <Link href={`/c/${props.companyId}/dashboard`} className="font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+              GST Billing
+            </Link>
+          </div>
           <div className="mt-1 hidden md:block">
             <Breadcrumbs items={breadcrumbItems} />
           </div>

@@ -4,12 +4,12 @@ import Link from "next/link";
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { useInvoices } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
+import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -60,10 +60,14 @@ export default function InvoicesPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Sales"
+      <WorkspaceHero
+        eyebrow="Sales list"
         title="Invoices"
-        subtitle="Manage the invoice pipeline with cleaner status visibility and faster navigation into draft and issued documents."
+        subtitle="Scan billing activity, move into issued and draft documents quickly, and keep the invoice plane table-first."
+        badges={[
+          <WorkspaceStatBadge key="total" label="Invoices" value={total} />,
+          <WorkspaceStatBadge key="mode" label="View" value={q ? "Filtered" : "All"} variant="outline" />,
+        ]}
         actions={
           <Link href={`/c/${companyId}/sales/invoices/new`}>
             <SecondaryButton type="button">New invoice</SecondaryButton>
@@ -71,16 +75,9 @@ export default function InvoicesPage({ params }: Props) {
         }
       />
 
-      <Card>
-        <CardContent className="p-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <TextField label="Search invoices" value={q} onChange={setQ} placeholder="Invoice no / customer" />
-            <div className="flex items-center gap-2 lg:justify-end">
-              <Badge variant="secondary">{total} total</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <WorkspaceFilterBar summary={<Badge variant="secondary">{total} total</Badge>}>
+        <TextField label="Search invoices" value={q} onChange={setQ} placeholder="Invoice no / customer" />
+      </WorkspaceFilterBar>
 
       {query.isLoading ? <LoadingBlock label="Loading invoices…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load invoices")} /> : null}
@@ -98,32 +95,38 @@ export default function InvoicesPage({ params }: Props) {
       ) : null}
 
       {rows.length > 0 ? (
-        <DataTableShell>
-          <DataTable>
-            <DataThead>
-              <tr>
-                <DataTh>Invoice</DataTh>
-                <DataTh>Status</DataTh>
-                <DataTh>Issue date</DataTh>
-              </tr>
-            </DataThead>
-            <tbody>
-              {rows.map((inv) => (
-                <DataTr key={inv.id}>
-                  <DataTd>
-                    <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
-                      {inv.invoiceNumber ?? inv.invoice_no ?? inv.id}
-                    </Link>
-                  </DataTd>
-                  <DataTd>
-                    <Badge variant="secondary">{inv.status ?? "—"}</Badge>
-                  </DataTd>
-                  <DataTd>{inv.issueDate ?? inv.issue_date ?? "—"}</DataTd>
-                </DataTr>
-              ))}
-            </tbody>
-          </DataTable>
-        </DataTableShell>
+        <WorkspaceSection
+          eyebrow="Invoice plane"
+          title="Documents in view"
+          subtitle="The invoice table is the primary operating surface for scan-and-open work."
+        >
+          <DataTableShell>
+            <DataTable>
+              <DataThead>
+                <tr>
+                  <DataTh>Invoice</DataTh>
+                  <DataTh>Status</DataTh>
+                  <DataTh>Issue date</DataTh>
+                </tr>
+              </DataThead>
+              <tbody>
+                {rows.map((inv) => (
+                  <DataTr key={inv.id}>
+                    <DataTd>
+                      <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
+                        {inv.invoiceNumber ?? inv.invoice_no ?? inv.id}
+                      </Link>
+                    </DataTd>
+                    <DataTd>
+                      <Badge variant="secondary">{inv.status ?? "—"}</Badge>
+                    </DataTd>
+                    <DataTd>{inv.issueDate ?? inv.issue_date ?? "—"}</DataTd>
+                  </DataTr>
+                ))}
+              </tbody>
+            </DataTable>
+          </DataTableShell>
+        </WorkspaceSection>
       ) : null}
     </div>
   );

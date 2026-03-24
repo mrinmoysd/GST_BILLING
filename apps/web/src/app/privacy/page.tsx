@@ -1,22 +1,35 @@
-import { PublicSiteShell, SectionHeading } from "@/components/public/site-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DocumentFrame, PublicSiteShell } from "@/components/public/site-shell";
 
 export default function PrivacyPage() {
   return (
     <PublicSiteShell>
-      <section className="space-y-6">
-        <SectionHeading eyebrow="Legal" title="Privacy policy" subtitle="This is a starter privacy page for deployment readiness. Replace placeholder legal language with approved policy text before production launch." />
-        <Card className="rounded-[30px]">
-          <CardHeader>
-            <CardTitle>Privacy overview</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-7 text-[var(--muted-strong)]">
-            <p>GST Billing processes account, company, billing, document, and operational data to provide the product experience.</p>
-            <p>We collect information necessary for authentication, company setup, document generation, reporting, notification delivery, and support operations.</p>
-            <p>Before production release, this page should be replaced with a reviewed legal policy covering data handling, retention, subprocessors, user rights, and contact mechanisms.</p>
-          </CardContent>
-        </Card>
-      </section>
+      <DocumentFrame
+        eyebrow="Legal"
+        title="Privacy policy"
+        subtitle="This public legal page should feel like a reviewed document surface. Replace placeholder policy language with approved production text before launch."
+      >
+        <div className="space-y-8 text-sm leading-7 text-[var(--muted-strong)]">
+          {[
+            [
+              "Privacy overview",
+              "GST Billing processes account, company, billing, document, report, and operational activity data in order to provide the product experience and platform operations.",
+            ],
+            [
+              "What the product uses",
+              "Information is used for authentication, company setup, document generation, reporting, notifications, support operations, billing workflows, and platform administration.",
+            ],
+            [
+              "Before production launch",
+              "This page should be replaced with reviewed legal language covering data handling, retention, subprocessors, user rights, lawful basis, and contact or escalation mechanisms.",
+            ],
+          ].map(([title, body]) => (
+            <section key={title} className="border-t border-[rgba(23,32,51,0.08)] pt-6 first:border-t-0 first:pt-0">
+              <h2 className="font-semibold text-[var(--foreground)]">{title}</h2>
+              <p className="mt-3">{body}</p>
+            </section>
+          ))}
+        </div>
+      </DocumentFrame>
     </PublicSiteShell>
   );
 }

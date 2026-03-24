@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useCompanyRoles,
   useCompanyUsers,
@@ -11,9 +10,10 @@ import {
   usePatchCompanyUser,
 } from "@/lib/settings/usersHooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import type { CompanyUser, RolesResponse } from "@/lib/settings/usersHooks";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -72,22 +72,22 @@ export default function UsersSettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Settings"
+      <WorkspaceConfigHero
+        eyebrow="People and access"
         title="Users"
         subtitle="Invite teammates, assign primary roles, and layer custom permission bundles onto each user."
+        badges={[
+          <WorkspaceStatBadge key="users" label="Users" value={rows.length} />,
+          <WorkspaceStatBadge key="roles" label="Custom roles" value={customRoles.length} variant="outline" />,
+        ]}
       />
 
-      <Card>
-        <CardHeader>
+      <WorkspacePanel title="Invite user" subtitle="The invite flow supports a built-in primary role plus any number of custom role assignments.">
+        <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{rows.length} user{rows.length === 1 ? "" : "s"}</Badge>
             <Badge variant="outline">{customRoles.length} custom role{customRoles.length === 1 ? "" : "s"}</Badge>
           </div>
-          <CardTitle>Invite user</CardTitle>
-          <CardDescription>The invite flow now supports a built-in primary role plus any number of custom role assignments.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <TextField label="Email" value={email} onChange={setEmail} placeholder="user@example.com" />
             <TextField label="Name" value={name} onChange={setName} placeholder="Optional" />
@@ -161,8 +161,8 @@ export default function UsersSettingsPage({ params }: Props) {
           >
             {invite.isPending ? "Inviting…" : "Invite"}
           </PrimaryButton>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-3">
@@ -172,12 +172,7 @@ export default function UsersSettingsPage({ params }: Props) {
           {users.data && rows.length === 0 ? <EmptyState title="No users" hint="Invite one above." /> : null}
 
           {users.data && rows.length > 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Company users</CardTitle>
-                <CardDescription>Select a row to edit primary role, custom roles, and activation status.</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <WorkspacePanel title="Company users" subtitle="Select a row to edit primary role, custom roles, and activation status.">
                 <DataTableShell>
                   <DataTable>
                     <DataThead>
@@ -209,17 +204,12 @@ export default function UsersSettingsPage({ params }: Props) {
                     </tbody>
                   </DataTable>
                 </DataTableShell>
-              </CardContent>
-            </Card>
+            </WorkspacePanel>
           ) : null}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Access editor</CardTitle>
-            <CardDescription>Use a real editor instead of prompt-based role changes.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <WorkspacePanel title="Access editor" subtitle="Use a real editor instead of prompt-based role changes." tone="muted">
+          <div className="space-y-4">
             {!selectedUser ? (
               <EmptyState title="Select a user" hint="Choose a user from the table to edit access." />
             ) : (
@@ -301,8 +291,8 @@ export default function UsersSettingsPage({ params }: Props) {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
       </div>
     </div>
   );

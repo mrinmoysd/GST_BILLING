@@ -53,10 +53,10 @@ export function PublicSiteShell(props: {
       : "before:bg-[radial-gradient(circle_at_top_left,rgba(15,95,140,0.14),transparent_32%)]";
 
   return (
-    <div className={cn("relative min-h-screen overflow-hidden bg-[var(--app-bg)]", "before:absolute before:inset-0 before:pointer-events-none", accentClass)}>
+    <div className={cn("relative min-h-screen overflow-hidden bg-[var(--background)]", "before:absolute before:inset-0 before:pointer-events-none", accentClass)}>
       <div className="relative">
         <PublicHeader />
-        {props.hero ? <div className="mx-auto w-full max-w-7xl px-4 pt-8 md:px-6 lg:px-8">{props.hero}</div> : null}
+        {props.hero ? <div className="pt-0">{props.hero}</div> : null}
         <main className="mx-auto w-full max-w-7xl px-4 py-12 md:px-6 lg:px-8 lg:py-16">{props.children}</main>
         <PublicFooter />
       </div>
@@ -66,38 +66,51 @@ export function PublicSiteShell(props: {
 
 export function PublicHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/60 bg-[rgba(244,241,234,0.82)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 md:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
-          <Link className="flex items-center gap-3" href="/">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--foreground)] text-sm font-semibold text-white shadow-[var(--shadow-soft)]">
-              GB
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-[var(--foreground)]">GST Billing</div>
-              <div className="text-xs text-[var(--muted)]">India-first billing operations</div>
-            </div>
-          </Link>
-          <nav className="hidden items-center gap-1 lg:flex">
-            {primaryNav.map((item) => (
-              <Link
-                key={item.href}
-                className="rounded-full px-3 py-2 text-sm text-[var(--muted-strong)] hover:bg-white/70 hover:text-[var(--foreground)]"
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+    <header className="sticky top-0 z-30 border-b border-[rgba(23,32,51,0.08)] bg-[rgba(244,241,234,0.72)] backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <Link className="flex items-center gap-3" href="/">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--foreground)] text-sm font-semibold text-white shadow-[var(--shadow-soft)]">
+                GB
+              </div>
+              <div>
+                <div className="font-display text-lg leading-none font-semibold text-[var(--foreground)]">GST Billing</div>
+                <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">India-first billing operations</div>
+              </div>
+            </Link>
+            <nav className="hidden items-center gap-1 lg:flex">
+              {primaryNav.map((item) => (
+                <Link
+                  key={item.href}
+                  className="rounded-full px-3 py-2 text-sm text-[var(--muted-strong)] hover:bg-white/70 hover:text-[var(--foreground)]"
+                  href={item.href}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" className="hidden sm:inline-flex">
+              <Link href="/login">Login</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/onboarding">Create company</Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" className="hidden sm:inline-flex">
-            <Link href="/login">Login</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/onboarding">Create company</Link>
-          </Button>
-        </div>
+        <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+          {[...primaryNav, { href: "/login", label: "Login" }].map((item) => (
+            <Link
+              key={item.href}
+              className="whitespace-nowrap rounded-full border border-[rgba(23,32,51,0.08)] bg-white/72 px-3 py-2 text-sm text-[var(--muted-strong)] shadow-[0_8px_24px_rgba(23,32,51,0.04)]"
+              href={item.href}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );
@@ -105,20 +118,20 @@ export function PublicHeader() {
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-[var(--border)] bg-[rgba(255,255,255,0.65)]">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.25fr_1fr_1fr_1fr] md:px-6 lg:px-8">
-        <div className="space-y-4">
+    <footer className="border-t border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.52)]">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-[1.45fr_1fr_1fr_1fr] md:px-6 lg:px-8">
+        <div className="space-y-5">
           <Badge variant="secondary">Built for GST operations</Badge>
-          <div className="max-w-sm text-sm leading-6 text-[var(--muted)]">
-            Billing, purchases, GST compliance, accounting, inventory, and POS in one operational workspace for growing Indian businesses.
+          <div className="font-display text-3xl font-semibold leading-[0.95] tracking-[-0.04em] text-[var(--foreground)]">
+            Billing, tax, stock, and books in one operating surface.
           </div>
-          <div className="text-sm text-[var(--muted-strong)]">
-            Start with self-serve onboarding, then scale into tax, finance, and platform workflows.
+          <div className="max-w-sm text-sm leading-6 text-[var(--muted)]">
+            Designed for Indian teams that need invoicing speed without giving up compliance, finance visibility, or internal control.
           </div>
         </div>
         {footerGroups.map((group) => (
           <div key={group.title}>
-            <div className="text-sm font-semibold text-[var(--foreground)]">{group.title}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">{group.title}</div>
             <div className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
               {group.links.map((link) => (
                 <Link key={link.href} className="hover:text-[var(--foreground)]" href={link.href}>
@@ -129,10 +142,115 @@ export function PublicFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-[var(--border)] px-4 py-4 text-center text-xs text-[var(--muted)] md:px-6 lg:px-8">
+      <div className="border-t border-[rgba(23,32,51,0.08)] px-4 py-4 text-center text-xs text-[var(--muted)] md:px-6 lg:px-8">
         GST Billing. Operational software for GST billing, accounting, inventory, and POS.
       </div>
     </footer>
+  );
+}
+
+export function FullBleedHero(props: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  actions?: React.ReactNode;
+  support?: React.ReactNode;
+  visual?: React.ReactNode;
+  accent?: "blue" | "gold";
+}) {
+  return (
+    <section
+      className={cn(
+        "relative isolate overflow-hidden border-b border-[rgba(23,32,51,0.08)]",
+        props.accent === "gold"
+          ? "bg-[linear-gradient(180deg,#f3ead7_0%,#efe6d8_28%,#fbf8f1_100%)]"
+          : "bg-[linear-gradient(180deg,#e9eef3_0%,#f1ece3_30%,#f8f5ee_100%)]",
+      )}
+    >
+      <div className="absolute inset-0 opacity-90">
+        <div className="absolute inset-y-0 right-0 w-[62%] bg-[radial-gradient(circle_at_30%_40%,rgba(15,95,140,0.22),transparent_34%),radial-gradient(circle_at_65%_48%,rgba(23,32,51,0.16),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.26),rgba(23,32,51,0.04))]" />
+        <div className="absolute bottom-0 left-[-6%] h-[48%] w-[62%] rounded-tr-[160px] border-t border-r border-[rgba(23,32,51,0.09)] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,251,245,0.66))]" />
+      </div>
+      <div className="relative mx-auto grid min-h-[calc(100svh-76px)] max-w-7xl gap-10 px-4 pb-12 pt-16 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:pb-18 lg:pt-20">
+        <div className="flex flex-col justify-end gap-8">
+          <div className="space-y-5">
+            <div className="animate-hero-rise text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--muted)]">
+              {props.eyebrow}
+            </div>
+            <div className="animate-hero-rise-delay font-display text-6xl leading-[0.9] font-semibold tracking-[-0.055em] text-[var(--foreground)] md:text-7xl lg:text-[6.1rem]">
+              GST Billing
+            </div>
+            <h1 className="animate-hero-rise-delay max-w-xl text-balance text-3xl font-semibold leading-[1.02] tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">
+              {props.title}
+            </h1>
+            <p className="max-w-lg text-base leading-7 text-[var(--muted-strong)] md:text-lg">{props.subtitle}</p>
+          </div>
+          {props.actions ? <div className="flex flex-wrap gap-3">{props.actions}</div> : null}
+          {props.support ? <div className="max-w-xl border-t border-[rgba(23,32,51,0.1)] pt-5">{props.support}</div> : null}
+        </div>
+        <div className="animate-hero-fade flex items-end justify-end">
+          {props.visual}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function EditorialBand(props: {
+  eyebrow?: string;
+  title: string;
+  body: string;
+  aside?: React.ReactNode;
+}) {
+  return (
+    <section className="grid gap-6 border-t border-[rgba(23,32,51,0.08)] py-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10">
+      <div className="space-y-3">
+        {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
+        <h2 className="font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)]">{props.title}</h2>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
+        <p className="max-w-2xl text-base leading-7 text-[var(--muted-strong)]">{props.body}</p>
+        {props.aside ? <div>{props.aside}</div> : null}
+      </div>
+    </section>
+  );
+}
+
+export function RouteCluster(props: {
+  items: Array<{ href: string; label: string; body: string }>;
+}) {
+  return (
+    <div className="divide-y divide-[rgba(23,32,51,0.08)] border-y border-[rgba(23,32,51,0.08)]">
+      {props.items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="group grid gap-3 py-5 transition md:grid-cols-[220px_1fr_auto] md:items-start"
+        >
+          <div className="text-sm font-semibold text-[var(--foreground)]">{item.label}</div>
+          <div className="max-w-2xl text-sm leading-6 text-[var(--muted-strong)]">{item.body}</div>
+          <div className="text-sm font-medium text-[var(--accent)] transition group-hover:translate-x-1">Open</div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export function DocumentFrame(props: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mx-auto max-w-4xl rounded-[34px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.76)] p-6 shadow-[var(--shadow-soft)] md:p-10">
+      <div className="space-y-3 border-b border-[rgba(23,32,51,0.08)] pb-6">
+        {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
+        <h1 className="font-display text-4xl leading-[0.92] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">{props.title}</h1>
+        {props.subtitle ? <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">{props.subtitle}</p> : null}
+      </div>
+      <div className="pt-6">{props.children}</div>
+    </section>
   );
 }
 

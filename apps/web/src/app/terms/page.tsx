@@ -1,22 +1,28 @@
-import { PublicSiteShell, SectionHeading } from "@/components/public/site-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DocumentFrame, PublicSiteShell } from "@/components/public/site-shell";
 
 export default function TermsPage() {
   return (
     <PublicSiteShell>
-      <section className="space-y-6">
-        <SectionHeading eyebrow="Legal" title="Terms of service" subtitle="This is a deployment-ready placeholder page that should be replaced with approved contractual terms before public launch." />
-        <Card className="rounded-[30px]">
-          <CardHeader>
-            <CardTitle>Terms overview</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-7 text-[var(--muted-strong)]">
-            <p>Use of GST Billing is subject to account ownership, lawful operational use, and compliance with applicable billing, tax, and data requirements.</p>
-            <p>The production version of this page should cover subscription terms, acceptable use, service limitations, liability boundaries, termination, and governing-law language.</p>
-            <p>Replace this copy before launch with legal text approved for your actual operating entity and commercial model.</p>
-          </CardContent>
-        </Card>
-      </section>
+      <DocumentFrame
+        eyebrow="Legal"
+        title="Terms of service"
+        subtitle="This remains a production placeholder until approved contractual language is supplied. The structure below exists so the route does not look abandoned while legal content is still pending."
+      >
+        <div className="space-y-8 text-sm leading-7 text-[var(--muted-strong)]">
+          <section className="space-y-3">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Use of the service</h2>
+            <p>Use of GST Billing is subject to lawful business operation, valid account ownership, and compliance with billing, tax, accounting, and data obligations applicable to your business.</p>
+          </section>
+          <section className="space-y-3 border-t border-[rgba(23,32,51,0.08)] pt-6">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Commercial terms still required</h2>
+            <p>The production version of this page should define subscription commitments, billing rules, cancellation handling, acceptable use, suspension conditions, and service boundaries for the actual operating entity.</p>
+          </section>
+          <section className="space-y-3 border-t border-[rgba(23,32,51,0.08)] pt-6">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">Launch note</h2>
+            <p>Replace this placeholder before public launch with reviewed legal language covering liability limits, data handling references, governing law, dispute handling, and termination conditions.</p>
+          </section>
+        </div>
+      </DocumentFrame>
     </PublicSiteShell>
   );
 }

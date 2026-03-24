@@ -2,10 +2,12 @@
 
 import * as React from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCashBook } from "@/lib/billing/hooks";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -23,49 +25,83 @@ export default function CashBookPage({ params }: Props) {
   const [to, setTo] = React.useState("");
 
   const query = useCashBook({
-    companyId: companyId,
+    companyId,
     from: from || undefined,
     to: to || undefined,
   });
 
-  const items = (query.data?.data as unknown as Array<Record<string, unknown>>) ?? [];
-
-  const pretty = JSON.stringify(query.data?.data ?? null, null, 2);
+  const items = (query.data?.data as Array<{ date: string; narration: string | null; amount: number }> | undefined) ?? [];
+  const totals = items.reduce(
+    (acc, item) => {
+      if (item.amount >= 0) acc.receipts += item.amount;
+      else acc.payments += Math.abs(item.amount);
+      acc.balance += item.amount;
+      return acc;
+    },
+    { receipts: 0, payments: 0, balance: 0 },
+  );
+  const rows = items.map((item, index) => {
+    const priorBalance = items.slice(0, index + 1).reduce((sum, current) => sum + current.amount, 0);
+    return { ...item, runningBalance: priorBalance };
+  });
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="Accounting"
         title="Cash book"
-        subtitle="Review cash receipts and payments using a cleaner report container while the backend shape remains generic."
+        subtitle="Review cash movement as a book, not a raw payload, with receipts, payments, and running balance visible immediately."
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Reporting window</CardTitle>
-          <CardDescription>Filter cash entries by date range.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
+      <WorkspaceFilterBar>
+        <div className="grid gap-3 md:grid-cols-2">
           <DateField label="From" value={from} onChange={setFrom} />
           <DateField label="To" value={to} onChange={setTo} />
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspaceFilterBar>
 
       {query.isLoading ? <LoadingBlock label="Loading cash book…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load cash book")} /> : null}
 
       {!query.isLoading && !query.isError && items.length === 0 ? <EmptyState title="No entries" hint="Try adjusting the date range." /> : null}
 
-      {!query.isLoading && !query.isError && items.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Book entries</CardTitle>
-            <CardDescription>The API response is still rendered generically until a dedicated cash-book schema is added.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="max-h-[70vh] overflow-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs">{pretty}</pre>
-          </CardContent>
-        </Card>
+      {!query.isLoading && !query.isError && rows.length > 0 ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-3">
+            <StatCard label="Receipts" value={totals.receipts.toFixed(2)} tone="quiet" />
+            <StatCard label="Payments" value={totals.payments.toFixed(2)} tone="quiet" />
+            <StatCard label="Net cash movement" value={totals.balance.toFixed(2)} tone="strong" />
+          </div>
+
+          <WorkspaceSection eyebrow="Book" title="Cash entries" subtitle="Chronological cash movement with running balance.">
+            <DataTableShell>
+              <DataTable>
+                <DataThead>
+                  <tr>
+                    <DataTh>Date</DataTh>
+                    <DataTh>Narration</DataTh>
+                    <DataTh className="text-right">Receipt</DataTh>
+                    <DataTh className="text-right">Payment</DataTh>
+                    <DataTh className="text-right">Running balance</DataTh>
+                  </tr>
+                </DataThead>
+                <tbody>
+                  {rows.map((item, index) => {
+                    return (
+                      <DataTr key={`${item.date}-${index}`}>
+                        <DataTd>{item.date}</DataTd>
+                        <DataTd>{item.narration ?? "—"}</DataTd>
+                        <DataTd className="text-right">{item.amount >= 0 ? item.amount.toFixed(2) : "—"}</DataTd>
+                        <DataTd className="text-right">{item.amount < 0 ? Math.abs(item.amount).toFixed(2) : "—"}</DataTd>
+                        <DataTd className="text-right">{item.runningBalance.toFixed(2)}</DataTd>
+                      </DataTr>
+                    );
+                  })}
+                </tbody>
+              </DataTable>
+            </DataTableShell>
+          </WorkspaceSection>
+        </>
       ) : null}
     </div>
   );

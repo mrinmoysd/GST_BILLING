@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
+import { AuthShell } from "@/components/public/auth-shell";
 import type { NormalizedApiError } from "@/lib/api/types";
 import { useAdminLogin } from "@/lib/admin/auth-hooks";
 
@@ -49,40 +50,61 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,95,140,0.08),transparent_28%),var(--app-bg)] px-4 py-10 md:px-6">
-      <div className="mx-auto max-w-xl rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)] md:p-8">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">Internal Admin</div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">Admin login</h1>
+    <AuthShell
+      mode="admin"
+      eyebrow="Platform control"
+      title="Enter the internal control plane."
+      subtitle="Use this route for platform operations, tenant governance, subscription handling, support workflows, and internal administrative oversight."
+      asideTitle="Operator access"
+      asideBody="This is deliberately separate from tenant login. It is for super-admin and internal operator roles managing the SaaS platform itself."
+      asidePoints={[
+        "Manage companies, subscriptions, usage, queues, and support",
+        "Access internal governance and audit surfaces",
+        "Use tenant login instead if you are entering a customer workspace",
+      ]}
+      footer={
+        <>
+          Need tenant access instead?{" "}
+          <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
+            Go to workspace login
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Internal admin</div>
+          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] text-[var(--foreground)]">Admin sign-in</h1>
+          <p className="text-sm leading-6 text-[var(--muted)]">
+            Restricted route for platform operators. This session controls the SaaS surface, not a tenant workspace.
+          </p>
+        </div>
 
-        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          Sign in with your super-admin credentials to access platform operations.
-        </p>
-
-        <form onSubmit={onSubmit} className="mt-6">
-          <label className="mb-4 block">
+        <form onSubmit={onSubmit} className="space-y-4">
+          <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Email</div>
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               autoComplete="email"
-              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
             />
           </label>
 
-          <label className="mb-4 block">
+          <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Password</div>
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               autoComplete="current-password"
-              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
             />
           </label>
 
           {error ? (
-            <div className="mt-3 rounded-2xl border border-red-200 bg-[#fff6f3] p-4 text-sm text-[#7e3128]">
+            <div className="rounded-[22px] border border-red-200 bg-[#fff6f3] px-4 py-3 text-sm text-[#7e3128]">
               {error}
             </div>
           ) : null}
@@ -90,19 +112,12 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:opacity-70"
+            className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-94 disabled:opacity-70"
           >
             {isSubmitting ? "Signing in..." : "Sign in to admin"}
           </button>
-
-          <div className="mt-5 text-sm text-[var(--muted)]">
-            Need tenant access instead?{" "}
-            <Link href="/login" className="font-medium text-[var(--accent)] hover:underline">
-              Go to workspace login
-            </Link>
-          </div>
         </form>
       </div>
-    </main>
+    </AuthShell>
   );
 }

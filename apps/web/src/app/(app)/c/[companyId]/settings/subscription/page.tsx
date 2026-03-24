@@ -2,11 +2,10 @@
 
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCheckoutSubscription, useSubscription } from "@/lib/settings/subscriptionHooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -34,25 +33,21 @@ export default function SubscriptionSettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Settings"
+      <WorkspaceConfigHero
+        eyebrow="Commercial"
         title="Subscription"
         subtitle="Review current subscription state and launch the live provider checkout flow from a clearer billing surface."
+        badges={[
+          <WorkspaceStatBadge key="status" label="Status" value={data?.status ?? "No active subscription"} />,
+          <WorkspaceStatBadge key="provider" label="Provider" value={data?.provider ?? "Provider pending"} variant="outline" />,
+        ]}
       />
 
       {sub.isLoading ? <LoadingBlock label="Loading subscription…" /> : null}
       {sub.isError ? <InlineError message={getErrorMessage(sub.error, "Failed to load subscription")} /> : null}
 
-      <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-        <CardHeader>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{data?.status ?? "No active subscription"}</Badge>
-            <Badge variant="outline">{data?.provider ?? "Provider pending"}</Badge>
-          </div>
-          <CardTitle>Current subscription</CardTitle>
-          <CardDescription>Billing state returned by the current backend integration.</CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-[var(--foreground)]">
+      <WorkspacePanel title="Current subscription" subtitle="Billing state returned by the current backend integration." tone="muted">
+        <div className="text-sm text-[var(--foreground)]">
           {data ? (
             <ul className="space-y-1">
               <li>
@@ -71,15 +66,11 @@ export default function SubscriptionSettingsPage({ params }: Props) {
           ) : (
             <div className="text-[var(--muted)]">No active subscription found.</div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Checkout</CardTitle>
-          <CardDescription>Create a provider checkout session for Stripe or Razorpay using the configured billing credentials.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <WorkspacePanel title="Checkout" subtitle="Create a provider checkout session for Stripe or Razorpay using the configured billing credentials.">
+        <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Provider</label>
@@ -142,8 +133,8 @@ export default function SubscriptionSettingsPage({ params }: Props) {
           </div>
 
           <div className="text-xs text-[var(--muted)]">Webhook-driven activation and subscription status sync now run through the backend integration layer.</div>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
     </div>
   );
 }

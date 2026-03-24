@@ -5,11 +5,12 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAccountingPeriodLock, useCreateJournal, useJournals, useLedgers, useUpdateAccountingPeriodLock } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -65,23 +66,29 @@ export default function JournalsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="Accounting"
         title="Journals"
-        subtitle="Create balanced journal entries and review recent posting activity from a stronger workspace layout."
+        subtitle="Post balanced entries, manage book lock discipline, and review the journal stream without turning the page into a card stack."
+        badges={[
+          <WorkspaceStatBadge key="ledgers" label="Ledgers" value={ledgerRows.length} />,
+          <WorkspaceStatBadge key="period" label="Period" value={lockData?.lock_until ? `Locked through ${lockData.lock_until}` : "Open"} variant={lockData?.lock_until ? "secondary" : "outline"} />,
+        ]}
+        aside={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <StatCard label="Debit" value={totals.debit.toFixed(2)} tone="quiet" />
+            <StatCard label="Credit" value={totals.credit.toFixed(2)} tone="quiet" />
+          </div>
+        }
       />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Badge variant={lockData?.lock_until ? "secondary" : "outline"}>
-              {lockData?.lock_until ? `Locked through ${lockData.lock_until}` : "Period open"}
-            </Badge>
-          </div>
-          <CardTitle>Period lock</CardTitle>
-          <CardDescription>Close completed books by preventing new journal and auto-posted activity up to a specific date.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+      <WorkspacePanel
+        title="Period lock"
+        subtitle="Close completed books by preventing new journal and auto-posted activity up to a specific date."
+        tone="muted"
+      >
+        <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <DateField label="Lock until" value={lockUntil} onChange={setLockUntil} />
             <TextField label="Reason (optional)" value={lockReason} onChange={setLockReason} />
@@ -125,19 +132,14 @@ export default function JournalsPage({ params }: Props) {
               Clear lock
             </SecondaryButton>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">{ledgerRows.length} ledgers available</Badge>
-            <Badge variant="outline">Manual posting</Badge>
-          </div>
-          <CardTitle>Create journal entry</CardTitle>
-          <CardDescription>Build a balanced debit-credit entry and post it directly into the accounting subsystem.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <WorkspacePanel
+        title="Create journal entry"
+        subtitle="Build a balanced debit-credit entry and post it directly into the accounting subsystem."
+      >
+        <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
           <DateField label="Date" value={date} onChange={setDate} />
           <TextField label="Narration (optional)" value={narration} onChange={setNarration} />
@@ -236,33 +238,32 @@ export default function JournalsPage({ params }: Props) {
           >
             {create.isPending ? "Posting…" : "Post journal"}
           </PrimaryButton>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter the recent journal list by date range.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+      <WorkspaceFilterBar
+        summary={
+          <>
+            <Badge variant="outline">{journals.length} visible</Badge>
+            <Badge variant="secondary">{query.data?.data.meta?.total ?? 0} total</Badge>
+          </>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
           <DateField label="From" value={from} onChange={setFrom} />
           <DateField label="To" value={to} onChange={setTo} />
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspaceFilterBar>
 
       {query.isLoading ? <LoadingBlock label="Loading journals…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load journals")} /> : null}
       {query.data && journals.length === 0 ? <EmptyState title="No journals" hint="Post a journal entry to see it here." /> : null}
 
       {query.data && journals.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent journals</CardTitle>
-            <CardDescription>Most recent journal entries returned by the current query.</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <WorkspaceSection eyebrow="Accounting stream" title="Recent journals" subtitle="Most recent journal entries returned by the current query.">
             <DataTableShell>
-              <DataTable>
+              <DataTable className="min-w-[760px]">
                 <DataThead>
                   <tr>
                     <DataTh>ID</DataTh>
@@ -287,8 +288,7 @@ export default function JournalsPage({ params }: Props) {
                 </tbody>
               </DataTable>
             </DataTableShell>
-          </CardContent>
-        </Card>
+        </WorkspaceSection>
       ) : null}
     </div>
   );

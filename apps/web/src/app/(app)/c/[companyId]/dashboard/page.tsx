@@ -3,15 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, FilePlus2, PackagePlus, ReceiptIndianRupee, Users2, Wallet } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useInvoices, usePayments, usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
 import { useLowStock } from "@/lib/masters/hooks";
 import { useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = {
   // Next (this repo version) types dynamic `params` as a Promise.
@@ -151,64 +150,65 @@ export default function CompanyDashboardPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        eyebrow="Overview"
+      <WorkspaceHero
+        eyebrow="Tenant control surface"
         title="Dashboard"
-        subtitle="Track operational health, jump into your highest-frequency workflows, and keep billing activity moving."
-        actions={<Badge variant="secondary">Company {companyId.slice(0, 8)}</Badge>}
+        subtitle="Track operational health, jump into the next action quickly, and keep billing, stock, and collection activity moving from one company workspace."
+        badges={[
+          <WorkspaceStatBadge key="company" label="Company" value={session.company?.name ?? companyId.slice(0, 8)} />,
+          <WorkspaceStatBadge key="status" label="Workspace" value={recentActivity.length ? "Live" : "Bootstrapping"} variant="outline" />,
+        ]}
+        actions={
+          <>
+            <Button asChild>
+              <Link href={`/c/${companyId}/sales/invoices/new`}>Create invoice</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href={`/c/${companyId}/payments`}>Open payments</Link>
+            </Button>
+          </>
+        }
+        aside={
+          <WorkspacePanel
+            tone="strong"
+            title="Operational focus"
+            subtitle="Use the overview to decide whether the next move is collections, replenishment, or document creation."
+          >
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Receivables</div>
+                <div className="mt-2 text-2xl font-semibold">{formatCurrency(outstandingValue)}</div>
+                <div className="mt-1 text-sm text-white/72">Open receivable exposure in the current view.</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Stock attention</div>
+                <div className="mt-2 text-2xl font-semibold">{lowStockItems.length}</div>
+                <div className="mt-1 text-sm text-white/72">Products currently need replenishment review.</div>
+              </div>
+            </div>
+          </WorkspacePanel>
+        }
       />
 
       {dashboardError ? <InlineError message={dashboardError} /> : null}
       {hasLoadingState ? <LoadingBlock label="Refreshing dashboard metrics…" /> : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+      <WorkspaceSection
+        eyebrow="Overview"
+        title="Today’s operating picture"
+        subtitle="Use these signals first, then move into collections, product setup, purchasing, or payment workflows."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Today's sales" value={formatCurrency(todaysSalesValue)} hint={`${Number(salesToday.count ?? 0)} invoice(s) today.`} />
           <StatCard label="This month" value={formatCurrency(monthlySalesValue)} hint={`${Number(salesMonth.count ?? 0)} invoice(s) in the current month.`} />
-          <StatCard label="Outstanding" value={formatCurrency(outstandingValue)} hint={`${(outstandingPayload?.data ?? []).length} open receivable(s) in the current view.`} />
-          <StatCard label="Low stock items" value={lowStockItems.length} hint="Products currently at or below reorder threshold." />
+          <StatCard label="Outstanding" value={formatCurrency(outstandingValue)} hint={`${(outstandingPayload?.data ?? []).length} open receivable(s) in the current view.`} tone="quiet" />
+          <StatCard label="Low stock items" value={lowStockItems.length} hint="Products currently at or below reorder threshold." tone="quiet" />
         </div>
-
-        <Card className="bg-[linear-gradient(135deg,rgba(15,95,140,0.96),rgba(24,74,110,0.96))] text-white">
-          <CardHeader>
-            <Badge className="w-fit border-white/15 bg-white/10 text-white" variant="outline">
-              Workspace
-            </Badge>
-            <CardTitle className="text-2xl tracking-[-0.02em] text-white">Stay on top of billing velocity</CardTitle>
-            <CardDescription className="text-white/78">
-              This dashboard now composes live operational data from the existing invoice, payment, report, and inventory APIs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs uppercase tracking-[0.14em] text-white/65">Readiness</div>
-                <div className="mt-2 text-2xl font-semibold">{recentActivity.length ? "Live" : "Bootstrapping"}</div>
-                <div className="mt-1 text-sm text-white/72">The workspace is now driven by current business activity rather than placeholders.</div>
-              </div>
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs uppercase tracking-[0.14em] text-white/65">Attention</div>
-                <div className="mt-2 text-2xl font-semibold">{lowStockItems.length}</div>
-                <div className="mt-1 text-sm text-white/72">Products currently need replenishment review or stock action.</div>
-              </div>
-            </div>
-            <Button asChild variant="secondary" className="border-white/15 bg-white text-[var(--accent)] hover:bg-white/95">
-              <Link href={`/c/${companyId}/payments`}>
-                Open payments
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
+      </WorkspaceSection>
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
-            <CardDescription>Jump into the workflows your team uses every day.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
+        <WorkspacePanel title="Quick actions" subtitle="Jump into the workflows your team uses every day.">
+          <div className="grid gap-3 sm:grid-cols-2">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
@@ -230,15 +230,11 @@ export default function CompanyDashboardPage({ params }: Props) {
                 </Link>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
-            <CardDescription>The latest invoice, purchase, and payment events across the company.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <WorkspacePanel title="Recent activity" subtitle="The latest invoice, purchase, and payment events across the company." tone="muted">
+          <div className="space-y-3">
             {recentActivity.length > 0 ? (
               recentActivity.map((activity) => (
                 <Link
@@ -261,8 +257,8 @@ export default function CompanyDashboardPage({ params }: Props) {
                 Recent activity will appear here once invoices, purchases, or payments are recorded.
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
       </section>
     </div>
   );

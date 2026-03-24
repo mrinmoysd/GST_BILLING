@@ -22,8 +22,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-cormorant);
 }
 
 body {
@@ -34,6 +34,48 @@ body {
     radial-gradient(circle at 90% 15%, rgba(185, 120, 24, 0.09), transparent 20%);
   background-attachment: fixed;
   font-family: var(--font-sans), "Segoe UI", sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-hero-rise {
+  animation: hero-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-hero-rise-delay {
+  animation: hero-rise 700ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-hero-fade {
+  animation: hero-fade 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Nice default text rendering */

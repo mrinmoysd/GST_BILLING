@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminCompany, useUpdateAdminCompanyLifecycle } from "@/lib/admin/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
+import { WorkspaceDetailHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = {
   params: Promise<{ companyId: string }>;
@@ -62,10 +63,14 @@ export default function AdminCompanyDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Admin"
+      <WorkspaceDetailHero
+        eyebrow="Tenant detail"
         title={company?.name ?? "Company workspace"}
         subtitle="Review owner identity, GST readiness, subscription context, tenant health, and lifecycle controls."
+        badges={[
+          <WorkspaceStatBadge key="lifecycle" label="Lifecycle" value={company?.lifecycle?.status ?? "active"} />,
+          <WorkspaceStatBadge key="subscription" label="Plan" value={company?.subscription?.plan ?? "—"} variant="outline" />,
+        ]}
         actions={
           <div className="flex flex-wrap gap-3">
             <SecondaryButton asChild type="button">
@@ -90,6 +95,7 @@ export default function AdminCompanyDetailPage({ params }: Props) {
 
       {company ? (
         <>
+          <WorkspaceSection eyebrow="Overview" title="Status and footprint" subtitle="Read lifecycle, identity, billing, and usage signals before taking action.">
           <div className="grid gap-4 xl:grid-cols-4">
             <Card>
               <CardHeader>
@@ -135,6 +141,7 @@ export default function AdminCompanyDetailPage({ params }: Props) {
               </CardContent>
             </Card>
           </div>
+          </WorkspaceSection>
 
           <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <Card>

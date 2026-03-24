@@ -1,31 +1,27 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MarketingHero, PublicSiteShell, SectionHeading } from "@/components/public/site-shell";
+import { EditorialBand, FullBleedHero, PublicSiteShell } from "@/components/public/site-shell";
 
 const plans = [
   {
     name: "Starter",
-    badge: "Recommended for new teams",
-    price: "Contact sales",
-    description: "For businesses moving from spreadsheets or basic invoicing into one GST-ready operating workspace.",
-    points: ["Billing, purchases, inventory, GST, reports", "Onboarding and day-one operational setup", "Email-based support path"],
+    fit: "For teams leaving spreadsheets or basic invoice software.",
+    body: "Use this when you need one disciplined workspace for billing, purchases, inventory, GST, and day-one reporting.",
+    points: ["Self-serve onboarding", "Core operations and reporting", "Fast move into a live workspace"],
   },
   {
     name: "Growth",
-    badge: "Operations-focused",
-    price: "Custom",
-    description: "For teams that need tighter finance control, admin visibility, and scaled internal operations.",
-    points: ["Accounting-linked operations", "Role and permission management", "Platform admin and support workflows"],
+    fit: "For teams tightening finance and internal control.",
+    body: "Use this when accounting discipline, permissions, and broader operating visibility matter as much as billing speed.",
+    points: ["Accounting-linked operations", "Settings and role controls", "More mature internal workflows"],
   },
   {
     name: "Platform",
-    badge: "For mature teams",
-    price: "Custom",
-    description: "For organizations that need broader rollout, higher governance, and implementation collaboration.",
-    points: ["Implementation planning", "Environment and release support", "Operational scaling assistance"],
+    fit: "For teams rolling out with governance or implementation support.",
+    body: "Use this when you need broader rollout planning, internal coordination, and a more operationally guided path into the product.",
+    points: ["Rollout and implementation support", "Governance-heavy adoption", "Longer-path operational alignment"],
   },
 ];
 
@@ -34,57 +30,75 @@ export default function PricingPage() {
     <PublicSiteShell
       accent="gold"
       hero={
-        <MarketingHero
-          eyebrow="Pricing"
-          title="Choose the rollout path that matches your operational maturity."
-          subtitle="The right plan depends less on invoice volume and more on how much control you need across GST, inventory, finance, and platform operations."
-          badges={["India-first workflows", "Operational rollout", "Finance-aligned structure"]}
+        <FullBleedHero
+          accent="gold"
+          eyebrow="Commercial model"
+          title="Pricing is framed around operating maturity, not vanity usage metrics."
+          subtitle="The right plan depends on how much control you need across billing, GST, finance, and rollout governance."
           actions={
             <>
-              <Button asChild>
-                <Link href="/onboarding">Start with onboarding</Link>
+              <Button asChild size="lg">
+                <Link href="/onboarding">Create company</Link>
               </Button>
-              <Button asChild variant="secondary">
-                <Link href="/demo">Talk through your use case</Link>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/contact">Talk to us</Link>
               </Button>
             </>
+          }
+          visual={
+            <div className="grid w-full max-w-[760px] gap-4 lg:grid-cols-3">
+              {plans.map((plan, index) => (
+                <div
+                  key={plan.name}
+                  className={`rounded-[30px] border border-[rgba(23,32,51,0.08)] p-6 shadow-[var(--shadow-soft)] ${
+                    index === 1 ? "bg-[rgba(23,32,51,0.95)] text-white" : "bg-[rgba(255,255,255,0.78)]"
+                  }`}
+                >
+                  <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-white/56" : "text-[var(--muted)]"}`}>{plan.fit}</div>
+                  <div className={`mt-4 font-display text-4xl font-semibold tracking-[-0.045em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>{plan.name}</div>
+                  <div className={`mt-3 text-sm leading-6 ${index === 1 ? "text-white/78" : "text-[var(--muted-strong)]"}`}>{plan.body}</div>
+                </div>
+              ))}
+            </div>
           }
         />
       }
     >
-      <section className="space-y-6">
-        <SectionHeading title="Plan structure" subtitle="These plans are intentionally framed around operating complexity, not vanity metrics." />
-        <div className="grid gap-4 xl:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.name} className="rounded-[30px]">
-              <CardHeader>
-                <Badge variant="secondary">{plan.badge}</Badge>
-                <CardTitle className="mt-3 text-2xl">{plan.name}</CardTitle>
-                <div className="text-3xl font-semibold tracking-[-0.03em]">{plan.price}</div>
-                <CardDescription className="leading-6">{plan.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {plan.points.map((point) => (
-                  <div key={point} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted-strong)]">
-                    {point}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <EditorialBand
+        eyebrow="Plan shape"
+        title="The product scales by control depth, not by inflating the first invoice screen."
+        body="As teams mature, the workload shifts toward permissions, accounting integrity, operational oversight, and rollout governance. The plan model follows that reality."
+      />
+
+      <section className="grid gap-6 py-12 lg:grid-cols-3">
+        {plans.map((plan, index) => (
+          <div
+            key={plan.name}
+            className={`rounded-[32px] border border-[rgba(23,32,51,0.08)] p-7 shadow-[var(--shadow-soft)] ${
+              index === 1 ? "bg-[rgba(23,32,51,0.96)] text-white" : "bg-[rgba(255,255,255,0.78)]"
+            }`}
+          >
+            <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-white/56" : "text-[var(--muted)]"}`}>Best fit</div>
+            <div className={`mt-4 font-display text-5xl font-semibold tracking-[-0.05em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>{plan.name}</div>
+            <div className={`mt-4 text-sm leading-7 ${index === 1 ? "text-white/78" : "text-[var(--muted-strong)]"}`}>{plan.fit}</div>
+            <div className="mt-6 space-y-3 border-t border-[rgba(23,32,51,0.12)] pt-5">
+              {plan.points.map((point) => (
+                <div key={point} className={`text-sm leading-6 ${index === 1 ? "text-white/84" : "text-[var(--muted-strong)]"}`}>{point}</div>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
-      <section className="mt-16 rounded-[30px] border border-[var(--border)] bg-[rgba(255,255,255,0.86)] p-6 md:p-8">
-        <SectionHeading title="What happens next" subtitle="If you already know your team is ready, go straight into onboarding. If you need internal buy-in, route through demo or contact first." />
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/onboarding">Create company</Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href="/contact">Contact us</Link>
-          </Button>
+      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-[rgba(23,32,51,0.08)] py-12">
+        <div>
+          <div className="font-display text-4xl font-semibold tracking-[-0.045em] text-[var(--foreground)]">Need rollout guidance first?</div>
+          <div className="mt-2 text-sm leading-6 text-[var(--muted)]">Use the contact path if pricing needs to be mapped to your operating structure.</div>
         </div>
+        <Link href="/contact" className="inline-flex items-center gap-3 text-sm font-semibold text-[var(--foreground)]">
+          Talk to us
+          <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+        </Link>
       </section>
     </PublicSiteShell>
   );

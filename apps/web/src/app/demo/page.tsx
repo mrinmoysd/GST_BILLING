@@ -1,45 +1,49 @@
 import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MarketingHero, PublicSiteShell } from "@/components/public/site-shell";
+import { EditorialBand, FullBleedHero, PublicSiteShell } from "@/components/public/site-shell";
 
 export default function DemoPage() {
   return (
     <PublicSiteShell
       accent="gold"
       hero={
-        <MarketingHero
-          eyebrow="Demo"
-          title="Use the demo path when you need a guided walkthrough before rollout."
-          subtitle="This route is for prospects or internal reviewers who want the workflow story before creating a workspace directly."
+        <FullBleedHero
+          accent="gold"
+          eyebrow="Guided walkthrough"
+          title="Use the demo path when you want the workflow story before rollout."
+          subtitle="This route is for teams who need a guided review across onboarding, billing, GST, accounting, reporting, POS, and platform operations before moving into a live workspace."
           actions={
             <>
-              <Button asChild>
+              <Button asChild size="lg">
                 <Link href="/contact">Talk to us</Link>
               </Button>
-              <Button asChild variant="secondary">
+              <Button asChild size="lg" variant="secondary">
                 <Link href="/onboarding">Skip to onboarding</Link>
               </Button>
             </>
           }
+          visual={
+            <div className="grid w-full max-w-[720px] gap-4 md:grid-cols-3">
+              {[
+                ["Workflow tour", "See the lifecycle from onboarding to books."],
+                ["Rollout fit", "Decide whether self-serve or guided rollout is right."],
+                ["Stakeholder review", "Give finance, ops, and founders one product narrative."],
+              ].map(([title, body], index) => (
+                <div key={title} className={`rounded-[30px] border border-[rgba(23,32,51,0.08)] p-6 shadow-[var(--shadow-soft)] ${index === 1 ? "bg-[rgba(23,32,51,0.95)] text-white" : "bg-[rgba(255,255,255,0.78)]"}`}>
+                  <div className={`font-display text-3xl font-semibold tracking-[-0.04em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>{title}</div>
+                  <div className={`mt-3 text-sm leading-6 ${index === 1 ? "text-white/76" : "text-[var(--muted-strong)]"}`}>{body}</div>
+                </div>
+              ))}
+            </div>
+          }
         />
       }
     >
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          { title: "Workflow demo", body: "Walk through onboarding, billing, GST reports, accounting, and POS in one narrative." },
-          { title: "Rollout discussion", body: "Clarify whether your team should start self-serve or needs implementation planning support." },
-          { title: "Stakeholder review", body: "Use this path when finance, operations, and founders need shared product context before adoption." },
-        ].map((item) => (
-          <Card key={item.title} className="rounded-[28px]">
-            <CardHeader>
-              <CardTitle>{item.title}</CardTitle>
-              <CardDescription className="leading-6">{item.body}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      <EditorialBand
+        eyebrow="What the demo should do"
+        title="The goal is to shorten decision time, not just present features."
+        body="A good demo route should explain product fit, operating structure, rollout path, and the role of the public site versus the live workspace. It is a guided review surface, not a duplicate homepage."
+      />
     </PublicSiteShell>
   );
 }

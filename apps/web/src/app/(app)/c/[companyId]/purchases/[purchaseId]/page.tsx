@@ -3,7 +3,6 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
@@ -16,8 +15,9 @@ import {
   useRecordPayment,
   useUploadPurchaseBill,
 } from "@/lib/billing/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; purchaseId: string }> };
 
@@ -100,14 +100,28 @@ export default function PurchaseDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Purchases"
-        title="Purchase"
+      <WorkspaceDetailHero
+        eyebrow="Purchase detail"
+        title={`Purchase ${purchaseId.slice(0, 8)}`}
         subtitle="Handle receiving, supplier bill attachment, purchase returns, payments, and lifecycle history from one operational surface."
+        badges={[
+          <WorkspaceStatBadge key="status" label="Status" value={purchase?.status ?? "—"} />,
+          <WorkspaceStatBadge key="returned" label="Returned" value={totalReturned.toFixed(2)} variant="outline" />,
+        ]}
         actions={
           <Link className="text-sm underline" href={`/c/${companyId}/purchases`}>
             Back
           </Link>
+        }
+        metrics={
+          purchase
+            ? [
+                { label: "Purchase date", value: purchase.purchase_date ?? "—" },
+                { label: "Supplier bill", value: "Available" },
+                { label: "Purchase total", value: Number(purchase.total ?? 0).toFixed(2) },
+                { label: "Net after returns", value: (Number(purchase.total ?? 0) - totalReturned).toFixed(2) },
+              ]
+            : []
         }
       />
 
@@ -117,17 +131,8 @@ export default function PurchaseDetailPage({ params }: Props) {
       {purchase ? (
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
           <div className="space-y-6">
-            <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-              <CardHeader>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">{purchase.status ?? "—"}</Badge>
-                  <Badge variant="outline">Purchase {purchaseId.slice(0, 8)}</Badge>
-                  <Badge variant="outline">Returned {totalReturned.toFixed(2)}</Badge>
-                </div>
-                <CardTitle>Purchase detail</CardTitle>
-                <CardDescription>Track receive state, bill attachment, purchase returns, and supplier payments.</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-3 sm:grid-cols-2">
+            <WorkspacePanel title="Purchase actions" subtitle="Track receive state, bill attachment, purchase returns, and supplier payments.">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Purchase date</div>
                   <div className="mt-2 text-sm font-medium">{purchase.purchase_date ?? "—"}</div>
@@ -148,15 +153,11 @@ export default function PurchaseDetailPage({ params }: Props) {
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Net after returns</div>
                   <div className="mt-2 text-sm font-medium">{(Number(purchase.total ?? 0) - totalReturned).toFixed(2)}</div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Document actions</CardTitle>
-                <CardDescription>Receive stock, cancel the purchase, or upload the supplier bill.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
+            <WorkspacePanel title="Document actions" subtitle="Receive stock, cancel the purchase, or upload the supplier bill." tone="muted">
+              <div className="space-y-5">
                 <div className="flex flex-wrap gap-3">
                   <PrimaryButton
                     type="button"
@@ -219,20 +220,16 @@ export default function PurchaseDetailPage({ params }: Props) {
                   </div>
                   {uploadError ? <InlineError message={uploadError} /> : null}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
 
             {error ? <InlineError message={error} /> : null}
             {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
           </div>
 
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Purchase returns</CardTitle>
-                <CardDescription>Create post-receipt returns and push the stock reversal through the workflow.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
+            <WorkspacePanel title="Purchase returns" subtitle="Create post-receipt returns and push the stock reversal through the workflow.">
+              <div className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <DateField label="Return date" value={returnDate} onChange={setReturnDate} />
                   <TextField label="Notes" value={returnNotes} onChange={setReturnNotes} placeholder="Optional" />
@@ -312,8 +309,8 @@ export default function PurchaseDetailPage({ params }: Props) {
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
 
             <Card>
               <CardHeader>

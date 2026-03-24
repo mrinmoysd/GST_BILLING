@@ -60,11 +60,14 @@ export default function CompanyLayout({ params, children }: Props) {
         </SheetContent>
       </Sheet>
 
-      <div className="md:grid md:grid-cols-[296px_1fr]">
+      <div className="md:grid md:grid-cols-[312px_1fr]">
         <aside className="hidden border-r border-[var(--border)] bg-[rgba(255,253,248,0.76)] backdrop-blur md:block">
           <div className="sticky top-0 p-5">
-            <div className="font-semibold text-xl tracking-[-0.03em]">GST Billing</div>
-            <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
+            <div className="rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Workspace</div>
+              <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">GST Billing</div>
+              <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
+            </div>
             <div className="mt-6">
               <CompanyNav companyId={companyId} variant="sidebar" />
             </div>

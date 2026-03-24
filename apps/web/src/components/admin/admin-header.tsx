@@ -72,7 +72,7 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
               GST Billing Admin
             </Link>
             <Badge variant="secondary" className="hidden md:inline-flex">
-              Super Admin
+              Internal
             </Badge>
           </div>
           <div className="mt-1 hidden md:block">

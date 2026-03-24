@@ -15,8 +15,9 @@ import {
   useUpdateNotificationTemplate,
 } from "@/lib/settings/notificationsHooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -63,22 +64,22 @@ export default function NotificationsSettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Settings"
+      <WorkspaceConfigHero
+        eyebrow="Communications"
         title="Notifications"
-        subtitle="Manage template definitions and test-send flows from a more structured communications workspace."
+        subtitle="Manage template definitions, test-send flows, and delivery review from a more structured communications workspace."
+        badges={[
+          <WorkspaceStatBadge key="templates" label="Templates" value={rows.length} />,
+          <WorkspaceStatBadge key="channels" label="Channels" value="Email / SMS / WhatsApp" variant="outline" />,
+        ]}
       />
 
-      <Card>
-        <CardHeader>
+      <WorkspacePanel title="Create template" subtitle="Define reusable outbound message templates for the current company.">
+        <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{rows.length} template{rows.length === 1 ? "" : "s"}</Badge>
             <Badge variant="outline">Email / SMS / WhatsApp</Badge>
           </div>
-          <CardTitle>Create template</CardTitle>
-          <CardDescription>Define reusable outbound message templates for the current company.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <TextField label="Code" value={code} onChange={setCode} />
             <SelectField
@@ -123,15 +124,11 @@ export default function NotificationsSettingsPage({ params }: Props) {
           >
             {create.isPending ? "Creating…" : "Create"}
           </PrimaryButton>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Test notification</CardTitle>
-          <CardDescription>Queue a test notification from an existing template, then process the outbox to validate provider wiring.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <WorkspacePanel title="Test notification" subtitle="Queue a test notification from an existing template, then process the outbox to validate provider wiring." tone="muted">
+        <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <SelectField
               label="Channel"
@@ -214,8 +211,8 @@ export default function NotificationsSettingsPage({ params }: Props) {
               {processOutbox.isPending ? "Processing…" : "Process outbox"}
             </SecondaryButton>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </WorkspacePanel>
 
       <div className="space-y-3">
         <div className="text-sm font-medium">Templates</div>

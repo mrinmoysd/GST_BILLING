@@ -4,12 +4,11 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInvoices, usePayments, usePurchases, useRecordPayment } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -62,23 +61,19 @@ export default function PaymentsPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Operations"
+      <WorkspaceHero
+        eyebrow="Settlement workspace"
         title="Payments"
-        subtitle="Use a dedicated payment workspace to record settlements and review invoice and purchase payment activity."
+        subtitle="Record settlements and review invoice and purchase payment activity from one dedicated payment control surface."
+        badges={[
+          <WorkspaceStatBadge key="count" label="Payments" value={paymentTotals.count} />,
+          <WorkspaceStatBadge key="amount" label="Total" value={`₹${paymentTotals.amount.toFixed(2)}`} variant="outline" />,
+        ]}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{paymentTotals.count} payment{paymentTotals.count === 1 ? "" : "s"} in view</Badge>
-              <Badge variant="outline">₹{paymentTotals.amount.toFixed(2)} total</Badge>
-            </div>
-            <CardTitle>Record payment</CardTitle>
-            <CardDescription>Attach a payment to an issued invoice or an existing purchase from one place.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <WorkspacePanel title="Record payment" subtitle="Attach a payment to an issued invoice or an existing purchase from one place.">
+          <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <SelectField
                 label="Target type"
@@ -154,15 +149,11 @@ export default function PaymentsPage({ params }: Props) {
                 Use today
               </SecondaryButton>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
-        <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>Review the current payment ledger using date and method filters.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+        <WorkspacePanel title="Filters" subtitle="Review the current payment ledger using date and method filters." tone="muted">
+          <div className="grid gap-4 md:grid-cols-2">
             <DateField label="From" value={from} onChange={setFrom} />
             <DateField label="To" value={to} onChange={setTo} />
             <SelectField
@@ -185,8 +176,8 @@ export default function PaymentsPage({ params }: Props) {
                 Open purchases
               </Link>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
       </div>
 
       {paymentsQuery.isLoading ? <LoadingBlock label="Loading payments…" /> : null}
@@ -197,12 +188,11 @@ export default function PaymentsPage({ params }: Props) {
       ) : null}
 
       {paymentRows.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment activity</CardTitle>
-            <CardDescription>Recent payment records across both sales and purchases.</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <WorkspaceSection
+          eyebrow="Ledger plane"
+          title="Payment activity"
+          subtitle="Recent payment records across both sales and purchases."
+        >
             <DataTableShell>
               <DataTable>
                 <DataThead>
@@ -244,8 +234,7 @@ export default function PaymentsPage({ params }: Props) {
                 </tbody>
               </DataTable>
             </DataTableShell>
-          </CardContent>
-        </Card>
+        </WorkspaceSection>
       ) : null}
     </div>
   );

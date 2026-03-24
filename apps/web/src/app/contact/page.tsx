@@ -1,71 +1,76 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MarketingHero, PublicSiteShell } from "@/components/public/site-shell";
+import { EditorialBand, FullBleedHero, PublicSiteShell, RouteCluster } from "@/components/public/site-shell";
 
 export default function ContactPage() {
   return (
     <PublicSiteShell
       hero={
-        <MarketingHero
+        <FullBleedHero
           eyebrow="Contact"
-          title="Talk through rollout, migration, or product fit."
-          subtitle="Use this route when you need a guided conversation rather than going straight into self-serve onboarding."
+          title="Use this route when the next step needs a conversation."
+          subtitle="The contact surface should route by intent: commercial fit, rollout guidance, product support, or direct move into onboarding."
           actions={
             <>
-              <Button asChild>
-                <Link href="/demo">Request a demo</Link>
+              <Button asChild size="lg">
+                <Link href="/demo">Book demo</Link>
               </Button>
-              <Button asChild variant="secondary">
-                <Link href="/onboarding">Create company instead</Link>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/onboarding">Create company</Link>
               </Button>
             </>
+          }
+          visual={
+            <div className="w-full max-w-[720px] rounded-[34px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.78)] p-8 shadow-[var(--shadow-soft)]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Contact routing</div>
+              <div className="mt-5 space-y-4">
+                {[
+                  ["Sales conversation", "For plan guidance, rollout fit, and stakeholder support."],
+                  ["Implementation planning", "For teams already planning migration or structured rollout."],
+                  ["Product support", "For questions that should move through support rather than sales."],
+                ].map(([title, body]) => (
+                  <div key={title} className="border-t border-[rgba(23,32,51,0.08)] pt-4 first:border-t-0 first:pt-0">
+                    <div className="font-semibold text-[var(--foreground)]">{title}</div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">{body}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           }
         />
       }
     >
-      <div className="grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2 rounded-[30px]">
-          <CardHeader>
-            <CardTitle>Contact paths</CardTitle>
-            <CardDescription>Choose the route that best matches what you need next.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            {[
-              { title: "Sales conversation", body: "Use when you want plan guidance, rollout scoping, or stakeholder support." },
-              { title: "Implementation planning", body: "Use when you already know you need help structuring rollout, migration, or process design." },
-              { title: "Support / product question", body: "Use the help route if you want product guidance, FAQs, or route-by-route references." },
-              { title: "Direct onboarding", body: "If you are ready to create a workspace, skip the queue and go straight into onboarding." },
-            ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="font-semibold text-[var(--foreground)]">{item.title}</div>
-                <div className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.body}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card className="rounded-[30px]">
-          <CardHeader>
-            <CardTitle>Default contact details</CardTitle>
-            <CardDescription>Replace these placeholders with production contact channels during deployment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[var(--muted-strong)]">
-            <div>
-              <div className="font-semibold text-[var(--foreground)]">Email</div>
-              <div className="mt-1">support@example.com</div>
-            </div>
-            <div>
-              <div className="font-semibold text-[var(--foreground)]">Sales</div>
-              <div className="mt-1">sales@example.com</div>
-            </div>
-            <div>
-              <div className="font-semibold text-[var(--foreground)]">Response model</div>
-              <div className="mt-1">Route product questions to help, commercial discussions to demo/contact, and urgent tenant issues into support workflows.</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <EditorialBand
+        eyebrow="Direct channels"
+        title="Choose the route that matches the work you actually need done."
+        body="This page should behave like a routing desk rather than a generic contact form landing. The public site’s job is to help people self-sort into the right path quickly."
+      />
+
+      <RouteCluster
+        items={[
+          { href: "/demo", label: "Book demo", body: "Use this when you want a guided walkthrough before creating a live workspace." },
+          { href: "/help", label: "Support questions", body: "Use help and support channels when the issue is product understanding or operator guidance." },
+          { href: "/onboarding", label: "Go direct", body: "Skip the queue and create a company immediately if you already know you want the product." },
+        ]}
+      />
+
+      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-[rgba(23,32,51,0.08)] py-12">
+        <div>
+          <div className="text-sm font-semibold text-[var(--foreground)]">Placeholder production channels</div>
+          <div className="mt-2 text-sm leading-6 text-[var(--muted)]">Replace these with the real support and sales details during deployment hardening.</div>
+        </div>
+        <div className="text-sm leading-7 text-[var(--muted-strong)]">
+          support@example.com
+          <br />
+          sales@example.com
+        </div>
+        <Link href="/help" className="inline-flex items-center gap-3 text-sm font-semibold text-[var(--foreground)]">
+          Open help
+          <ArrowRight className="h-4 w-4 text-[var(--accent)]" />
+        </Link>
+      </section>
     </PublicSiteShell>
   );
 }
