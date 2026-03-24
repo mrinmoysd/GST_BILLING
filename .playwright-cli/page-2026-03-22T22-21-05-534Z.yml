@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Reports" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/reports
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - generic [ref=e123]: Profit Snapshot
+          - generic [ref=e124]:
+            - link "Switch" [ref=e125] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e126]
+            - generic [ref=e128]: owner
+            - button "Demo Company" [ref=e129]:
+              - generic [ref=e130]: Demo Company
+              - img [ref=e131]
+      - main [ref=e134]:
+        - generic [ref=e136]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Reports
+            - heading "Profit snapshot" [level=1] [ref=e140]
+            - generic [ref=e141]: Review revenue, cost of goods, and margin in a clearer executive summary layout.
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - heading "Reporting window" [level=3] [ref=e144]
+              - paragraph [ref=e145]: Select the period you want to compare for gross and net performance.
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - text: From (YYYY-MM-DD)
+                - textbox "From (YYYY-MM-DD)" [ref=e148]
+              - generic [ref=e149]:
+                - text: To (YYYY-MM-DD)
+                - textbox "To (YYYY-MM-DD)" [ref=e150]
+          - generic [ref=e151]:
+            - generic [ref=e153]:
+              - generic [ref=e154]: Revenue
+              - generic [ref=e155]: "3801.08"
+            - generic [ref=e157]:
+              - generic [ref=e158]: COGS
+              - generic [ref=e159]: "4760.02"
+            - generic [ref=e161]:
+              - generic [ref=e162]: Gross profit
+              - generic [ref=e163]: "-958.94"
+            - generic [ref=e165]:
+              - generic [ref=e166]: Net profit
+              - generic [ref=e167]: "-958.94"
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - heading "Estimation note" [level=3] [ref=e170]
+              - paragraph [ref=e171]: Current profitability is derived from an interim costing approach.
+            - generic [ref=e173]: Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

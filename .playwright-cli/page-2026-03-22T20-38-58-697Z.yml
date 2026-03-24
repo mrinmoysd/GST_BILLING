@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: 00000000-0000-0000-0000-000000000001"
+        - generic:
+          - navigation
+    - generic [ref=e8]:
+      - banner [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - link "GST Billing" [ref=e12] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e14]:
+              - list [ref=e15]:
+                - listitem [ref=e16]:
+                  - link "Workspace" [ref=e17] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e18]:
+                  - generic [ref=e19]: /
+                  - generic [ref=e20]: Settings
+          - generic [ref=e21]:
+            - link "Switch" [ref=e22] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e23]
+            - generic [ref=e25]: User
+            - button "00000000-0000-0000-0000-000000000001" [ref=e26]:
+              - generic [ref=e27]: 00000000-0000-0000-0000-000000000001
+              - img [ref=e28]
+      - main [ref=e31]:
+        - generic [ref=e33]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: Configuration
+            - heading "Settings" [level=1] [ref=e37]
+            - generic [ref=e38]: Use a cleaner control surface for company setup, users, notifications, and subscription state.
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e41]:
+                - heading "Configuration areas" [level=3] [ref=e42]
+                - paragraph [ref=e43]: Settings are grouped by company identity, people and communication, and commercial controls.
+              - generic [ref=e44]:
+                - generic [ref=e45]: 0 active settings screens
+                - generic [ref=e46]: Permission-aware controls
+            - generic [ref=e48]:
+              - heading "Future fit" [level=3] [ref=e49]
+              - paragraph [ref=e50]: This structure leaves room for RBAC, invoice design, tax defaults, and portal-grade billing later.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e56] [cursor=pointer]:
+    - img [ref=e57]
+  - alert [ref=e60]

@@ -1,0 +1,131 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "GB GST Billing India-first billing operations" [ref=e7] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e8]: GB
+            - generic [ref=e9]:
+              - generic [ref=e10]: GST Billing
+              - generic [ref=e11]: India-first billing operations
+          - navigation [ref=e12]:
+            - link "Features" [ref=e13] [cursor=pointer]:
+              - /url: /features
+            - link "Pricing" [ref=e14] [cursor=pointer]:
+              - /url: /pricing
+            - link "Security" [ref=e15] [cursor=pointer]:
+              - /url: /security
+            - link "Help" [ref=e16] [cursor=pointer]:
+              - /url: /help
+            - link "Contact" [ref=e17] [cursor=pointer]:
+              - /url: /contact
+        - generic [ref=e18]:
+          - link "Login" [ref=e19] [cursor=pointer]:
+            - /url: /login
+          - link "Create company" [ref=e20] [cursor=pointer]:
+            - /url: /onboarding
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: Feature map
+        - heading "A GST billing platform that goes beyond invoice creation." [level=1] [ref=e26]
+        - paragraph [ref=e27]: "The product is organized around the end-to-end operational system a business actually needs: sales, purchases, stock, GST, accounting, reporting, admin, and retail billing."
+      - generic [ref=e28]:
+        - link "Create company" [ref=e29] [cursor=pointer]:
+          - /url: /onboarding
+        - link "Compare plans" [ref=e30] [cursor=pointer]:
+          - /url: /pricing
+    - main [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - heading "Capability areas" [level=2] [ref=e34]
+          - paragraph [ref=e35]: Each area maps to a real operating responsibility rather than a loose set of screens.
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - heading "Sales and collections" [level=3] [ref=e39]
+              - paragraph [ref=e40]: Invoices, payments, customer ledgers, returns, credit notes, and document lifecycle actions from one sales workspace.
+            - generic [ref=e41]:
+              - generic [ref=e42]: Draft, issue, collect, share, credit, and cancel
+              - generic [ref=e43]: Receivables and outstanding visibility
+              - generic [ref=e44]: Invoice PDFs and document history
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - heading "Purchases and stock" [level=3] [ref=e47]
+              - paragraph [ref=e48]: Purchase intake, stock movements, low-stock visibility, purchase returns, and supplier-side finance tracking.
+            - generic [ref=e49]:
+              - generic [ref=e50]: Purchase receive and return flows
+              - generic [ref=e51]: Inventory movement and adjustment pages
+              - generic [ref=e52]: Supplier ledgers and payment traceability
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - heading "GST and reporting" [level=3] [ref=e55]
+              - paragraph [ref=e56]: GST compliance workspaces and business reports that are readable directly in-product.
+            - generic [ref=e57]:
+              - generic [ref=e58]: GSTR-1, GSTR-3B, HSN, ITC
+              - generic [ref=e59]: Sales, purchases, outstanding, top products
+              - generic [ref=e60]: GST export jobs with download status
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - heading "Accounting and finance" [level=3] [ref=e63]
+              - paragraph [ref=e64]: Auto-posted journals, books, statements, and role-aware settings for tighter finance control.
+            - generic [ref=e65]:
+              - generic [ref=e66]: Trial balance, profit & loss, balance sheet
+              - generic [ref=e67]: Cash and bank books
+              - generic [ref=e68]: Period lock and accounting-linked transactions
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - heading "Platform and admin" [level=3] [ref=e71]
+              - paragraph [ref=e72]: Billing, notifications, files, auditability, and platform operations infrastructure.
+            - generic [ref=e73]:
+              - generic [ref=e74]: Notification templates and outbox
+              - generic [ref=e75]: Files, webhooks, and subscription state
+              - generic [ref=e76]: Admin companies, usage, support, and queue metrics
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - heading "Retail POS" [level=3] [ref=e79]
+              - paragraph [ref=e80]: Fast billing path for retail scenarios with receipt generation and print-ready output.
+            - generic [ref=e81]:
+              - generic [ref=e82]: POS billing workspace
+              - generic [ref=e83]: Receipt route and print action
+              - generic [ref=e84]: Product search and quick settlement
+    - contentinfo [ref=e85]:
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]: Built for GST operations
+          - generic [ref=e89]: Billing, purchases, GST compliance, accounting, inventory, and POS in one operational workspace for growing Indian businesses.
+          - generic [ref=e90]: Start with self-serve onboarding, then scale into tax, finance, and platform workflows.
+        - generic [ref=e91]:
+          - generic [ref=e92]: Product
+          - generic [ref=e93]:
+            - link "Features" [ref=e94] [cursor=pointer]:
+              - /url: /features
+            - link "Pricing" [ref=e95] [cursor=pointer]:
+              - /url: /pricing
+            - link "Request demo" [ref=e96] [cursor=pointer]:
+              - /url: /demo
+            - link "Security" [ref=e97] [cursor=pointer]:
+              - /url: /security
+        - generic [ref=e98]:
+          - generic [ref=e99]: Company
+          - generic [ref=e100]:
+            - link "About" [ref=e101] [cursor=pointer]:
+              - /url: /about
+            - link "Contact" [ref=e102] [cursor=pointer]:
+              - /url: /contact
+            - link "Help center" [ref=e103] [cursor=pointer]:
+              - /url: /help
+        - generic [ref=e104]:
+          - generic [ref=e105]: Legal
+          - generic [ref=e106]:
+            - link "Privacy" [ref=e107] [cursor=pointer]:
+              - /url: /privacy
+            - link "Terms" [ref=e108] [cursor=pointer]:
+              - /url: /terms
+            - link "Login" [ref=e109] [cursor=pointer]:
+              - /url: /login
+      - generic [ref=e110]: GST Billing. Operational software for GST billing, accounting, inventory, and POS.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e116] [cursor=pointer]:
+    - img [ref=e117]
+  - alert [ref=e120]

@@ -43,6 +43,16 @@ export class CreateProductDto {
   @IsNumber()
   gstRate?: number;
 
+  @ApiPropertyOptional({ description: 'Legacy/UI alias for GST rate percent' })
+  @IsOptional()
+  @IsNumber()
+  taxRate?: number;
+
+  @ApiPropertyOptional({ description: 'Reorder level threshold' })
+  @IsOptional()
+  @ValidateIf((o) => o.reorderLevel !== undefined)
+  reorderLevel?: string | number;
+
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   meta?: Record<string, unknown>;

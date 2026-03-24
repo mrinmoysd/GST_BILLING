@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useTrialBalance } from "@/lib/billing/hooks";
 import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
+import { DateField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -41,7 +41,7 @@ export default function TrialBalancePage({ params }: Props) {
           <CardDescription>Set the reporting date for the current trial balance snapshot.</CardDescription>
         </CardHeader>
         <CardContent>
-          <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
+          <DateField label="As of" value={asOf} onChange={setAsOf} />
         </CardContent>
       </Card>
 

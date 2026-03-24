@@ -21,12 +21,27 @@ type AuthContextValue = {
 };
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
+const AUTH_SESSION_HINT_KEY = "gst_billing.auth.has_session";
 
 const emptySession: SessionState = {
   accessToken: null,
   user: null,
   company: null,
 };
+
+function setSessionHint(enabled: boolean) {
+  if (typeof window === "undefined") return;
+  if (enabled) {
+    window.localStorage.setItem(AUTH_SESSION_HINT_KEY, "1");
+    return;
+  }
+  window.localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+}
+
+function hasSessionHint() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(AUTH_SESSION_HINT_KEY) === "1";
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<SessionState>(emptySession);
@@ -40,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSessionFromLogin = React.useCallback(
     (payload: { access_token: string; user: SessionUser; company: SessionCompany }) => {
       apiClient.setAccessToken(payload.access_token);
+      setSessionHint(true);
       setSession({
         accessToken: payload.access_token,
         user: payload.user,
@@ -51,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearSession = React.useCallback(() => {
     apiClient.setAccessToken(null);
+    setSessionHint(false);
     setSession(emptySession);
   }, []);
 
@@ -62,17 +79,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!hasSessionHint()) {
+        if (!cancelled) setBootstrapped(true);
+        return;
+      }
+
       try {
         const refreshed = await fetch(`${config.apiBaseUrl}/auth/refresh`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           credentials: "include",
         });
-  if (!refreshed.ok) return;
+        if (!refreshed.ok) {
+          setSessionHint(false);
+          return;
+        }
 
         const json = (await refreshed.json()) as ApiEnvelope<{ access_token: string }>;
         if (cancelled) return;
 
+        setSessionHint(true);
         setAccessToken(json.data.access_token);
         await refreshMe();
       } catch {

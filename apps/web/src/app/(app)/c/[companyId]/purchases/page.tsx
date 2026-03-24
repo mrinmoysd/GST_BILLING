@@ -27,7 +27,7 @@ export default function PurchasesPage({ params }: Props) {
   const { bootstrapped } = useAuth();
   const query = usePurchases({ companyId: companyId, q, enabled: bootstrapped });
 
-  const payload = query.data?.data as unknown;
+  const payload = query.data as unknown;
 
   function isRecord(v: unknown): v is Record<string, unknown> {
     return !!v && typeof v === "object";
@@ -40,19 +40,12 @@ export default function PurchasesPage({ params }: Props) {
     purchase_date?: string | null;
   };
 
-  const rows =
-    (isRecord(payload) && Array.isArray(payload.data)
-      ? (payload.data as PurchaseRow[])
-      : isRecord(payload) && isRecord(payload.data) && Array.isArray(payload.data.data)
-        ? (payload.data.data as PurchaseRow[])
-        : []) ?? [];
+  const rows = ((isRecord(payload) && Array.isArray(payload.data) ? (payload.data as PurchaseRow[]) : []) ?? []);
 
   const total =
     (isRecord(payload) && isRecord(payload.meta) && typeof payload.meta.total === "number"
       ? (payload.meta.total as number)
-      : isRecord(payload) && isRecord(payload.data) && isRecord(payload.data.meta) && typeof payload.data.meta.total === "number"
-        ? (payload.data.meta.total as number)
-        : 0) ?? 0;
+      : 0) ?? 0;
 
   return (
     <div className="space-y-7">

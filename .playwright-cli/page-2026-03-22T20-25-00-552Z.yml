@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: 00000000-0000-0000-0000-000000000001"
+        - generic:
+          - navigation
+    - generic [ref=e8]:
+      - banner [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - link "GST Billing" [ref=e12] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e14]:
+              - list [ref=e15]:
+                - listitem [ref=e16]:
+                  - link "Workspace" [ref=e17] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e18]:
+                  - generic [ref=e19]: /
+                  - link "Sales" [ref=e20] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/sales
+                - listitem [ref=e21]:
+                  - generic [ref=e22]: /
+                  - generic [ref=e23]: Invoices
+          - generic [ref=e24]:
+            - link "Switch" [ref=e25] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e26]
+            - generic [ref=e28]: User
+            - button "00000000-0000-0000-0000-000000000001" [ref=e29]:
+              - generic [ref=e30]: 00000000-0000-0000-0000-000000000001
+              - img [ref=e31]
+      - main [ref=e34]:
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - generic [ref=e39]: Sales
+              - heading "Invoices" [level=1] [ref=e40]
+              - generic [ref=e41]: Manage the invoice pipeline with cleaner status visibility and faster navigation into draft and issued documents.
+            - link "New invoice" [ref=e43] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices/new
+              - button "New invoice" [ref=e44]
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - text: Search invoices
+              - textbox "Search invoices" [ref=e49]:
+                - /placeholder: Invoice no / customer
+            - generic [ref=e51]: 0 total
+          - generic [ref=e52]:
+            - generic [ref=e53]: No invoices
+            - generic [ref=e54]: Create an invoice to start your billing workflow.
+            - link "Create invoice" [ref=e56] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices/new
+              - button "Create invoice" [ref=e57]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e63] [cursor=pointer]:
+    - generic [ref=e66]:
+      - text: Compiling
+      - generic [ref=e67]:
+        - generic [ref=e68]: .
+        - generic [ref=e69]: .
+        - generic [ref=e70]: .
+  - alert [ref=e71]

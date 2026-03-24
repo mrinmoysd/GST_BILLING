@@ -226,7 +226,9 @@ export function useCreateProduct(args: { companyId: string }) {
   categoryId?: string | null;
       price?: string | number;
       costPrice?: string | number;
+  gstRate?: number;
   taxRate?: number;
+  reorderLevel?: string | number | null;
     }) => {
       const res = await apiClient.post<Product>(companyPath(companyId, `/products`), body);
       return res;
@@ -249,6 +251,7 @@ export function useUpdateProduct(args: { companyId: string; productId: string })
   categoryId?: string | null;
       price?: string | number | null;
       costPrice?: string | number | null;
+  gstRate?: number | null;
   taxRate?: number | null;
       reorderLevel?: number | null;
     }) => {
@@ -286,7 +289,7 @@ export function useStockAdjustment(args: { companyId: string; productId: string 
       const res = await apiClient.post<{ ok: true }>(
         companyPath(companyId, `/products/${productId}/stock-adjustment`),
         {
-          change_qty: body.changeQty,
+          delta: body.changeQty,
           reason: body.note,
         },
       );
@@ -309,7 +312,7 @@ export function useInventoryAdjustment(args: { companyId: string }) {
       const res = await apiClient.post<{ ok: true }>(
         companyPath(companyId, `/products/${body.productId}/stock-adjustment`),
         {
-          change_qty: body.changeQty,
+          delta: body.changeQty,
           reason: body.note,
         },
       );
@@ -360,9 +363,10 @@ export function useStockMovements(args: {
   });
 }
 
-export function useLowStock(args: { companyId: string; threshold?: number; page?: number; limit?: number }) {
-  const { companyId, threshold, page = 1, limit = 20 } = args;
+export function useLowStock(args: { companyId: string; threshold?: number; page?: number; limit?: number; enabled?: boolean }) {
+  const { companyId, threshold, page = 1, limit = 20, enabled = true } = args;
   return useQuery({
+    enabled,
     queryKey: ["companies", companyId, "inventory", "low-stock", { threshold, page, limit }],
     queryFn: async () => {
       const qs = new URLSearchParams();

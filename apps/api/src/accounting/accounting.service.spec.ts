@@ -260,10 +260,12 @@ describe('AccountingService', () => {
       { id: 'cash', accountName: 'Cash', type: 'cash' },
       { id: 'payable', accountName: 'Accounts Payable', type: 'accounts_payable' },
       { id: 'capital', accountName: 'Owner Capital', type: 'capital' },
+      { id: 'sales', accountName: 'Sales', type: 'sales' },
     ]);
     prisma.journalLine.findMany.mockResolvedValue([
       { amount: '600.00', debitLedgerId: 'cash', creditLedgerId: 'capital' },
       { amount: '200.00', debitLedgerId: 'cash', creditLedgerId: 'payable' },
+      { amount: '50.00', debitLedgerId: 'cash', creditLedgerId: 'sales' },
     ]);
 
     const result = await svc.balanceSheet('c1', '2026-03-31');
@@ -271,15 +273,18 @@ describe('AccountingService', () => {
     expect(result).toEqual({
       as_of: '2026-03-31',
       summary: {
-        assets: 800,
+        assets: 850,
         liabilities: 200,
-        equity: 600,
-        liabilities_and_equity: 800,
+        equity: 650,
+        liabilities_and_equity: 850,
         difference: 0,
       },
-      assets: [{ ledger_id: 'cash', ledger_name: 'Cash', amount: 800 }],
+      assets: [{ ledger_id: 'cash', ledger_name: 'Cash', amount: 850 }],
       liabilities: [{ ledger_id: 'payable', ledger_name: 'Accounts Payable', amount: 200 }],
-      equity: [{ ledger_id: 'capital', ledger_name: 'Owner Capital', amount: 600 }],
+      equity: [
+        { ledger_id: 'capital', ledger_name: 'Owner Capital', amount: 600 },
+        { ledger_id: 'current_earnings', ledger_name: 'Current Earnings', amount: 50 },
+      ],
     });
   });
 });

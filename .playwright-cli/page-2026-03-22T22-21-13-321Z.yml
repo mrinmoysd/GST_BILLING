@@ -1,0 +1,202 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Accounting" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - generic [ref=e123]: Journals
+          - generic [ref=e124]:
+            - link "Switch" [ref=e125] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e126]
+            - generic [ref=e128]: owner
+            - button "Demo Company" [ref=e129]:
+              - generic [ref=e130]: Demo Company
+              - img [ref=e131]
+      - main [ref=e134]:
+        - generic [ref=e136]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Accounting
+            - heading "Journals" [level=1] [ref=e140]
+            - generic [ref=e141]: Create balanced journal entries and review recent posting activity from a stronger workspace layout.
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e145]: Period open
+              - heading "Period lock" [level=3] [ref=e146]
+              - paragraph [ref=e147]: Close completed books by preventing new journal and auto-posted activity up to a specific date.
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - generic [ref=e150]:
+                  - text: Lock until (YYYY-MM-DD)
+                  - textbox "Lock until (YYYY-MM-DD)" [ref=e151]
+                - generic [ref=e152]:
+                  - text: Reason (optional)
+                  - textbox "Reason (optional)" [ref=e153]
+              - generic [ref=e154]:
+                - button "Save period lock" [ref=e155]
+                - button "Clear lock" [ref=e156]
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]: 14 ledgers available
+                - generic [ref=e161]: Manual posting
+              - heading "Create journal entry" [level=3] [ref=e162]
+              - paragraph [ref=e163]: Build a balanced debit-credit entry and post it directly into the accounting subsystem.
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - generic [ref=e166]:
+                  - text: Date (YYYY-MM-DD)
+                  - textbox "Date (YYYY-MM-DD)" [ref=e167]
+                - generic [ref=e168]:
+                  - text: Narration (optional)
+                  - textbox "Narration (optional)" [ref=e169]
+              - generic [ref=e170]:
+                - generic [ref=e171]: Lines
+                - generic [ref=e172]:
+                  - generic [ref=e173]:
+                    - generic [ref=e174]: Side
+                    - combobox [ref=e175]:
+                      - option "Debit" [selected]
+                      - option "Credit"
+                  - generic [ref=e176]:
+                    - generic [ref=e177]: Ledger
+                    - combobox [ref=e178]:
+                      - option "Select…" [selected]
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                  - generic [ref=e179]:
+                    - text: Amount
+                    - spinbutton "Amount" [ref=e180]
+                  - button "Remove" [disabled]
+                - generic [ref=e181]:
+                  - generic [ref=e182]:
+                    - generic [ref=e183]: Side
+                    - combobox [ref=e184]:
+                      - option "Debit"
+                      - option "Credit" [selected]
+                  - generic [ref=e185]:
+                    - generic [ref=e186]: Ledger
+                    - combobox [ref=e187]:
+                      - option "Select…" [selected]
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                      - option
+                  - generic [ref=e188]:
+                    - text: Amount
+                    - spinbutton "Amount" [ref=e189]
+                  - button "Remove" [disabled]
+                - button "Add line" [ref=e190]
+              - generic [ref=e191]: "Totals. Debit: 0 | Credit: 0"
+              - button "Post journal" [ref=e192]
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - heading "Filters" [level=3] [ref=e195]
+              - paragraph [ref=e196]: Filter the recent journal list by date range.
+            - generic [ref=e197]:
+              - generic [ref=e198]:
+                - text: From (YYYY-MM-DD)
+                - textbox "From (YYYY-MM-DD)" [ref=e199]
+              - generic [ref=e200]:
+                - text: To (YYYY-MM-DD)
+                - textbox "To (YYYY-MM-DD)" [ref=e201]
+          - generic [ref=e202]:
+            - generic [ref=e203]: No journals
+            - generic [ref=e204]: Post a journal entry to see it here.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

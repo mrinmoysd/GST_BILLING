@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const [logoPreviewUrl, setLogoPreviewUrl] = React.useState<string | null>(null);
   const [allowNegativeStock, setAllowNegativeStock] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
     if (!logoFile) {
@@ -91,6 +92,7 @@ export default function OnboardingPage() {
                   if (!password.trim() || password.trim().length < 6) return setError("Password must be at least 6 characters.");
 
                   try {
+                    setIsSubmitting(true);
                     const data = await bootstrap.mutateAsync({
                       company_name: companyName.trim(),
                       owner_name: ownerName.trim(),
@@ -111,10 +113,16 @@ export default function OnboardingPage() {
                       form.set("file", logoFile);
                       await apiClient.postForm(`/companies/${data.user.company_id}/logo`, form);
                     }
-                    router.replace(`/c/${data.user.company_id}/dashboard`);
+                    const nextPath = `/c/${data.user.company_id}/dashboard`;
+                    React.startTransition(() => {
+                      router.replace(nextPath);
+                    });
+                    window.location.assign(nextPath);
                   } catch (err: unknown) {
                     const apiError = err as NormalizedApiError;
                     setError(apiError.message ?? "Failed to create company");
+                  } finally {
+                    setIsSubmitting(false);
                   }
                 }}
               >
@@ -182,8 +190,8 @@ export default function OnboardingPage() {
                 {error ? <InlineError message={error} /> : null}
 
                 <div className="flex flex-wrap gap-3">
-                  <PrimaryButton type="submit" disabled={bootstrap.isPending}>
-                    {bootstrap.isPending ? "Creating workspace…" : "Create company"}
+                  <PrimaryButton type="submit" disabled={bootstrap.isPending || isSubmitting}>
+                    {bootstrap.isPending || isSubmitting ? "Creating workspace…" : "Create company"}
                   </PrimaryButton>
                   <Link href="/login">
                     <SecondaryButton type="button">Back to login</SecondaryButton>

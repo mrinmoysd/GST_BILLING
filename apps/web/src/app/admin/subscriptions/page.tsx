@@ -20,9 +20,18 @@ function getErrorMessage(err: unknown, fallback: string) {
 export default function AdminSubscriptionsPage() {
   const [status, setStatus] = React.useState("");
   const query = useAdminSubscriptions({ status: status || undefined, page: 1, limit: 50 });
-  const rows = (query.data?.data as unknown as { data?: Array<Record<string, unknown>>; meta?: { total?: number } })?.data ?? [];
-  const total = (query.data?.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length;
-  const summary = (query.data as unknown as { summary?: { by_status?: Record<string, number>; by_provider?: Record<string, number> } } | undefined)?.summary;
+  const payload = query.data as
+    | {
+        data?: Array<Record<string, unknown>>;
+        meta?: { total?: number };
+        summary?: { by_status?: Record<string, number>; by_provider?: Record<string, number> };
+      }
+    | undefined;
+  const rows = payload?.data ?? [];
+  const total = payload?.meta?.total ?? rows.length;
+  const summary = payload?.summary as
+    | { by_status?: Record<string, number>; by_provider?: Record<string, number> }
+    | undefined;
 
   return (
     <div className="space-y-7">

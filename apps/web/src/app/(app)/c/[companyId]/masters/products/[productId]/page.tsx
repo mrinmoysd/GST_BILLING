@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDeleteProduct, useProduct, useStockAdjustment, useUpdateProduct } from "@/lib/masters/hooks";
+import { useCategories, useDeleteProduct, useProduct, useStockAdjustment, useUpdateProduct } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string; productId: string }> };
 
@@ -24,6 +25,7 @@ export default function ProductDetailPage({ params }: Props) {
   const resolved = React.use(params);
   const router = useRouter();
   const query = useProduct({ companyId: resolved.companyId, productId: resolved.productId });
+  const categories = useCategories({ companyId: resolved.companyId });
   const update = useUpdateProduct({ companyId: resolved.companyId, productId: resolved.productId });
   const del = useDeleteProduct({ companyId: resolved.companyId, productId: resolved.productId });
   const adjust = useStockAdjustment({ companyId: resolved.companyId, productId: resolved.productId });
@@ -31,6 +33,7 @@ export default function ProductDetailPage({ params }: Props) {
   const [name, setName] = React.useState("");
   const [sku, setSku] = React.useState("");
   const [hsn, setHsn] = React.useState("");
+  const [categoryId, setCategoryId] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [costPrice, setCostPrice] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("");
@@ -45,6 +48,7 @@ export default function ProductDetailPage({ params }: Props) {
     setName(p.name ?? "");
     setSku(p.sku ?? "");
     setHsn(p.hsn ?? "");
+    setCategoryId(p.categoryId ?? "");
     setPrice(p.price !== null && p.price !== undefined ? String(p.price) : "");
     setCostPrice(
       p.costPrice !== null && p.costPrice !== undefined ? String(p.costPrice) : "",
@@ -124,13 +128,17 @@ export default function ProductDetailPage({ params }: Props) {
                     name,
                     sku: sku || null,
                     hsn: hsn || null,
+                    categoryId: categoryId || null,
                     price: price ? Number(price) : null,
                     costPrice: costPrice ? Number(costPrice) : null,
-                    taxRate: taxRate ? Number(taxRate) : null,
+                    gstRate: taxRate ? Number(taxRate) : null,
                     reorderLevel: reorderLevel ? Number(reorderLevel) : null,
                   });
+                  toast.success("Product updated");
                 } catch (e: unknown) {
-                  setFormError(getErrorMessage(e, "Failed to update product"));
+                  const message = getErrorMessage(e, "Failed to update product");
+                  setFormError(message);
+                  toast.error(message);
                 }
               }}
             >
@@ -138,6 +146,14 @@ export default function ProductDetailPage({ params }: Props) {
                 <TextField label="Name" value={name} onChange={setName} required />
                 <TextField label="SKU" value={sku} onChange={setSku} />
                 <TextField label="HSN" value={hsn} onChange={setHsn} />
+                <SelectField label="Category" value={categoryId} onChange={setCategoryId}>
+                    <option value="">Uncategorized</option>
+                    {categories.data?.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                </SelectField>
                 <TextField label="Price" value={price} onChange={setPrice} type="number" />
                 <TextField label="Cost price" value={costPrice} onChange={setCostPrice} type="number" />
                 <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
@@ -164,9 +180,12 @@ export default function ProductDetailPage({ params }: Props) {
                     if (!ok) return;
                     try {
                       await del.mutateAsync();
+                      toast.success("Product deleted");
                       router.replace(`/c/${resolved.companyId}/masters/products`);
                     } catch (e: unknown) {
-                      setFormError(getErrorMessage(e, "Failed to delete product"));
+                      const message = getErrorMessage(e, "Failed to delete product");
+                      setFormError(message);
+                      toast.error(message);
                     }
                   }}
                 >
@@ -200,8 +219,11 @@ export default function ProductDetailPage({ params }: Props) {
                     await adjust.mutateAsync({ changeQty: qty, note: note || undefined });
                     setChangeQty("");
                     setNote("");
+                    toast.success("Stock adjusted");
                   } catch (e: unknown) {
-                    setFormError(getErrorMessage(e, "Stock adjustment failed"));
+                    const message = getErrorMessage(e, "Stock adjustment failed");
+                    setFormError(message);
+                    toast.error(message);
                   }
                 }}
               >

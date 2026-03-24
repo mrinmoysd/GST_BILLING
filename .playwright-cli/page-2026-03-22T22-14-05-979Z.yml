@@ -1,0 +1,213 @@
+- generic [active] [ref=e11]:
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Internal Admin
+        - generic [ref=e32]: Platform operations
+        - generic [ref=e33]: superadmin@example.com
+        - navigation [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: Control
+            - generic [ref=e38]:
+              - link "Dashboard Overview and priorities" [ref=e39] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e41]
+                - generic [ref=e46]:
+                  - generic [ref=e47]: Dashboard
+                  - generic [ref=e48]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e49] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e51]
+                - generic [ref=e55]:
+                  - generic [ref=e56]: Companies
+                  - generic [ref=e57]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e58] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e60]
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Subscriptions
+                  - generic [ref=e64]: Billing oversight
+          - generic [ref=e65]:
+            - generic [ref=e66]: Operations
+            - generic [ref=e67]:
+              - link "Usage Adoption and meters" [ref=e68] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e70]
+                - generic [ref=e72]:
+                  - generic [ref=e73]: Usage
+                  - generic [ref=e74]: Adoption and meters
+              - link "Support Ticket triage" [ref=e75] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e77]
+                - generic [ref=e84]:
+                  - generic [ref=e85]: Support
+                  - generic [ref=e86]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e87] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e89]
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Queues
+                  - generic [ref=e102]: Jobs and failures
+          - generic [ref=e103]:
+            - generic [ref=e104]: Governance
+            - generic [ref=e105]:
+              - link "Internal Users Admin identities and access" [ref=e106] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e108]
+                - generic [ref=e112]:
+                  - generic [ref=e113]: Internal Users
+                  - generic [ref=e114]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e115] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e117]
+                - generic [ref=e120]:
+                  - generic [ref=e121]: Audit Logs
+                  - generic [ref=e122]: Privileged action history
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - text: Admin workspace
+            - generic [ref=e128]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e133]:
+      - banner [ref=e134]:
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - link "GST Billing Admin" [ref=e138] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e139]: Super Admin
+            - navigation "Breadcrumb" [ref=e141]:
+              - list [ref=e142]:
+                - listitem [ref=e143]:
+                  - link "Admin" [ref=e144] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e145]:
+                  - generic [ref=e146]: /
+                  - link "Companies" [ref=e886] [cursor=pointer]:
+                    - /url: /admin/companies
+                - listitem [ref=e887]:
+                  - generic [ref=e888]: /
+                  - generic [ref=e889]: Cd5f3d32 521e 48f5 B4d3 8dcd6a919af2
+          - generic [ref=e148]:
+            - link "Tenant app" [ref=e149] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e150]
+            - button "superadmin@example.com" [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e156]: superadmin@example.com
+      - main [ref=e157]:
+        - generic [ref=e934]:
+          - generic [ref=e935]:
+            - generic [ref=e936]:
+              - generic [ref=e937]: Admin
+              - heading "Admin Browser Co 1774217614" [level=1] [ref=e938]
+              - generic [ref=e939]: Review owner identity, GST readiness, subscription context, tenant health, and lifecycle controls.
+            - generic [ref=e941]:
+              - link "Back" [ref=e942] [cursor=pointer]:
+                - /url: /admin/companies
+              - button "Suspend company" [ref=e943]
+          - generic [ref=e944]:
+            - generic [ref=e945]:
+              - generic [ref=e946]:
+                - heading "Status" [level=3] [ref=e947]
+                - paragraph [ref=e948]: Current admin lifecycle state.
+              - generic [ref=e949]:
+                - generic [ref=e950]: active
+                - generic [ref=e951]: Created from admin console
+            - generic [ref=e952]:
+              - generic [ref=e953]:
+                - heading "Owner" [level=3] [ref=e954]
+                - paragraph [ref=e955]: Primary company operator.
+              - generic [ref=e956]:
+                - generic [ref=e957]: Admin Browser Owner 1774217614
+                - generic [ref=e958]: adminbrowser+1774217614@example.com
+                - generic [ref=e959]: "Last login: Never"
+            - generic [ref=e960]:
+              - generic [ref=e961]:
+                - heading "GST" [level=3] [ref=e962]
+                - paragraph [ref=e963]: Identity and verification state.
+              - generic [ref=e964]:
+                - generic [ref=e965]: "GSTIN: —"
+                - generic [ref=e966]: "PAN: —"
+                - generic [ref=e967]: "Verification: not_available"
+            - generic [ref=e968]:
+              - generic [ref=e969]:
+                - heading "Subscription" [level=3] [ref=e970]
+                - paragraph [ref=e971]: Most recent billing state.
+              - generic [ref=e972]:
+                - generic [ref=e973]: "Plan: —"
+                - generic [ref=e974]: "Status: —"
+                - generic [ref=e975]: "Provider: —"
+          - generic [ref=e976]:
+            - generic [ref=e977]:
+              - generic [ref=e978]:
+                - heading "Health snapshot" [level=3] [ref=e979]
+                - paragraph [ref=e980]: Operational volume and tenant footprint.
+              - generic [ref=e981]:
+                - generic [ref=e982]:
+                  - generic [ref=e983]: users count
+                  - generic [ref=e984]: "1"
+                - generic [ref=e985]:
+                  - generic [ref=e986]: active users count
+                  - generic [ref=e987]: "1"
+                - generic [ref=e988]:
+                  - generic [ref=e989]: invoices count
+                  - generic [ref=e990]: "0"
+                - generic [ref=e991]:
+                  - generic [ref=e992]: purchases count
+                  - generic [ref=e993]: "0"
+                - generic [ref=e994]:
+                  - generic [ref=e995]: payments count
+                  - generic [ref=e996]: "0"
+                - generic [ref=e997]:
+                  - generic [ref=e998]: products count
+                  - generic [ref=e999]: "0"
+                - generic [ref=e1000]:
+                  - generic [ref=e1001]: customers count
+                  - generic [ref=e1002]: "0"
+                - generic [ref=e1003]:
+                  - generic [ref=e1004]: suppliers count
+                  - generic [ref=e1005]: "0"
+            - generic [ref=e1006]:
+              - generic [ref=e1007]:
+                - heading "Company profile" [level=3] [ref=e1008]
+                - paragraph [ref=e1009]: Core setup values for the tenant.
+              - generic [ref=e1010]:
+                - generic [ref=e1011]: "Business type: trader"
+                - generic [ref=e1012]: "State: —"
+                - generic [ref=e1013]: "Timezone: Asia/Kolkata"
+                - generic [ref=e1014]: "Created: 23/03/2026, 03:43:42"
+          - generic [ref=e1015]:
+            - generic [ref=e1016]:
+              - generic [ref=e1017]:
+                - heading "Users" [level=3] [ref=e1018]
+                - paragraph [ref=e1019]: Current company users and access posture.
+              - table [ref=e1022]:
+                - rowgroup [ref=e1023]:
+                  - row "User Role Status Last login" [ref=e1024]:
+                    - columnheader "User" [ref=e1025]
+                    - columnheader "Role" [ref=e1026]
+                    - columnheader "Status" [ref=e1027]
+                    - columnheader "Last login" [ref=e1028]
+                - rowgroup [ref=e1029]:
+                  - row "Admin Browser Owner 1774217614 adminbrowser+1774217614@example.com owner active Never" [ref=e1030]:
+                    - cell "Admin Browser Owner 1774217614 adminbrowser+1774217614@example.com" [ref=e1031]:
+                      - generic [ref=e1032]: Admin Browser Owner 1774217614
+                      - generic [ref=e1033]: adminbrowser+1774217614@example.com
+                    - cell "owner" [ref=e1034]
+                    - cell "active" [ref=e1035]:
+                      - generic [ref=e1036]: active
+                    - cell "Never" [ref=e1037]
+            - generic [ref=e1038]:
+              - generic [ref=e1039]:
+                - heading "Recent activity" [level=3] [ref=e1040]
+                - paragraph [ref=e1041]: Most recent document and payment events for the tenant.
+              - generic [ref=e1044]: No recent operational activity yet.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - alert [ref=e10]

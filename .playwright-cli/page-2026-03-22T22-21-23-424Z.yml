@@ -1,0 +1,202 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Accounting" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - link "Reports" [ref=e123] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting/reports
+                - listitem [ref=e124]:
+                  - generic [ref=e125]: /
+                  - generic [ref=e126]: Balance Sheet
+          - generic [ref=e127]:
+            - link "Switch" [ref=e128] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e129]
+            - generic [ref=e131]: owner
+            - button "Demo Company" [ref=e132]:
+              - generic [ref=e133]: Demo Company
+              - img [ref=e134]
+      - main [ref=e137]:
+        - generic [ref=e139]:
+          - generic [ref=e141]:
+            - generic [ref=e142]: Accounting
+            - heading "Balance sheet" [level=1] [ref=e143]
+            - generic [ref=e144]: Review assets, liabilities, and equity from a clearer statement layout.
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - heading "As-of date" [level=3] [ref=e147]
+              - paragraph [ref=e148]: Select the date for the current balance sheet snapshot.
+            - generic [ref=e150]:
+              - text: As of (YYYY-MM-DD)
+              - textbox "As of (YYYY-MM-DD)" [ref=e151]
+          - generic [ref=e152]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: Assets
+              - generic [ref=e156]: "612.20"
+            - generic [ref=e158]:
+              - generic [ref=e159]: Liabilities
+              - generic [ref=e160]: "76.20"
+            - generic [ref=e162]:
+              - generic [ref=e163]: Equity
+              - generic [ref=e164]: "536.00"
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - heading "Statement integrity" [level=3] [ref=e167]
+              - paragraph [ref=e168]: Balance check between assets and liabilities plus equity as of 2026-03-22.
+            - generic [ref=e169]:
+              - generic [ref=e171]:
+                - generic [ref=e172]: Liabilities + equity
+                - generic [ref=e173]: "612.20"
+              - generic [ref=e175]:
+                - generic [ref=e176]: Difference
+                - generic [ref=e177]: "0.00"
+              - generic [ref=e179]:
+                - generic [ref=e180]: As of
+                - generic [ref=e181]: 2026-03-22
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - generic [ref=e184]:
+                - heading "Assets" [level=3] [ref=e185]
+                - paragraph [ref=e186]: Ledger balances classified as assets.
+              - table [ref=e189]:
+                - rowgroup [ref=e190]:
+                  - row "Ledger Amount" [ref=e191]:
+                    - columnheader "Ledger" [ref=e192]
+                    - columnheader "Amount" [ref=e193]
+                - rowgroup [ref=e194]:
+                  - row "Bank 378.56" [ref=e195]:
+                    - cell "Bank" [ref=e196]:
+                      - link "Bank" [ref=e197] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "378.56" [ref=e198]
+                  - row "Cash 116.82" [ref=e199]:
+                    - cell "Cash" [ref=e200]:
+                      - link "Cash" [ref=e201] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "116.82" [ref=e202]
+                  - row "GST Input CGST 8.91" [ref=e203]:
+                    - cell "GST Input CGST" [ref=e204]:
+                      - link "GST Input CGST" [ref=e205] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "8.91" [ref=e206]
+                  - row "GST Input SGST 8.91" [ref=e207]:
+                    - cell "GST Input SGST" [ref=e208]:
+                      - link "GST Input SGST" [ref=e209] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "8.91" [ref=e210]
+                  - row "Inventory 99.00" [ref=e211]:
+                    - cell "Inventory" [ref=e212]:
+                      - link "Inventory" [ref=e213] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "99.00" [ref=e214]
+            - generic [ref=e215]:
+              - generic [ref=e216]:
+                - heading "Liabilities" [level=3] [ref=e217]
+                - paragraph [ref=e218]: Outstanding obligations and statutory balances.
+              - table [ref=e221]:
+                - rowgroup [ref=e222]:
+                  - row "Ledger Amount" [ref=e223]:
+                    - columnheader "Ledger" [ref=e224]
+                    - columnheader "Amount" [ref=e225]
+                - rowgroup [ref=e226]:
+                  - row "GST Output CGST 38.10" [ref=e227]:
+                    - cell "GST Output CGST" [ref=e228]:
+                      - link "GST Output CGST" [ref=e229] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "38.10" [ref=e230]
+                  - row "GST Output SGST 38.10" [ref=e231]:
+                    - cell "GST Output SGST" [ref=e232]:
+                      - link "GST Output SGST" [ref=e233] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "38.10" [ref=e234]
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - heading "Equity" [level=3] [ref=e237]
+                - paragraph [ref=e238]: Capital and retained ownership balances.
+              - table [ref=e241]:
+                - rowgroup [ref=e242]:
+                  - row "Ledger Amount" [ref=e243]:
+                    - columnheader "Ledger" [ref=e244]
+                    - columnheader "Amount" [ref=e245]
+                - rowgroup [ref=e246]:
+                  - row "Current Earnings 536.00" [ref=e247]:
+                    - cell "Current Earnings" [ref=e248]:
+                      - link "Current Earnings" [ref=e249] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "536.00" [ref=e250]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

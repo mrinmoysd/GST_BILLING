@@ -19,6 +19,7 @@ import {
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAccessAuthGuard } from './guards/jwt-access-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
@@ -59,10 +60,10 @@ export class AuthController {
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(200)
   @ApiOkResponse({ description: 'OK' })
-  async refresh(@Req() req: any) {
-  const token = req?.cookies?.refresh_token;
-  if (!token) throw new UnauthorizedException();
-  return this.authService.refresh({ refresh_token: token });
+  async refresh(@Req() req: any, @Body() body: Partial<RefreshDto>) {
+    const token = req?.cookies?.refresh_token ?? body?.refresh_token;
+    if (!token) throw new UnauthorizedException();
+    return this.authService.refresh({ refresh_token: token });
   }
 
   @Get('me')

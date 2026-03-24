@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Purchases" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - generic [ref=e130]: New
+          - generic [ref=e131]:
+            - link "Switch" [ref=e132] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e133]
+            - generic [ref=e135]: owner
+            - button "Demo Company" [ref=e136]:
+              - generic [ref=e137]: Demo Company
+              - img [ref=e138]
+      - main [ref=e141]:
+        - generic [ref=e143]:
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: Purchases
+              - heading "New purchase" [level=1] [ref=e147]
+              - generic [ref=e148]: Capture supplier purchases with a cleaner item-entry layout and a live draft summary.
+            - link "Back" [ref=e150] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Draft workflow
+                  - heading "Purchase builder" [level=3] [ref=e156]
+                  - paragraph [ref=e157]: Select the supplier, add purchased products, and review the draft before saving it.
+                - generic [ref=e158]:
+                  - generic [ref=e159]:
+                    - generic [ref=e160]: Supplier
+                    - combobox [ref=e161]:
+                      - option "Select…"
+                      - option "DEMO Supplier 03"
+                      - option "DEMO Supplier 02"
+                      - option "DEMO Supplier 01" [selected]
+                      - option "Suplier 1"
+                  - generic [ref=e162]: Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - heading "Line items" [level=3] [ref=e165]
+                  - paragraph [ref=e166]: Capture the purchased products, quantities, and unit costs before saving the draft.
+                - generic [ref=e167]:
+                  - table [ref=e169]:
+                    - rowgroup [ref=e170]:
+                      - row "Product Qty Unit cost Discount Line total" [ref=e171]:
+                        - columnheader "Product" [ref=e172]
+                        - columnheader "Qty" [ref=e173]
+                        - columnheader "Unit cost" [ref=e174]
+                        - columnheader "Discount" [ref=e175]
+                        - columnheader "Line total" [ref=e176]
+                        - columnheader [ref=e177]
+                    - rowgroup [ref=e178]:
+                      - row "Select… Line 1 1 0.00 Remove" [ref=e179]:
+                        - cell "Select… Line 1" [ref=e180]:
+                          - combobox [ref=e181]:
+                            - option "Select…" [selected]
+                            - option "DEMO Product 08"
+                            - option "DEMO Product 07"
+                            - option "DEMO Product 06"
+                            - option "DEMO Product 05"
+                            - option "DEMO Product 04"
+                            - option "DEMO Product 03"
+                            - option "DEMO Product 02"
+                            - option "DEMO Product 01"
+                          - generic [ref=e182]: Line 1
+                        - cell "1" [ref=e183]:
+                          - textbox [ref=e184]: "1"
+                        - cell [ref=e185]:
+                          - textbox [ref=e186]
+                        - cell [ref=e187]:
+                          - textbox [ref=e188]
+                        - cell "0.00" [ref=e189]
+                        - cell "Remove" [ref=e190]:
+                          - button "Remove" [disabled] [ref=e191]
+                  - generic [ref=e192]:
+                    - button "Add line" [ref=e193]
+                    - generic [ref=e194]: "Draft lines: 1"
+                  - generic [ref=e195]:
+                    - text: Purchase date (YYYY-MM-DD)
+                    - textbox "Purchase date (YYYY-MM-DD)" [ref=e196]
+                  - generic [ref=e197]:
+                    - text: Notes
+                    - textbox "Notes" [ref=e198]:
+                      - /placeholder: Optional
+            - generic [ref=e200]:
+              - generic [ref=e201]:
+                - heading "Draft summary" [level=3] [ref=e202]
+                - paragraph [ref=e203]: Live cost summary for the current purchase draft.
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - generic [ref=e206]: Sub-total
+                  - generic [ref=e207]: "0.00"
+                - generic [ref=e208]: Draft purchases can be received later on the detail page. This summary block will expand further once richer totals and taxes are added.
+                - generic [ref=e209]:
+                  - button "Create draft" [ref=e210]
+                  - button "Cancel" [ref=e211]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

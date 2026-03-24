@@ -1,0 +1,153 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Accounting" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - link "Reports" [ref=e130] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting/reports
+                - listitem [ref=e131]:
+                  - generic [ref=e132]: /
+                  - generic [ref=e133]: Profit Loss
+          - generic [ref=e134]:
+            - link "Switch" [ref=e135] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e136]
+            - generic [ref=e138]: owner
+            - button "Demo Company" [ref=e139]:
+              - generic [ref=e140]: Demo Company
+              - img [ref=e141]
+      - main [ref=e144]:
+        - generic [ref=e146]:
+          - generic [ref=e148]:
+            - generic [ref=e149]: Accounting
+            - heading "Profit & loss" [level=1] [ref=e150]
+            - generic [ref=e151]: Inspect income, expense, and profit in a finance-oriented summary layout.
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - heading "Reporting window" [level=3] [ref=e154]
+              - paragraph [ref=e155]: Select the period for the current P&L snapshot.
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - text: From (YYYY-MM-DD)
+                - textbox "From (YYYY-MM-DD)" [ref=e158]
+              - generic [ref=e159]:
+                - text: To (YYYY-MM-DD)
+                - textbox "To (YYYY-MM-DD)" [ref=e160]
+          - generic [ref=e161]:
+            - generic [ref=e163]:
+              - generic [ref=e164]: Income
+              - generic [ref=e165]: "437.00"
+            - generic [ref=e167]:
+              - generic [ref=e168]: Expense
+              - generic [ref=e169]: "0.00"
+            - generic [ref=e171]:
+              - generic [ref=e172]: Profit
+              - generic [ref=e173]: "437.00"
+          - generic [ref=e175]:
+            - heading "Statement window" [level=3] [ref=e176]
+            - paragraph [ref=e177]: 2026-02-28 to 2026-03-22
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - heading "Income ledgers" [level=3] [ref=e181]
+                - paragraph [ref=e182]: Revenue recognized in the selected reporting window.
+              - table [ref=e185]:
+                - rowgroup [ref=e186]:
+                  - row "Ledger Amount" [ref=e187]:
+                    - columnheader "Ledger" [ref=e188]
+                    - columnheader "Amount" [ref=e189]
+                - rowgroup [ref=e190]:
+                  - row "Sales 437.00" [ref=e191]:
+                    - cell "Sales" [ref=e192]:
+                      - link "Sales" [ref=e193] [cursor=pointer]:
+                        - /url: /c/00000000-0000-0000-0000-000000000001/accounting/ledgers
+                    - cell "437.00" [ref=e194]
+            - generic [ref=e195]:
+              - generic [ref=e196]:
+                - heading "Expense ledgers" [level=3] [ref=e197]
+                - paragraph [ref=e198]: Cost and operating expenses hitting the selected period.
+              - table [ref=e201]:
+                - rowgroup [ref=e202]:
+                  - row "Ledger Amount" [ref=e203]:
+                    - columnheader "Ledger" [ref=e204]
+                    - columnheader "Amount" [ref=e205]
+                - rowgroup [ref=e206]:
+                  - row "No expense activity in this period." [ref=e207]:
+                    - cell "No expense activity in this period." [ref=e208]:
+                      - generic [ref=e209]: No expense activity in this period.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

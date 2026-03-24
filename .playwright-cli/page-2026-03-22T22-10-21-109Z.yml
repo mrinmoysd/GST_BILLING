@@ -1,0 +1,173 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Masters" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - generic [ref=e123]: Customers
+          - generic [ref=e124]:
+            - link "Switch" [ref=e125] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e126]
+            - generic [ref=e128]: owner
+            - button "Demo Company" [ref=e129]:
+              - generic [ref=e130]: Demo Company
+              - img [ref=e131]
+      - main [ref=e134]:
+        - generic [ref=e136]:
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: Masters
+              - heading "Customers" [level=1] [ref=e140]
+              - generic [ref=e141]: Search, create, and manage your customer directory with a cleaner, operational list view.
+            - link "New customer" [ref=e143] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/new
+              - button "New customer" [ref=e144]
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - text: Search customers
+              - textbox "Search customers" [ref=e149]:
+                - /placeholder: Name / email / phone
+            - generic [ref=e151]: 10 total
+          - table [ref=e153]:
+            - rowgroup [ref=e154]:
+              - row "Name Email Phone" [ref=e155]:
+                - columnheader "Name" [ref=e156]
+                - columnheader "Email" [ref=e157]
+                - columnheader "Phone" [ref=e158]
+            - rowgroup [ref=e159]:
+              - row "DEMO Customer 05 demo+demo_customer_5@example.com 9999999999" [ref=e160]:
+                - cell "DEMO Customer 05" [ref=e161]:
+                  - link "DEMO Customer 05" [ref=e162] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/b69f656c-8403-4d68-83c3-3d0809a10aa9
+                - cell "demo+demo_customer_5@example.com" [ref=e163]
+                - cell "9999999999" [ref=e164]
+              - row "DEMO Customer 04 demo+demo_customer_4@example.com 9999999999" [ref=e165]:
+                - cell "DEMO Customer 04" [ref=e166]:
+                  - link "DEMO Customer 04" [ref=e167] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/34490d4c-4f05-4a4a-b83d-7272fe7d91b1
+                - cell "demo+demo_customer_4@example.com" [ref=e168]
+                - cell "9999999999" [ref=e169]
+              - row "DEMO Customer 03 demo+demo_customer_3@example.com 9999999999" [ref=e170]:
+                - cell "DEMO Customer 03" [ref=e171]:
+                  - link "DEMO Customer 03" [ref=e172] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/ef3caa5c-db5b-435d-875f-0cdb1d1543bf
+                - cell "demo+demo_customer_3@example.com" [ref=e173]
+                - cell "9999999999" [ref=e174]
+              - row "DEMO Customer 02 demo+demo_customer_2@example.com 9999999999" [ref=e175]:
+                - cell "DEMO Customer 02" [ref=e176]:
+                  - link "DEMO Customer 02" [ref=e177] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/b7d50124-afe0-4632-ae5f-1c90e9eae098
+                - cell "demo+demo_customer_2@example.com" [ref=e178]
+                - cell "9999999999" [ref=e179]
+              - row "DEMO Customer 01 demo+demo_customer_1@example.com 9999999999" [ref=e180]:
+                - cell "DEMO Customer 01" [ref=e181]:
+                  - link "DEMO Customer 01" [ref=e182] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/610724ec-503f-4915-b8a1-35d64292ceaa
+                - cell "demo+demo_customer_1@example.com" [ref=e183]
+                - cell "9999999999" [ref=e184]
+              - row "E2E Customer 1772886813200 e2e+1772886813244@example.com 9999999999" [ref=e185]:
+                - cell "E2E Customer 1772886813200" [ref=e186]:
+                  - link "E2E Customer 1772886813200" [ref=e187] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/2bc5ed36-8456-4621-944f-a636941df010
+                - cell "e2e+1772886813244@example.com" [ref=e188]
+                - cell "9999999999" [ref=e189]
+              - row "E2E Customer 1772886777786 e2e+1772886777786@example.com 9999999999" [ref=e190]:
+                - cell "E2E Customer 1772886777786" [ref=e191]:
+                  - link "E2E Customer 1772886777786" [ref=e192] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/f780da7f-3144-489b-a2f9-73826a0f12d9
+                - cell "e2e+1772886777786@example.com" [ref=e193]
+                - cell "9999999999" [ref=e194]
+              - row "E2E Customer 1772886085794 (Updated) e2e+1772886085794@example.com 9999999999" [ref=e195]:
+                - cell "E2E Customer 1772886085794 (Updated)" [ref=e196]:
+                  - link "E2E Customer 1772886085794 (Updated)" [ref=e197] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/c6bc475e-9206-4671-ad1b-5cba1828a70c
+                - cell "e2e+1772886085794@example.com" [ref=e198]
+                - cell "9999999999" [ref=e199]
+              - row "E2E Customer 1772886029229 (Updated) e2e+1772886029229@example.com 9999999999" [ref=e200]:
+                - cell "E2E Customer 1772886029229 (Updated)" [ref=e201]:
+                  - link "E2E Customer 1772886029229 (Updated)" [ref=e202] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/52924c9a-0a55-4cbf-9373-5474994d6922
+                - cell "e2e+1772886029229@example.com" [ref=e203]
+                - cell "9999999999" [ref=e204]
+              - row "New Customer customer@example.com 1234567890" [ref=e205]:
+                - cell "New Customer" [ref=e206]:
+                  - link "New Customer" [ref=e207] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/bda14dc9-db13-48c7-ac07-9310843f1c16
+                - cell "customer@example.com" [ref=e208]
+                - cell "1234567890" [ref=e209]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

@@ -1,0 +1,120 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Masters" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - link "Suppliers" [ref=e123] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+                - listitem [ref=e124]:
+                  - generic [ref=e125]: /
+                  - link "b19324e0..." [ref=e126] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers/b19324e0-4f07-4b33-b8d9-090eb73a0a84
+                - listitem [ref=e127]:
+                  - generic [ref=e128]: /
+                  - generic [ref=e129]: Ledger
+          - generic [ref=e130]:
+            - link "Switch" [ref=e131] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e132]
+            - generic [ref=e134]: owner
+            - button "Demo Company" [ref=e135]:
+              - generic [ref=e136]: Demo Company
+              - img [ref=e137]
+      - main [ref=e140]:
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - generic [ref=e144]:
+              - heading "Supplier ledger" [level=1] [ref=e145]
+              - code [ref=e148]: b19324e0-4f07-4b33-b8d9-090eb73a0a84
+            - link "Back" [ref=e151] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers/b19324e0-4f07-4b33-b8d9-090eb73a0a84
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - text: From
+              - textbox "From" [ref=e155]
+            - generic [ref=e156]:
+              - text: To
+              - textbox "To" [ref=e157]
+            - generic [ref=e158]:
+              - button "Apply" [ref=e159]
+              - button "Reset" [ref=e160]
+          - generic [ref=e161]:
+            - generic [ref=e162]: No entries
+            - generic [ref=e163]: No purchases in this range.
+          - generic [ref=e164]: "Note: supplier payments aren’t implemented yet, so this ledger currently shows purchase postings only."
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

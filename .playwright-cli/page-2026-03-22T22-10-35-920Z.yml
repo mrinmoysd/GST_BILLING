@@ -1,0 +1,140 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Masters" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - link "Customers" [ref=e210] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+                - listitem [ref=e211]:
+                  - generic [ref=e212]: /
+                  - generic [ref=e213]: b69f656c...
+          - generic [ref=e124]:
+            - link "Switch" [ref=e125] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e126]
+            - generic [ref=e128]: owner
+            - button "Demo Company" [ref=e129]:
+              - generic [ref=e130]: Demo Company
+              - img [ref=e131]
+      - main [ref=e134]:
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: Masters
+              - heading "Customer" [level=1] [ref=e218]
+              - generic [ref=e219]: Manage profile details and move into the customer ledger from a cleaner detail workspace.
+            - generic [ref=e221]:
+              - link "Back" [ref=e222] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+              - link "Ledger" [ref=e223] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers/b69f656c-8403-4d68-83c3-3d0809a10aa9/ledger
+          - generic [ref=e224]:
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - generic [ref=e227]: Customer profile
+                - heading "DEMO Customer 05" [level=3] [ref=e228]
+                - paragraph [ref=e229]:
+                  - text: "Reference id:"
+                  - code [ref=e230]: b69f656c-8403-4d68-83c3-3d0809a10aa9
+              - generic [ref=e231]:
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Email
+                  - generic [ref=e234]: demo+demo_customer_5@example.com
+                - generic [ref=e235]:
+                  - generic [ref=e236]: Phone
+                  - generic [ref=e237]: "9999999999"
+                - generic [ref=e238]: Customer detail pages will later gain invoice summaries and richer ledger jump-offs. This pass upgrades the layout and action clarity first.
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - heading "Edit customer" [level=3] [ref=e241]
+                - paragraph [ref=e242]: Update profile fields and keep the directory accurate for billing.
+              - generic [ref=e244]:
+                - generic [ref=e245]:
+                  - generic [ref=e246]:
+                    - text: Name
+                    - textbox "Name" [ref=e247]: DEMO Customer 05
+                  - generic [ref=e248]:
+                    - text: Email
+                    - textbox "Email" [ref=e249]: demo+demo_customer_5@example.com
+                  - generic [ref=e250]:
+                    - text: Phone
+                    - textbox "Phone" [ref=e251]: "9999999999"
+                - generic [ref=e252]:
+                  - button "Save changes" [ref=e253]
+                  - button "Delete" [ref=e254]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

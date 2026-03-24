@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBankBook } from "@/lib/billing/hooks";
-import { TextField } from "@/lib/ui/form";
+import { DateField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -46,8 +46,8 @@ export default function BankBookPage({ params }: Props) {
           <CardDescription>Filter bank entries by date range.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
-          <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-          <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+          <DateField label="From" value={from} onChange={setFrom} />
+          <DateField label="To" value={to} onChange={setTo} />
         </CardContent>
       </Card>
 

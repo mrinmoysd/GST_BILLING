@@ -1,0 +1,10 @@
+[POST] http://localhost:4000/api/auth/login => [200] OK
+[GET] http://localhost:3000/c/00000000-0000-0000-0000-000000000001/inventory/adjustments?_rsc=5c339 => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/products?page=1&limit=100 => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/inventory/low-stock?page=1&limit=6&threshold=0 => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/stock-movements?page=1&limit=10 => [200] OK
+[POST] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/products/e47a83dc-7a47-4e05-896d-5c7e64d848ef/stock-adjustment => [400] Bad Request
+[GET] http://localhost:3000/c/00000000-0000-0000-0000-000000000001/payments?_rsc=1r1ek => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/payments?page=1&limit=50 => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/invoices?page=1&limit=50&status=issued => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/purchases?page=1&limit=50 => [200] OK

@@ -44,6 +44,11 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
   const pathname = usePathname();
   const logout = useAdminLogout();
   const { session } = useAdminAuth();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const breadcrumbItems = React.useMemo(() => makeBreadcrumbs(pathname), [pathname]);
 
@@ -84,35 +89,42 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
-                <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
-                <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-              <div className="px-2 py-1.5">
-                <div className="text-xs text-[var(--muted)]">Internal operator</div>
-                <div className="text-sm font-medium">{session.user?.email ?? "—"}</div>
-                <div className="mt-1 text-xs text-[var(--muted)]">
-                  Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
+                  <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
+                  <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <div className="px-2 py-1.5">
+                  <div className="text-xs text-[var(--muted)]">Internal operator</div>
+                  <div className="text-sm font-medium">{session.user?.email ?? "—"}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">
+                    Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+                  </div>
                 </div>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={async (e) => {
-                  e.preventDefault();
-                  await logout.mutateAsync();
-                  router.replace("/admin/login");
-                }}
-                className={cn(logout.isPending && "pointer-events-none opacity-60")}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                {logout.isPending ? "Signing out..." : "Sign out"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async (e) => {
+                    e.preventDefault();
+                    await logout.mutateAsync();
+                    router.replace("/admin/login");
+                  }}
+                  className={cn(logout.isPending && "pointer-events-none opacity-60")}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {logout.isPending ? "Signing out..." : "Sign out"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]" disabled>
+              <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
+              <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
+            </Button>
+          )}
         </div>
       </div>
 

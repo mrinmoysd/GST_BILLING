@@ -1,0 +1,215 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: Internal Admin
+        - generic [ref=e26]: Platform operations
+        - generic [ref=e27]: superadmin@example.com
+        - navigation [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Control
+            - generic [ref=e32]:
+              - link "Dashboard Overview and priorities" [ref=e33] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e35]
+                - generic [ref=e40]:
+                  - generic [ref=e41]: Dashboard
+                  - generic [ref=e42]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e43] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e45]
+                - generic [ref=e49]:
+                  - generic [ref=e50]: Companies
+                  - generic [ref=e51]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e52] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e54]
+                - generic [ref=e56]:
+                  - generic [ref=e57]: Subscriptions
+                  - generic [ref=e58]: Billing oversight
+          - generic [ref=e59]:
+            - generic [ref=e60]: Operations
+            - generic [ref=e61]:
+              - link "Usage Adoption and meters" [ref=e62] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e64]
+                - generic [ref=e66]:
+                  - generic [ref=e67]: Usage
+                  - generic [ref=e68]: Adoption and meters
+              - link "Support Ticket triage" [ref=e69] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e71]
+                - generic [ref=e78]:
+                  - generic [ref=e79]: Support
+                  - generic [ref=e80]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e81] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e83]
+                - generic [ref=e94]:
+                  - generic [ref=e95]: Queues
+                  - generic [ref=e96]: Jobs and failures
+          - generic [ref=e97]:
+            - generic [ref=e98]: Governance
+            - generic [ref=e99]:
+              - link "Internal Users Admin identities and access" [ref=e100] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e102]
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Internal Users
+                  - generic [ref=e108]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e109] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e111]
+                - generic [ref=e114]:
+                  - generic [ref=e115]: Audit Logs
+                  - generic [ref=e116]: Privileged action history
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - img [ref=e119]
+              - text: Admin workspace
+            - generic [ref=e122]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e123]:
+              - img [ref=e124]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e127]:
+      - banner [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - link "GST Billing Admin" [ref=e132] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e133]: Super Admin
+            - navigation "Breadcrumb" [ref=e135]:
+              - list [ref=e136]:
+                - listitem [ref=e137]:
+                  - link "Admin" [ref=e138] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e139]:
+                  - generic [ref=e140]: /
+                  - link "Subscriptions" [ref=e325] [cursor=pointer]:
+                    - /url: /admin/subscriptions
+                - listitem [ref=e326]:
+                  - generic [ref=e327]: /
+                  - generic [ref=e328]: 1258c523 3d95 4934 A866 521c22c41fe8
+          - generic [ref=e142]:
+            - link "Tenant app" [ref=e143] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e144]
+            - button "superadmin@example.com" [ref=e146]:
+              - img [ref=e147]
+              - generic [ref=e150]: superadmin@example.com
+      - main [ref=e151]:
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - generic [ref=e331]:
+              - generic [ref=e332]: Admin
+              - heading "sub_co_1774208490965_17af61dc5ea5d" [level=1] [ref=e333]
+              - generic [ref=e334]: Inspect provider state, usage rollups, webhook health, and apply operator remediation actions.
+            - link "Back" [ref=e336] [cursor=pointer]:
+              - /url: /admin/subscriptions
+          - generic [ref=e337]:
+            - generic [ref=e338]:
+              - generic [ref=e339]:
+                - heading "Status" [level=3] [ref=e340]
+                - paragraph [ref=e341]: Current billing state.
+              - generic [ref=e342]:
+                - generic [ref=e343]: active
+                - generic [ref=e344]: Created 23/03/2026, 01:11:31
+            - generic [ref=e345]:
+              - generic [ref=e346]:
+                - heading "Plan" [level=3] [ref=e347]
+                - paragraph [ref=e348]: Current commercial mapping.
+              - generic [ref=e349]:
+                - generic [ref=e350]: Growth Plan
+                - generic [ref=e351]: "Code: plan_growth_1774208491021_279e38bcfcf56"
+            - generic [ref=e352]:
+              - generic [ref=e353]:
+                - heading "Provider" [level=3] [ref=e354]
+                - paragraph [ref=e355]: Remote billing provider linkage.
+              - generic [ref=e356]:
+                - generic [ref=e357]: stripe
+                - generic [ref=e358]: stripe_sub_1774208491023_b8d16fe200d9
+            - generic [ref=e359]:
+              - generic [ref=e360]:
+                - heading "Webhook health" [level=3] [ref=e361]
+                - paragraph [ref=e362]: Recent provider sync posture.
+              - generic [ref=e363]:
+                - generic [ref=e364]: "Failed: 0"
+                - generic [ref=e365]: "Last status: —"
+          - generic [ref=e366]:
+            - generic [ref=e367]:
+              - generic [ref=e368]:
+                - heading "Company context" [level=3] [ref=e369]
+                - paragraph [ref=e370]: Tenant tied to this subscription record.
+              - generic [ref=e371]:
+                - link "sub_co_1774208490965_17af61dc5ea5d" [ref=e373] [cursor=pointer]:
+                  - /url: /admin/companies/e53920af-231c-4a70-ba0a-602b1464b4cd
+                - generic [ref=e374]: "Owner: — · —"
+                - generic [ref=e375]: "GSTIN: —"
+                - generic [ref=e376]: "Started: 01/03/2026, 05:30:00"
+                - generic [ref=e377]: "Expires: —"
+            - generic [ref=e378]:
+              - generic [ref=e379]:
+                - heading "Operator actions" [level=3] [ref=e380]
+                - paragraph [ref=e381]: Adjust plan and subscription state from admin.
+              - generic [ref=e382]:
+                - generic [ref=e383]:
+                  - generic [ref=e384]: Plan
+                  - combobox "Plan" [ref=e385]:
+                    - option "Basic Plan (plan_basic_1774208435726_80f866823bc82) · INR 499/month"
+                    - option "Basic Plan (plan_basic_1774208400265_15b8babd567a6) · INR 499/month"
+                    - option "Basic Plan (plan_basic_1774208490968_6e4f1f3ea913d) · INR 499/month"
+                    - option "Basic Plan (plan_basic_1774208345073_f3abc4fb2158b) · INR 499/month"
+                    - option "Growth Plan (plan_growth_1774208491021_279e38bcfcf56) · INR 999/month" [selected]
+                    - option "Webhook Plan (plan_1774209507901_29c30f31ecb988) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209543028_bf7b22a09d978) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209644837_0c151ead95b908) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209689187_0f5e20bc3cccc8) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209888377_66a685157a39b8) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209912335_70420e42917828) · INR 999/month"
+                    - option "Webhook Plan (plan_1774209939522_e575898a3e00a8) · INR 999/month"
+                    - option "Webhook Plan (plan_1774210033651_0fc293df1ab2e8) · INR 999/month"
+                    - option "Webhook Plan (plan_1774210334444_d260b85019ee88) · INR 999/month"
+                    - option "Growth Plan (plan_growth_1774208345081_f263d76bd1a23) · INR 999/month"
+                    - option "Growth Plan (plan_growth_1774208400427_a38309fc1d579) · INR 999/month"
+                    - option "Growth Plan (plan_growth_1774208435729_6fda97e77bdf6) · INR 999/month"
+                - generic [ref=e386]:
+                  - text: Operator note
+                  - textbox "Operator note" [ref=e387]:
+                    - /placeholder: Optional action note
+                - generic [ref=e388]:
+                  - button "Change plan" [ref=e389]
+                  - button "Mark past due" [ref=e390]
+                  - button "Mark active" [ref=e391]
+                  - button "Cancel" [ref=e392]
+                  - button "Reactivate" [ref=e393]
+                  - button "Reconcile" [ref=e394]
+                - generic [ref=e395]:
+                  - generic [ref=e396]: Last admin operation
+                  - generic [ref=e397]: mark_active · 23/03/2026, 03:49:40
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - generic [ref=e400]:
+                - heading "Usage rollups" [level=3] [ref=e401]
+                - paragraph [ref=e402]: Recent usage-meter rows for the tenant.
+              - table [ref=e405]:
+                - rowgroup [ref=e406]:
+                  - row "Key Value Window" [ref=e407]:
+                    - columnheader "Key" [ref=e408]
+                    - columnheader "Value" [ref=e409]
+                    - columnheader "Window" [ref=e410]
+                - rowgroup [ref=e411]:
+                  - row "active_subscription_count 1 01/03/2026 - 31/03/2026" [ref=e423]:
+                    - cell "active_subscription_count" [ref=e413]
+                    - cell "1" [ref=e424]
+                    - cell "01/03/2026 - 31/03/2026" [ref=e415]
+            - generic [ref=e416]:
+              - generic [ref=e417]:
+                - heading "Recent webhooks" [level=3] [ref=e418]
+                - paragraph [ref=e419]: Latest provider events for this tenant/provider.
+              - generic [ref=e422]: No recent webhooks for this provider.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

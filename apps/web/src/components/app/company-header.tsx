@@ -27,6 +27,11 @@ export function CompanyHeader(props: {
   const pathname = usePathname();
   const { session } = useAuth();
   const logout = useLogout();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const label = session.company?.name ?? props.companyId;
 
@@ -86,35 +91,42 @@ export function CompanyHeader(props: {
             {session.user?.role ?? "User"}
           </Badge>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
-                <span className="max-w-[18ch] truncate">{label}</span>
-                <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <div className="px-2 py-1.5">
-                <div className="text-xs text-[var(--muted)]">Signed in as</div>
-                <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
-                <div className="mt-1 text-xs text-[var(--muted)]">
-                  Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
+                  <span className="max-w-[18ch] truncate">{label}</span>
+                  <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <div className="px-2 py-1.5">
+                  <div className="text-xs text-[var(--muted)]">Signed in as</div>
+                  <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">
+                    Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+                  </div>
                 </div>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={async (e) => {
-                  e.preventDefault();
-                  await logout.mutateAsync();
-                  router.replace("/login");
-                }}
-                className={cn(logout.isPending && "opacity-60 pointer-events-none")}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                {logout.isPending ? "Signing out…" : "Logout"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async (e) => {
+                    e.preventDefault();
+                    await logout.mutateAsync();
+                    router.replace("/login");
+                  }}
+                  className={cn(logout.isPending && "opacity-60 pointer-events-none")}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {logout.isPending ? "Signing out…" : "Logout"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]" disabled>
+              <span className="max-w-[18ch] truncate">{label}</span>
+              <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
+            </Button>
+          )}
         </div>
       </div>
 

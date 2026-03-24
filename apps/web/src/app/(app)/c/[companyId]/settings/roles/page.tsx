@@ -38,7 +38,7 @@ export default function RolesSettingsPage({ params }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
-  const rolesData = rolesQuery.data?.data.data;
+  const rolesData = rolesQuery.data?.data;
   const customRoles = rolesData?.roles ?? [];
   const permissions = rolesData?.permissions ?? [];
   const auditEntries = rolesData?.audit ?? [];

@@ -1,0 +1,112 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: 00000000-0000-0000-0000-000000000001"
+        - generic:
+          - navigation
+    - generic [ref=e8]:
+      - banner [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - link "GST Billing" [ref=e12] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e14]:
+              - list [ref=e15]:
+                - listitem [ref=e16]:
+                  - link "Workspace" [ref=e17] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e18]:
+                  - generic [ref=e19]: /
+                  - link "Purchases" [ref=e20] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+                - listitem [ref=e21]:
+                  - generic [ref=e22]: /
+                  - generic [ref=e23]: New
+          - generic [ref=e24]:
+            - link "Switch" [ref=e25] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e26]
+            - generic [ref=e28]: User
+            - button "00000000-0000-0000-0000-000000000001" [ref=e29]:
+              - generic [ref=e30]: 00000000-0000-0000-0000-000000000001
+              - img [ref=e31]
+      - main [ref=e34]:
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - generic [ref=e39]: Purchases
+              - heading "New purchase" [level=1] [ref=e40]
+              - generic [ref=e41]: Capture supplier purchases with a cleaner item-entry layout and a live draft summary.
+            - link "Back" [ref=e43] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+          - generic [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e46]:
+                - generic [ref=e47]:
+                  - generic [ref=e48]: Draft workflow
+                  - heading "Purchase builder" [level=3] [ref=e49]
+                  - paragraph [ref=e50]: Select the supplier, add purchased products, and review the draft before saving it.
+                - generic [ref=e51]:
+                  - generic [ref=e52]:
+                    - generic [ref=e53]: Supplier
+                    - combobox [ref=e54]:
+                      - option "Select…" [selected]
+                  - generic [ref=e55]: Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
+              - generic [ref=e56]:
+                - generic [ref=e57]:
+                  - heading "Line items" [level=3] [ref=e58]
+                  - paragraph [ref=e59]: Capture the purchased products, quantities, and unit costs before saving the draft.
+                - generic [ref=e60]:
+                  - table [ref=e62]:
+                    - rowgroup [ref=e63]:
+                      - row "Product Qty Unit cost Discount Line total" [ref=e64]:
+                        - columnheader "Product" [ref=e65]
+                        - columnheader "Qty" [ref=e66]
+                        - columnheader "Unit cost" [ref=e67]
+                        - columnheader "Discount" [ref=e68]
+                        - columnheader "Line total" [ref=e69]
+                        - columnheader [ref=e70]
+                    - rowgroup [ref=e71]:
+                      - row "Select… Line 1 1 0.00 Remove" [ref=e72]:
+                        - cell "Select… Line 1" [ref=e73]:
+                          - combobox [ref=e74]:
+                            - option "Select…" [selected]
+                          - generic [ref=e75]: Line 1
+                        - cell "1" [ref=e76]:
+                          - textbox [ref=e77]: "1"
+                        - cell [ref=e78]:
+                          - textbox [ref=e79]
+                        - cell [ref=e80]:
+                          - textbox [ref=e81]
+                        - cell "0.00" [ref=e82]
+                        - cell "Remove" [ref=e83]:
+                          - button "Remove" [disabled] [ref=e84]
+                  - generic [ref=e85]:
+                    - button "Add line" [ref=e86]
+                    - generic [ref=e87]: "Draft lines: 1"
+                  - generic [ref=e88]:
+                    - text: Purchase date (YYYY-MM-DD)
+                    - textbox "Purchase date (YYYY-MM-DD)" [ref=e89]
+                  - generic [ref=e90]:
+                    - text: Notes
+                    - textbox "Notes" [ref=e91]:
+                      - /placeholder: Optional
+            - generic [ref=e93]:
+              - generic [ref=e94]:
+                - heading "Draft summary" [level=3] [ref=e95]
+                - paragraph [ref=e96]: Live cost summary for the current purchase draft.
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - generic [ref=e99]: Sub-total
+                  - generic [ref=e100]: "0.00"
+                - generic [ref=e101]: Draft purchases can be received later on the detail page. This summary block will expand further once richer totals and taxes are added.
+                - generic [ref=e102]:
+                  - button "Create draft" [ref=e103]
+                  - button "Cancel" [ref=e104]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e110] [cursor=pointer]:
+    - img [ref=e111]
+  - alert [ref=e114]

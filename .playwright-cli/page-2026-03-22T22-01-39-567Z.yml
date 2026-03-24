@@ -1,0 +1,23 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Auth
+          - heading "Forgot password" [level=1] [ref=e7]
+          - generic [ref=e8]: Request a password reset link for your account.
+        - link "Back to login" [ref=e10] [cursor=pointer]:
+          - /url: /login
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "Reset access" [level=3] [ref=e13]
+          - paragraph [ref=e14]: Enter your email address and the app will prepare a reset link.
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - text: Email
+            - textbox "Email" [ref=e17]
+          - button "Request reset" [ref=e18]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e24] [cursor=pointer]:
+    - img [ref=e25]
+  - alert [ref=e28]

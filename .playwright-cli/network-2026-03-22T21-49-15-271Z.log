@@ -1,0 +1,5 @@
+[GET] http://localhost:3000/login?next=%2Fc%2F00000000-0000-0000-0000-000000000001%2Fsettings%2Fusers&_rsc=1i2cw => [200] OK
+[POST] http://localhost:4000/api/auth/login => [200] OK
+[GET] http://localhost:3000/c/00000000-0000-0000-0000-000000000001/settings/users?_rsc=5c339 => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/users => [200] OK
+[GET] http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/roles => [200] OK

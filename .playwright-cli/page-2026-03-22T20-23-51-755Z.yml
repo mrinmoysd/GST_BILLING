@@ -1,0 +1,165 @@
+- generic [ref=e1]:
+  - generic [ref=e37]:
+    - complementary [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]: GST Billing
+        - generic [ref=e41]: "Company: Demo Company"
+        - navigation [ref=e43]:
+          - link "Dashboard" [ref=e44] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e46]
+            - text: Dashboard
+          - link "Customers" [ref=e51] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e53]
+            - text: Customers
+          - link "Suppliers" [ref=e58] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e60]
+            - text: Suppliers
+          - link "Categories" [active] [ref=e64] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e66]
+            - text: Categories
+          - link "Products" [ref=e70] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e72]
+            - text: Products
+          - link "Invoices" [ref=e76] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e78]
+            - text: Invoices
+          - link "POS" [ref=e81] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e83]
+            - text: POS
+          - link "Purchases" [ref=e88] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e90]
+            - text: Purchases
+          - link "Payments" [ref=e93] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e95]
+            - text: Payments
+          - link "Inventory" [ref=e98] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e100]
+            - text: Inventory
+          - link "Accounting" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e112]
+            - text: Accounting
+          - link "Reports" [ref=e114] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e116]
+            - text: Reports
+          - link "Settings" [ref=e118] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e120]
+            - text: Settings
+    - generic [ref=e123]:
+      - banner [ref=e124]:
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - link "GST Billing" [ref=e127] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e129]:
+              - list [ref=e130]:
+                - listitem [ref=e131]:
+                  - link "Workspace" [ref=e132] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e133]:
+                  - generic [ref=e134]: /
+                  - link "Masters" [ref=e265] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/masters
+                - listitem [ref=e266]:
+                  - generic [ref=e267]: /
+                  - generic [ref=e268]: Categories
+          - generic [ref=e136]:
+            - link "Switch" [ref=e137] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e138]
+            - generic [ref=e140]: owner
+            - button "Demo Company" [ref=e141]:
+              - generic [ref=e142]: Demo Company
+              - img [ref=e143]
+      - main [ref=e146]:
+        - generic [ref=e269]:
+          - generic [ref=e270]:
+            - generic [ref=e271]:
+              - generic [ref=e272]: Masters
+              - heading "Categories" [level=1] [ref=e273]
+              - generic [ref=e274]: Organize the product catalog with a simpler category registry and a more structured management view.
+            - link "Products" [ref=e277] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+          - generic [ref=e278]:
+            - generic [ref=e279]:
+              - heading "Create category" [level=3] [ref=e280]
+              - paragraph [ref=e281]: Add a new grouping for products. Rename and activation controls can be expanded later.
+            - generic [ref=e283]:
+              - generic [ref=e284]:
+                - text: Category name
+                - textbox "Category name" [ref=e285]:
+                  - /placeholder: e.g. Batteries
+              - button "Create" [ref=e286]
+          - table [ref=e288]:
+            - rowgroup [ref=e289]:
+              - row "Name State Actions" [ref=e290]:
+                - columnheader "Name" [ref=e291]
+                - columnheader "State" [ref=e292]
+                - columnheader "Actions" [ref=e293]
+            - rowgroup [ref=e294]:
+              - row "Accessories a97d9590-1a8c-4afa-be10-ec3c6ff876d0 Active Delete" [ref=e295]:
+                - cell "Accessories a97d9590-1a8c-4afa-be10-ec3c6ff876d0" [ref=e296]:
+                  - generic [ref=e297]: Accessories
+                  - generic [ref=e298]: a97d9590-1a8c-4afa-be10-ec3c6ff876d0
+                - cell "Active" [ref=e299]:
+                  - generic [ref=e300]: Active
+                - cell "Delete" [ref=e301]:
+                  - button "Delete" [ref=e302]
+              - row "Batteries 8d4f1ed2-07ec-453c-959b-5b83ded8f5d2 Active Delete" [ref=e303]:
+                - cell "Batteries 8d4f1ed2-07ec-453c-959b-5b83ded8f5d2" [ref=e304]:
+                  - generic [ref=e305]: Batteries
+                  - generic [ref=e306]: 8d4f1ed2-07ec-453c-959b-5b83ded8f5d2
+                - cell "Active" [ref=e307]:
+                  - generic [ref=e308]: Active
+                - cell "Delete" [ref=e309]:
+                  - button "Delete" [ref=e310]
+              - row "Cables a5a51ae3-5f40-4669-a28f-6ecbe5ad8a74 Active Delete" [ref=e311]:
+                - cell "Cables a5a51ae3-5f40-4669-a28f-6ecbe5ad8a74" [ref=e312]:
+                  - generic [ref=e313]: Cables
+                  - generic [ref=e314]: a5a51ae3-5f40-4669-a28f-6ecbe5ad8a74
+                - cell "Active" [ref=e315]:
+                  - generic [ref=e316]: Active
+                - cell "Delete" [ref=e317]:
+                  - button "Delete" [ref=e318]
+              - row "Chargers 376c7ab6-105c-48dd-a510-9e44a2214211 Active Delete" [ref=e319]:
+                - cell "Chargers 376c7ab6-105c-48dd-a510-9e44a2214211" [ref=e320]:
+                  - generic [ref=e321]: Chargers
+                  - generic [ref=e322]: 376c7ab6-105c-48dd-a510-9e44a2214211
+                - cell "Active" [ref=e323]:
+                  - generic [ref=e324]: Active
+                - cell "Delete" [ref=e325]:
+                  - button "Delete" [ref=e326]
+              - row "Chimney 750acf7d-cfec-4707-af26-07646d766cd7 Active Delete" [ref=e327]:
+                - cell "Chimney 750acf7d-cfec-4707-af26-07646d766cd7" [ref=e328]:
+                  - generic [ref=e329]: Chimney
+                  - generic [ref=e330]: 750acf7d-cfec-4707-af26-07646d766cd7
+                - cell "Active" [ref=e331]:
+                  - generic [ref=e332]: Active
+                - cell "Delete" [ref=e333]:
+                  - button "Delete" [ref=e334]
+              - row "Invertor d863fb9a-cfe8-46e7-938f-f0c70f9e8af4 Active Delete" [ref=e335]:
+                - cell "Invertor d863fb9a-cfe8-46e7-938f-f0c70f9e8af4" [ref=e336]:
+                  - generic [ref=e337]: Invertor
+                  - generic [ref=e338]: d863fb9a-cfe8-46e7-938f-f0c70f9e8af4
+                - cell "Active" [ref=e339]:
+                  - generic [ref=e340]: Active
+                - cell "Delete" [ref=e341]:
+                  - button "Delete" [ref=e342]
+          - generic [ref=e343]: "Note: rename/activate toggles can be added later; API supports PATCH already."
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

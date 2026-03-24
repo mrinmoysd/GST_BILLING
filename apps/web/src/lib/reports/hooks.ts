@@ -56,12 +56,13 @@ export type ProfitSnapshotReport = {
   note?: string;
 };
 
-export function useSalesSummary(args: { companyId: string; from?: string; to?: string }) {
-  const { companyId, from, to } = args;
+export function useSalesSummary(args: { companyId: string; from?: string; to?: string; enabled?: boolean }) {
+  const { companyId, from, to, enabled = true } = args;
   const qs = new URLSearchParams();
   if (from) qs.set("from", from);
   if (to) qs.set("to", to);
   return useQuery({
+    enabled,
     queryKey: ["companies", companyId, "reports", "sales", "summary", { from, to }],
     queryFn: async () =>
       apiClient.get<SalesSummaryReport>(companyPath(companyId, `/reports/sales/summary?${qs.toString()}`)),
@@ -80,13 +81,14 @@ export function usePurchasesSummary(args: { companyId: string; from?: string; to
   });
 }
 
-export function useOutstandingInvoices(args: { companyId: string; q?: string; page?: number; limit?: number }) {
-  const { companyId, q, page = 1, limit = 20 } = args;
+export function useOutstandingInvoices(args: { companyId: string; q?: string; page?: number; limit?: number; enabled?: boolean }) {
+  const { companyId, q, page = 1, limit = 20, enabled = true } = args;
   const qs = new URLSearchParams();
   qs.set("page", String(page));
   qs.set("limit", String(limit));
   if (q) qs.set("q", q);
   return useQuery({
+    enabled,
     queryKey: ["companies", companyId, "reports", "sales", "outstanding", { q, page, limit }],
     queryFn: async () =>
       apiClient.get<{ data: OutstandingInvoiceRow[]; meta: { page: number; limit: number; total: number } }>(

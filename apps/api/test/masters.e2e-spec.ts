@@ -34,6 +34,8 @@ describe('Phase 02 Masters (e2e)', () => {
 
   it('enforces tenant scoping across customers/suppliers/products', async () => {
     const password = 'P@ssw0rd!' + Date.now();
+    const bcrypt = await import('bcryptjs');
+    const hash = await bcrypt.hash(password, 10);
 
     const companyA = await prisma.company.create({
       data: { name: rnd('cA'), businessType: 'RETAIL' },
@@ -45,20 +47,11 @@ describe('Phase 02 Masters (e2e)', () => {
     const userA = await prisma.user.create({
       data: {
         companyId: companyA.id,
-        email: `${rnd('uA')}@example.com`,
+        email: `${rnd('ua')}@example.com`,
         name: 'User A',
         role: 'ADMIN',
-        passwordHash: password,
+        passwordHash: hash,
       },
-    });
-
-    // Set password hash correctly.
-    // AuthService expects bcrypt hash; easiest is to call login only after we set a bcrypt hash.
-    const bcrypt = await import('bcryptjs');
-    const hash = await bcrypt.hash(password, 10);
-    await prisma.user.update({
-      where: { id: userA.id },
-      data: { passwordHash: hash },
     });
 
     const loginRes = await http(app.getHttpServer())
@@ -138,5 +131,57 @@ describe('Phase 02 Masters (e2e)', () => {
       .get(`/api/companies/${companyB.id}/products/${productId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(403);
+  });
+
+  it('rejects duplicate category names within the same company', async () => {
+    const password = 'P@ssw0rd!' + Date.now();
+    const bcrypt = await import('bcryptjs');
+    const hash = await bcrypt.hash(password, 10);
+
+    const company = await prisma.company.create({
+      data: { name: rnd('cat_co'), businessType: 'RETAIL' },
+    });
+
+    const user = await prisma.user.create({
+      data: {
+        companyId: company.id,
+        email: `${rnd('cat_user')}@example.com`,
+        name: 'Category User',
+        role: 'ADMIN',
+        passwordHash: hash,
+      },
+    });
+
+    const loginRes = await http(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: user.email, password })
+      .expect(200);
+
+    const accessToken = loginRes.body?.data?.access_token;
+    expect(accessToken).toBeTruthy();
+
+    const createFirst = await http(app.getHttpServer())
+      .post(`/api/companies/${company.id}/categories`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ name: 'Electronics' })
+      .expect(201);
+
+    expect(createFirst.body?.data?.name).toBe('Electronics');
+
+    const duplicate = await http(app.getHttpServer())
+      .post(`/api/companies/${company.id}/categories`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ name: 'Electronics' });
+
+    expect(duplicate.status).toBe(409);
+    expect(
+      String(
+        duplicate.body?.error?.message ??
+          duplicate.body?.message ??
+          '',
+      ),
+    ).toContain(
+      "Category 'Electronics' already exists for this company",
+    );
   });
 });

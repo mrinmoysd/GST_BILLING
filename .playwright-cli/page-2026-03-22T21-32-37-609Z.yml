@@ -1,0 +1,136 @@
+- generic [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Inventory" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - generic [ref=e123]: Adjustments
+          - generic [ref=e124]:
+            - link "Switch" [ref=e125] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e126]
+            - generic [ref=e128]: owner
+            - button "Demo Company" [ref=e129]:
+              - generic [ref=e130]: Demo Company
+              - img [ref=e131]
+      - main [ref=e134]:
+        - generic [ref=e136]:
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: Inventory
+              - heading "Stock adjustments" [level=1] [ref=e140]
+              - generic [ref=e141]: Apply manual stock corrections from a dedicated adjustment workspace and review the latest inventory activity.
+            - link "Back" [ref=e143] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - generic [ref=e148]: 0 low-stock items
+                  - generic [ref=e149]: Manual correction
+                - heading "Apply adjustment" [level=3] [ref=e150]
+                - paragraph [ref=e151]: Use positive quantities to add stock and negative quantities to reduce stock.
+              - generic [ref=e152]:
+                - generic [ref=e153]:
+                  - generic [ref=e154]: Product
+                  - combobox [ref=e155]:
+                    - option "Select…"
+                    - option "DEMO Product 08 (55)"
+                    - option "DEMO Product 07 (48)"
+                    - option "DEMO Product 06 (47)"
+                    - option "DEMO Product 05 (90)"
+                    - option "DEMO Product 04 (85)"
+                    - option "DEMO Product 03 (67)"
+                    - option "DEMO Product 02 (59)"
+                    - option "DEMO Product 01 (41)" [selected]
+                - generic [ref=e156]:
+                  - generic [ref=e157]:
+                    - text: Change quantity
+                    - spinbutton "Change quantity" [active] [ref=e158]
+                  - generic [ref=e159]:
+                    - text: Reason / note
+                    - textbox "Reason / note" [ref=e160]:
+                      - /placeholder: Optional
+                - button "Apply adjustment" [ref=e161]
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - heading "Low stock watch" [level=3] [ref=e165]
+                - paragraph [ref=e166]: Products currently at or below reorder level.
+              - generic [ref=e168]:
+                - generic [ref=e169]: No low-stock items
+                - generic [ref=e170]: Current stock levels are above reorder thresholds.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

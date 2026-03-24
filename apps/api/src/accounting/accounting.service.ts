@@ -161,6 +161,17 @@ export class AccountingService {
     return d;
   }
 
+  private resolveBookRange(from?: string, to?: string) {
+    const toDate = to ? this.assertValidDate(to, 'to') : new Date();
+    const fromDate = from
+      ? this.assertValidDate(from, 'from')
+      : new Date(toDate.getFullYear(), toDate.getMonth(), 1);
+    if (fromDate > toDate) {
+      throw new BadRequestException('from must be before or equal to to');
+    }
+    return { fromDate, toDate };
+  }
+
   private classifyTopLevel(
     type: string,
   ): 'asset' | 'liability' | 'equity' | 'income' | 'expense' | 'unknown' {
@@ -1421,6 +1432,7 @@ export class AccountingService {
     let assets = 0;
     let liabilities = 0;
     let equity = 0;
+    let currentEarnings = 0;
     const assetRows: Array<{ ledger_id: string; ledger_name: string; amount: number }> = [];
     const liabilityRows: Array<{ ledger_id: string; ledger_name: string; amount: number }> = [];
     const equityRows: Array<{ ledger_id: string; ledger_name: string; amount: number }> = [];
@@ -1461,6 +1473,19 @@ export class AccountingService {
           amount: Number(amount.toFixed(2)),
         });
       }
+      if (top === 'income' || top === 'expense') {
+        currentEarnings += r.credit - r.debit;
+      }
+    }
+
+    if (Math.abs(currentEarnings) > 0.0001) {
+      const amount = Number(currentEarnings.toFixed(2));
+      equity += currentEarnings;
+      equityRows.push({
+        ledger_id: 'current_earnings',
+        ledger_name: 'Current Earnings',
+        amount,
+      });
     }
 
     return {
@@ -1479,8 +1504,7 @@ export class AccountingService {
   }
 
   async cashBook(companyId: string, from: string, to: string) {
-    const fromDate = this.assertValidDate(from, 'from');
-    const toDate = this.assertValidDate(to, 'to');
+    const { fromDate, toDate } = this.resolveBookRange(from, to);
     await this.ensureDefaultLedgers(companyId);
 
     const cashLedgers = await this.prisma.ledger.findMany({
@@ -1522,8 +1546,7 @@ export class AccountingService {
   }
 
   async bankBook(companyId: string, from: string, to: string) {
-    const fromDate = this.assertValidDate(from, 'from');
-    const toDate = this.assertValidDate(to, 'to');
+    const { fromDate, toDate } = this.resolveBookRange(from, to);
     await this.ensureDefaultLedgers(companyId);
 
     const bankLedgers = await this.prisma.ledger.findMany({

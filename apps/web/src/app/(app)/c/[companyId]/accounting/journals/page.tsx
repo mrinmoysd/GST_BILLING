@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAccountingPeriodLock, useCreateJournal, useJournals, useLedgers, useUpdateAccountingPeriodLock } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -82,7 +83,7 @@ export default function JournalsPage({ params }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <TextField label="Lock until (YYYY-MM-DD)" value={lockUntil} onChange={setLockUntil} />
+            <DateField label="Lock until" value={lockUntil} onChange={setLockUntil} />
             <TextField label="Reason (optional)" value={lockReason} onChange={setLockReason} />
           </div>
           <div className="flex flex-wrap gap-3">
@@ -96,8 +97,11 @@ export default function JournalsPage({ params }: Props) {
                     lock_until: lockUntil.trim() || null,
                     reason: lockReason.trim() || null,
                   });
+                  toast.success("Period lock updated");
                 } catch (e: unknown) {
-                  setError(getErrorMessage(e, "Failed to update period lock"));
+                  const message = getErrorMessage(e, "Failed to update period lock");
+                  setError(message);
+                  toast.error(message);
                 }
               }}
             >
@@ -110,8 +114,11 @@ export default function JournalsPage({ params }: Props) {
                 setError(null);
                 try {
                   await updatePeriodLock.mutateAsync({ lock_until: null, reason: null });
+                  toast.success("Period lock cleared");
                 } catch (e: unknown) {
-                  setError(getErrorMessage(e, "Failed to clear period lock"));
+                  const message = getErrorMessage(e, "Failed to clear period lock");
+                  setError(message);
+                  toast.error(message);
                 }
               }}
             >
@@ -132,7 +139,7 @@ export default function JournalsPage({ params }: Props) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
-          <TextField label="Date (YYYY-MM-DD)" value={date} onChange={setDate} />
+          <DateField label="Date" value={date} onChange={setDate} />
           <TextField label="Narration (optional)" value={narration} onChange={setNarration} />
           </div>
 
@@ -142,34 +149,30 @@ export default function JournalsPage({ params }: Props) {
             <div key={idx} className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 md:grid-cols-[120px_1fr_160px_auto] md:items-end">
               <div>
                 <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Side</label>
-                <select
-                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+                <SelectField
+                  label="Side"
                   value={l.side}
-                  onChange={(e) => {
-                    const side = e.target.value === "credit" ? "credit" : "debit";
-                    setLines((prev) => prev.map((x, i) => (i === idx ? { ...x, side } : x)));
-                  }}
+                  onChange={(value) =>
+                    setLines((prev) => prev.map((x, i) => (i === idx ? { ...x, side: value === "credit" ? "credit" : "debit" } : x)))
+                  }
                 >
                   <option value="debit">Debit</option>
                   <option value="credit">Credit</option>
-                </select>
+                </SelectField>
               </div>
 
-              <div>
-                <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Ledger</label>
-                <select
-                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                  value={l.ledgerId}
-                  onChange={(e) => setLines((prev) => prev.map((x, i) => (i === idx ? { ...x, ledgerId: e.target.value } : x)))}
-                >
+              <SelectField
+                label="Ledger"
+                value={l.ledgerId}
+                onChange={(value) => setLines((prev) => prev.map((x, i) => (i === idx ? { ...x, ledgerId: value } : x)))}
+              >
                   <option value="">Select…</option>
                   {ledgerRows.map((lr) => (
                     <option key={lr.id} value={lr.id}>
                       {lr.name}
                     </option>
                   ))}
-                </select>
-              </div>
+              </SelectField>
 
               <TextField
                 label="Amount"
@@ -223,8 +226,11 @@ export default function JournalsPage({ params }: Props) {
                   { side: "debit", ledgerId: "", amount: "" },
                   { side: "credit", ledgerId: "", amount: "" },
                 ]);
+                toast.success("Journal posted");
               } catch (e: unknown) {
-                setError(getErrorMessage(e, "Failed to create journal"));
+                const message = getErrorMessage(e, "Failed to create journal");
+                setError(message);
+                toast.error(message);
               }
             }}
           >
@@ -239,8 +245,8 @@ export default function JournalsPage({ params }: Props) {
           <CardDescription>Filter the recent journal list by date range.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-          <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+          <DateField label="From" value={from} onChange={setFrom} />
+          <DateField label="To" value={to} onChange={setTo} />
         </CardContent>
       </Card>
 

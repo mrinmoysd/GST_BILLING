@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Login" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Sign in with your email and password. Your refresh session is stored in an httpOnly cookie.
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: Email
+          - textbox "Email" [ref=e9]
+        - generic [ref=e10]:
+          - generic [ref=e11]: Password
+          - textbox "Password" [ref=e12]
+        - button "Sign in" [ref=e13]
+        - generic [ref=e14]:
+          - text: New here?
+          - link "Create your company" [ref=e15] [cursor=pointer]:
+            - /url: /onboarding
+        - generic [ref=e16]:
+          - text: Forgot your password?
+          - link "Reset it" [ref=e17] [cursor=pointer]:
+            - /url: /forgot-password
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]

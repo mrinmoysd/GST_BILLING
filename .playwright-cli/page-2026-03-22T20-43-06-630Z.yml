@@ -1,0 +1,150 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: Browser Fix Co 20260323 B"
+        - navigation [ref=e9]:
+          - link "Dashboard" [ref=e10] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+            - img [ref=e12]
+            - text: Dashboard
+          - link "Customers" [ref=e17] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/customers
+            - img [ref=e19]
+            - text: Customers
+          - link "Suppliers" [ref=e24] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/suppliers
+            - img [ref=e26]
+            - text: Suppliers
+          - link "Categories" [ref=e30] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/categories
+            - img [ref=e32]
+            - text: Categories
+          - link "Products" [ref=e36] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/products
+            - img [ref=e38]
+            - text: Products
+          - link "Invoices" [ref=e42] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/sales/invoices
+            - img [ref=e44]
+            - text: Invoices
+          - link "POS" [ref=e47] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/pos
+            - img [ref=e49]
+            - text: POS
+          - link "Purchases" [ref=e54] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/purchases
+            - img [ref=e56]
+            - text: Purchases
+          - link "Payments" [ref=e59] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/payments
+            - img [ref=e61]
+            - text: Payments
+          - link "Inventory" [ref=e64] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/inventory
+            - img [ref=e66]
+            - text: Inventory
+          - link "Accounting" [ref=e76] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/accounting
+            - img [ref=e78]
+            - text: Accounting
+          - link "Reports" [active] [ref=e80] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports
+            - img [ref=e82]
+            - text: Reports
+          - link "Settings" [ref=e84] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/settings
+            - img [ref=e86]
+            - text: Settings
+    - generic [ref=e89]:
+      - banner [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - link "GST Billing" [ref=e93] [cursor=pointer]:
+              - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+            - navigation "Breadcrumb" [ref=e95]:
+              - list [ref=e96]:
+                - listitem [ref=e97]:
+                  - link "Workspace" [ref=e98] [cursor=pointer]:
+                    - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+                - listitem [ref=e99]:
+                  - generic [ref=e100]: /
+                  - generic [ref=e311]: Reports
+          - generic [ref=e102]:
+            - link "Switch" [ref=e103] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e104]
+            - generic [ref=e106]: owner
+            - button "Browser Fix Co 20260323 B" [ref=e107]:
+              - generic [ref=e108]: Browser Fix Co 20260323 B
+              - img [ref=e109]
+      - main [ref=e112]:
+        - generic [ref=e312]:
+          - generic [ref=e314]:
+            - generic [ref=e315]: Insights
+            - heading "Reports" [level=1] [ref=e316]
+            - generic [ref=e317]: Navigate the business and compliance reports from a clearer, finance-oriented hub.
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - heading "Reporting workspace" [level=3] [ref=e321]
+                - paragraph [ref=e322]: Use business summaries for day-to-day control, GST filing review, and route formal books to the accounting area.
+              - generic [ref=e323]:
+                - generic [ref=e324]: 6 live report routes
+                - generic [ref=e325]: Business + GST filing
+            - generic [ref=e326]:
+              - generic [ref=e327]:
+                - heading "Accounting books" [level=3] [ref=e328]
+                - paragraph [ref=e329]: Trial balance, P&L, balance sheet, cash book, and bank book stay grouped under accounting.
+              - link "Open accounting hub" [ref=e331] [cursor=pointer]:
+                - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/accounting
+          - generic [ref=e332]:
+            - generic [ref=e333]:
+              - generic [ref=e334]:
+                - heading "Revenue reports" [level=3] [ref=e335]
+                - paragraph [ref=e336]: Sales, purchases, outstanding receivables, and top-product views for daily operations.
+              - generic [ref=e337]:
+                - link "Sales summary Revenue and invoice counts for a date range." [ref=e338] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/sales-summary
+                  - generic [ref=e339]: Sales summary
+                  - generic [ref=e340]: Revenue and invoice counts for a date range.
+                - link "Purchases summary Spend and purchase counts for a date range." [ref=e341] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/purchases-summary
+                  - generic [ref=e342]: Purchases summary
+                  - generic [ref=e343]: Spend and purchase counts for a date range.
+                - link "Outstanding invoices Receivables and overdue exposure." [ref=e344] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/outstanding
+                  - generic [ref=e345]: Outstanding invoices
+                  - generic [ref=e346]: Receivables and overdue exposure.
+                - link "Top products Best performers by amount or quantity." [ref=e347] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/top-products
+                  - generic [ref=e348]: Top products
+                  - generic [ref=e349]: Best performers by amount or quantity.
+            - generic [ref=e350]:
+              - generic [ref=e351]:
+                - heading "Profit and compliance" [level=3] [ref=e352]
+                - paragraph [ref=e353]: High-level margin monitoring and GST filing workspaces with summary, tables, and export tracking.
+              - generic [ref=e354]:
+                - link "Profit snapshot Quick margin view for a selected period." [ref=e355] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/profit-snapshot
+                  - generic [ref=e356]: Profit snapshot
+                  - generic [ref=e357]: Quick margin view for a selected period.
+                - link "GST compliance center GSTR-1, GSTR-3B, HSN, ITC, and export job tracking." [ref=e358] [cursor=pointer]:
+                  - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports/gst/gstr1
+                  - generic [ref=e359]: GST compliance center
+                  - generic [ref=e360]: GSTR-1, GSTR-3B, HSN, ITC, and export job tracking.
+  - region "Notifications alt+T"
+  - generic [ref=e235] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e236]:
+      - img [ref=e237]
+    - generic [ref=e240]:
+      - button "Open issues overlay" [ref=e241]:
+        - generic [ref=e242]:
+          - generic [ref=e243]: "0"
+          - generic [ref=e244]: "1"
+        - generic [ref=e245]: Issue
+      - button "Collapse issues badge" [ref=e246]:
+        - img [ref=e247]
+  - alert [ref=e249]

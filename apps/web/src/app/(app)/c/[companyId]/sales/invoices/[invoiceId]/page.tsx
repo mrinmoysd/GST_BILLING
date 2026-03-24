@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,7 @@ import {
   useShareInvoice,
 } from "@/lib/billing/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string; invoiceId: string }> };
 
@@ -112,9 +113,9 @@ export default function InvoiceDetailPage({ params }: Props) {
   }, [creditNotes]);
 
   const paymentsForInvoice = React.useMemo(() => {
-    const data = (paymentsQuery.data?.data.data ?? []) as PaymentLike[];
+    const data = (paymentsQuery.data?.data.data ?? paymentsQuery.data?.data ?? []) as PaymentLike[];
     return data.filter((payment) => (payment.invoiceId ?? payment.invoice_id) === invoiceId);
-  }, [invoiceId, paymentsQuery.data?.data.data]);
+  }, [invoiceId, paymentsQuery.data?.data]);
 
   const invoiceTaxBreakdown = React.useMemo(() => {
     const bucket = new Map<number, { taxable: number; tax: number }>();
@@ -197,8 +198,12 @@ export default function InvoiceDetailPage({ params }: Props) {
                           await issue.mutateAsync({ series_code: seriesCode });
                           setOk("Invoice issued.");
                         } catch (e: unknown) {
-                          setError(getErrorMessage(e, "Failed to issue invoice"));
+                          const message = getErrorMessage(e, "Failed to issue invoice");
+                          setError(message);
+                          toast.error(message);
+                          return;
                         }
+                        toast.success("Invoice issued");
                       }}
                     >
                       {issue.isPending ? "Issuing…" : "Issue"}
@@ -228,8 +233,12 @@ export default function InvoiceDetailPage({ params }: Props) {
                       await cancel.mutateAsync();
                       setOk("Invoice cancelled.");
                     } catch (e: unknown) {
-                      setError(getErrorMessage(e, "Failed to cancel invoice"));
+                      const message = getErrorMessage(e, "Failed to cancel invoice");
+                      setError(message);
+                      toast.error(message);
+                      return;
                     }
+                    toast.success("Invoice cancelled");
                   }}
                 >
                   {cancel.isPending ? "Cancelling…" : "Cancel"}
@@ -247,8 +256,12 @@ export default function InvoiceDetailPage({ params }: Props) {
                       const job = res.data as { data?: { jobId?: string } } | undefined;
                       if (job?.data?.jobId) setPdfJobId(String(job.data.jobId));
                     } catch (e: unknown) {
-                      setError(getErrorMessage(e, "Failed to enqueue PDF regeneration"));
+                      const message = getErrorMessage(e, "Failed to enqueue PDF regeneration");
+                      setError(message);
+                      toast.error(message);
+                      return;
                     }
+                    toast.success("PDF regeneration queued");
                   }}
                 >
                   {regen.isPending ? "Enqueueing…" : "Regenerate PDF"}
@@ -279,22 +292,24 @@ export default function InvoiceDetailPage({ params }: Props) {
                       setShareMessage("");
                       setOk("Invoice share logged.");
                     } catch (e: unknown) {
-                      setError(getErrorMessage(e, "Failed to share invoice"));
+                      const message = getErrorMessage(e, "Failed to share invoice");
+                      setError(message);
+                      toast.error(message);
+                      return;
                     }
+                    toast.success("Invoice share logged");
                   }}
                 >
-                  <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={shareChannel}
-                      onChange={(e) => setShareChannel(e.target.value as "email" | "whatsapp" | "sms")}
-                    >
-                      <option value="email">Email</option>
-                      <option value="whatsapp">WhatsApp</option>
-                      <option value="sms">SMS</option>
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Channel"
+                    value={shareChannel}
+                    onChange={(value) => setShareChannel(value as "email" | "whatsapp" | "sms")}
+                    options={[
+                      { value: "email", label: "Email" },
+                      { value: "whatsapp", label: "WhatsApp" },
+                      { value: "sms", label: "SMS" },
+                    ]}
+                  />
                   <TextField label="Recipient" value={shareRecipient} onChange={setShareRecipient} placeholder="email or phone" />
                   <div className="md:col-span-2">
                     <TextField label="Message" value={shareMessage} onChange={setShareMessage} placeholder="Optional note" />
@@ -359,22 +374,20 @@ export default function InvoiceDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Document type</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={creditKind}
-                      onChange={(e) => {
-                        const next = e.target.value as "credit_note" | "sales_return";
-                        setCreditKind(next);
-                        setCreditRestock(next === "sales_return");
-                      }}
-                    >
-                      <option value="credit_note">Credit note</option>
-                      <option value="sales_return">Sales return</option>
-                    </select>
-                  </div>
-                  <TextField label="Date (YYYY-MM-DD)" value={creditDate} onChange={setCreditDate} placeholder="Optional" />
+                  <SelectField
+                    label="Document type"
+                    value={creditKind}
+                    onChange={(value) => {
+                      const next = value as "credit_note" | "sales_return";
+                      setCreditKind(next);
+                      setCreditRestock(next === "sales_return");
+                    }}
+                    options={[
+                      { value: "credit_note", label: "Credit note" },
+                      { value: "sales_return", label: "Sales return" },
+                    ]}
+                  />
+                  <DateField label="Date" value={creditDate} onChange={setCreditDate} />
                 </div>
 
                 <TextField label="Notes" value={creditNotesText} onChange={setCreditNotesText} placeholder="Optional" />
@@ -439,8 +452,12 @@ export default function InvoiceDetailPage({ params }: Props) {
                       setCreditNotesText("");
                       setOk(creditKind === "sales_return" ? "Sales return created." : "Credit note created.");
                     } catch (e: unknown) {
-                      setError(getErrorMessage(e, "Failed to create credit note"));
+                      const message = getErrorMessage(e, "Failed to create credit note");
+                      setError(message);
+                      toast.error(message);
+                      return;
                     }
+                    toast.success(creditKind === "sales_return" ? "Sales return created" : "Credit note created");
                   }}
                 >
                   {credit.isPending ? "Saving…" : creditKind === "sales_return" ? "Create sales return" : "Create credit note"}
@@ -514,26 +531,29 @@ export default function InvoiceDetailPage({ params }: Props) {
                       });
                       setPayAmount("");
                       setPayReference("");
+                      setPayDate("");
                       setOk("Payment recorded.");
                     } catch (e: unknown) {
-                      setError(getErrorMessage(e, "Failed to record payment"));
+                      const message = getErrorMessage(e, "Failed to record payment");
+                      setError(message);
+                      toast.error(message);
+                      return;
                     }
+                    toast.success("Payment recorded");
                   }}
                 >
                   <TextField label="Amount" value={payAmount} onChange={setPayAmount} type="number" />
-                  <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={payMethod}
-                      onChange={(e) => setPayMethod(e.target.value)}
-                    >
-                      <option value="cash">Cash</option>
-                      <option value="upi">UPI</option>
-                      <option value="bank">Bank</option>
-                      <option value="card">Card</option>
-                    </select>
-                  </div>
+                  <SelectField
+                    label="Method"
+                    value={payMethod}
+                    onChange={setPayMethod}
+                    options={[
+                      { value: "cash", label: "Cash" },
+                      { value: "upi", label: "UPI" },
+                      { value: "bank", label: "Bank" },
+                      { value: "card", label: "Card" },
+                    ]}
+                  />
                   <TextField label="Reference" value={payReference} onChange={setPayReference} placeholder="Optional" />
                   <div className="flex gap-3">
                     <PrimaryButton type="submit" disabled={recordPayment.isPending}>
@@ -544,7 +564,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                     </SecondaryButton>
                   </div>
                   <div className="md:col-span-2">
-                    <TextField label="Payment date (YYYY-MM-DD)" value={payDate} onChange={setPayDate} placeholder="Optional" />
+                    <DateField label="Payment date" value={payDate} onChange={setPayDate} />
                   </div>
                 </form>
 

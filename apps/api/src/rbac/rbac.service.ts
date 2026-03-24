@@ -85,6 +85,11 @@ type EffectiveAccess = {
 export class RbacService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private normalizeBuiltinRole(roleName: string) {
+    const normalized = roleName.trim().toLowerCase();
+    return BUILTIN_ROLE_PERMISSIONS[normalized] ? normalized : roleName.trim();
+  }
+
   async ensureCompanyRbac(companyId: string) {
     for (const permission of ALL_PERMISSION_DEFINITIONS) {
       await this.prisma.permission.upsert({
@@ -351,7 +356,7 @@ export class RbacService {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: access.primaryRole,
         assigned_roles: access.assignedRoles,
         permissions: access.permissions,
         isActive: user.isActive,
@@ -624,7 +629,7 @@ export class RbacService {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: access.primaryRole,
         assigned_roles: access.assignedRoles,
         permissions: access.permissions,
         company_id: user.companyId,
@@ -822,10 +827,11 @@ export class RbacService {
       }>;
     }>;
   }): EffectiveAccess {
+    const normalizedPrimaryRole = this.normalizeBuiltinRole(input.primaryRole);
     const permissions = new Set<string>(
-      BUILTIN_ROLE_PERMISSIONS[input.primaryRole] ?? [],
+      BUILTIN_ROLE_PERMISSIONS[normalizedPrimaryRole] ?? [],
     );
-    const assignedRoles = [input.primaryRole];
+    const assignedRoles = [normalizedPrimaryRole];
 
     for (const customRole of input.customRoles) {
       assignedRoles.push(customRole.name);
@@ -835,7 +841,7 @@ export class RbacService {
     }
 
     return {
-      primaryRole: input.primaryRole,
+      primaryRole: normalizedPrimaryRole,
       assignedRoles,
       permissions: [...permissions].sort(),
     };

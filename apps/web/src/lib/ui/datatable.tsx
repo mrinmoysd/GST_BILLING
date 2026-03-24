@@ -13,13 +13,15 @@ export function DataTableShell(props: {
         props.className,
       )}
     >
-      {props.children}
+      <div className="overflow-x-auto">
+        {props.children}
+      </div>
     </div>
   );
 }
 
 export function DataTable(props: React.TableHTMLAttributes<HTMLTableElement>) {
-  return <table {...props} className={cn("w-full text-sm", props.className)} />;
+  return <table {...props} className={cn("min-w-full text-sm", props.className)} />;
 }
 
 export function DataThead(props: React.HTMLAttributes<HTMLTableSectionElement>) {
@@ -31,7 +33,7 @@ export function DataTh(props: React.ThHTMLAttributes<HTMLTableCellElement>) {
 }
 
 export function DataTd(props: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td {...props} className={cn("px-4 py-3.5", props.className)} />;
+  return <td {...props} className={cn("px-4 py-3.5 align-top", props.className)} />;
 }
 
 export function DataTr(props: React.HTMLAttributes<HTMLTableRowElement>) {

@@ -1,0 +1,6 @@
+[  125560ms] [ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/products/e47a83dc-7a47-4e05-896d-5c7e64d848ef/stock-adjustment:0
+[  240277ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/payments?page=1&limit=50:0
+[  240282ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/invoices?page=1&limit=50&status=issued:0
+[  240282ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/purchases?page=1&limit=50:0
+[  250691ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/payments?page=1&limit=5:0
+[  250694ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/invoices?page=1&limit=5&status=issued:0

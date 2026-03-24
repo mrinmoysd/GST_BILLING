@@ -1,0 +1,155 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "GB GST Billing India-first billing operations" [ref=e7] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e8]: GB
+            - generic [ref=e9]:
+              - generic [ref=e10]: GST Billing
+              - generic [ref=e11]: India-first billing operations
+          - navigation [ref=e12]:
+            - link "Features" [ref=e13] [cursor=pointer]:
+              - /url: /features
+            - link "Pricing" [ref=e14] [cursor=pointer]:
+              - /url: /pricing
+            - link "Security" [ref=e15] [cursor=pointer]:
+              - /url: /security
+            - link "Help" [ref=e16] [cursor=pointer]:
+              - /url: /help
+            - link "Contact" [ref=e17] [cursor=pointer]:
+              - /url: /contact
+        - generic [ref=e18]:
+          - link "Login" [ref=e19] [cursor=pointer]:
+            - /url: /login
+          - link "Create company" [ref=e20] [cursor=pointer]:
+            - /url: /onboarding
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: India-first billing operations
+          - heading "Run GST billing, inventory, accounting, and POS from one disciplined workspace." [level=1] [ref=e26]
+          - paragraph [ref=e27]: GST Billing is built for teams that need invoicing speed without losing compliance, stock accuracy, or finance visibility. Start with self-serve onboarding, then scale into GST reporting, accounting control, and platform operations.
+        - generic [ref=e28]:
+          - generic [ref=e29]: GST-ready workflows
+          - generic [ref=e30]: Accounting-linked operations
+          - generic [ref=e31]: POS + inventory + reports
+        - generic [ref=e32]:
+          - link "Create your company" [ref=e33] [cursor=pointer]:
+            - /url: /onboarding
+          - link "Request a demo" [ref=e34] [cursor=pointer]:
+            - /url: /demo
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]: Operations
+            - generic [ref=e40]: Compliance
+          - heading "Built for the full control loop" [level=3] [ref=e41]
+          - paragraph [ref=e42]: Not just invoice generation. The product joins sales, purchases, GST, accounting, reports, payments, and POS so teams can operate from one source of truth.
+        - generic [ref=e43]:
+          - generic [ref=e44]: Self-serve onboarding creates a company, owner account, invoice series, and authenticated session in one flow.
+          - generic [ref=e45]: Tenant workspace already includes dashboards, reports, GST workspaces, POS, settings, and role-aware administration.
+          - generic [ref=e46]: The platform layer includes billing integrations, notifications, files, auditability, and queue-backed background jobs.
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: Why teams switch
+          - heading "A product structure that follows the way finance and operations actually work." [level=2] [ref=e51]
+          - paragraph [ref=e52]: "The platform is arranged around the workflows businesses repeat daily: create documents, collect money, manage stock, file GST, and review books."
+        - generic [ref=e53]:
+          - generic [ref=e55]:
+            - heading "Billing and collections" [level=3] [ref=e56]
+            - paragraph [ref=e57]: Sales invoices, payments, customer ledgers, credit notes, returns, and receivables in one operational loop.
+          - generic [ref=e59]:
+            - heading "GST compliance" [level=3] [ref=e60]
+            - paragraph [ref=e61]: GSTR-1, GSTR-3B, HSN summary, ITC reporting, and export jobs from a unified compliance center.
+          - generic [ref=e63]:
+            - heading "Accounting and finance" [level=3] [ref=e64]
+            - paragraph [ref=e65]: Auto-posted journals, statements, books, and period controls connected directly to business transactions.
+          - generic [ref=e67]:
+            - heading "Inventory and purchases" [level=3] [ref=e68]
+            - paragraph [ref=e69]: Product masters, low-stock visibility, purchase workflows, stock adjustments, and movement history.
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e73]:
+            - generic [ref=e74]: Control model
+            - heading "Move from fragmented tools to one operating system for billing and compliance." [level=2] [ref=e75]
+            - paragraph [ref=e76]: Instead of stitching together spreadsheets, tax exports, accounting adjustments, and stock records, keep the lifecycle inside one disciplined environment.
+          - generic [ref=e77]:
+            - generic [ref=e78]: Issue invoices and immediately carry tax, collection, and reporting implications downstream.
+            - generic [ref=e79]: Keep purchase, stock, and supplier activity tied to the same operational ledger.
+            - generic [ref=e80]: Review GST and accounting outputs from product-grade screens rather than export-only utilities.
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - paragraph [ref=e84]: Onboarding
+              - heading "Self-serve" [level=3] [ref=e85]
+            - generic [ref=e86]: Company + owner + invoice series in one pass
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - paragraph [ref=e89]: GST workspaces
+              - heading "4 views" [level=3] [ref=e90]
+            - generic [ref=e91]: GSTR-1, GSTR-3B, HSN, ITC
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - paragraph [ref=e94]: Reports
+              - heading "Business + accounting" [level=3] [ref=e95]
+            - generic [ref=e96]: Operational and statement-level reporting
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - paragraph [ref=e99]: Public readiness
+              - heading "Legal + trust pages" [level=3] [ref=e100]
+            - generic [ref=e101]: Pricing, security, privacy, contact
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - generic [ref=e104]: Next step
+          - heading "Choose the fastest path into the product." [level=2] [ref=e105]
+          - paragraph [ref=e106]: Start directly with onboarding if you want a live workspace, or route through pricing, help, and demo pages if you need stakeholder review first.
+        - generic [ref=e107]:
+          - link "Start onboarding" [ref=e108] [cursor=pointer]:
+            - /url: /onboarding
+          - link "View pricing" [ref=e109] [cursor=pointer]:
+            - /url: /pricing
+          - link "Open help center" [ref=e110] [cursor=pointer]:
+            - /url: /help
+    - contentinfo [ref=e111]:
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]: Built for GST operations
+          - generic [ref=e115]: Billing, purchases, GST compliance, accounting, inventory, and POS in one operational workspace for growing Indian businesses.
+          - generic [ref=e116]: Start with self-serve onboarding, then scale into tax, finance, and platform workflows.
+        - generic [ref=e117]:
+          - generic [ref=e118]: Product
+          - generic [ref=e119]:
+            - link "Features" [ref=e120] [cursor=pointer]:
+              - /url: /features
+            - link "Pricing" [ref=e121] [cursor=pointer]:
+              - /url: /pricing
+            - link "Request demo" [ref=e122] [cursor=pointer]:
+              - /url: /demo
+            - link "Security" [ref=e123] [cursor=pointer]:
+              - /url: /security
+        - generic [ref=e124]:
+          - generic [ref=e125]: Company
+          - generic [ref=e126]:
+            - link "About" [ref=e127] [cursor=pointer]:
+              - /url: /about
+            - link "Contact" [ref=e128] [cursor=pointer]:
+              - /url: /contact
+            - link "Help center" [ref=e129] [cursor=pointer]:
+              - /url: /help
+        - generic [ref=e130]:
+          - generic [ref=e131]: Legal
+          - generic [ref=e132]:
+            - link "Privacy" [ref=e133] [cursor=pointer]:
+              - /url: /privacy
+            - link "Terms" [ref=e134] [cursor=pointer]:
+              - /url: /terms
+            - link "Login" [ref=e135] [cursor=pointer]:
+              - /url: /login
+      - generic [ref=e136]: GST Billing. Operational software for GST billing, accounting, inventory, and POS.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e142] [cursor=pointer]:
+    - img [ref=e143]
+  - alert [ref=e146]

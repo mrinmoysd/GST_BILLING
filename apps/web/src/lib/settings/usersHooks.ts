@@ -59,7 +59,7 @@ export type RolesResponse = {
 export function useCompanyUsers(companyId: string) {
   return useQuery({
     queryKey: ["companies", companyId, "users"],
-    queryFn: async () => apiClient.get<{ ok: true; data: CompanyUser[] }>(companyPath(companyId, "/users")),
+    queryFn: async () => apiClient.get<CompanyUser[]>(companyPath(companyId, "/users")),
   });
 }
 
@@ -75,7 +75,7 @@ export function useInviteCompanyUser(companyId: string) {
       is_active?: boolean;
       temp_password?: string;
     }) =>
-      apiClient.post<{ ok: true; data: { user: CompanyUser; dev?: { temporary_password?: string } } }>(
+      apiClient.post<{ user: CompanyUser; dev?: { temporary_password?: string } }>(
         companyPath(companyId, "/users"),
         body,
       ),
@@ -93,7 +93,7 @@ export function usePatchCompanyUser(companyId: string) {
     mutationFn: async (args: {
       userId: string;
       patch: { name?: string; primary_role?: string; role_ids?: string[]; is_active?: boolean };
-    }) => apiClient.patch<{ ok: true; data: CompanyUser }>(companyPath(companyId, `/users/${args.userId}`), args.patch),
+    }) => apiClient.patch<CompanyUser>(companyPath(companyId, `/users/${args.userId}`), args.patch),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "users"] });
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "roles"] });
@@ -104,7 +104,7 @@ export function usePatchCompanyUser(companyId: string) {
 export function useCompanyRoles(companyId: string) {
   return useQuery({
     queryKey: ["companies", companyId, "roles"],
-    queryFn: async () => apiClient.get<{ ok: true; data: RolesResponse }>(companyPath(companyId, "/roles")),
+    queryFn: async () => apiClient.get<RolesResponse>(companyPath(companyId, "/roles")),
   });
 }
 
@@ -113,7 +113,7 @@ export function useCreateCompanyRole(companyId: string) {
   return useMutation({
     mutationKey: ["companies", companyId, "roles", "create"],
     mutationFn: async (body: { name: string; permission_codes: string[] }) =>
-      apiClient.post<{ ok: true; data: CustomRole }>(companyPath(companyId, "/roles"), body),
+      apiClient.post<CustomRole>(companyPath(companyId, "/roles"), body),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "roles"] });
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "users"] });
@@ -126,7 +126,7 @@ export function usePatchCompanyRole(companyId: string) {
   return useMutation({
     mutationKey: ["companies", companyId, "roles", "patch"],
     mutationFn: async (args: { roleId: string; patch: { name?: string; permission_codes?: string[] } }) =>
-      apiClient.patch<{ ok: true; data: CustomRole }>(companyPath(companyId, `/roles/${args.roleId}`), args.patch),
+      apiClient.patch<CustomRole>(companyPath(companyId, `/roles/${args.roleId}`), args.patch),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "roles"] });
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "users"] });
@@ -139,7 +139,7 @@ export function useDeleteCompanyRole(companyId: string) {
   return useMutation({
     mutationKey: ["companies", companyId, "roles", "delete"],
     mutationFn: async (roleId: string) =>
-      apiClient.del<{ ok: true; data: { deleted: true } }>(companyPath(companyId, `/roles/${roleId}`)),
+      apiClient.del<{ deleted: true }>(companyPath(companyId, `/roles/${roleId}`)),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "roles"] });
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "users"] });

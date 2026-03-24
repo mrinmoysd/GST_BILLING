@@ -1,0 +1,7 @@
+[   21749ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/reports/sales/summary?from=2026-03-22&to=2026-03-22:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/reports/sales/summary?from=2026-03-01&to=2026-03-22:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/reports/sales/outstanding?page=1&limit=5:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/inventory/low-stock?page=1&limit=5&threshold=0:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/invoices?page=1&limit=4:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/purchases?page=1&limit=4:0
+[   21750ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/payments?page=1&limit=4:0

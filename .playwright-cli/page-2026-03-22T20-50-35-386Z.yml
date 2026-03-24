@@ -1,0 +1,127 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e37]:
+    - complementary [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]: GST Billing
+        - generic [ref=e41]: "Company: Demo Company"
+        - navigation [ref=e43]:
+          - link "Dashboard" [ref=e44] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e46]
+            - text: Dashboard
+          - link "Customers" [ref=e51] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e53]
+            - text: Customers
+          - link "Suppliers" [ref=e58] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e60]
+            - text: Suppliers
+          - link "Categories" [ref=e64] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e66]
+            - text: Categories
+          - link "Products" [ref=e70] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e72]
+            - text: Products
+          - link "Invoices" [ref=e76] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e78]
+            - text: Invoices
+          - link "POS" [ref=e81] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e83]
+            - text: POS
+          - link "Purchases" [ref=e88] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e90]
+            - text: Purchases
+          - link "Payments" [ref=e93] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e95]
+            - text: Payments
+          - link "Inventory" [ref=e98] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e100]
+            - text: Inventory
+          - link "Accounting" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e112]
+            - text: Accounting
+          - link "Reports" [ref=e114] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e116]
+            - text: Reports
+          - link "Settings" [ref=e118] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e120]
+            - text: Settings
+    - generic [ref=e123]:
+      - banner [ref=e124]:
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - link "GST Billing" [ref=e127] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e129]:
+              - list [ref=e130]:
+                - listitem [ref=e131]:
+                  - link "Workspace" [ref=e132] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e133]:
+                  - generic [ref=e134]: /
+                  - generic [ref=e135]: Pos
+          - generic [ref=e136]:
+            - link "Switch" [ref=e137] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e138]
+            - generic [ref=e140]: owner
+            - button "Demo Company" [ref=e141]:
+              - generic [ref=e142]: Demo Company
+              - img [ref=e143]
+      - main [ref=e146]:
+        - generic [ref=e148]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Sales
+            - heading "Point of sale" [level=1] [ref=e152]
+            - generic [ref=e153]: Run retail billing with a scan-first cart, instant payment capture, and a receipt surface optimized for browser printing.
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e157]:
+                  - generic [ref=e158]: Online POS
+                  - generic [ref=e159]: Browser print
+                  - generic [ref=e160]: GST aware
+                - heading "Retail billing workspace" [level=3] [ref=e161]
+                - paragraph [ref=e162]: Start a cashier-friendly sale flow that uses the existing invoice and payment engine underneath, then print a thermal receipt in the browser.
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]:
+                    - generic [ref=e166]: Search model
+                    - generic [ref=e167]: SKU and name search with Enter-to-add handling.
+                  - generic [ref=e168]:
+                    - generic [ref=e169]: Payment capture
+                    - generic [ref=e170]: Immediate cash, card, bank, or UPI collection during sale completion.
+                  - generic [ref=e171]:
+                    - generic [ref=e172]: Receipt output
+                    - generic [ref=e173]: Thermal browser print stylesheet with a compact receipt layout.
+                - generic [ref=e174]:
+                  - link "Start billing" [ref=e175] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/pos/billing
+                    - button "Start billing" [ref=e176]
+                  - link "Open invoice register" [ref=e177] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+                    - button "Open invoice register" [ref=e178]
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - heading "MVP scope lock" [level=3] [ref=e181]
+                - paragraph [ref=e182]: Phase J keeps the retail mode tight and operational.
+              - generic [ref=e183]:
+                - generic [ref=e184]: Print is browser-based only. Offline mode and direct ESC/POS agents remain out of scope.
+                - generic [ref=e185]: "POS uses standard invoice issuance with `DEFAULT` numbering, so accounting, GST, and stock behavior stay aligned with the rest of the system."
+                - generic [ref=e186]: Cashier shift open/close and reconciliation are not part of this phase.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

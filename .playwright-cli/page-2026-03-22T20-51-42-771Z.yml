@@ -1,0 +1,529 @@
+- generic [ref=e1]:
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Internal Admin
+        - generic [ref=e32]: Platform operations
+        - generic [ref=e33]: superadmin@example.com
+        - navigation [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: Control
+            - generic [ref=e38]:
+              - link "Dashboard Overview and priorities" [ref=e39] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e41]
+                - generic [ref=e46]:
+                  - generic [ref=e47]: Dashboard
+                  - generic [ref=e48]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e49] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e51]
+                - generic [ref=e55]:
+                  - generic [ref=e56]: Companies
+                  - generic [ref=e57]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e58] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e60]
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Subscriptions
+                  - generic [ref=e64]: Billing oversight
+          - generic [ref=e65]:
+            - generic [ref=e66]: Operations
+            - generic [ref=e67]:
+              - link "Usage Adoption and meters" [ref=e68] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e70]
+                - generic [ref=e72]:
+                  - generic [ref=e73]: Usage
+                  - generic [ref=e74]: Adoption and meters
+              - link "Support Ticket triage" [ref=e75] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e77]
+                - generic [ref=e84]:
+                  - generic [ref=e85]: Support
+                  - generic [ref=e86]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e87] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e89]
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Queues
+                  - generic [ref=e102]: Jobs and failures
+          - generic [ref=e103]:
+            - generic [ref=e104]: Governance
+            - generic [ref=e105]:
+              - link "Internal Users Admin identities and access" [active] [ref=e106] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e108]
+                - generic [ref=e112]:
+                  - generic [ref=e113]: Internal Users
+                  - generic [ref=e114]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e115] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e117]
+                - generic [ref=e120]:
+                  - generic [ref=e121]: Audit Logs
+                  - generic [ref=e122]: Privileged action history
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - text: Admin workspace
+            - generic [ref=e128]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e133]:
+      - banner [ref=e134]:
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - link "GST Billing Admin" [ref=e138] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e139]: Super Admin
+            - navigation "Breadcrumb" [ref=e141]:
+              - list [ref=e142]:
+                - listitem [ref=e143]:
+                  - link "Admin" [ref=e144] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e145]:
+                  - generic [ref=e146]: /
+                  - generic [ref=e147]: Internal Users
+          - generic [ref=e148]:
+            - link "Tenant app" [ref=e149] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e150]
+            - button "superadmin@example.com" [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e156]: superadmin@example.com
+      - main [ref=e157]:
+        - generic [ref=e263]:
+          - generic [ref=e265]:
+            - generic [ref=e266]: Governance
+            - heading "Internal users" [level=1] [ref=e267]
+            - generic [ref=e268]: Manage internal admin operators, role assignments, and privileged access for the SaaS control plane.
+          - generic [ref=e269]:
+            - generic [ref=e270]:
+              - generic [ref=e271]:
+                - heading "Create internal admin" [level=3] [ref=e272]
+                - paragraph [ref=e273]: Provision an operator with a dedicated admin role and credentials.
+              - generic [ref=e274]:
+                - generic [ref=e275]:
+                  - text: Name
+                  - textbox "Name" [ref=e276]
+                - generic [ref=e277]:
+                  - text: Email
+                  - textbox "Email" [ref=e278]
+                - generic [ref=e279]:
+                  - text: Temporary password
+                  - textbox "Temporary password" [ref=e280]
+                - generic [ref=e281]:
+                  - generic [ref=e282]: Role
+                  - combobox [ref=e283]:
+                    - option "Super Admin"
+                    - option "Platform Owner" [selected]
+                    - option "Finance Admin"
+                    - option "Support Admin"
+                    - option "Operations Admin"
+                    - option "Read-only Admin"
+                - button "Create admin user" [ref=e284]
+            - generic [ref=e285]:
+              - generic [ref=e286]:
+                - generic [ref=e287]:
+                  - generic [ref=e288]: 11 admin users
+                  - generic [ref=e289]: 6 role profiles
+                - heading "Role catalog" [level=3] [ref=e290]
+                - paragraph [ref=e291]: Internal admin roles use a lightweight fixed permission bundle.
+              - generic [ref=e292]:
+                - generic [ref=e293]:
+                  - generic [ref=e294]: Super Admin
+                  - generic [ref=e295]:
+                    - generic [ref=e296]: admin.access
+                    - generic [ref=e297]: admin.dashboard.read
+                    - generic [ref=e298]: admin.companies.manage
+                    - generic [ref=e299]: admin.subscriptions.manage
+                    - generic [ref=e300]: admin.usage.read
+                    - generic [ref=e301]: admin.support.manage
+                    - generic [ref=e302]: admin.observability.read
+                    - generic [ref=e303]: admin.audit.read
+                    - generic [ref=e304]: admin.internal_users.manage
+                - generic [ref=e305]:
+                  - generic [ref=e306]: Platform Owner
+                  - generic [ref=e307]:
+                    - generic [ref=e308]: admin.access
+                    - generic [ref=e309]: admin.dashboard.read
+                    - generic [ref=e310]: admin.companies.manage
+                    - generic [ref=e311]: admin.subscriptions.manage
+                    - generic [ref=e312]: admin.usage.read
+                    - generic [ref=e313]: admin.support.manage
+                    - generic [ref=e314]: admin.observability.read
+                    - generic [ref=e315]: admin.audit.read
+                    - generic [ref=e316]: admin.internal_users.manage
+                - generic [ref=e317]:
+                  - generic [ref=e318]: Finance Admin
+                  - generic [ref=e319]:
+                    - generic [ref=e320]: admin.access
+                    - generic [ref=e321]: admin.dashboard.read
+                    - generic [ref=e322]: admin.subscriptions.manage
+                    - generic [ref=e323]: admin.usage.read
+                    - generic [ref=e324]: admin.audit.read
+                - generic [ref=e325]:
+                  - generic [ref=e326]: Support Admin
+                  - generic [ref=e327]:
+                    - generic [ref=e328]: admin.access
+                    - generic [ref=e329]: admin.dashboard.read
+                    - generic [ref=e330]: admin.companies.manage
+                    - generic [ref=e331]: admin.support.manage
+                    - generic [ref=e332]: admin.audit.read
+                - generic [ref=e333]:
+                  - generic [ref=e334]: Operations Admin
+                  - generic [ref=e335]:
+                    - generic [ref=e336]: admin.access
+                    - generic [ref=e337]: admin.dashboard.read
+                    - generic [ref=e338]: admin.observability.read
+                    - generic [ref=e339]: admin.audit.read
+                - generic [ref=e340]:
+                  - generic [ref=e341]: Read-only Admin
+                  - generic [ref=e342]:
+                    - generic [ref=e343]: admin.access
+                    - generic [ref=e344]: admin.dashboard.read
+                    - generic [ref=e345]: admin.usage.read
+                    - generic [ref=e346]: admin.observability.read
+                    - generic [ref=e347]: admin.audit.read
+          - generic [ref=e348]:
+            - generic [ref=e349]:
+              - heading "Operator directory" [level=3] [ref=e350]
+              - paragraph [ref=e351]: Search internal admins and change role or active status inline.
+            - generic [ref=e352]:
+              - generic [ref=e354]:
+                - text: Search
+                - textbox "Search" [ref=e355]:
+                  - /placeholder: email, name, or role
+              - table [ref=e357]:
+                - rowgroup [ref=e358]:
+                  - row "User Role Status Permissions Last login Actions" [ref=e359]:
+                    - columnheader "User" [ref=e360]
+                    - columnheader "Role" [ref=e361]
+                    - columnheader "Status" [ref=e362]
+                    - columnheader "Permissions" [ref=e363]
+                    - columnheader "Last login" [ref=e364]
+                    - columnheader "Actions" [ref=e365]
+                - rowgroup [ref=e366]:
+                  - row "Ops Admin ops_1774207821115_d315bde66e284@example.com Operations Admin Active admin.access admin.dashboard.read admin.observability.read admin.audit.read Never Deactivate Reset password" [ref=e367]:
+                    - cell "Ops Admin ops_1774207821115_d315bde66e284@example.com" [ref=e368]:
+                      - generic [ref=e369]: Ops Admin
+                      - generic [ref=e370]: ops_1774207821115_d315bde66e284@example.com
+                    - cell "Operations Admin" [ref=e371]:
+                      - combobox [ref=e372]:
+                        - option "Super Admin"
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin" [selected]
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e373]:
+                      - generic [ref=e374]: Active
+                    - cell "admin.access admin.dashboard.read admin.observability.read admin.audit.read" [ref=e375]:
+                      - generic [ref=e376]:
+                        - generic [ref=e377]: admin.access
+                        - generic [ref=e378]: admin.dashboard.read
+                        - generic [ref=e379]: admin.observability.read
+                        - generic [ref=e380]: admin.audit.read
+                    - cell "Never" [ref=e381]
+                    - cell "Deactivate Reset password" [ref=e382]:
+                      - generic [ref=e383]:
+                        - button "Deactivate" [ref=e384]
+                        - button "Reset password" [ref=e385]
+                  - row "Ops Admin ops_1774207787985_31f39bb0853fa@example.com Operations Admin Active admin.access admin.dashboard.read admin.observability.read admin.audit.read Never Deactivate Reset password" [ref=e386]:
+                    - cell "Ops Admin ops_1774207787985_31f39bb0853fa@example.com" [ref=e387]:
+                      - generic [ref=e388]: Ops Admin
+                      - generic [ref=e389]: ops_1774207787985_31f39bb0853fa@example.com
+                    - cell "Operations Admin" [ref=e390]:
+                      - combobox [ref=e391]:
+                        - option "Super Admin"
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin" [selected]
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e392]:
+                      - generic [ref=e393]: Active
+                    - cell "admin.access admin.dashboard.read admin.observability.read admin.audit.read" [ref=e394]:
+                      - generic [ref=e395]:
+                        - generic [ref=e396]: admin.access
+                        - generic [ref=e397]: admin.dashboard.read
+                        - generic [ref=e398]: admin.observability.read
+                        - generic [ref=e399]: admin.audit.read
+                    - cell "Never" [ref=e400]
+                    - cell "Deactivate Reset password" [ref=e401]:
+                      - generic [ref=e402]:
+                        - button "Deactivate" [ref=e403]
+                        - button "Reset password" [ref=e404]
+                  - row "Ops Admin ops_1774207752630_08272d696686c@example.com Operations Admin Active admin.access admin.dashboard.read admin.observability.read admin.audit.read Never Deactivate Reset password" [ref=e405]:
+                    - cell "Ops Admin ops_1774207752630_08272d696686c@example.com" [ref=e406]:
+                      - generic [ref=e407]: Ops Admin
+                      - generic [ref=e408]: ops_1774207752630_08272d696686c@example.com
+                    - cell "Operations Admin" [ref=e409]:
+                      - combobox [ref=e410]:
+                        - option "Super Admin"
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin" [selected]
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e411]:
+                      - generic [ref=e412]: Active
+                    - cell "admin.access admin.dashboard.read admin.observability.read admin.audit.read" [ref=e413]:
+                      - generic [ref=e414]:
+                        - generic [ref=e415]: admin.access
+                        - generic [ref=e416]: admin.dashboard.read
+                        - generic [ref=e417]: admin.observability.read
+                        - generic [ref=e418]: admin.audit.read
+                    - cell "Never" [ref=e419]
+                    - cell "Deactivate Reset password" [ref=e420]:
+                      - generic [ref=e421]:
+                        - button "Deactivate" [ref=e422]
+                        - button "Reset password" [ref=e423]
+                  - row "Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 01:11:31 Deactivate Reset password" [ref=e424]:
+                    - cell "Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com" [ref=e425]:
+                      - generic [ref=e426]: Billing Admin
+                      - generic [ref=e427]: billing_admin_1774208490932_e6b48f853406d@example.com
+                    - cell "Super Admin" [ref=e428]:
+                      - combobox [ref=e429]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e430]:
+                      - generic [ref=e431]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e432]:
+                      - generic [ref=e433]:
+                        - generic [ref=e434]: admin.access
+                        - generic [ref=e435]: admin.dashboard.read
+                        - generic [ref=e436]: admin.companies.manage
+                        - generic [ref=e437]: admin.subscriptions.manage
+                        - generic [ref=e438]: admin.usage.read
+                        - generic [ref=e439]: admin.support.manage
+                        - generic [ref=e440]: admin.observability.read
+                        - generic [ref=e441]: admin.audit.read
+                        - generic [ref=e442]: admin.internal_users.manage
+                    - cell "23/03/2026, 01:11:31" [ref=e443]
+                    - cell "Deactivate Reset password" [ref=e444]:
+                      - generic [ref=e445]:
+                        - button "Deactivate" [ref=e446]
+                        - button "Reset password" [ref=e447]
+                  - row "Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 01:10:35 Deactivate Reset password" [ref=e448]:
+                    - cell "Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com" [ref=e449]:
+                      - generic [ref=e450]: Billing Admin
+                      - generic [ref=e451]: billing_admin_1774208435719_dd7ab2a15ef07@example.com
+                    - cell "Super Admin" [ref=e452]:
+                      - combobox [ref=e453]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e454]:
+                      - generic [ref=e455]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e456]:
+                      - generic [ref=e457]:
+                        - generic [ref=e458]: admin.access
+                        - generic [ref=e459]: admin.dashboard.read
+                        - generic [ref=e460]: admin.companies.manage
+                        - generic [ref=e461]: admin.subscriptions.manage
+                        - generic [ref=e462]: admin.usage.read
+                        - generic [ref=e463]: admin.support.manage
+                        - generic [ref=e464]: admin.observability.read
+                        - generic [ref=e465]: admin.audit.read
+                        - generic [ref=e466]: admin.internal_users.manage
+                    - cell "23/03/2026, 01:10:35" [ref=e467]
+                    - cell "Deactivate Reset password" [ref=e468]:
+                      - generic [ref=e469]:
+                        - button "Deactivate" [ref=e470]
+                        - button "Reset password" [ref=e471]
+                  - row "Billing Admin billing_admin_1774208400206_0326945e56691@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 01:10:01 Deactivate Reset password" [ref=e472]:
+                    - cell "Billing Admin billing_admin_1774208400206_0326945e56691@example.com" [ref=e473]:
+                      - generic [ref=e474]: Billing Admin
+                      - generic [ref=e475]: billing_admin_1774208400206_0326945e56691@example.com
+                    - cell "Super Admin" [ref=e476]:
+                      - combobox [ref=e477]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e478]:
+                      - generic [ref=e479]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e480]:
+                      - generic [ref=e481]:
+                        - generic [ref=e482]: admin.access
+                        - generic [ref=e483]: admin.dashboard.read
+                        - generic [ref=e484]: admin.companies.manage
+                        - generic [ref=e485]: admin.subscriptions.manage
+                        - generic [ref=e486]: admin.usage.read
+                        - generic [ref=e487]: admin.support.manage
+                        - generic [ref=e488]: admin.observability.read
+                        - generic [ref=e489]: admin.audit.read
+                        - generic [ref=e490]: admin.internal_users.manage
+                    - cell "23/03/2026, 01:10:01" [ref=e491]
+                    - cell "Deactivate Reset password" [ref=e492]:
+                      - generic [ref=e493]:
+                        - button "Deactivate" [ref=e494]
+                        - button "Reset password" [ref=e495]
+                  - row "Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 01:09:05 Deactivate Reset password" [ref=e496]:
+                    - cell "Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com" [ref=e497]:
+                      - generic [ref=e498]: Billing Admin
+                      - generic [ref=e499]: billing_admin_1774208345061_3a1bcee222833@example.com
+                    - cell "Super Admin" [ref=e500]:
+                      - combobox [ref=e501]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e502]:
+                      - generic [ref=e503]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e504]:
+                      - generic [ref=e505]:
+                        - generic [ref=e506]: admin.access
+                        - generic [ref=e507]: admin.dashboard.read
+                        - generic [ref=e508]: admin.companies.manage
+                        - generic [ref=e509]: admin.subscriptions.manage
+                        - generic [ref=e510]: admin.usage.read
+                        - generic [ref=e511]: admin.support.manage
+                        - generic [ref=e512]: admin.observability.read
+                        - generic [ref=e513]: admin.audit.read
+                        - generic [ref=e514]: admin.internal_users.manage
+                    - cell "23/03/2026, 01:09:05" [ref=e515]
+                    - cell "Deactivate Reset password" [ref=e516]:
+                      - generic [ref=e517]:
+                        - button "Deactivate" [ref=e518]
+                        - button "Reset password" [ref=e519]
+                  - row "Super Admin superadmin_1774207820697_dc8c690435bc8@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 01:00:21 Deactivate Reset password" [ref=e520]:
+                    - cell "Super Admin superadmin_1774207820697_dc8c690435bc8@example.com" [ref=e521]:
+                      - generic [ref=e522]: Super Admin
+                      - generic [ref=e523]: superadmin_1774207820697_dc8c690435bc8@example.com
+                    - cell "Super Admin" [ref=e524]:
+                      - combobox [ref=e525]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e526]:
+                      - generic [ref=e527]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e528]:
+                      - generic [ref=e529]:
+                        - generic [ref=e530]: admin.access
+                        - generic [ref=e531]: admin.dashboard.read
+                        - generic [ref=e532]: admin.companies.manage
+                        - generic [ref=e533]: admin.subscriptions.manage
+                        - generic [ref=e534]: admin.usage.read
+                        - generic [ref=e535]: admin.support.manage
+                        - generic [ref=e536]: admin.observability.read
+                        - generic [ref=e537]: admin.audit.read
+                        - generic [ref=e538]: admin.internal_users.manage
+                    - cell "23/03/2026, 01:00:21" [ref=e539]
+                    - cell "Deactivate Reset password" [ref=e540]:
+                      - generic [ref=e541]:
+                        - button "Deactivate" [ref=e542]
+                        - button "Reset password" [ref=e543]
+                  - row "Super Admin superadmin_1774207787629_bc86c4f004aea@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 00:59:47 Deactivate Reset password" [ref=e544]:
+                    - cell "Super Admin superadmin_1774207787629_bc86c4f004aea@example.com" [ref=e545]:
+                      - generic [ref=e546]: Super Admin
+                      - generic [ref=e547]: superadmin_1774207787629_bc86c4f004aea@example.com
+                    - cell "Super Admin" [ref=e548]:
+                      - combobox [ref=e549]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e550]:
+                      - generic [ref=e551]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e552]:
+                      - generic [ref=e553]:
+                        - generic [ref=e554]: admin.access
+                        - generic [ref=e555]: admin.dashboard.read
+                        - generic [ref=e556]: admin.companies.manage
+                        - generic [ref=e557]: admin.subscriptions.manage
+                        - generic [ref=e558]: admin.usage.read
+                        - generic [ref=e559]: admin.support.manage
+                        - generic [ref=e560]: admin.observability.read
+                        - generic [ref=e561]: admin.audit.read
+                        - generic [ref=e562]: admin.internal_users.manage
+                    - cell "23/03/2026, 00:59:47" [ref=e563]
+                    - cell "Deactivate Reset password" [ref=e564]:
+                      - generic [ref=e565]:
+                        - button "Deactivate" [ref=e566]
+                        - button "Reset password" [ref=e567]
+                  - row "Super Admin superadmin_1774207751951_1bebee320c36@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 00:59:12 Deactivate Reset password" [ref=e568]:
+                    - cell "Super Admin superadmin_1774207751951_1bebee320c36@example.com" [ref=e569]:
+                      - generic [ref=e570]: Super Admin
+                      - generic [ref=e571]: superadmin_1774207751951_1bebee320c36@example.com
+                    - cell "Super Admin" [ref=e572]:
+                      - combobox [ref=e573]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e574]:
+                      - generic [ref=e575]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e576]:
+                      - generic [ref=e577]:
+                        - generic [ref=e578]: admin.access
+                        - generic [ref=e579]: admin.dashboard.read
+                        - generic [ref=e580]: admin.companies.manage
+                        - generic [ref=e581]: admin.subscriptions.manage
+                        - generic [ref=e582]: admin.usage.read
+                        - generic [ref=e583]: admin.support.manage
+                        - generic [ref=e584]: admin.observability.read
+                        - generic [ref=e585]: admin.audit.read
+                        - generic [ref=e586]: admin.internal_users.manage
+                    - cell "23/03/2026, 00:59:12" [ref=e587]
+                    - cell "Deactivate Reset password" [ref=e588]:
+                      - generic [ref=e589]:
+                        - button "Deactivate" [ref=e590]
+                        - button "Reset password" [ref=e591]
+                  - row "Super Admin superadmin@example.com Super Admin Active admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage 23/03/2026, 02:21:18 Deactivate Reset password" [ref=e592]:
+                    - cell "Super Admin superadmin@example.com" [ref=e593]:
+                      - generic [ref=e594]: Super Admin
+                      - generic [ref=e595]: superadmin@example.com
+                    - cell "Super Admin" [ref=e596]:
+                      - combobox [ref=e597]:
+                        - option "Super Admin" [selected]
+                        - option "Platform Owner"
+                        - option "Finance Admin"
+                        - option "Support Admin"
+                        - option "Operations Admin"
+                        - option "Read-only Admin"
+                    - cell "Active" [ref=e598]:
+                      - generic [ref=e599]: Active
+                    - cell "admin.access admin.dashboard.read admin.companies.manage admin.subscriptions.manage admin.usage.read admin.support.manage admin.observability.read admin.audit.read admin.internal_users.manage" [ref=e600]:
+                      - generic [ref=e601]:
+                        - generic [ref=e602]: admin.access
+                        - generic [ref=e603]: admin.dashboard.read
+                        - generic [ref=e604]: admin.companies.manage
+                        - generic [ref=e605]: admin.subscriptions.manage
+                        - generic [ref=e606]: admin.usage.read
+                        - generic [ref=e607]: admin.support.manage
+                        - generic [ref=e608]: admin.observability.read
+                        - generic [ref=e609]: admin.audit.read
+                        - generic [ref=e610]: admin.internal_users.manage
+                    - cell "23/03/2026, 02:21:18" [ref=e611]
+                    - cell "Deactivate Reset password" [ref=e612]:
+                      - generic [ref=e613]:
+                        - button "Deactivate" [ref=e614]
+                        - button "Reset password" [ref=e615]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]
+  - alert [ref=e26]

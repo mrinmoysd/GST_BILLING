@@ -1,0 +1,119 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Internal Admin
+        - generic [ref=e32]: Platform operations
+        - generic [ref=e33]: superadmin@example.com
+        - navigation [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: Control
+            - generic [ref=e38]:
+              - link "Dashboard Overview and priorities" [ref=e39] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e41]
+                - generic [ref=e46]:
+                  - generic [ref=e47]: Dashboard
+                  - generic [ref=e48]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e49] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e51]
+                - generic [ref=e55]:
+                  - generic [ref=e56]: Companies
+                  - generic [ref=e57]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e58] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e60]
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Subscriptions
+                  - generic [ref=e64]: Billing oversight
+          - generic [ref=e65]:
+            - generic [ref=e66]: Operations
+            - generic [ref=e67]:
+              - link "Usage Adoption and meters" [ref=e68] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e70]
+                - generic [ref=e72]:
+                  - generic [ref=e73]: Usage
+                  - generic [ref=e74]: Adoption and meters
+              - link "Support Ticket triage" [ref=e75] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e77]
+                - generic [ref=e84]:
+                  - generic [ref=e85]: Support
+                  - generic [ref=e86]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e87] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e89]
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Queues
+                  - generic [ref=e102]: Jobs and failures
+          - generic [ref=e103]:
+            - generic [ref=e104]: Governance
+            - generic [ref=e105]:
+              - link "Internal Users Admin identities and access" [ref=e106] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e108]
+                - generic [ref=e112]:
+                  - generic [ref=e113]: Internal Users
+                  - generic [ref=e114]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e115] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e117]
+                - generic [ref=e120]:
+                  - generic [ref=e121]: Audit Logs
+                  - generic [ref=e122]: Privileged action history
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - text: Admin workspace
+            - generic [ref=e128]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e133]:
+      - banner [ref=e134]:
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - link "GST Billing Admin" [ref=e138] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e139]: Super Admin
+            - navigation "Breadcrumb" [ref=e141]:
+              - list [ref=e142]:
+                - listitem [ref=e143]:
+                  - link "Admin" [ref=e144] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e145]:
+                  - generic [ref=e146]: /
+                  - generic [ref=e147]: Companies
+          - generic [ref=e148]:
+            - link "Tenant app" [ref=e149] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e150]
+            - button "superadmin@example.com" [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e156]: superadmin@example.com
+      - main [ref=e157]:
+        - generic [ref=e159]:
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - generic [ref=e162]: Admin
+              - heading "Companies" [level=1] [ref=e163]
+              - generic [ref=e164]: Monitor tenant companies, review owner identity, and move into lifecycle operations.
+            - link "New company" [ref=e166] [cursor=pointer]:
+              - /url: /admin/companies/new
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - text: Search companies
+              - textbox "Search companies" [ref=e171]:
+                - /placeholder: Name / GSTIN
+            - generic [ref=e173]: 0 total
+          - generic [ref=e174]:
+            - generic [ref=e175]: No companies
+            - generic [ref=e176]: Try a different query.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]
+  - alert [ref=e26]

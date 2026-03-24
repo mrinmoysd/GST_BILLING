@@ -39,9 +39,10 @@ export default function CompanySettingsPage({ params }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
   const [gstVerifyMessage, setGstVerifyMessage] = React.useState<string | null>(null);
+  const companyRecord = company.data?.data;
 
   React.useEffect(() => {
-    const c = company.data?.data.data;
+    const c = companyRecord;
     if (!c) return;
     setName(c.name ?? "");
     setGstin(c.gstin ?? "");
@@ -52,7 +53,7 @@ export default function CompanySettingsPage({ params }: Props) {
     setLogoUrl(c.logoUrl ?? "");
     setLogoFile(null);
     setAllowNegStock(Boolean(c.allowNegativeStock));
-  }, [company.data]);
+  }, [companyRecord]);
 
   return (
     <div className="space-y-7">
@@ -64,9 +65,9 @@ export default function CompanySettingsPage({ params }: Props) {
 
       {company.isLoading ? <LoadingBlock label="Loading company…" /> : null}
       {company.isError ? <InlineError message={getErrorMessage(company.error, "Failed to load company")} /> : null}
-      {company.data && !company.data.data.data ? <EmptyState title="Company not found" /> : null}
+      {company.data && !companyRecord ? <EmptyState title="Company not found" /> : null}
 
-      {company.data?.data.data ? (
+      {companyRecord ? (
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
             <CardHeader>
@@ -204,7 +205,7 @@ export default function CompanySettingsPage({ params }: Props) {
 
                     try {
                       const res = await uploadLogo.mutateAsync(logoFile);
-                      setLogoUrl(res.data.data.logoUrl ?? "");
+                      setLogoUrl(res.data.logoUrl ?? "");
                       setLogoFile(null);
                       setOk("Logo uploaded.");
                     } catch (e: unknown) {
@@ -222,7 +223,7 @@ export default function CompanySettingsPage({ params }: Props) {
                     setGstVerifyMessage(null);
                     try {
                       const res = await verifyGstin.mutateAsync();
-                      setGstVerifyMessage(res.data.data.note);
+                      setGstVerifyMessage(res.data.note);
                     } catch (e: unknown) {
                       setError(getErrorMessage(e, "Failed to start GSTIN verification"));
                     }

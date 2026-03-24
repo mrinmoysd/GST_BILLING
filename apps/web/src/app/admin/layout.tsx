@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -11,10 +11,13 @@ import { LoadingBlock } from "@/lib/ui/state";
 
 function AdminRouteGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { session, bootstrapped } = useAdminAuth();
   const [navOpen, setNavOpen] = React.useState(false);
   const isLoginRoute = pathname === "/admin/login";
+  const requestedNext = searchParams.get("next");
+  const safeNext = requestedNext && requestedNext.startsWith("/admin/") ? requestedNext : "/admin/dashboard";
 
   React.useEffect(() => {
     if (!bootstrapped) return;
@@ -25,9 +28,9 @@ function AdminRouteGate({ children }: { children: React.ReactNode }) {
     }
 
     if (session.user && isLoginRoute) {
-      router.replace("/admin/dashboard");
+      router.replace(safeNext);
     }
-  }, [bootstrapped, isLoginRoute, pathname, router, session.user]);
+  }, [bootstrapped, isLoginRoute, pathname, router, safeNext, session.user]);
 
   if (!bootstrapped) {
     return (

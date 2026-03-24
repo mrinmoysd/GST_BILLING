@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useBalanceSheet } from "@/lib/billing/hooks";
 import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
+import { DateField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -86,7 +86,7 @@ export default function BalanceSheetPage({ params }: Props) {
           <CardDescription>Select the date for the current balance sheet snapshot.</CardDescription>
         </CardHeader>
         <CardContent>
-          <TextField label="As of (YYYY-MM-DD)" value={asOf} onChange={setAsOf} />
+          <DateField label="As of" value={asOf} onChange={setAsOf} />
         </CardContent>
       </Card>
 

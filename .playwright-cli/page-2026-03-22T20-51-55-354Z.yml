@@ -1,0 +1,309 @@
+- generic [ref=e1]:
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Internal Admin
+        - generic [ref=e32]: Platform operations
+        - generic [ref=e33]: superadmin@example.com
+        - navigation [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: Control
+            - generic [ref=e38]:
+              - link "Dashboard Overview and priorities" [ref=e39] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e41]
+                - generic [ref=e46]:
+                  - generic [ref=e47]: Dashboard
+                  - generic [ref=e48]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e49] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e51]
+                - generic [ref=e55]:
+                  - generic [ref=e56]: Companies
+                  - generic [ref=e57]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e58] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e60]
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Subscriptions
+                  - generic [ref=e64]: Billing oversight
+          - generic [ref=e65]:
+            - generic [ref=e66]: Operations
+            - generic [ref=e67]:
+              - link "Usage Adoption and meters" [ref=e68] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e70]
+                - generic [ref=e72]:
+                  - generic [ref=e73]: Usage
+                  - generic [ref=e74]: Adoption and meters
+              - link "Support Ticket triage" [ref=e75] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e77]
+                - generic [ref=e84]:
+                  - generic [ref=e85]: Support
+                  - generic [ref=e86]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e87] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e89]
+                - generic [ref=e100]:
+                  - generic [ref=e101]: Queues
+                  - generic [ref=e102]: Jobs and failures
+          - generic [ref=e103]:
+            - generic [ref=e104]: Governance
+            - generic [ref=e105]:
+              - link "Internal Users Admin identities and access" [ref=e106] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e108]
+                - generic [ref=e112]:
+                  - generic [ref=e113]: Internal Users
+                  - generic [ref=e114]: Admin identities and access
+              - link "Audit Logs Privileged action history" [active] [ref=e115] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e117]
+                - generic [ref=e120]:
+                  - generic [ref=e121]: Audit Logs
+                  - generic [ref=e122]: Privileged action history
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - text: Admin workspace
+            - generic [ref=e128]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e133]:
+      - banner [ref=e134]:
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - link "GST Billing Admin" [ref=e138] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e139]: Super Admin
+            - navigation "Breadcrumb" [ref=e141]:
+              - list [ref=e142]:
+                - listitem [ref=e143]:
+                  - link "Admin" [ref=e144] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e145]:
+                  - generic [ref=e146]: /
+                  - generic [ref=e147]: Audit Logs
+          - generic [ref=e148]:
+            - link "Tenant app" [ref=e149] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e150]
+            - button "superadmin@example.com" [ref=e152]:
+              - img [ref=e153]
+              - generic [ref=e156]: superadmin@example.com
+      - main [ref=e157]:
+        - generic [ref=e616]:
+          - generic [ref=e618]:
+            - generic [ref=e619]: Governance
+            - heading "Audit logs" [level=1] [ref=e620]
+            - generic [ref=e621]: Review privileged changes across tenant lifecycle, billing operations, support actions, and internal admin management.
+          - generic [ref=e622]:
+            - generic [ref=e623]:
+              - generic [ref=e624]:
+                - generic [ref=e625]: 11 events in view
+                - generic [ref=e626]: All actions
+              - heading "Filters" [level=3] [ref=e627]
+              - paragraph [ref=e628]: Search by summary, actor email, or target id, then narrow by action family.
+            - generic [ref=e629]:
+              - generic [ref=e630]:
+                - text: Search
+                - textbox "Search" [ref=e631]:
+                  - /placeholder: summary, email, target id
+              - generic [ref=e632]:
+                - generic [ref=e633]: Action
+                - combobox [ref=e634]:
+                  - option "All actions" [selected]
+                  - option "admin.internal_user.created"
+                  - option "admin.subscription.updated"
+          - generic [ref=e635]:
+            - generic [ref=e636]:
+              - heading "Privileged action history" [level=3] [ref=e637]
+              - paragraph [ref=e638]: This view is backed by the dedicated internal admin audit table.
+            - table [ref=e641]:
+              - rowgroup [ref=e642]:
+                - row "When Actor Action Target Company Summary" [ref=e643]:
+                  - columnheader "When" [ref=e644]
+                  - columnheader "Actor" [ref=e645]
+                  - columnheader "Action" [ref=e646]
+                  - columnheader "Target" [ref=e647]
+                  - columnheader "Company" [ref=e648]
+                  - columnheader "Summary" [ref=e649]
+              - rowgroup [ref=e650]:
+                - 'row "23/03/2026, 01:11:31 Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com · super_admin admin.subscription.updated subscription 1258c523-3d95-4934-a866-521c22c41fe8 sub_co_1774208490965_17af61dc5ea5d No GSTIN Applied mark_past_due to subscription 1258c523-3d95-4934-a866-521c22c41fe8 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e651]':
+                  - cell "23/03/2026, 01:11:31" [ref=e652]
+                  - cell "Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com · super_admin" [ref=e653]:
+                    - generic [ref=e654]: Billing Admin
+                    - generic [ref=e655]: billing_admin_1774208490932_e6b48f853406d@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e656]:
+                    - generic [ref=e657]: admin.subscription.updated
+                  - cell "subscription 1258c523-3d95-4934-a866-521c22c41fe8" [ref=e658]:
+                    - generic [ref=e659]: subscription
+                    - generic [ref=e660]: 1258c523-3d95-4934-a866-521c22c41fe8
+                  - cell "sub_co_1774208490965_17af61dc5ea5d No GSTIN" [ref=e661]:
+                    - generic [ref=e662]: sub_co_1774208490965_17af61dc5ea5d
+                    - generic [ref=e663]: No GSTIN
+                  - 'cell "Applied mark_past_due to subscription 1258c523-3d95-4934-a866-521c22c41fe8 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e664]':
+                    - generic [ref=e665]: Applied mark_past_due to subscription 1258c523-3d95-4934-a866-521c22c41fe8
+                    - generic [ref=e666]: "{\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}"
+                - 'row "23/03/2026, 01:11:31 Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com · super_admin admin.subscription.updated subscription 1258c523-3d95-4934-a866-521c22c41fe8 sub_co_1774208490965_17af61dc5ea5d No GSTIN Applied change_plan to subscription 1258c523-3d95-4934-a866-521c22c41fe8 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208491021_279e38bcfcf56\"}" [ref=e667]':
+                  - cell "23/03/2026, 01:11:31" [ref=e668]
+                  - cell "Billing Admin billing_admin_1774208490932_e6b48f853406d@example.com · super_admin" [ref=e669]:
+                    - generic [ref=e670]: Billing Admin
+                    - generic [ref=e671]: billing_admin_1774208490932_e6b48f853406d@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e672]:
+                    - generic [ref=e673]: admin.subscription.updated
+                  - cell "subscription 1258c523-3d95-4934-a866-521c22c41fe8" [ref=e674]:
+                    - generic [ref=e675]: subscription
+                    - generic [ref=e676]: 1258c523-3d95-4934-a866-521c22c41fe8
+                  - cell "sub_co_1774208490965_17af61dc5ea5d No GSTIN" [ref=e677]:
+                    - generic [ref=e678]: sub_co_1774208490965_17af61dc5ea5d
+                    - generic [ref=e679]: No GSTIN
+                  - 'cell "Applied change_plan to subscription 1258c523-3d95-4934-a866-521c22c41fe8 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208491021_279e38bcfcf56\"}" [ref=e680]':
+                    - generic [ref=e681]: Applied change_plan to subscription 1258c523-3d95-4934-a866-521c22c41fe8
+                    - generic [ref=e682]: "{\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208491021_279e38bcfcf56\"}"
+                - 'row "23/03/2026, 01:10:36 Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin admin.subscription.updated subscription 50f07328-33ca-4223-8c58-92c1d744de99 sub_co_1774208435724_1c9f50c498a47 No GSTIN Applied mark_past_due to subscription 50f07328-33ca-4223-8c58-92c1d744de99 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e683]':
+                  - cell "23/03/2026, 01:10:36" [ref=e684]
+                  - cell "Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin" [ref=e685]:
+                    - generic [ref=e686]: Billing Admin
+                    - generic [ref=e687]: billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e688]:
+                    - generic [ref=e689]: admin.subscription.updated
+                  - cell "subscription 50f07328-33ca-4223-8c58-92c1d744de99" [ref=e690]:
+                    - generic [ref=e691]: subscription
+                    - generic [ref=e692]: 50f07328-33ca-4223-8c58-92c1d744de99
+                  - cell "sub_co_1774208435724_1c9f50c498a47 No GSTIN" [ref=e693]:
+                    - generic [ref=e694]: sub_co_1774208435724_1c9f50c498a47
+                    - generic [ref=e695]: No GSTIN
+                  - 'cell "Applied mark_past_due to subscription 50f07328-33ca-4223-8c58-92c1d744de99 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e696]':
+                    - generic [ref=e697]: Applied mark_past_due to subscription 50f07328-33ca-4223-8c58-92c1d744de99
+                    - generic [ref=e698]: "{\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}"
+                - 'row "23/03/2026, 01:10:36 Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin admin.subscription.updated subscription 50f07328-33ca-4223-8c58-92c1d744de99 sub_co_1774208435724_1c9f50c498a47 No GSTIN Applied change_plan to subscription 50f07328-33ca-4223-8c58-92c1d744de99 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208435729_6fda97e77bdf6\"}" [ref=e699]':
+                  - cell "23/03/2026, 01:10:36" [ref=e700]
+                  - cell "Billing Admin billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin" [ref=e701]:
+                    - generic [ref=e702]: Billing Admin
+                    - generic [ref=e703]: billing_admin_1774208435719_dd7ab2a15ef07@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e704]:
+                    - generic [ref=e705]: admin.subscription.updated
+                  - cell "subscription 50f07328-33ca-4223-8c58-92c1d744de99" [ref=e706]:
+                    - generic [ref=e707]: subscription
+                    - generic [ref=e708]: 50f07328-33ca-4223-8c58-92c1d744de99
+                  - cell "sub_co_1774208435724_1c9f50c498a47 No GSTIN" [ref=e709]:
+                    - generic [ref=e710]: sub_co_1774208435724_1c9f50c498a47
+                    - generic [ref=e711]: No GSTIN
+                  - 'cell "Applied change_plan to subscription 50f07328-33ca-4223-8c58-92c1d744de99 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208435729_6fda97e77bdf6\"}" [ref=e712]':
+                    - generic [ref=e713]: Applied change_plan to subscription 50f07328-33ca-4223-8c58-92c1d744de99
+                    - generic [ref=e714]: "{\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208435729_6fda97e77bdf6\"}"
+                - 'row "23/03/2026, 01:10:02 Billing Admin billing_admin_1774208400206_0326945e56691@example.com · super_admin admin.subscription.updated subscription 19335820-8e9f-4e45-8a9e-45703e39b330 sub_co_1774208400246_4835364d649a9 No GSTIN Applied mark_past_due to subscription 19335820-8e9f-4e45-8a9e-45703e39b330 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e715]':
+                  - cell "23/03/2026, 01:10:02" [ref=e716]
+                  - cell "Billing Admin billing_admin_1774208400206_0326945e56691@example.com · super_admin" [ref=e717]:
+                    - generic [ref=e718]: Billing Admin
+                    - generic [ref=e719]: billing_admin_1774208400206_0326945e56691@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e720]:
+                    - generic [ref=e721]: admin.subscription.updated
+                  - cell "subscription 19335820-8e9f-4e45-8a9e-45703e39b330" [ref=e722]:
+                    - generic [ref=e723]: subscription
+                    - generic [ref=e724]: 19335820-8e9f-4e45-8a9e-45703e39b330
+                  - cell "sub_co_1774208400246_4835364d649a9 No GSTIN" [ref=e725]:
+                    - generic [ref=e726]: sub_co_1774208400246_4835364d649a9
+                    - generic [ref=e727]: No GSTIN
+                  - 'cell "Applied mark_past_due to subscription 19335820-8e9f-4e45-8a9e-45703e39b330 {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e728]':
+                    - generic [ref=e729]: Applied mark_past_due to subscription 19335820-8e9f-4e45-8a9e-45703e39b330
+                    - generic [ref=e730]: "{\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}"
+                - 'row "23/03/2026, 01:10:02 Billing Admin billing_admin_1774208400206_0326945e56691@example.com · super_admin admin.subscription.updated subscription 19335820-8e9f-4e45-8a9e-45703e39b330 sub_co_1774208400246_4835364d649a9 No GSTIN Applied change_plan to subscription 19335820-8e9f-4e45-8a9e-45703e39b330 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208400427_a38309fc1d579\"}" [ref=e731]':
+                  - cell "23/03/2026, 01:10:02" [ref=e732]
+                  - cell "Billing Admin billing_admin_1774208400206_0326945e56691@example.com · super_admin" [ref=e733]:
+                    - generic [ref=e734]: Billing Admin
+                    - generic [ref=e735]: billing_admin_1774208400206_0326945e56691@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e736]:
+                    - generic [ref=e737]: admin.subscription.updated
+                  - cell "subscription 19335820-8e9f-4e45-8a9e-45703e39b330" [ref=e738]:
+                    - generic [ref=e739]: subscription
+                    - generic [ref=e740]: 19335820-8e9f-4e45-8a9e-45703e39b330
+                  - cell "sub_co_1774208400246_4835364d649a9 No GSTIN" [ref=e741]:
+                    - generic [ref=e742]: sub_co_1774208400246_4835364d649a9
+                    - generic [ref=e743]: No GSTIN
+                  - 'cell "Applied change_plan to subscription 19335820-8e9f-4e45-8a9e-45703e39b330 {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208400427_a38309fc1d579\"}" [ref=e744]':
+                    - generic [ref=e745]: Applied change_plan to subscription 19335820-8e9f-4e45-8a9e-45703e39b330
+                    - generic [ref=e746]: "{\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208400427_a38309fc1d579\"}"
+                - 'row "23/03/2026, 01:09:05 Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com · super_admin admin.subscription.updated subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c sub_co_1774208345072_b420e1723d338 No GSTIN Applied mark_past_due to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e747]':
+                  - cell "23/03/2026, 01:09:05" [ref=e748]
+                  - cell "Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com · super_admin" [ref=e749]:
+                    - generic [ref=e750]: Billing Admin
+                    - generic [ref=e751]: billing_admin_1774208345061_3a1bcee222833@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e752]:
+                    - generic [ref=e753]: admin.subscription.updated
+                  - cell "subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c" [ref=e754]:
+                    - generic [ref=e755]: subscription
+                    - generic [ref=e756]: 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c
+                  - cell "sub_co_1774208345072_b420e1723d338 No GSTIN" [ref=e757]:
+                    - generic [ref=e758]: sub_co_1774208345072_b420e1723d338
+                    - generic [ref=e759]: No GSTIN
+                  - 'cell "Applied mark_past_due to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c {\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}" [ref=e760]':
+                    - generic [ref=e761]: Applied mark_past_due to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c
+                    - generic [ref=e762]: "{\"note\":\"Payment failed\",\"action\":\"mark_past_due\",\"status\":\"past_due\",\"plan_code\":null}"
+                - 'row "23/03/2026, 01:09:05 Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com · super_admin admin.subscription.updated subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c sub_co_1774208345072_b420e1723d338 No GSTIN Applied change_plan to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208345081_f263d76bd1a23\"}" [ref=e763]':
+                  - cell "23/03/2026, 01:09:05" [ref=e764]
+                  - cell "Billing Admin billing_admin_1774208345061_3a1bcee222833@example.com · super_admin" [ref=e765]:
+                    - generic [ref=e766]: Billing Admin
+                    - generic [ref=e767]: billing_admin_1774208345061_3a1bcee222833@example.com · super_admin
+                  - cell "admin.subscription.updated" [ref=e768]:
+                    - generic [ref=e769]: admin.subscription.updated
+                  - cell "subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c" [ref=e770]:
+                    - generic [ref=e771]: subscription
+                    - generic [ref=e772]: 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c
+                  - cell "sub_co_1774208345072_b420e1723d338 No GSTIN" [ref=e773]:
+                    - generic [ref=e774]: sub_co_1774208345072_b420e1723d338
+                    - generic [ref=e775]: No GSTIN
+                  - 'cell "Applied change_plan to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c {\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208345081_f263d76bd1a23\"}" [ref=e776]':
+                    - generic [ref=e777]: Applied change_plan to subscription 933bd2cd-ba7c-4d4e-a93a-ff4a865a141c
+                    - generic [ref=e778]: "{\"note\":\"Upgrade customer to growth\",\"action\":\"change_plan\",\"status\":\"active\",\"plan_code\":\"plan_growth_1774208345081_f263d76bd1a23\"}"
+                - 'row "23/03/2026, 01:00:21 Super Admin superadmin_1774207820697_dc8c690435bc8@example.com · super_admin admin.internal_user.created user c5ef85e2-d9e3-489b-9579-ef9f9babcc3e Global action Created internal admin user ops_1774207821115_d315bde66e284@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e779]':
+                  - cell "23/03/2026, 01:00:21" [ref=e780]
+                  - cell "Super Admin superadmin_1774207820697_dc8c690435bc8@example.com · super_admin" [ref=e781]:
+                    - generic [ref=e782]: Super Admin
+                    - generic [ref=e783]: superadmin_1774207820697_dc8c690435bc8@example.com · super_admin
+                  - cell "admin.internal_user.created" [ref=e784]:
+                    - generic [ref=e785]: admin.internal_user.created
+                  - cell "user c5ef85e2-d9e3-489b-9579-ef9f9babcc3e" [ref=e786]:
+                    - generic [ref=e787]: user
+                    - generic [ref=e788]: c5ef85e2-d9e3-489b-9579-ef9f9babcc3e
+                  - cell "Global action" [ref=e789]
+                  - 'cell "Created internal admin user ops_1774207821115_d315bde66e284@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e790]':
+                    - generic [ref=e791]: Created internal admin user ops_1774207821115_d315bde66e284@example.com with role operations_admin
+                    - generic [ref=e792]: "{\"role\":\"operations_admin\"}"
+                - 'row "23/03/2026, 00:59:48 Super Admin superadmin_1774207787629_bc86c4f004aea@example.com · super_admin admin.internal_user.created user 921480e6-ad16-4057-b237-68228bb53ec5 Global action Created internal admin user ops_1774207787985_31f39bb0853fa@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e793]':
+                  - cell "23/03/2026, 00:59:48" [ref=e794]
+                  - cell "Super Admin superadmin_1774207787629_bc86c4f004aea@example.com · super_admin" [ref=e795]:
+                    - generic [ref=e796]: Super Admin
+                    - generic [ref=e797]: superadmin_1774207787629_bc86c4f004aea@example.com · super_admin
+                  - cell "admin.internal_user.created" [ref=e798]:
+                    - generic [ref=e799]: admin.internal_user.created
+                  - cell "user 921480e6-ad16-4057-b237-68228bb53ec5" [ref=e800]:
+                    - generic [ref=e801]: user
+                    - generic [ref=e802]: 921480e6-ad16-4057-b237-68228bb53ec5
+                  - cell "Global action" [ref=e803]
+                  - 'cell "Created internal admin user ops_1774207787985_31f39bb0853fa@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e804]':
+                    - generic [ref=e805]: Created internal admin user ops_1774207787985_31f39bb0853fa@example.com with role operations_admin
+                    - generic [ref=e806]: "{\"role\":\"operations_admin\"}"
+                - 'row "23/03/2026, 00:59:12 Super Admin superadmin_1774207751951_1bebee320c36@example.com · super_admin admin.internal_user.created user df9c89e2-a76c-437f-a24c-f4766f40933a Global action Created internal admin user ops_1774207752630_08272d696686c@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e807]':
+                  - cell "23/03/2026, 00:59:12" [ref=e808]
+                  - cell "Super Admin superadmin_1774207751951_1bebee320c36@example.com · super_admin" [ref=e809]:
+                    - generic [ref=e810]: Super Admin
+                    - generic [ref=e811]: superadmin_1774207751951_1bebee320c36@example.com · super_admin
+                  - cell "admin.internal_user.created" [ref=e812]:
+                    - generic [ref=e813]: admin.internal_user.created
+                  - cell "user df9c89e2-a76c-437f-a24c-f4766f40933a" [ref=e814]:
+                    - generic [ref=e815]: user
+                    - generic [ref=e816]: df9c89e2-a76c-437f-a24c-f4766f40933a
+                  - cell "Global action" [ref=e817]
+                  - 'cell "Created internal admin user ops_1774207752630_08272d696686c@example.com with role operations_admin {\"role\":\"operations_admin\"}" [ref=e818]':
+                    - generic [ref=e819]: Created internal admin user ops_1774207752630_08272d696686c@example.com with role operations_admin
+                    - generic [ref=e820]: "{\"role\":\"operations_admin\"}"
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]
+  - alert [ref=e26]

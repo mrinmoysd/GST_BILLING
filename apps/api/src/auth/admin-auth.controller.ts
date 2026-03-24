@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { JwtAccessAuthGuard } from './guards/jwt-access-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 
@@ -49,8 +50,9 @@ export class AdminAuthController {
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(200)
   @ApiOkResponse({ description: 'OK' })
-  async refresh(@Req() req: any) {
-    const token = req?.cookies?.admin_refresh_token;
+  async refresh(@Req() req: any, @Body() body: Partial<RefreshDto>) {
+    const token =
+      req?.cookies?.admin_refresh_token ?? body?.refresh_token;
     if (!token) throw new UnauthorizedException();
     return this.authService.adminRefresh({ refresh_token: token });
   }

@@ -1,0 +1,92 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Phase C
+          - heading "Create your company" [level=1] [ref=e7]
+          - generic [ref=e8]: Bootstrap the owner account, company profile, and invoice defaults in one onboarding flow.
+        - link "Already have an account?" [ref=e10] [cursor=pointer]:
+          - /url: /login
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - generic [ref=e15]: Owner account
+              - generic [ref=e16]: Company bootstrap
+            - heading "What this creates" [level=3] [ref=e17]
+            - paragraph [ref=e18]: The onboarding flow creates the company, the owner user, a default invoice series, and signs you in immediately.
+          - generic [ref=e19]:
+            - generic [ref=e20]: A tenant-scoped company record with billing defaults.
+            - generic [ref=e21]: An owner user account with an authenticated session.
+            - generic [ref=e22]: "A `DEFAULT` invoice series using your chosen prefix."
+            - generic [ref=e23]: A staged GST profile. If GSTIN is provided, verification is marked pending for later implementation.
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - heading "Onboarding form" [level=3] [ref=e26]
+            - paragraph [ref=e27]: Provide the minimum company and owner details to reach a usable dashboard without manual seeding.
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]:
+                - text: Company name
+                - textbox "Company name" [active] [ref=e32]
+              - generic [ref=e33]:
+                - text: Owner name
+                - textbox "Owner name" [ref=e34]: Manual QA Owner
+              - generic [ref=e35]:
+                - text: Email
+                - textbox "Email" [ref=e36]: Manual QA Co 20260323manualqa_20260323@example.com
+              - generic [ref=e37]:
+                - text: Password
+                - textbox "Password" [ref=e38]: Password123!
+              - generic [ref=e39]:
+                - text: GSTIN
+                - textbox "GSTIN" [ref=e40]:
+                  - /placeholder: Optional
+              - generic [ref=e41]:
+                - text: PAN
+                - textbox "PAN" [ref=e42]:
+                  - /placeholder: Optional
+              - generic [ref=e43]:
+                - generic [ref=e44]: Business type
+                - combobox [ref=e45]:
+                  - option "Trader" [selected]
+                  - option "Service"
+                  - option "Manufacturer"
+              - generic [ref=e46]:
+                - text: Timezone
+                - textbox "Timezone" [ref=e47]: Asia/Kolkata
+              - generic [ref=e48]:
+                - text: State
+                - textbox "State" [ref=e49]:
+                  - /placeholder: Optional
+              - generic [ref=e50]:
+                - text: State code
+                - textbox "State code" [ref=e51]:
+                  - /placeholder: Optional
+              - generic [ref=e52]:
+                - text: Invoice prefix
+                - textbox "Invoice prefix" [ref=e53]: INV-
+              - generic [ref=e54]:
+                - text: Logo URL fallback
+                - textbox "Logo URL fallback" [ref=e55]:
+                  - /placeholder: Optional
+            - generic [ref=e56]:
+              - generic [ref=e57]: Company logo
+              - generic [ref=e58]:
+                - generic [ref=e59]: No file
+                - generic [ref=e60]:
+                  - button "Choose File" [ref=e61]
+                  - generic [ref=e62]: If provided, the file is uploaded immediately after the company is created and signed in.
+            - generic [ref=e63]:
+              - checkbox "Allow negative stock" [ref=e64]
+              - text: Allow negative stock
+            - generic [ref=e65]:
+              - button "Create company" [ref=e66]
+              - link "Back to login" [ref=e67] [cursor=pointer]:
+                - /url: /login
+                - button "Back to login" [ref=e68]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e74] [cursor=pointer]:
+    - img [ref=e75]
+  - alert [ref=e78]

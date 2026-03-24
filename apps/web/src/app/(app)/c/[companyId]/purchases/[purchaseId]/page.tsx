@@ -17,7 +17,7 @@ import {
   useUploadPurchaseBill,
 } from "@/lib/billing/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { DateField, PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string; purchaseId: string }> };
 
@@ -234,7 +234,7 @@ export default function PurchaseDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextField label="Return date (YYYY-MM-DD)" value={returnDate} onChange={setReturnDate} placeholder="Optional" />
+                  <DateField label="Return date" value={returnDate} onChange={setReturnDate} />
                   <TextField label="Notes" value={returnNotes} onChange={setReturnNotes} placeholder="Optional" />
                 </div>
 
@@ -368,7 +368,7 @@ export default function PurchaseDetailPage({ params }: Props) {
                     </SecondaryButton>
                   </div>
                   <div className="md:col-span-2">
-                    <TextField label="Payment date (YYYY-MM-DD)" value={payDate} onChange={setPayDate} placeholder="Optional" />
+                    <DateField label="Payment date" value={payDate} onChange={setPayDate} />
                   </div>
                 </form>
 

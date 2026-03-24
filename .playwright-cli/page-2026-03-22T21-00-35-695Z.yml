@@ -1,0 +1,144 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Pos" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/pos
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - link "Receipt" [ref=e271] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/pos/receipt
+                - listitem [ref=e272]:
+                  - generic [ref=e273]: /
+                  - generic [ref=e274]: b3fd971d...
+          - generic [ref=e131]:
+            - link "Switch" [ref=e132] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e133]
+            - generic [ref=e135]: owner
+            - button "Demo Company" [ref=e136]:
+              - generic [ref=e137]: Demo Company
+              - img [ref=e138]
+      - main [ref=e141]:
+        - generic [ref=e275]:
+          - generic [ref=e277]:
+            - generic [ref=e278]:
+              - generic [ref=e279]: POS
+              - heading "Receipt" [level=1] [ref=e280]
+              - generic [ref=e281]: Use the browser print dialog for thermal output or return to billing for the next customer.
+            - generic [ref=e283]:
+              - link "Next sale" [ref=e284] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/pos/billing
+                - button "Next sale" [ref=e285]
+              - link "Open invoice" [ref=e286] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices/b3fd971d-8e2f-4aef-b9c9-fa3b12784c28
+                - button "Open invoice" [ref=e287]
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - generic [ref=e292]: paid
+                - generic [ref=e293]: b3fd971d
+              - heading "Tax invoice" [level=3] [ref=e294]
+              - paragraph [ref=e295]: Receipt-ready thermal layout for browser print.
+            - generic [ref=e296]:
+              - generic [ref=e297]:
+                - generic [ref=e298]: GST Billing
+                - generic [ref=e299]: Invoice b3fd971d
+                - generic [ref=e300]: Date —
+              - generic [ref=e301]:
+                - generic [ref=e302]: DEMO Customer 05
+                - generic [ref=e303]: "9999999999"
+              - generic [ref=e305]:
+                - generic [ref=e306]:
+                  - generic [ref=e307]: DEMO Product 01
+                  - generic [ref=e308]: "0.00"
+                - generic [ref=e309]: 1.00 × 0.00
+              - generic [ref=e310]:
+                - generic [ref=e311]:
+                  - generic [ref=e312]: Sub-total
+                  - generic [ref=e313]: "0.00"
+                - generic [ref=e314]:
+                  - generic [ref=e315]: GST
+                  - generic [ref=e316]: "0.00"
+                - generic [ref=e317]:
+                  - generic [ref=e318]: Total
+                  - generic [ref=e319]: "116.82"
+              - generic [ref=e320]: Thank you for your purchase.
+              - generic [ref=e321]:
+                - button "Print receipt" [ref=e322]
+                - link "Back to POS" [ref=e323] [cursor=pointer]:
+                  - /url: /c/00000000-0000-0000-0000-000000000001/pos/billing
+                  - button "Back to POS" [ref=e324]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

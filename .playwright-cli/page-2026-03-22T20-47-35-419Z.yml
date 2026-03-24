@@ -1,0 +1,259 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Sales" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/sales
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - link "Invoices" [ref=e130] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+                - listitem [ref=e131]:
+                  - generic [ref=e132]: /
+                  - generic [ref=e133]: 6a5c0e6a...
+          - generic [ref=e134]:
+            - link "Switch" [ref=e135] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e136]
+            - generic [ref=e138]: owner
+            - button "Demo Company" [ref=e139]:
+              - generic [ref=e140]: Demo Company
+              - img [ref=e141]
+      - main [ref=e144]:
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - generic [ref=e232]: Sales
+              - heading "Invoice" [level=1] [ref=e233]
+              - generic [ref=e234]: Handle issuance, sharing, credit notes, sales returns, payments, and lifecycle history from one operational surface.
+            - link "Back" [ref=e236] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+          - generic [ref=e237]:
+            - generic [ref=e238]:
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - generic [ref=e241]:
+                    - generic [ref=e242]: issued
+                    - generic [ref=e243]: Draft invoice
+                    - generic [ref=e244]: Credited 0.00
+                  - heading "Invoice 6a5c0e6a" [level=3] [ref=e245]
+                  - paragraph [ref=e246]: Issue, cancel, share, or credit the document while keeping a visible lifecycle trail.
+                - generic [ref=e247]:
+                  - generic [ref=e248]:
+                    - generic [ref=e249]: Issue date
+                    - generic [ref=e250]: —
+                  - generic [ref=e251]:
+                    - generic [ref=e252]: Due date
+                    - generic [ref=e253]: —
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: Invoice total
+                    - generic [ref=e256]: "116.82"
+                  - generic [ref=e257]:
+                    - generic [ref=e258]: Net after credits
+                    - generic [ref=e259]: "116.82"
+                  - generic [ref=e260]:
+                    - generic [ref=e261]: Series code
+                    - generic [ref=e262]:
+                      - generic [ref=e264]:
+                        - text: Series code
+                        - textbox "Series code" [ref=e265]: DEFAULT
+                      - button "Issue" [ref=e266]
+              - generic [ref=e267]:
+                - generic [ref=e268]:
+                  - heading "Document actions" [level=3] [ref=e269]
+                  - paragraph [ref=e270]: PDF and lifecycle actions for the current invoice.
+                - generic [ref=e271]:
+                  - link "Receipt view" [ref=e272] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/pos/receipt/6a5c0e6a-cbdc-48dc-9650-5bc078216928
+                    - button "Receipt view" [ref=e273]
+                  - button "Cancel" [ref=e274]
+                  - button "Open PDF" [ref=e275]
+                  - button "Regenerate PDF" [ref=e276]
+              - generic [ref=e277]:
+                - generic [ref=e278]:
+                  - heading "Share invoice" [level=3] [ref=e279]
+                  - paragraph [ref=e280]: Log share activity and keep a visible recipient trail for the issued document.
+                - generic [ref=e281]:
+                  - generic [ref=e282]:
+                    - generic [ref=e283]:
+                      - generic [ref=e284]: Channel
+                      - combobox [ref=e285]:
+                        - option "Email" [selected]
+                        - option "WhatsApp"
+                        - option "SMS"
+                    - generic [ref=e286]:
+                      - text: Recipient
+                      - textbox "Recipient" [ref=e287]:
+                        - /placeholder: email or phone
+                    - generic [ref=e289]:
+                      - text: Message
+                      - textbox "Message" [ref=e290]:
+                        - /placeholder: Optional note
+                    - button "Log share" [ref=e292]
+                  - generic [ref=e294]: No share events logged yet.
+              - generic [ref=e295]:
+                - generic [ref=e296]:
+                  - heading "PDF generation status" [level=3] [ref=e297]
+                  - paragraph [ref=e298]: Track the current regeneration job before opening the latest PDF.
+                - generic [ref=e300]: No PDF regeneration job is currently being tracked.
+              - generic [ref=e373]: Invoice issued.
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - generic [ref=e303]:
+                  - heading "Credit notes and sales returns" [level=3] [ref=e304]
+                  - paragraph [ref=e305]: Create post-issue corrections without cancelling the original invoice.
+                - generic [ref=e306]:
+                  - generic [ref=e307]:
+                    - generic [ref=e308]:
+                      - generic [ref=e309]: Document type
+                      - combobox [ref=e310]:
+                        - option "Credit note" [selected]
+                        - option "Sales return"
+                    - generic [ref=e311]:
+                      - text: Date (YYYY-MM-DD)
+                      - textbox "Date (YYYY-MM-DD)" [ref=e312]:
+                        - /placeholder: Optional
+                  - generic [ref=e313]:
+                    - text: Notes
+                    - textbox "Notes" [ref=e314]:
+                      - /placeholder: Optional
+                  - generic [ref=e315]:
+                    - checkbox "Restock returned quantity into inventory" [ref=e316]
+                    - text: Restock returned quantity into inventory
+                  - generic [ref=e318]:
+                    - generic [ref=e319]:
+                      - generic [ref=e320]: DEMO Product 01
+                      - generic [ref=e321]: Issued 1 • Already credited 0
+                    - generic [ref=e322]: Available 1
+                    - generic [ref=e323]: Unit 99.00
+                    - spinbutton [ref=e324]
+                  - button "Create credit note" [ref=e325]
+                  - generic [ref=e327]: No credit notes or sales returns have been created yet.
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - heading "Tax summary" [level=3] [ref=e330]
+                  - paragraph [ref=e331]: Current GST estimate based on the invoice line items returned by the API.
+                - generic [ref=e333]:
+                  - generic [ref=e334]:
+                    - generic [ref=e335]: 18% GST
+                    - generic [ref=e336]: Taxable value 99.00
+                  - generic [ref=e337]: "17.82"
+              - generic [ref=e338]:
+                - generic [ref=e339]:
+                  - heading "Payments" [level=3] [ref=e340]
+                  - paragraph [ref=e341]: Record payments and review settlement activity for this invoice.
+                - generic [ref=e342]:
+                  - generic [ref=e343]:
+                    - generic [ref=e344]:
+                      - text: Amount
+                      - spinbutton "Amount" [ref=e345]
+                    - generic [ref=e346]:
+                      - generic [ref=e347]: Method
+                      - combobox [ref=e348]:
+                        - option "Cash" [selected]
+                        - option "UPI"
+                        - option "Bank"
+                        - option "Card"
+                    - generic [ref=e349]:
+                      - text: Reference
+                      - textbox "Reference" [ref=e350]:
+                        - /placeholder: Optional
+                    - generic [ref=e351]:
+                      - button "Record" [ref=e352]
+                      - button "Today" [ref=e353]
+                    - generic [ref=e355]:
+                      - text: Payment date (YYYY-MM-DD)
+                      - textbox "Payment date (YYYY-MM-DD)" [ref=e356]:
+                        - /placeholder: Optional
+                  - table [ref=e358]:
+                    - rowgroup [ref=e359]:
+                      - row "Date Method Reference Amount" [ref=e360]:
+                        - columnheader "Date" [ref=e361]
+                        - columnheader "Method" [ref=e362]
+                        - columnheader "Reference" [ref=e363]
+                        - columnheader "Amount" [ref=e364]
+                    - rowgroup
+              - generic [ref=e365]:
+                - generic [ref=e366]:
+                  - heading "Lifecycle history" [level=3] [ref=e367]
+                  - paragraph [ref=e368]: Track issue, share, payment, cancellation, and post-issue correction events.
+                - generic [ref=e369]:
+                  - generic [ref=e374]:
+                    - generic [ref=e375]: Invoice issued as INV-9
+                    - generic [ref=e376]: invoice.issued • 2026-03-22T20:47:33.588Z
+                  - generic [ref=e370]:
+                    - generic [ref=e371]: Draft invoice created
+                    - generic [ref=e372]: invoice.draft_created • 2026-03-22T20:47:18.737Z
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

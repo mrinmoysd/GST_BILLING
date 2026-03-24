@@ -1,0 +1,106 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: Browser Fix Co 20260323 B"
+        - navigation [ref=e9]:
+          - link "Dashboard" [ref=e10] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+            - img [ref=e12]
+            - text: Dashboard
+          - link "Customers" [ref=e17] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/customers
+            - img [ref=e19]
+            - text: Customers
+          - link "Suppliers" [ref=e24] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/suppliers
+            - img [ref=e26]
+            - text: Suppliers
+          - link "Categories" [ref=e30] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/categories
+            - img [ref=e32]
+            - text: Categories
+          - link "Products" [ref=e36] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/masters/products
+            - img [ref=e38]
+            - text: Products
+          - link "Invoices" [ref=e42] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/sales/invoices
+            - img [ref=e44]
+            - text: Invoices
+          - link "POS" [ref=e47] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/pos
+            - img [ref=e49]
+            - text: POS
+          - link "Purchases" [ref=e54] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/purchases
+            - img [ref=e56]
+            - text: Purchases
+          - link "Payments" [ref=e59] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/payments
+            - img [ref=e61]
+            - text: Payments
+          - link "Inventory" [ref=e64] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/inventory
+            - img [ref=e66]
+            - text: Inventory
+          - link "Accounting" [ref=e76] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/accounting
+            - img [ref=e78]
+            - text: Accounting
+          - link "Reports" [ref=e80] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/reports
+            - img [ref=e82]
+            - text: Reports
+          - link "Settings" [ref=e84] [cursor=pointer]:
+            - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/settings
+            - img [ref=e86]
+            - text: Settings
+    - generic [ref=e89]:
+      - banner [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - link "GST Billing" [ref=e93] [cursor=pointer]:
+              - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+            - navigation "Breadcrumb" [ref=e95]:
+              - list [ref=e96]:
+                - listitem [ref=e97]:
+                  - link "Workspace" [ref=e98] [cursor=pointer]:
+                    - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/dashboard
+                - listitem [ref=e99]:
+                  - generic [ref=e100]: /
+                  - link "Settings" [ref=e299] [cursor=pointer]:
+                    - /url: /c/534d2f89-0ad4-4209-bee9-405fbf4a001d/settings
+                - listitem [ref=e300]:
+                  - generic [ref=e301]: /
+                  - generic [ref=e302]: Company
+          - generic [ref=e102]:
+            - link "Switch" [ref=e103] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e104]
+            - generic [ref=e106]: owner
+            - button "Browser Fix Co 20260323 B" [ref=e107]:
+              - generic [ref=e108]: Browser Fix Co 20260323 B
+              - img [ref=e109]
+      - main [ref=e112]:
+        - generic [ref=e303]:
+          - generic [ref=e305]:
+            - generic [ref=e306]: Settings
+            - heading "Company" [level=1] [ref=e307]
+            - generic [ref=e308]: Manage the company identity, tax profile, and stock-policy defaults from a more structured settings surface.
+          - generic [ref=e310]: Company not found
+  - region "Notifications alt+T"
+  - generic [ref=e235] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e236]:
+      - img [ref=e237]
+    - generic [ref=e240]:
+      - button "Open issues overlay" [ref=e241]:
+        - generic [ref=e242]:
+          - generic [ref=e243]: "0"
+          - generic [ref=e244]: "1"
+        - generic [ref=e245]: Issue
+      - button "Collapse issues badge" [ref=e246]:
+        - img [ref=e247]
+  - alert [ref=e249]

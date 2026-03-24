@@ -1,0 +1,159 @@
+- generic [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [active] [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - generic [ref=e181]: Payments
+          - generic [ref=e131]:
+            - link "Switch" [ref=e132] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e133]
+            - generic [ref=e135]: owner
+            - button "Demo Company" [ref=e136]:
+              - generic [ref=e137]: Demo Company
+              - img [ref=e138]
+      - main [ref=e141]:
+        - generic [ref=e182]:
+          - generic [ref=e184]:
+            - generic [ref=e185]: Operations
+            - heading "Payments" [level=1] [ref=e186]
+            - generic [ref=e187]: Use a dedicated payment workspace to record settlements and review invoice and purchase payment activity.
+          - generic [ref=e188]:
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - generic [ref=e192]: 0 payments in view
+                  - generic [ref=e193]: ₹0.00 total
+                - heading "Record payment" [level=3] [ref=e194]
+                - paragraph [ref=e195]: Attach a payment to an issued invoice or an existing purchase from one place.
+              - generic [ref=e196]:
+                - generic [ref=e197]:
+                  - generic [ref=e198]:
+                    - generic [ref=e199]: Target type
+                    - combobox [ref=e200]:
+                      - option "Invoice" [selected]
+                      - option "Purchase"
+                  - generic [ref=e201]:
+                    - generic [ref=e202]: Invoice
+                    - combobox [ref=e203]:
+                      - option "Select…" [selected]
+                  - generic [ref=e204]:
+                    - text: Amount
+                    - spinbutton "Amount" [ref=e205]
+                  - generic [ref=e206]:
+                    - generic [ref=e207]: Method
+                    - combobox [ref=e208]:
+                      - option "Cash" [selected]
+                      - option "UPI"
+                      - option "Bank"
+                      - option "Card"
+                  - generic [ref=e209]:
+                    - text: Reference
+                    - textbox "Reference" [ref=e210]:
+                      - /placeholder: Optional
+                  - generic [ref=e211]:
+                    - text: Payment date (YYYY-MM-DD)
+                    - textbox "Payment date (YYYY-MM-DD)" [ref=e212]:
+                      - /placeholder: Optional
+                - generic [ref=e213]:
+                  - button "Record payment" [ref=e214]
+                  - button "Use today" [ref=e215]
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - heading "Filters" [level=3] [ref=e218]
+                - paragraph [ref=e219]: Review the current payment ledger using date and method filters.
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - text: From (YYYY-MM-DD)
+                  - textbox "From (YYYY-MM-DD)" [ref=e222]
+                - generic [ref=e223]:
+                  - text: To (YYYY-MM-DD)
+                  - textbox "To (YYYY-MM-DD)" [ref=e224]
+                - generic [ref=e225]:
+                  - generic [ref=e226]: Method
+                  - combobox [ref=e227]:
+                    - option "All methods" [selected]
+                    - option "Cash"
+                    - option "UPI"
+                    - option "Bank"
+                    - option "Card"
+                - generic [ref=e228]:
+                  - link "Open invoices" [ref=e229] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+                  - link "Open purchases" [ref=e230] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+          - generic [ref=e231]:
+            - generic [ref=e232]: No payments yet
+            - generic [ref=e233]: Record a payment above or adjust the current filters.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

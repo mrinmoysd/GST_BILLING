@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth } from "@/lib/auth/session";
 import { CompanyHeader } from "@/components/app/company-header";
 import { CompanyNav } from "@/components/app/company-nav";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { LoadingBlock } from "@/lib/ui/state";
 
 type Props = {
   // Next (this repo version) types dynamic `params` as a Promise.
@@ -17,17 +18,37 @@ type Props = {
 
 export default function CompanyLayout({ params, children }: Props) {
   const { companyId } = React.use(params);
+  const pathname = usePathname();
   const router = useRouter();
-  const { session } = useAuth();
+  const { session, bootstrapped } = useAuth();
   const [navOpen, setNavOpen] = React.useState(false);
 
   React.useEffect(() => {
+    if (!bootstrapped) return;
+
+    if (!session.user) {
+      router.replace(`/login?next=${encodeURIComponent(pathname ?? `/c/${companyId}/dashboard`)}`);
+      return;
+    }
+
     // If we have a session and the route companyId doesn't match, prefer the session company.
     // This prevents confusing cross-company navigation in dev.
     if (session.company?.id && session.company.id !== companyId) {
       router.replace(`/c/${session.company.id}/dashboard`);
     }
-  }, [companyId, router, session.company?.id]);
+  }, [bootstrapped, companyId, pathname, router, session.company?.id, session.user]);
+
+  if (!bootstrapped) {
+    return (
+      <main className="min-h-screen px-4 py-10 md:px-6">
+        <div className="mx-auto max-w-3xl">
+          <LoadingBlock label="Loading workspace..." />
+        </div>
+      </main>
+    );
+  }
+
+  if (!session.user) return null;
 
   return (
     <div className="min-h-dvh text-[var(--foreground)]">

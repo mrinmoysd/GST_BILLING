@@ -1,0 +1,370 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Reports" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/reports
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - link "Gst" [ref=e130] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/reports/gst
+                - listitem [ref=e131]:
+                  - generic [ref=e132]: /
+                  - generic [ref=e133]: Gstr1
+          - generic [ref=e134]:
+            - link "Switch" [ref=e135] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e136]
+            - generic [ref=e138]: owner
+            - button "Demo Company" [ref=e139]:
+              - generic [ref=e140]: Demo Company
+              - img [ref=e141]
+      - main [ref=e144]:
+        - generic [ref=e146]:
+          - generic [ref=e148]:
+            - generic [ref=e149]: GST
+            - heading "GST compliance center" [level=1] [ref=e150]
+            - generic [ref=e151]: Review GSTR-1, GSTR-3B, HSN summary, and ITC data from a single compliance workspace with filing-ready sections.
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - generic [ref=e154]:
+                - heading "Controls" [level=3] [ref=e155]
+                - paragraph [ref=e156]: Choose a GST view, period, and export format.
+              - generic [ref=e157]:
+                - generic [ref=e158]:
+                  - generic [ref=e159]:
+                    - text: From (YYYY-MM-DD)
+                    - textbox "From (YYYY-MM-DD)" [ref=e160]
+                  - generic [ref=e161]:
+                    - text: To (YYYY-MM-DD)
+                    - textbox "To (YYYY-MM-DD)" [ref=e162]
+                - generic [ref=e163]:
+                  - generic [ref=e164]: Report
+                  - combobox [ref=e165]:
+                    - option "GSTR-1" [selected]
+                    - option "GSTR-3B"
+                    - option "HSN summary"
+                    - option "ITC"
+                - generic [ref=e166]:
+                  - generic [ref=e167]: Export format
+                  - combobox [ref=e168]:
+                    - option "Portal JSON" [selected]
+                    - option "CSV"
+                    - option "Excel"
+                - button "Create export" [ref=e169]
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - generic [ref=e173]: Deterministic GST engine
+                  - generic [ref=e174]: JSON / CSV / Excel
+                - heading "Current view summary" [level=3] [ref=e175]
+                - paragraph [ref=e176]: Compliance totals update from the GST API using the selected period.
+              - generic [ref=e177]:
+                - generic [ref=e178]:
+                  - generic [ref=e179]: Invoices
+                  - generic [ref=e180]: "9"
+                - generic [ref=e181]:
+                  - generic [ref=e182]: B2B
+                  - generic [ref=e183]: "0"
+                - generic [ref=e184]:
+                  - generic [ref=e185]: B2C
+                  - generic [ref=e186]: "9"
+                - generic [ref=e187]:
+                  - generic [ref=e188]: Credit notes
+                  - generic [ref=e189]: "0"
+          - generic [ref=e190]:
+            - generic [ref=e191]:
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - heading "Reconciliation" [level=3] [ref=e194]
+                  - paragraph [ref=e195]: Cross-check outward taxable turnover against credit-note reductions.
+                - generic [ref=e196]:
+                  - generic [ref=e197]:
+                    - generic [ref=e198]: Outward taxable value
+                    - generic [ref=e199]: "3286.00"
+                  - generic [ref=e200]:
+                    - generic [ref=e201]: Credit note value
+                    - generic [ref=e202]: "0.00"
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - heading "Export status" [level=3] [ref=e205]
+                  - paragraph [ref=e206]: Track the latest GST export job and download the generated file.
+                - generic [ref=e208]: Create an export to start tracking file generation status.
+            - generic [ref=e209]:
+              - generic [ref=e210]:
+                - heading "B2B invoices" [level=3] [ref=e211]
+                - paragraph [ref=e212]: Registered-customer outward supplies grouped for GSTR-1 filing review.
+              - table [ref=e215]:
+                - rowgroup [ref=e216]:
+                  - row "Invoice Customer GSTIN POS Taxable CGST SGST IGST Value" [ref=e217]:
+                    - columnheader "Invoice" [ref=e218]
+                    - columnheader "Customer" [ref=e219]
+                    - columnheader "GSTIN" [ref=e220]
+                    - columnheader "POS" [ref=e221]
+                    - columnheader "Taxable" [ref=e222]
+                    - columnheader "CGST" [ref=e223]
+                    - columnheader "SGST" [ref=e224]
+                    - columnheader "IGST" [ref=e225]
+                    - columnheader "Value" [ref=e226]
+                - rowgroup [ref=e227]:
+                  - row "No B2B invoices in this period." [ref=e228]:
+                    - cell "No B2B invoices in this period." [ref=e229]:
+                      - generic [ref=e230]: No B2B invoices in this period.
+            - generic [ref=e231]:
+              - generic [ref=e232]:
+                - heading "B2C invoices" [level=3] [ref=e233]
+                - paragraph [ref=e234]: Unregistered-customer outward supplies with state-of-supply breakup.
+              - table [ref=e237]:
+                - rowgroup [ref=e238]:
+                  - row "Invoice Customer POS Taxable CGST SGST IGST Value" [ref=e239]:
+                    - columnheader "Invoice" [ref=e240]
+                    - columnheader "Customer" [ref=e241]
+                    - columnheader "POS" [ref=e242]
+                    - columnheader "Taxable" [ref=e243]
+                    - columnheader "CGST" [ref=e244]
+                    - columnheader "SGST" [ref=e245]
+                    - columnheader "IGST" [ref=e246]
+                    - columnheader "Value" [ref=e247]
+                - rowgroup [ref=e248]:
+                  - row "INV-3 2026-03-09 DEMO Customer 02 — 342.00 0.00 0.00 0.00 366.73" [ref=e249]:
+                    - cell "INV-3 2026-03-09" [ref=e250]:
+                      - generic [ref=e251]: INV-3
+                      - generic [ref=e252]: 2026-03-09
+                    - cell "DEMO Customer 02" [ref=e253]
+                    - cell "—" [ref=e254]
+                    - cell "342.00" [ref=e255]
+                    - cell "0.00" [ref=e256]
+                    - cell "0.00" [ref=e257]
+                    - cell "0.00" [ref=e258]
+                    - cell "366.73" [ref=e259]
+                  - row "INV-1 2026-03-09 DEMO Customer 01 — 99.00 0.00 0.00 0.00 116.82" [ref=e260]:
+                    - cell "INV-1 2026-03-09" [ref=e261]:
+                      - generic [ref=e262]: INV-1
+                      - generic [ref=e263]: 2026-03-09
+                    - cell "DEMO Customer 01" [ref=e264]
+                    - cell "—" [ref=e265]
+                    - cell "99.00" [ref=e266]
+                    - cell "0.00" [ref=e267]
+                    - cell "0.00" [ref=e268]
+                    - cell "0.00" [ref=e269]
+                    - cell "116.82" [ref=e270]
+                  - row "INV-2 2026-03-09 DEMO Customer 01 — 99.00 0.00 0.00 0.00 116.82" [ref=e271]:
+                    - cell "INV-2 2026-03-09" [ref=e272]:
+                      - generic [ref=e273]: INV-2
+                      - generic [ref=e274]: 2026-03-09
+                    - cell "DEMO Customer 01" [ref=e275]
+                    - cell "—" [ref=e276]
+                    - cell "99.00" [ref=e277]
+                    - cell "0.00" [ref=e278]
+                    - cell "0.00" [ref=e279]
+                    - cell "0.00" [ref=e280]
+                    - cell "116.82" [ref=e281]
+                  - row "INV-4 2026-03-09 DEMO Customer 03 — 784.00 0.00 0.00 0.00 884.93" [ref=e282]:
+                    - cell "INV-4 2026-03-09" [ref=e283]:
+                      - generic [ref=e284]: INV-4
+                      - generic [ref=e285]: 2026-03-09
+                    - cell "DEMO Customer 03" [ref=e286]
+                    - cell "—" [ref=e287]
+                    - cell "784.00" [ref=e288]
+                    - cell "0.00" [ref=e289]
+                    - cell "0.00" [ref=e290]
+                    - cell "0.00" [ref=e291]
+                    - cell "884.93" [ref=e292]
+                  - row "INV-5 2026-03-09 DEMO Customer 04 — 129.00 0.00 0.00 0.00 152.22" [ref=e293]:
+                    - cell "INV-5 2026-03-09" [ref=e294]:
+                      - generic [ref=e295]: INV-5
+                      - generic [ref=e296]: 2026-03-09
+                    - cell "DEMO Customer 04" [ref=e297]
+                    - cell "—" [ref=e298]
+                    - cell "129.00" [ref=e299]
+                    - cell "0.00" [ref=e300]
+                    - cell "0.00" [ref=e301]
+                    - cell "0.00" [ref=e302]
+                    - cell "152.22" [ref=e303]
+                  - row "INV-6 2026-03-09 DEMO Customer 05 — 432.00 0.00 0.00 0.00 463.33" [ref=e304]:
+                    - cell "INV-6 2026-03-09" [ref=e305]:
+                      - generic [ref=e306]: INV-6
+                      - generic [ref=e307]: 2026-03-09
+                    - cell "DEMO Customer 05" [ref=e308]
+                    - cell "—" [ref=e309]
+                    - cell "432.00" [ref=e310]
+                    - cell "0.00" [ref=e311]
+                    - cell "0.00" [ref=e312]
+                    - cell "0.00" [ref=e313]
+                    - cell "463.33" [ref=e314]
+                  - row "INV-7 2026-03-09 DEMO Customer 01 — 964.00 0.00 0.00 0.00 1088.03" [ref=e315]:
+                    - cell "INV-7 2026-03-09" [ref=e316]:
+                      - generic [ref=e317]: INV-7
+                      - generic [ref=e318]: 2026-03-09
+                    - cell "DEMO Customer 01" [ref=e319]
+                    - cell "—" [ref=e320]
+                    - cell "964.00" [ref=e321]
+                    - cell "0.00" [ref=e322]
+                    - cell "0.00" [ref=e323]
+                    - cell "0.00" [ref=e324]
+                    - cell "1088.03" [ref=e325]
+                  - row "INV-8 2026-03-22 DEMO Customer 05 — 338.00 20.28 20.28 0.00 378.56" [ref=e326]:
+                    - cell "INV-8 2026-03-22" [ref=e327]:
+                      - generic [ref=e328]: INV-8
+                      - generic [ref=e329]: 2026-03-22
+                    - cell "DEMO Customer 05" [ref=e330]
+                    - cell "—" [ref=e331]
+                    - cell "338.00" [ref=e332]
+                    - cell "20.28" [ref=e333]
+                    - cell "20.28" [ref=e334]
+                    - cell "0.00" [ref=e335]
+                    - cell "378.56" [ref=e336]
+                  - row "INV-9 2026-03-22 DEMO Customer 01 — 99.00 8.91 8.91 0.00 116.82" [ref=e337]:
+                    - cell "INV-9 2026-03-22" [ref=e338]:
+                      - generic [ref=e339]: INV-9
+                      - generic [ref=e340]: 2026-03-22
+                    - cell "DEMO Customer 01" [ref=e341]
+                    - cell "—" [ref=e342]
+                    - cell "99.00" [ref=e343]
+                    - cell "8.91" [ref=e344]
+                    - cell "8.91" [ref=e345]
+                    - cell "0.00" [ref=e346]
+                    - cell "116.82" [ref=e347]
+            - generic [ref=e348]:
+              - generic [ref=e349]:
+                - generic [ref=e350]:
+                  - heading "Credit notes" [level=3] [ref=e351]
+                  - paragraph [ref=e352]: Registered credit/debit note adjustments included in the filing set.
+                - table [ref=e355]:
+                  - rowgroup [ref=e356]:
+                    - row "Note Invoice GSTIN Kind Total" [ref=e357]:
+                      - columnheader "Note" [ref=e358]
+                      - columnheader "Invoice" [ref=e359]
+                      - columnheader "GSTIN" [ref=e360]
+                      - columnheader "Kind" [ref=e361]
+                      - columnheader "Total" [ref=e362]
+                  - rowgroup [ref=e363]:
+                    - row "No credit notes in this period." [ref=e364]:
+                      - cell "No credit notes in this period." [ref=e365]:
+                        - generic [ref=e366]: No credit notes in this period.
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - heading "HSN summary" [level=3] [ref=e369]
+                  - paragraph [ref=e370]: Tax rate and HSN-wise outward supply rollup used during filing reconciliation.
+                - table [ref=e373]:
+                  - rowgroup [ref=e374]:
+                    - row "HSN Rate Qty Taxable CGST SGST IGST" [ref=e375]:
+                      - columnheader "HSN" [ref=e376]
+                      - columnheader "Rate" [ref=e377]
+                      - columnheader "Qty" [ref=e378]
+                      - columnheader "Taxable" [ref=e379]
+                      - columnheader "CGST" [ref=e380]
+                      - columnheader "SGST" [ref=e381]
+                      - columnheader "IGST" [ref=e382]
+                  - rowgroup [ref=e383]:
+                    - row "8507 12 10.00 338.00 20.28 20.28 0.00" [ref=e384]:
+                      - cell "8507" [ref=e385]
+                      - cell "12" [ref=e386]
+                      - cell "10.00" [ref=e387]
+                      - cell "338.00" [ref=e388]
+                      - cell "20.28" [ref=e389]
+                      - cell "20.28" [ref=e390]
+                      - cell "0.00" [ref=e391]
+                    - row "8507 5 6.00 0.00 0.00 0.00 0.00" [ref=e392]:
+                      - cell "8507" [ref=e393]
+                      - cell "5" [ref=e394]
+                      - cell "6.00" [ref=e395]
+                      - cell "0.00" [ref=e396]
+                      - cell "0.00" [ref=e397]
+                      - cell "0.00" [ref=e398]
+                      - cell "0.00" [ref=e399]
+                    - row "8507 18 8.00 99.00 8.91 8.91 0.00" [ref=e400]:
+                      - cell "8507" [ref=e401]
+                      - cell "18" [ref=e402]
+                      - cell "8.00" [ref=e403]
+                      - cell "99.00" [ref=e404]
+                      - cell "8.91" [ref=e405]
+                      - cell "8.91" [ref=e406]
+                      - cell "0.00" [ref=e407]
+            - generic [ref=e408]:
+              - generic [ref=e409]:
+                - heading "Warnings" [level=3] [ref=e410]
+                - paragraph [ref=e411]: Rows that need review before filing or export.
+              - generic [ref=e412]:
+                - generic [ref=e413]: Invoice INV-3 is missing place of supply
+                - generic [ref=e414]: Invoice INV-1 is missing place of supply
+                - generic [ref=e415]: Invoice INV-2 is missing place of supply
+                - generic [ref=e416]: Invoice INV-4 is missing place of supply
+                - generic [ref=e417]: Invoice INV-5 is missing place of supply
+                - generic [ref=e418]: Invoice INV-6 is missing place of supply
+                - generic [ref=e419]: Invoice INV-7 is missing place of supply
+                - generic [ref=e420]: Invoice INV-8 is missing place of supply
+                - generic [ref=e421]: Invoice INV-9 is missing place of supply
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

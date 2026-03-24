@@ -21,9 +21,12 @@ function getErrorMessage(err: unknown, fallback: string) {
 export default function AdminCompaniesPage() {
   const [q, setQ] = React.useState("");
   const query = useAdminCompanies({ q: q || undefined, page: 1, limit: 50 });
+  const payload = query.data as
+    | { data?: Array<Record<string, unknown>>; meta?: { total?: number } }
+    | undefined;
 
-  const rows = (query.data?.data as unknown as { data?: Array<Record<string, unknown>>; meta?: { total?: number } })?.data ?? [];
-  const total = (query.data?.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length;
+  const rows = payload?.data ?? [];
+  const total = payload?.meta?.total ?? rows.length;
 
   return (
     <div className="space-y-7">

@@ -34,6 +34,16 @@ Recommended seed/test identities:
 - one internal admin
 - one additional staff/admin user in a company
 
+Company route note:
+
+- after onboarding or tenant login, capture the redirected URL and reuse the active `companyId` from `/c/{companyId}/...` for all tenant-scoped checks below
+- if onboarding is not available in the current environment, use the seeded tenant company id `00000000-0000-0000-0000-000000000001`
+
+Environment note:
+
+- some admin analytics, billing-provider, notification, webhook, and support steps depend on seeded records or sandbox provider configuration
+- if the route loads but the dataset is empty, record that as "no seeded data for validation" rather than a product defect unless the UI itself is broken
+
 ---
 
 ## Global smoke checks
@@ -90,12 +100,14 @@ Checks:
    - owner user is created
    - authenticated session starts
    - app redirects to company dashboard
+   - redirected URL exposes the active `companyId`
 
 ### Tenant login
 
 1. Open `/login`.
 2. Sign in with tenant credentials.
-3. Verify refresh-token based session behavior by hard-refreshing the page.
+3. Capture the redirected `companyId` from the URL for the remaining tenant tests.
+4. Verify refresh-token based session behavior by hard-refreshing the page.
 
 ### Forgot/reset password
 
@@ -412,6 +424,7 @@ Checks:
 1. Open `/admin/login`.
 2. Sign in with internal admin credentials.
 3. Verify redirect to `/admin/dashboard`.
+4. If sandbox billing/webhook data exists, confirm dashboard cards and recent incidents hydrate with live values instead of empty placeholders.
 
 ### Admin nav
 
@@ -568,4 +581,3 @@ A release candidate should not pass unless:
 - migrations apply cleanly
 - seeded users can authenticate
 - file flows, export flows, and queue/admin views behave correctly
-

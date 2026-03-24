@@ -1,0 +1,283 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: Internal Admin
+        - generic [ref=e26]: Platform operations
+        - generic [ref=e27]: superadmin@example.com
+        - navigation [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Control
+            - generic [ref=e32]:
+              - link "Dashboard Overview and priorities" [ref=e33] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e35]
+                - generic [ref=e40]:
+                  - generic [ref=e41]: Dashboard
+                  - generic [ref=e42]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e43] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e45]
+                - generic [ref=e49]:
+                  - generic [ref=e50]: Companies
+                  - generic [ref=e51]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e52] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e54]
+                - generic [ref=e56]:
+                  - generic [ref=e57]: Subscriptions
+                  - generic [ref=e58]: Billing oversight
+          - generic [ref=e59]:
+            - generic [ref=e60]: Operations
+            - generic [ref=e61]:
+              - link "Usage Adoption and meters" [ref=e62] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e64]
+                - generic [ref=e66]:
+                  - generic [ref=e67]: Usage
+                  - generic [ref=e68]: Adoption and meters
+              - link "Support Ticket triage" [ref=e69] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e71]
+                - generic [ref=e78]:
+                  - generic [ref=e79]: Support
+                  - generic [ref=e80]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e81] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e83]
+                - generic [ref=e94]:
+                  - generic [ref=e95]: Queues
+                  - generic [ref=e96]: Jobs and failures
+          - generic [ref=e97]:
+            - generic [ref=e98]: Governance
+            - generic [ref=e99]:
+              - link "Internal Users Admin identities and access" [ref=e100] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e102]
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Internal Users
+                  - generic [ref=e108]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e109] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e111]
+                - generic [ref=e114]:
+                  - generic [ref=e115]: Audit Logs
+                  - generic [ref=e116]: Privileged action history
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - img [ref=e119]
+              - text: Admin workspace
+            - generic [ref=e122]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e123]:
+              - img [ref=e124]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e127]:
+      - banner [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - link "GST Billing Admin" [ref=e132] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e133]: Super Admin
+            - navigation "Breadcrumb" [ref=e135]:
+              - list [ref=e136]:
+                - listitem [ref=e137]:
+                  - link "Admin" [ref=e138] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e139]:
+                  - generic [ref=e140]: /
+                  - generic [ref=e141]: Subscriptions
+          - generic [ref=e142]:
+            - link "Tenant app" [ref=e143] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e144]
+            - button "superadmin@example.com" [ref=e146]:
+              - img [ref=e147]
+              - generic [ref=e150]: superadmin@example.com
+      - main [ref=e151]:
+        - generic [ref=e153]:
+          - generic [ref=e155]:
+            - generic [ref=e156]: Admin
+            - heading "Subscriptions" [level=1] [ref=e157]
+            - generic [ref=e158]: Inspect provider state, move into remediation workflows, and review plan distribution across tenants.
+          - generic [ref=e159]:
+            - generic [ref=e161]:
+              - generic [ref=e162]: Active
+              - generic [ref=e163]: "9"
+            - generic [ref=e165]:
+              - generic [ref=e166]: Past due
+              - generic [ref=e167]: "4"
+            - generic [ref=e169]:
+              - generic [ref=e170]: Checkout created
+              - generic [ref=e171]: "0"
+            - generic [ref=e173]:
+              - generic [ref=e174]: Stripe
+              - generic [ref=e175]: "13"
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]: Status
+              - combobox [ref=e181]:
+                - option "All" [selected]
+                - option "Active"
+                - option "Trial"
+                - option "Canceled"
+                - option "Past due"
+            - generic [ref=e183]: 13 total
+          - table [ref=e185]:
+            - rowgroup [ref=e186]:
+              - row "Company Plan Provider Status Provider ref Created" [ref=e187]:
+                - columnheader "Company" [ref=e188]
+                - columnheader "Plan" [ref=e189]
+                - columnheader "Provider" [ref=e190]
+                - columnheader "Status" [ref=e191]
+                - columnheader "Provider ref" [ref=e192]
+                - columnheader "Created" [ref=e193]
+            - rowgroup [ref=e194]:
+              - row "stripe_ok_co_1774210334443_3f7c3e695a0b88 — plan_1774210334444_d260b85019ee88 stripe active — 23/03/2026" [ref=e195]:
+                - cell "stripe_ok_co_1774210334443_3f7c3e695a0b88 —" [ref=e196]:
+                  - link "stripe_ok_co_1774210334443_3f7c3e695a0b88" [ref=e197] [cursor=pointer]:
+                    - /url: /admin/subscriptions/c9ee30b4-aafc-4747-a011-c3fccbc4584f
+                  - generic [ref=e198]: —
+                - cell "plan_1774210334444_d260b85019ee88" [ref=e199]
+                - cell "stripe" [ref=e200]
+                - cell "active" [ref=e201]:
+                  - generic [ref=e202]: active
+                - cell "—" [ref=e203]
+                - cell "23/03/2026" [ref=e204]
+              - row "stripe_ok_co_1774210033650_28383f9046e708 — plan_1774210033651_0fc293df1ab2e8 stripe active — 23/03/2026" [ref=e205]:
+                - cell "stripe_ok_co_1774210033650_28383f9046e708 —" [ref=e206]:
+                  - link "stripe_ok_co_1774210033650_28383f9046e708" [ref=e207] [cursor=pointer]:
+                    - /url: /admin/subscriptions/85cebd32-0686-4a66-a7ed-5e36c50a3214
+                  - generic [ref=e208]: —
+                - cell "plan_1774210033651_0fc293df1ab2e8" [ref=e209]
+                - cell "stripe" [ref=e210]
+                - cell "active" [ref=e211]:
+                  - generic [ref=e212]: active
+                - cell "—" [ref=e213]
+                - cell "23/03/2026" [ref=e214]
+              - row "stripe_ok_co_1774209939521_e3cd03ead468f8 — plan_1774209939522_e575898a3e00a8 stripe active — 23/03/2026" [ref=e215]:
+                - cell "stripe_ok_co_1774209939521_e3cd03ead468f8 —" [ref=e216]:
+                  - link "stripe_ok_co_1774209939521_e3cd03ead468f8" [ref=e217] [cursor=pointer]:
+                    - /url: /admin/subscriptions/deaed8c7-91e2-4d88-b04d-b3b096a91694
+                  - generic [ref=e218]: —
+                - cell "plan_1774209939522_e575898a3e00a8" [ref=e219]
+                - cell "stripe" [ref=e220]
+                - cell "active" [ref=e221]:
+                  - generic [ref=e222]: active
+                - cell "—" [ref=e223]
+                - cell "23/03/2026" [ref=e224]
+              - row "stripe_ok_co_1774209912334_81d599a14beb48 — plan_1774209912335_70420e42917828 stripe active — 23/03/2026" [ref=e225]:
+                - cell "stripe_ok_co_1774209912334_81d599a14beb48 —" [ref=e226]:
+                  - link "stripe_ok_co_1774209912334_81d599a14beb48" [ref=e227] [cursor=pointer]:
+                    - /url: /admin/subscriptions/2b8f5d95-69c8-484d-85f5-a3847d073d08
+                  - generic [ref=e228]: —
+                - cell "plan_1774209912335_70420e42917828" [ref=e229]
+                - cell "stripe" [ref=e230]
+                - cell "active" [ref=e231]:
+                  - generic [ref=e232]: active
+                - cell "—" [ref=e233]
+                - cell "23/03/2026" [ref=e234]
+              - row "stripe_ok_co_1774209888376_f06ced7ea32a28 — plan_1774209888377_66a685157a39b8 stripe active — 23/03/2026" [ref=e235]:
+                - cell "stripe_ok_co_1774209888376_f06ced7ea32a28 —" [ref=e236]:
+                  - link "stripe_ok_co_1774209888376_f06ced7ea32a28" [ref=e237] [cursor=pointer]:
+                    - /url: /admin/subscriptions/b067b296-7cd3-45b7-8f7b-12592ef0dd0c
+                  - generic [ref=e238]: —
+                - cell "plan_1774209888377_66a685157a39b8" [ref=e239]
+                - cell "stripe" [ref=e240]
+                - cell "active" [ref=e241]:
+                  - generic [ref=e242]: active
+                - cell "—" [ref=e243]
+                - cell "23/03/2026" [ref=e244]
+              - row "stripe_ok_co_1774209689184_1fa6606122c07 — plan_1774209689187_0f5e20bc3cccc8 stripe active — 23/03/2026" [ref=e245]:
+                - cell "stripe_ok_co_1774209689184_1fa6606122c07 —" [ref=e246]:
+                  - link "stripe_ok_co_1774209689184_1fa6606122c07" [ref=e247] [cursor=pointer]:
+                    - /url: /admin/subscriptions/76c2426f-43cd-44e0-b9e3-e4cedfabd25d
+                  - generic [ref=e248]: —
+                - cell "plan_1774209689187_0f5e20bc3cccc8" [ref=e249]
+                - cell "stripe" [ref=e250]
+                - cell "active" [ref=e251]:
+                  - generic [ref=e252]: active
+                - cell "—" [ref=e253]
+                - cell "23/03/2026" [ref=e254]
+              - row "stripe_ok_co_1774209644836_29f50140ded038 — plan_1774209644837_0c151ead95b908 stripe active — 23/03/2026" [ref=e255]:
+                - cell "stripe_ok_co_1774209644836_29f50140ded038 —" [ref=e256]:
+                  - link "stripe_ok_co_1774209644836_29f50140ded038" [ref=e257] [cursor=pointer]:
+                    - /url: /admin/subscriptions/8718d16b-c3c6-44fb-ab17-1a608f0dcd33
+                  - generic [ref=e258]: —
+                - cell "plan_1774209644837_0c151ead95b908" [ref=e259]
+                - cell "stripe" [ref=e260]
+                - cell "active" [ref=e261]:
+                  - generic [ref=e262]: active
+                - cell "—" [ref=e263]
+                - cell "23/03/2026" [ref=e264]
+              - row "stripe_ok_co_1774209543027_acc82b94a5dbd — plan_1774209543028_bf7b22a09d978 stripe active — 23/03/2026" [ref=e265]:
+                - cell "stripe_ok_co_1774209543027_acc82b94a5dbd —" [ref=e266]:
+                  - link "stripe_ok_co_1774209543027_acc82b94a5dbd" [ref=e267] [cursor=pointer]:
+                    - /url: /admin/subscriptions/2c757320-9e78-4b78-b3d8-ce91d0e04325
+                  - generic [ref=e268]: —
+                - cell "plan_1774209543028_bf7b22a09d978" [ref=e269]
+                - cell "stripe" [ref=e270]
+                - cell "active" [ref=e271]:
+                  - generic [ref=e272]: active
+                - cell "—" [ref=e273]
+                - cell "23/03/2026" [ref=e274]
+              - row "stripe_ok_co_1774209507900_3f317751f3d7d — plan_1774209507901_29c30f31ecb988 stripe active — 23/03/2026" [ref=e275]:
+                - cell "stripe_ok_co_1774209507900_3f317751f3d7d —" [ref=e276]:
+                  - link "stripe_ok_co_1774209507900_3f317751f3d7d" [ref=e277] [cursor=pointer]:
+                    - /url: /admin/subscriptions/618f5977-b253-4442-82bd-b7eb09b4fd67
+                  - generic [ref=e278]: —
+                - cell "plan_1774209507901_29c30f31ecb988" [ref=e279]
+                - cell "stripe" [ref=e280]
+                - cell "active" [ref=e281]:
+                  - generic [ref=e282]: active
+                - cell "—" [ref=e283]
+                - cell "23/03/2026" [ref=e284]
+              - row "sub_co_1774208490965_17af61dc5ea5d — plan_growth_1774208491021_279e38bcfcf56 stripe past_due stripe_sub_1774208491023_b8d16fe200d9 23/03/2026" [ref=e285]:
+                - cell "sub_co_1774208490965_17af61dc5ea5d —" [ref=e286]:
+                  - link "sub_co_1774208490965_17af61dc5ea5d" [ref=e287] [cursor=pointer]:
+                    - /url: /admin/subscriptions/1258c523-3d95-4934-a866-521c22c41fe8
+                  - generic [ref=e288]: —
+                - cell "plan_growth_1774208491021_279e38bcfcf56" [ref=e289]
+                - cell "stripe" [ref=e290]
+                - cell "past_due" [ref=e291]:
+                  - generic [ref=e292]: past_due
+                - cell "stripe_sub_1774208491023_b8d16fe200d9" [ref=e293]
+                - cell "23/03/2026" [ref=e294]
+              - row "sub_co_1774208435724_1c9f50c498a47 — plan_growth_1774208435729_6fda97e77bdf6 stripe past_due stripe_sub_1774208435729_c837a44e2a454 23/03/2026" [ref=e295]:
+                - cell "sub_co_1774208435724_1c9f50c498a47 —" [ref=e296]:
+                  - link "sub_co_1774208435724_1c9f50c498a47" [ref=e297] [cursor=pointer]:
+                    - /url: /admin/subscriptions/50f07328-33ca-4223-8c58-92c1d744de99
+                  - generic [ref=e298]: —
+                - cell "plan_growth_1774208435729_6fda97e77bdf6" [ref=e299]
+                - cell "stripe" [ref=e300]
+                - cell "past_due" [ref=e301]:
+                  - generic [ref=e302]: past_due
+                - cell "stripe_sub_1774208435729_c837a44e2a454" [ref=e303]
+                - cell "23/03/2026" [ref=e304]
+              - row "sub_co_1774208400246_4835364d649a9 — plan_growth_1774208400427_a38309fc1d579 stripe past_due stripe_sub_1774208400430_e53202a613d5a 23/03/2026" [ref=e305]:
+                - cell "sub_co_1774208400246_4835364d649a9 —" [ref=e306]:
+                  - link "sub_co_1774208400246_4835364d649a9" [ref=e307] [cursor=pointer]:
+                    - /url: /admin/subscriptions/19335820-8e9f-4e45-8a9e-45703e39b330
+                  - generic [ref=e308]: —
+                - cell "plan_growth_1774208400427_a38309fc1d579" [ref=e309]
+                - cell "stripe" [ref=e310]
+                - cell "past_due" [ref=e311]:
+                  - generic [ref=e312]: past_due
+                - cell "stripe_sub_1774208400430_e53202a613d5a" [ref=e313]
+                - cell "23/03/2026" [ref=e314]
+              - row "sub_co_1774208345072_b420e1723d338 — plan_growth_1774208345081_f263d76bd1a23 stripe past_due stripe_sub_1774208345081_7f63c6fd57ab6 23/03/2026" [ref=e315]:
+                - cell "sub_co_1774208345072_b420e1723d338 —" [ref=e316]:
+                  - link "sub_co_1774208345072_b420e1723d338" [ref=e317] [cursor=pointer]:
+                    - /url: /admin/subscriptions/933bd2cd-ba7c-4d4e-a93a-ff4a865a141c
+                  - generic [ref=e318]: —
+                - cell "plan_growth_1774208345081_f263d76bd1a23" [ref=e319]
+                - cell "stripe" [ref=e320]
+                - cell "past_due" [ref=e321]:
+                  - generic [ref=e322]: past_due
+                - cell "stripe_sub_1774208345081_7f63c6fd57ab6" [ref=e323]
+                - cell "23/03/2026" [ref=e324]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

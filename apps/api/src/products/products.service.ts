@@ -16,6 +16,22 @@ export class ProductsService {
 
   private readonly d = Decimal;
 
+  private getGstRate(input: CreateProductDto | UpdateProductDto) {
+    const camel = (input as any)?.taxRate;
+    const legacy = (input as any)?.tax_rate;
+    return input.gstRate ?? camel ?? legacy;
+  }
+
+  private getCostPrice(input: CreateProductDto | UpdateProductDto) {
+    const legacy = (input as any)?.cost_price;
+    return input.costPrice ?? legacy;
+  }
+
+  private getReorderLevel(input: CreateProductDto | UpdateProductDto) {
+    const legacy = (input as any)?.reorder_level;
+    return (input as any)?.reorderLevel ?? legacy;
+  }
+
   async list(companyId: string, page = 1, limit = 20, q?: string) {
     const skip = (page - 1) * limit;
 
@@ -61,12 +77,19 @@ export class ProductsService {
             ? new this.d(dto.price as any)
             : new this.d(0),
         costPrice:
-          dto.costPrice !== undefined && dto.costPrice !== null
-            ? new this.d(dto.costPrice as any)
+          this.getCostPrice(dto) !== undefined &&
+          this.getCostPrice(dto) !== null
+            ? new this.d(this.getCostPrice(dto) as any)
             : new this.d(0),
         taxRate:
-          dto.gstRate !== undefined && dto.gstRate !== null
-            ? new this.d(dto.gstRate as any)
+          this.getGstRate(dto) !== undefined &&
+          this.getGstRate(dto) !== null
+            ? new this.d(this.getGstRate(dto) as any)
+            : null,
+        reorderLevel:
+          this.getReorderLevel(dto) !== undefined &&
+          this.getReorderLevel(dto) !== null
+            ? new this.d(this.getReorderLevel(dto) as any)
             : null,
         stock: new this.d(0),
         metadata: dto.meta ? (dto.meta as any) : (Prisma as any).JsonNull,
@@ -103,11 +126,11 @@ export class ProductsService {
       hsn: dto.hsn,
   categoryId: dto.categoryId,
       taxRate:
-        dto.gstRate === undefined
+        this.getGstRate(dto) === undefined
           ? undefined
-          : dto.gstRate === null
+          : this.getGstRate(dto) === null
             ? null
-            : new this.d(dto.gstRate as any),
+            : new this.d(this.getGstRate(dto) as any),
       metadata: dto.meta ? (dto.meta as any) : undefined,
     };
 
@@ -115,9 +138,16 @@ export class ProductsService {
       data.price = dto.price === null ? null : new this.d(dto.price as any);
     }
 
-    if (dto.costPrice !== undefined) {
+    if (this.getCostPrice(dto) !== undefined) {
+      const costPrice = this.getCostPrice(dto);
       data.costPrice =
-        dto.costPrice === null ? null : new this.d(dto.costPrice as any);
+        costPrice === null ? null : new this.d(costPrice as any);
+    }
+
+    if (this.getReorderLevel(dto) !== undefined) {
+      const reorderLevel = this.getReorderLevel(dto);
+      data.reorderLevel =
+        reorderLevel === null ? null : new this.d(reorderLevel as any);
     }
 
     return this.prisma.product.update({

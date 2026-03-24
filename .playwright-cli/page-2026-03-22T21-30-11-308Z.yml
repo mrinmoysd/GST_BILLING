@@ -1,0 +1,877 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e37]:
+    - complementary [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]: Internal Admin
+        - generic [ref=e41]: Platform operations
+        - generic [ref=e42]: superadmin@example.com
+        - navigation [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]: Control
+            - generic [ref=e47]:
+              - link "Dashboard Overview and priorities" [ref=e48] [cursor=pointer]:
+                - /url: /admin/dashboard
+                - img [ref=e50]
+                - generic [ref=e55]:
+                  - generic [ref=e56]: Dashboard
+                  - generic [ref=e57]: Overview and priorities
+              - link "Companies Tenant lifecycle" [ref=e58] [cursor=pointer]:
+                - /url: /admin/companies
+                - img [ref=e60]
+                - generic [ref=e64]:
+                  - generic [ref=e65]: Companies
+                  - generic [ref=e66]: Tenant lifecycle
+              - link "Subscriptions Billing oversight" [ref=e67] [cursor=pointer]:
+                - /url: /admin/subscriptions
+                - img [ref=e69]
+                - generic [ref=e71]:
+                  - generic [ref=e72]: Subscriptions
+                  - generic [ref=e73]: Billing oversight
+          - generic [ref=e74]:
+            - generic [ref=e75]: Operations
+            - generic [ref=e76]:
+              - link "Usage Adoption and meters" [ref=e77] [cursor=pointer]:
+                - /url: /admin/usage
+                - img [ref=e79]
+                - generic [ref=e81]:
+                  - generic [ref=e82]: Usage
+                  - generic [ref=e83]: Adoption and meters
+              - link "Support Ticket triage" [ref=e84] [cursor=pointer]:
+                - /url: /admin/support-tickets
+                - img [ref=e86]
+                - generic [ref=e93]:
+                  - generic [ref=e94]: Support
+                  - generic [ref=e95]: Ticket triage
+              - link "Queues Jobs and failures" [ref=e96] [cursor=pointer]:
+                - /url: /admin/queues
+                - img [ref=e98]
+                - generic [ref=e109]:
+                  - generic [ref=e110]: Queues
+                  - generic [ref=e111]: Jobs and failures
+          - generic [ref=e112]:
+            - generic [ref=e113]: Governance
+            - generic [ref=e114]:
+              - link "Internal Users Admin identities and access" [ref=e115] [cursor=pointer]:
+                - /url: /admin/internal-users
+                - img [ref=e117]
+                - generic [ref=e121]:
+                  - generic [ref=e122]: Internal Users
+                  - generic [ref=e123]: Admin identities and access
+              - link "Audit Logs Privileged action history" [ref=e124] [cursor=pointer]:
+                - /url: /admin/audit-logs
+                - img [ref=e126]
+                - generic [ref=e129]:
+                  - generic [ref=e130]: Audit Logs
+                  - generic [ref=e131]: Privileged action history
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - img [ref=e134]
+              - text: Admin workspace
+            - generic [ref=e137]: Internal operations area for running the SaaS platform, not tenant-facing workflows.
+            - generic [ref=e138]:
+              - img [ref=e139]
+              - text: Governance and audit now live alongside ops workflows.
+    - generic [ref=e142]:
+      - banner [ref=e143]:
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - link "GST Billing Admin" [ref=e147] [cursor=pointer]:
+                - /url: /admin/dashboard
+              - generic [ref=e148]: Super Admin
+            - navigation "Breadcrumb" [ref=e150]:
+              - list [ref=e151]:
+                - listitem [ref=e152]:
+                  - link "Admin" [ref=e153] [cursor=pointer]:
+                    - /url: /admin/dashboard
+                - listitem [ref=e154]:
+                  - generic [ref=e155]: /
+                  - generic [ref=e156]: Companies
+          - generic [ref=e157]:
+            - link "Tenant app" [ref=e158] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Tenant app
+              - img [ref=e159]
+            - button "superadmin@example.com" [ref=e161]:
+              - img [ref=e162]
+              - generic [ref=e165]: superadmin@example.com
+      - main [ref=e166]:
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]: Admin
+              - heading "Companies" [level=1] [ref=e172]
+              - generic [ref=e173]: Monitor tenant companies, review owner identity, and move into lifecycle operations.
+            - link "New company" [ref=e175] [cursor=pointer]:
+              - /url: /admin/companies/new
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - text: Search companies
+              - textbox "Search companies" [ref=e180]:
+                - /placeholder: Name / GSTIN
+            - generic [ref=e182]: 151 total
+          - table [ref=e184]:
+            - rowgroup [ref=e185]:
+              - row "Name Status Owner GSTIN Business type Usage Created" [ref=e186]:
+                - columnheader "Name" [ref=e187]
+                - columnheader "Status" [ref=e188]
+                - columnheader "Owner" [ref=e189]
+                - columnheader "GSTIN" [ref=e190]
+                - columnheader "Business type" [ref=e191]
+                - columnheader "Usage" [ref=e192]
+                - columnheader "Created" [ref=e193]
+            - rowgroup [ref=e194]:
+              - row "Browser Fix Co 20260323 B active Browser Fix Owner B browserfix_20260323_b@example.com — trader 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e195]:
+                - cell "Browser Fix Co 20260323 B" [ref=e196]:
+                  - link "Browser Fix Co 20260323 B" [ref=e197] [cursor=pointer]:
+                    - /url: /admin/companies/534d2f89-0ad4-4209-bee9-405fbf4a001d
+                - cell "active" [ref=e198]:
+                  - generic [ref=e199]: active
+                - cell "Browser Fix Owner B browserfix_20260323_b@example.com" [ref=e200]:
+                  - generic [ref=e201]: Browser Fix Owner B
+                  - generic [ref=e202]: browserfix_20260323_b@example.com
+                - cell "—" [ref=e203]
+                - cell "trader" [ref=e204]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e205]:
+                  - generic [ref=e206]: 1 users
+                  - generic [ref=e207]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e208]
+              - row "Browser Fix Co 20260323 active Browser Fix Owner browserfix_20260323@example.com — trader 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e209]:
+                - cell "Browser Fix Co 20260323" [ref=e210]:
+                  - link "Browser Fix Co 20260323" [ref=e211] [cursor=pointer]:
+                    - /url: /admin/companies/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba
+                - cell "active" [ref=e212]:
+                  - generic [ref=e213]: active
+                - cell "Browser Fix Owner browserfix_20260323@example.com" [ref=e214]:
+                  - generic [ref=e215]: Browser Fix Owner
+                  - generic [ref=e216]: browserfix_20260323@example.com
+                - cell "—" [ref=e217]
+                - cell "trader" [ref=e218]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e219]:
+                  - generic [ref=e220]: 1 users
+                  - generic [ref=e221]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e222]
+              - row "Curl QA Co active Curl QA Owner curlqa_20260323@example.com — trader 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e223]:
+                - cell "Curl QA Co" [ref=e224]:
+                  - link "Curl QA Co" [ref=e225] [cursor=pointer]:
+                    - /url: /admin/companies/cced3899-901a-40c5-a65b-8a21f6b4181a
+                - cell "active" [ref=e226]:
+                  - generic [ref=e227]: active
+                - cell "Curl QA Owner curlqa_20260323@example.com" [ref=e228]:
+                  - generic [ref=e229]: Curl QA Owner
+                  - generic [ref=e230]: curlqa_20260323@example.com
+                - cell "—" [ref=e231]
+                - cell "trader" [ref=e232]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e233]:
+                  - generic [ref=e234]: 1 users
+                  - generic [ref=e235]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e236]
+              - row "product_alias_co_1774210336073_2c68910b282aa active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e237]:
+                - cell "product_alias_co_1774210336073_2c68910b282aa" [ref=e238]:
+                  - link "product_alias_co_1774210336073_2c68910b282aa" [ref=e239] [cursor=pointer]:
+                    - /url: /admin/companies/7f2212a6-40c4-469e-80c7-eb4c3001252f
+                - cell "active" [ref=e240]:
+                  - generic [ref=e241]: active
+                - cell "— —" [ref=e242]:
+                  - generic [ref=e243]: —
+                  - generic [ref=e244]: —
+                - cell "—" [ref=e245]
+                - cell "RETAIL" [ref=e246]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e247]:
+                  - generic [ref=e248]: 1 users
+                  - generic [ref=e249]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e250]
+              - row "masters_co_1774210335393_094b67e8af20a active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e251]:
+                - cell "masters_co_1774210335393_094b67e8af20a" [ref=e252]:
+                  - link "masters_co_1774210335393_094b67e8af20a" [ref=e253] [cursor=pointer]:
+                    - /url: /admin/companies/1b9e51ec-5668-417a-92dc-09fcbaa55c72
+                - cell "active" [ref=e254]:
+                  - generic [ref=e255]: active
+                - cell "— —" [ref=e256]:
+                  - generic [ref=e257]: —
+                  - generic [ref=e258]: —
+                - cell "—" [ref=e259]
+                - cell "RETAIL" [ref=e260]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e261]:
+                  - generic [ref=e262]: 1 users
+                  - generic [ref=e263]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e264]
+              - row "stripe_ok_co_1774210334443_3f7c3e695a0b88 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e265]:
+                - cell "stripe_ok_co_1774210334443_3f7c3e695a0b88" [ref=e266]:
+                  - link "stripe_ok_co_1774210334443_3f7c3e695a0b88" [ref=e267] [cursor=pointer]:
+                    - /url: /admin/companies/27f3b9e0-375b-4022-b8da-cfe5126468c7
+                - cell "active" [ref=e268]:
+                  - generic [ref=e269]: active
+                - cell "— —" [ref=e270]:
+                  - generic [ref=e271]: —
+                  - generic [ref=e272]: —
+                - cell "—" [ref=e273]
+                - cell "RETAIL" [ref=e274]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e275]:
+                  - generic [ref=e276]: 0 users
+                  - generic [ref=e277]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e278]
+              - row "platform_fail_co_1774210333883_094e5b36c07b88 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e279]:
+                - cell "platform_fail_co_1774210333883_094e5b36c07b88" [ref=e280]:
+                  - link "platform_fail_co_1774210333883_094e5b36c07b88" [ref=e281] [cursor=pointer]:
+                    - /url: /admin/companies/25364741-fa8a-4c6f-8942-19a8140aaece
+                - cell "active" [ref=e282]:
+                  - generic [ref=e283]: active
+                - cell "— —" [ref=e284]:
+                  - generic [ref=e285]: —
+                  - generic [ref=e286]: —
+                - cell "—" [ref=e287]
+                - cell "RETAIL" [ref=e288]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e289]:
+                  - generic [ref=e290]: 1 users
+                  - generic [ref=e291]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e292]
+              - row "compliance_co_1774210331535_468b26cc73dbe active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e293]:
+                - cell "compliance_co_1774210331535_468b26cc73dbe" [ref=e294]:
+                  - link "compliance_co_1774210331535_468b26cc73dbe" [ref=e295] [cursor=pointer]:
+                    - /url: /admin/companies/adcc900b-1e2d-4eb3-a127-07d1e2eb9ce3
+                - cell "active" [ref=e296]:
+                  - generic [ref=e297]: active
+                - cell "— —" [ref=e298]:
+                  - generic [ref=e299]: —
+                  - generic [ref=e300]: —
+                - cell "27ABCDE1234F1Z5" [ref=e301]
+                - cell "RETAIL" [ref=e302]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e303]:
+                  - generic [ref=e304]: 1 users
+                  - generic [ref=e305]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e306]
+              - row "stripe_ok_co_1774210033650_28383f9046e708 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e307]:
+                - cell "stripe_ok_co_1774210033650_28383f9046e708" [ref=e308]:
+                  - link "stripe_ok_co_1774210033650_28383f9046e708" [ref=e309] [cursor=pointer]:
+                    - /url: /admin/companies/18cd6505-7eb6-4a99-8b11-419fd1d70552
+                - cell "active" [ref=e310]:
+                  - generic [ref=e311]: active
+                - cell "— —" [ref=e312]:
+                  - generic [ref=e313]: —
+                  - generic [ref=e314]: —
+                - cell "—" [ref=e315]
+                - cell "RETAIL" [ref=e316]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e317]:
+                  - generic [ref=e318]: 0 users
+                  - generic [ref=e319]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e320]
+              - row "platform_fail_co_1774210033295_3e8a6e50ef2648 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e321]:
+                - cell "platform_fail_co_1774210033295_3e8a6e50ef2648" [ref=e322]:
+                  - link "platform_fail_co_1774210033295_3e8a6e50ef2648" [ref=e323] [cursor=pointer]:
+                    - /url: /admin/companies/d7ecb566-9e43-4a88-8035-c6f7ee743c4e
+                - cell "active" [ref=e324]:
+                  - generic [ref=e325]: active
+                - cell "— —" [ref=e326]:
+                  - generic [ref=e327]: —
+                  - generic [ref=e328]: —
+                - cell "—" [ref=e329]
+                - cell "RETAIL" [ref=e330]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e331]:
+                  - generic [ref=e332]: 1 users
+                  - generic [ref=e333]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e334]
+              - row "stripe_bad_ref_co_1774209939542_b7c48d62f808c8 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e335]:
+                - cell "stripe_bad_ref_co_1774209939542_b7c48d62f808c8" [ref=e336]:
+                  - link "stripe_bad_ref_co_1774209939542_b7c48d62f808c8" [ref=e337] [cursor=pointer]:
+                    - /url: /admin/companies/bfa25a99-8de4-429f-8cae-9e9892ba2e25
+                - cell "active" [ref=e338]:
+                  - generic [ref=e339]: active
+                - cell "— —" [ref=e340]:
+                  - generic [ref=e341]: —
+                  - generic [ref=e342]: —
+                - cell "—" [ref=e343]
+                - cell "RETAIL" [ref=e344]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e345]:
+                  - generic [ref=e346]: 0 users
+                  - generic [ref=e347]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e348]
+              - row "stripe_ok_co_1774209939521_e3cd03ead468f8 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e349]:
+                - cell "stripe_ok_co_1774209939521_e3cd03ead468f8" [ref=e350]:
+                  - link "stripe_ok_co_1774209939521_e3cd03ead468f8" [ref=e351] [cursor=pointer]:
+                    - /url: /admin/companies/fd926698-5922-4a3a-9f9b-e67cb44cc741
+                - cell "active" [ref=e352]:
+                  - generic [ref=e353]: active
+                - cell "— —" [ref=e354]:
+                  - generic [ref=e355]: —
+                  - generic [ref=e356]: —
+                - cell "—" [ref=e357]
+                - cell "RETAIL" [ref=e358]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e359]:
+                  - generic [ref=e360]: 0 users
+                  - generic [ref=e361]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e362]
+              - row "platform_fail_co_1774209939226_6f4dcad95bb168 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e363]:
+                - cell "platform_fail_co_1774209939226_6f4dcad95bb168" [ref=e364]:
+                  - link "platform_fail_co_1774209939226_6f4dcad95bb168" [ref=e365] [cursor=pointer]:
+                    - /url: /admin/companies/7b641ab1-f1a0-4a8f-9983-ffa65f021984
+                - cell "active" [ref=e366]:
+                  - generic [ref=e367]: active
+                - cell "— —" [ref=e368]:
+                  - generic [ref=e369]: —
+                  - generic [ref=e370]: —
+                - cell "—" [ref=e371]
+                - cell "RETAIL" [ref=e372]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e373]:
+                  - generic [ref=e374]: 1 users
+                  - generic [ref=e375]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e376]
+              - row "stripe_bad_ref_co_1774209912348_d0856a42250ae8 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e377]:
+                - cell "stripe_bad_ref_co_1774209912348_d0856a42250ae8" [ref=e378]:
+                  - link "stripe_bad_ref_co_1774209912348_d0856a42250ae8" [ref=e379] [cursor=pointer]:
+                    - /url: /admin/companies/d27e1dfe-f71e-4840-9846-f4e9681145aa
+                - cell "active" [ref=e380]:
+                  - generic [ref=e381]: active
+                - cell "— —" [ref=e382]:
+                  - generic [ref=e383]: —
+                  - generic [ref=e384]: —
+                - cell "—" [ref=e385]
+                - cell "RETAIL" [ref=e386]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e387]:
+                  - generic [ref=e388]: 0 users
+                  - generic [ref=e389]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e390]
+              - row "stripe_ok_co_1774209912334_81d599a14beb48 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e391]:
+                - cell "stripe_ok_co_1774209912334_81d599a14beb48" [ref=e392]:
+                  - link "stripe_ok_co_1774209912334_81d599a14beb48" [ref=e393] [cursor=pointer]:
+                    - /url: /admin/companies/bb50f520-a7be-408d-ac63-dc118a5f0c26
+                - cell "active" [ref=e394]:
+                  - generic [ref=e395]: active
+                - cell "— —" [ref=e396]:
+                  - generic [ref=e397]: —
+                  - generic [ref=e398]: —
+                - cell "—" [ref=e399]
+                - cell "RETAIL" [ref=e400]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e401]:
+                  - generic [ref=e402]: 0 users
+                  - generic [ref=e403]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e404]
+              - row "platform_fail_co_1774209911624_4d50fa4abc6338 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e405]:
+                - cell "platform_fail_co_1774209911624_4d50fa4abc6338" [ref=e406]:
+                  - link "platform_fail_co_1774209911624_4d50fa4abc6338" [ref=e407] [cursor=pointer]:
+                    - /url: /admin/companies/f942c4ba-4a36-40ab-bb79-764c63a3ead3
+                - cell "active" [ref=e408]:
+                  - generic [ref=e409]: active
+                - cell "— —" [ref=e410]:
+                  - generic [ref=e411]: —
+                  - generic [ref=e412]: —
+                - cell "—" [ref=e413]
+                - cell "RETAIL" [ref=e414]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e415]:
+                  - generic [ref=e416]: 1 users
+                  - generic [ref=e417]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e418]
+              - row "stripe_bad_ref_co_1774209888393_446a7fa540b96 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e419]:
+                - cell "stripe_bad_ref_co_1774209888393_446a7fa540b96" [ref=e420]:
+                  - link "stripe_bad_ref_co_1774209888393_446a7fa540b96" [ref=e421] [cursor=pointer]:
+                    - /url: /admin/companies/10b6e228-e6be-4462-8efe-a226c4cc4deb
+                - cell "active" [ref=e422]:
+                  - generic [ref=e423]: active
+                - cell "— —" [ref=e424]:
+                  - generic [ref=e425]: —
+                  - generic [ref=e426]: —
+                - cell "—" [ref=e427]
+                - cell "RETAIL" [ref=e428]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e429]:
+                  - generic [ref=e430]: 0 users
+                  - generic [ref=e431]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e432]
+              - row "stripe_ok_co_1774209888376_f06ced7ea32a28 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e433]:
+                - cell "stripe_ok_co_1774209888376_f06ced7ea32a28" [ref=e434]:
+                  - link "stripe_ok_co_1774209888376_f06ced7ea32a28" [ref=e435] [cursor=pointer]:
+                    - /url: /admin/companies/fbe4b2c0-5192-44e1-bd68-ccf8bb9f18c4
+                - cell "active" [ref=e436]:
+                  - generic [ref=e437]: active
+                - cell "— —" [ref=e438]:
+                  - generic [ref=e439]: —
+                  - generic [ref=e440]: —
+                - cell "—" [ref=e441]
+                - cell "RETAIL" [ref=e442]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e443]:
+                  - generic [ref=e444]: 0 users
+                  - generic [ref=e445]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e446]
+              - row "platform_fail_co_1774209887879_8f4db69b1a8378 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e447]:
+                - cell "platform_fail_co_1774209887879_8f4db69b1a8378" [ref=e448]:
+                  - link "platform_fail_co_1774209887879_8f4db69b1a8378" [ref=e449] [cursor=pointer]:
+                    - /url: /admin/companies/c7c68b56-be95-4d8a-a5f8-e4d37dccf406
+                - cell "active" [ref=e450]:
+                  - generic [ref=e451]: active
+                - cell "— —" [ref=e452]:
+                  - generic [ref=e453]: —
+                  - generic [ref=e454]: —
+                - cell "—" [ref=e455]
+                - cell "RETAIL" [ref=e456]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e457]:
+                  - generic [ref=e458]: 1 users
+                  - generic [ref=e459]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e460]
+              - row "masters_co_1774209690913_eb3b9cc28dbbd8 active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e461]:
+                - cell "masters_co_1774209690913_eb3b9cc28dbbd8" [ref=e462]:
+                  - link "masters_co_1774209690913_eb3b9cc28dbbd8" [ref=e463] [cursor=pointer]:
+                    - /url: /admin/companies/979a4a14-ee1a-4d97-a9fa-c883aee034bc
+                - cell "active" [ref=e464]:
+                  - generic [ref=e465]: active
+                - cell "— —" [ref=e466]:
+                  - generic [ref=e467]: —
+                  - generic [ref=e468]: —
+                - cell "—" [ref=e469]
+                - cell "RETAIL" [ref=e470]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e471]:
+                  - generic [ref=e472]: 1 users
+                  - generic [ref=e473]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e474]
+              - row "stripe_ok_co_1774209689184_1fa6606122c07 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e475]:
+                - cell "stripe_ok_co_1774209689184_1fa6606122c07" [ref=e476]:
+                  - link "stripe_ok_co_1774209689184_1fa6606122c07" [ref=e477] [cursor=pointer]:
+                    - /url: /admin/companies/ce059c4e-501c-41f9-b869-23a09f1ddbbe
+                - cell "active" [ref=e478]:
+                  - generic [ref=e479]: active
+                - cell "— —" [ref=e480]:
+                  - generic [ref=e481]: —
+                  - generic [ref=e482]: —
+                - cell "—" [ref=e483]
+                - cell "RETAIL" [ref=e484]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e485]:
+                  - generic [ref=e486]: 0 users
+                  - generic [ref=e487]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e488]
+              - row "platform_fail_co_1774209688574_b16ab3cbcca06 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e489]:
+                - cell "platform_fail_co_1774209688574_b16ab3cbcca06" [ref=e490]:
+                  - link "platform_fail_co_1774209688574_b16ab3cbcca06" [ref=e491] [cursor=pointer]:
+                    - /url: /admin/companies/5f7cfd28-e1f4-46f6-9413-36ae02a0e959
+                - cell "active" [ref=e492]:
+                  - generic [ref=e493]: active
+                - cell "— —" [ref=e494]:
+                  - generic [ref=e495]: —
+                  - generic [ref=e496]: —
+                - cell "—" [ref=e497]
+                - cell "RETAIL" [ref=e498]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e499]:
+                  - generic [ref=e500]: 1 users
+                  - generic [ref=e501]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e502]
+              - row "compliance_co_1774209685492_9a9ef757e751b active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e503]:
+                - cell "compliance_co_1774209685492_9a9ef757e751b" [ref=e504]:
+                  - link "compliance_co_1774209685492_9a9ef757e751b" [ref=e505] [cursor=pointer]:
+                    - /url: /admin/companies/302b22c8-d6b3-47b6-80a3-fa55a46db598
+                - cell "active" [ref=e506]:
+                  - generic [ref=e507]: active
+                - cell "— —" [ref=e508]:
+                  - generic [ref=e509]: —
+                  - generic [ref=e510]: —
+                - cell "27ABCDE1234F1Z5" [ref=e511]
+                - cell "RETAIL" [ref=e512]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e513]:
+                  - generic [ref=e514]: 1 users
+                  - generic [ref=e515]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e516]
+              - row "masters_co_1774209645393_ce732268de81b active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e517]:
+                - cell "masters_co_1774209645393_ce732268de81b" [ref=e518]:
+                  - link "masters_co_1774209645393_ce732268de81b" [ref=e519] [cursor=pointer]:
+                    - /url: /admin/companies/363ba98e-eb1e-47b4-9f04-506d3d87b2c0
+                - cell "active" [ref=e520]:
+                  - generic [ref=e521]: active
+                - cell "— —" [ref=e522]:
+                  - generic [ref=e523]: —
+                  - generic [ref=e524]: —
+                - cell "—" [ref=e525]
+                - cell "RETAIL" [ref=e526]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e527]:
+                  - generic [ref=e528]: 1 users
+                  - generic [ref=e529]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e530]
+              - row "stripe_ok_co_1774209644836_29f50140ded038 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e531]:
+                - cell "stripe_ok_co_1774209644836_29f50140ded038" [ref=e532]:
+                  - link "stripe_ok_co_1774209644836_29f50140ded038" [ref=e533] [cursor=pointer]:
+                    - /url: /admin/companies/f47201d0-1eec-4dbd-b5b4-549c3326d660
+                - cell "active" [ref=e534]:
+                  - generic [ref=e535]: active
+                - cell "— —" [ref=e536]:
+                  - generic [ref=e537]: —
+                  - generic [ref=e538]: —
+                - cell "—" [ref=e539]
+                - cell "RETAIL" [ref=e540]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e541]:
+                  - generic [ref=e542]: 0 users
+                  - generic [ref=e543]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e544]
+              - row "platform_fail_co_1774209644542_63b5aee8f0335 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e545]:
+                - cell "platform_fail_co_1774209644542_63b5aee8f0335" [ref=e546]:
+                  - link "platform_fail_co_1774209644542_63b5aee8f0335" [ref=e547] [cursor=pointer]:
+                    - /url: /admin/companies/15717e29-eb62-4a14-aa05-a994ac5b2741
+                - cell "active" [ref=e548]:
+                  - generic [ref=e549]: active
+                - cell "— —" [ref=e550]:
+                  - generic [ref=e551]: —
+                  - generic [ref=e552]: —
+                - cell "—" [ref=e553]
+                - cell "RETAIL" [ref=e554]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e555]:
+                  - generic [ref=e556]: 1 users
+                  - generic [ref=e557]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e558]
+              - row "compliance_co_1774209643162_a8b78d7c81f758 active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e559]:
+                - cell "compliance_co_1774209643162_a8b78d7c81f758" [ref=e560]:
+                  - link "compliance_co_1774209643162_a8b78d7c81f758" [ref=e561] [cursor=pointer]:
+                    - /url: /admin/companies/4fd094b5-cc2e-436b-8289-0689e3cc2125
+                - cell "active" [ref=e562]:
+                  - generic [ref=e563]: active
+                - cell "— —" [ref=e564]:
+                  - generic [ref=e565]: —
+                  - generic [ref=e566]: —
+                - cell "27ABCDE1234F1Z5" [ref=e567]
+                - cell "RETAIL" [ref=e568]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e569]:
+                  - generic [ref=e570]: 1 users
+                  - generic [ref=e571]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e572]
+              - row "masters_co_1774209543827_93f73f84443c7 active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e573]:
+                - cell "masters_co_1774209543827_93f73f84443c7" [ref=e574]:
+                  - link "masters_co_1774209543827_93f73f84443c7" [ref=e575] [cursor=pointer]:
+                    - /url: /admin/companies/23749328-c79b-4557-b985-21665699eb56
+                - cell "active" [ref=e576]:
+                  - generic [ref=e577]: active
+                - cell "— —" [ref=e578]:
+                  - generic [ref=e579]: —
+                  - generic [ref=e580]: —
+                - cell "—" [ref=e581]
+                - cell "RETAIL" [ref=e582]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e583]:
+                  - generic [ref=e584]: 1 users
+                  - generic [ref=e585]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e586]
+              - row "stripe_ok_co_1774209543027_acc82b94a5dbd active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e587]:
+                - cell "stripe_ok_co_1774209543027_acc82b94a5dbd" [ref=e588]:
+                  - link "stripe_ok_co_1774209543027_acc82b94a5dbd" [ref=e589] [cursor=pointer]:
+                    - /url: /admin/companies/c7a5fa33-e305-42b4-b881-3a0bc164b4ea
+                - cell "active" [ref=e590]:
+                  - generic [ref=e591]: active
+                - cell "— —" [ref=e592]:
+                  - generic [ref=e593]: —
+                  - generic [ref=e594]: —
+                - cell "—" [ref=e595]
+                - cell "RETAIL" [ref=e596]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e597]:
+                  - generic [ref=e598]: 0 users
+                  - generic [ref=e599]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e600]
+              - row "platform_fail_co_1774209542694_dd101d095ae5e8 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e601]:
+                - cell "platform_fail_co_1774209542694_dd101d095ae5e8" [ref=e602]:
+                  - link "platform_fail_co_1774209542694_dd101d095ae5e8" [ref=e603] [cursor=pointer]:
+                    - /url: /admin/companies/a02fb732-334b-492c-961f-bc6a10008db5
+                - cell "active" [ref=e604]:
+                  - generic [ref=e605]: active
+                - cell "— —" [ref=e606]:
+                  - generic [ref=e607]: —
+                  - generic [ref=e608]: —
+                - cell "—" [ref=e609]
+                - cell "RETAIL" [ref=e610]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e611]:
+                  - generic [ref=e612]: 1 users
+                  - generic [ref=e613]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e614]
+              - row "compliance_co_1774209540296_25029e4359854 active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e615]:
+                - cell "compliance_co_1774209540296_25029e4359854" [ref=e616]:
+                  - link "compliance_co_1774209540296_25029e4359854" [ref=e617] [cursor=pointer]:
+                    - /url: /admin/companies/f6841b57-5a38-4a57-8e27-3e531e32dfc1
+                - cell "active" [ref=e618]:
+                  - generic [ref=e619]: active
+                - cell "— —" [ref=e620]:
+                  - generic [ref=e621]: —
+                  - generic [ref=e622]: —
+                - cell "27ABCDE1234F1Z5" [ref=e623]
+                - cell "RETAIL" [ref=e624]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e625]:
+                  - generic [ref=e626]: 1 users
+                  - generic [ref=e627]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e628]
+              - row "masters_co_1774209508690_90de2883eb1a2 active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e629]:
+                - cell "masters_co_1774209508690_90de2883eb1a2" [ref=e630]:
+                  - link "masters_co_1774209508690_90de2883eb1a2" [ref=e631] [cursor=pointer]:
+                    - /url: /admin/companies/6f19946e-223d-4dca-bc68-de09c1456bcd
+                - cell "active" [ref=e632]:
+                  - generic [ref=e633]: active
+                - cell "— —" [ref=e634]:
+                  - generic [ref=e635]: —
+                  - generic [ref=e636]: —
+                - cell "—" [ref=e637]
+                - cell "RETAIL" [ref=e638]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e639]:
+                  - generic [ref=e640]: 1 users
+                  - generic [ref=e641]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e642]
+              - row "stripe_ok_co_1774209507900_3f317751f3d7d active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e643]:
+                - cell "stripe_ok_co_1774209507900_3f317751f3d7d" [ref=e644]:
+                  - link "stripe_ok_co_1774209507900_3f317751f3d7d" [ref=e645] [cursor=pointer]:
+                    - /url: /admin/companies/7dd1d76e-f519-4e30-9186-df0483c97080
+                - cell "active" [ref=e646]:
+                  - generic [ref=e647]: active
+                - cell "— —" [ref=e648]:
+                  - generic [ref=e649]: —
+                  - generic [ref=e650]: —
+                - cell "—" [ref=e651]
+                - cell "RETAIL" [ref=e652]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e653]:
+                  - generic [ref=e654]: 0 users
+                  - generic [ref=e655]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e656]
+              - row "platform_fail_co_1774209507593_66e288888eb59 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e657]:
+                - cell "platform_fail_co_1774209507593_66e288888eb59" [ref=e658]:
+                  - link "platform_fail_co_1774209507593_66e288888eb59" [ref=e659] [cursor=pointer]:
+                    - /url: /admin/companies/8c29d059-5661-47a4-9b84-b8f3e6b1c4a7
+                - cell "active" [ref=e660]:
+                  - generic [ref=e661]: active
+                - cell "— —" [ref=e662]:
+                  - generic [ref=e663]: —
+                  - generic [ref=e664]: —
+                - cell "—" [ref=e665]
+                - cell "RETAIL" [ref=e666]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e667]:
+                  - generic [ref=e668]: 1 users
+                  - generic [ref=e669]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e670]
+              - row "compliance_co_1774209506128_7387b3fee04fe8 active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e671]:
+                - cell "compliance_co_1774209506128_7387b3fee04fe8" [ref=e672]:
+                  - link "compliance_co_1774209506128_7387b3fee04fe8" [ref=e673] [cursor=pointer]:
+                    - /url: /admin/companies/25aa7570-73c8-4554-a666-0e4c815f88d8
+                - cell "active" [ref=e674]:
+                  - generic [ref=e675]: active
+                - cell "— —" [ref=e676]:
+                  - generic [ref=e677]: —
+                  - generic [ref=e678]: —
+                - cell "27ABCDE1234F1Z5" [ref=e679]
+                - cell "RETAIL" [ref=e680]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e681]:
+                  - generic [ref=e682]: 1 users
+                  - generic [ref=e683]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e684]
+              - row "stripe_ok_co_1774209413357_1427bc37c1e4e active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e685]:
+                - cell "stripe_ok_co_1774209413357_1427bc37c1e4e" [ref=e686]:
+                  - link "stripe_ok_co_1774209413357_1427bc37c1e4e" [ref=e687] [cursor=pointer]:
+                    - /url: /admin/companies/a2375a7d-7fa7-4b7a-90a4-cbb9099cc7b7
+                - cell "active" [ref=e688]:
+                  - generic [ref=e689]: active
+                - cell "— —" [ref=e690]:
+                  - generic [ref=e691]: —
+                  - generic [ref=e692]: —
+                - cell "—" [ref=e693]
+                - cell "RETAIL" [ref=e694]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e695]:
+                  - generic [ref=e696]: 0 users
+                  - generic [ref=e697]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e698]
+              - row "platform_fail_co_1774209412878_370e8b06d84f68 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e699]:
+                - cell "platform_fail_co_1774209412878_370e8b06d84f68" [ref=e700]:
+                  - link "platform_fail_co_1774209412878_370e8b06d84f68" [ref=e701] [cursor=pointer]:
+                    - /url: /admin/companies/660fb05e-5186-483c-a616-f9ca7a9b38ae
+                - cell "active" [ref=e702]:
+                  - generic [ref=e703]: active
+                - cell "— —" [ref=e704]:
+                  - generic [ref=e705]: —
+                  - generic [ref=e706]: —
+                - cell "—" [ref=e707]
+                - cell "RETAIL" [ref=e708]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e709]:
+                  - generic [ref=e710]: 1 users
+                  - generic [ref=e711]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e712]
+              - row "masters_co_1774209410346_7710a56d6ef418 active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e713]:
+                - cell "masters_co_1774209410346_7710a56d6ef418" [ref=e714]:
+                  - link "masters_co_1774209410346_7710a56d6ef418" [ref=e715] [cursor=pointer]:
+                    - /url: /admin/companies/811ea2ee-25b1-4b3d-a73f-bd6130382c22
+                - cell "active" [ref=e716]:
+                  - generic [ref=e717]: active
+                - cell "— —" [ref=e718]:
+                  - generic [ref=e719]: —
+                  - generic [ref=e720]: —
+                - cell "—" [ref=e721]
+                - cell "RETAIL" [ref=e722]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e723]:
+                  - generic [ref=e724]: 1 users
+                  - generic [ref=e725]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e726]
+              - row "compliance_co_1774209408798_c7b29adc8fc79 active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e727]:
+                - cell "compliance_co_1774209408798_c7b29adc8fc79" [ref=e728]:
+                  - link "compliance_co_1774209408798_c7b29adc8fc79" [ref=e729] [cursor=pointer]:
+                    - /url: /admin/companies/1be1004b-7a84-4af4-906a-7fb3337e1202
+                - cell "active" [ref=e730]:
+                  - generic [ref=e731]: active
+                - cell "— —" [ref=e732]:
+                  - generic [ref=e733]: —
+                  - generic [ref=e734]: —
+                - cell "27ABCDE1234F1Z5" [ref=e735]
+                - cell "RETAIL" [ref=e736]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e737]:
+                  - generic [ref=e738]: 1 users
+                  - generic [ref=e739]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e740]
+              - row "masters_co_1774209376816_f55d72e92bbf5 active — — — RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e741]:
+                - cell "masters_co_1774209376816_f55d72e92bbf5" [ref=e742]:
+                  - link "masters_co_1774209376816_f55d72e92bbf5" [ref=e743] [cursor=pointer]:
+                    - /url: /admin/companies/15255cc0-4972-441f-829a-695e77e5cc98
+                - cell "active" [ref=e744]:
+                  - generic [ref=e745]: active
+                - cell "— —" [ref=e746]:
+                  - generic [ref=e747]: —
+                  - generic [ref=e748]: —
+                - cell "—" [ref=e749]
+                - cell "RETAIL" [ref=e750]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e751]:
+                  - generic [ref=e752]: 1 users
+                  - generic [ref=e753]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e754]
+              - row "compliance_co_1774209374663_3271414c021c2 active — — 27ABCDE1234F1Z5 RETAIL 1 users 1 invoices · 1 purchases 23/03/2026" [ref=e755]:
+                - cell "compliance_co_1774209374663_3271414c021c2" [ref=e756]:
+                  - link "compliance_co_1774209374663_3271414c021c2" [ref=e757] [cursor=pointer]:
+                    - /url: /admin/companies/d5001bb2-4043-4e5e-942d-cc7df3291426
+                - cell "active" [ref=e758]:
+                  - generic [ref=e759]: active
+                - cell "— —" [ref=e760]:
+                  - generic [ref=e761]: —
+                  - generic [ref=e762]: —
+                - cell "27ABCDE1234F1Z5" [ref=e763]
+                - cell "RETAIL" [ref=e764]
+                - cell "1 users 1 invoices · 1 purchases" [ref=e765]:
+                  - generic [ref=e766]: 1 users
+                  - generic [ref=e767]: 1 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e768]
+              - row "lt3_pur_co_1774208833890_bf2564b71f279 active — — — RETAIL 1 users 0 invoices · 1 purchases 23/03/2026" [ref=e769]:
+                - cell "lt3_pur_co_1774208833890_bf2564b71f279" [ref=e770]:
+                  - link "lt3_pur_co_1774208833890_bf2564b71f279" [ref=e771] [cursor=pointer]:
+                    - /url: /admin/companies/0a18f420-bf57-48b0-93bb-22edab79f4d0
+                - cell "active" [ref=e772]:
+                  - generic [ref=e773]: active
+                - cell "— —" [ref=e774]:
+                  - generic [ref=e775]: —
+                  - generic [ref=e776]: —
+                - cell "—" [ref=e777]
+                - cell "RETAIL" [ref=e778]
+                - cell "1 users 0 invoices · 1 purchases" [ref=e779]:
+                  - generic [ref=e780]: 1 users
+                  - generic [ref=e781]: 0 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e782]
+              - row "lt3_inv_co_1774208833368_3893f6c453c42 active — — — RETAIL 1 users 1 invoices · 0 purchases 23/03/2026" [ref=e783]:
+                - cell "lt3_inv_co_1774208833368_3893f6c453c42" [ref=e784]:
+                  - link "lt3_inv_co_1774208833368_3893f6c453c42" [ref=e785] [cursor=pointer]:
+                    - /url: /admin/companies/52a3f882-24d8-46be-b572-84c85f0084b8
+                - cell "active" [ref=e786]:
+                  - generic [ref=e787]: active
+                - cell "— —" [ref=e788]:
+                  - generic [ref=e789]: —
+                  - generic [ref=e790]: —
+                - cell "—" [ref=e791]
+                - cell "RETAIL" [ref=e792]
+                - cell "1 users 1 invoices · 0 purchases" [ref=e793]:
+                  - generic [ref=e794]: 1 users
+                  - generic [ref=e795]: 1 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e796]
+              - row "lt3_pur_co_1774208809682_b2b4467f469e8 active — — — RETAIL 1 users 0 invoices · 1 purchases 23/03/2026" [ref=e797]:
+                - cell "lt3_pur_co_1774208809682_b2b4467f469e8" [ref=e798]:
+                  - link "lt3_pur_co_1774208809682_b2b4467f469e8" [ref=e799] [cursor=pointer]:
+                    - /url: /admin/companies/05ff6d38-94e3-4947-8c7c-2a0ecedbc0a0
+                - cell "active" [ref=e800]:
+                  - generic [ref=e801]: active
+                - cell "— —" [ref=e802]:
+                  - generic [ref=e803]: —
+                  - generic [ref=e804]: —
+                - cell "—" [ref=e805]
+                - cell "RETAIL" [ref=e806]
+                - cell "1 users 0 invoices · 1 purchases" [ref=e807]:
+                  - generic [ref=e808]: 1 users
+                  - generic [ref=e809]: 0 invoices · 1 purchases
+                - cell "23/03/2026" [ref=e810]
+              - row "lt3_inv_co_1774208809043_ab04da3888949 active — — — RETAIL 1 users 1 invoices · 0 purchases 23/03/2026" [ref=e811]:
+                - cell "lt3_inv_co_1774208809043_ab04da3888949" [ref=e812]:
+                  - link "lt3_inv_co_1774208809043_ab04da3888949" [ref=e813] [cursor=pointer]:
+                    - /url: /admin/companies/f278d129-c5e5-4611-886b-affdaa3e9457
+                - cell "active" [ref=e814]:
+                  - generic [ref=e815]: active
+                - cell "— —" [ref=e816]:
+                  - generic [ref=e817]: —
+                  - generic [ref=e818]: —
+                - cell "—" [ref=e819]
+                - cell "RETAIL" [ref=e820]
+                - cell "1 users 1 invoices · 0 purchases" [ref=e821]:
+                  - generic [ref=e822]: 1 users
+                  - generic [ref=e823]: 1 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e824]
+              - row "sub_co_1774208490965_17af61dc5ea5d active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e825]:
+                - cell "sub_co_1774208490965_17af61dc5ea5d" [ref=e826]:
+                  - link "sub_co_1774208490965_17af61dc5ea5d" [ref=e827] [cursor=pointer]:
+                    - /url: /admin/companies/e53920af-231c-4a70-ba0a-602b1464b4cd
+                - cell "active" [ref=e828]:
+                  - generic [ref=e829]: active
+                - cell "— —" [ref=e830]:
+                  - generic [ref=e831]: —
+                  - generic [ref=e832]: —
+                - cell "—" [ref=e833]
+                - cell "RETAIL" [ref=e834]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e835]:
+                  - generic [ref=e836]: 0 users
+                  - generic [ref=e837]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e838]
+              - row "reset_co_1774208486149_aae6518329dd5 active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e839]:
+                - cell "reset_co_1774208486149_aae6518329dd5" [ref=e840]:
+                  - link "reset_co_1774208486149_aae6518329dd5" [ref=e841] [cursor=pointer]:
+                    - /url: /admin/companies/619a06d4-ab47-42a6-ac33-cb2f2bd39fae
+                - cell "active" [ref=e842]:
+                  - generic [ref=e843]: active
+                - cell "— —" [ref=e844]:
+                  - generic [ref=e845]: —
+                  - generic [ref=e846]: —
+                - cell "—" [ref=e847]
+                - cell "RETAIL" [ref=e848]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e849]:
+                  - generic [ref=e850]: 1 users
+                  - generic [ref=e851]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e852]
+              - row "auth_co_1774208484265_f9eb08f6a9a3a active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e853]:
+                - cell "auth_co_1774208484265_f9eb08f6a9a3a" [ref=e854]:
+                  - link "auth_co_1774208484265_f9eb08f6a9a3a" [ref=e855] [cursor=pointer]:
+                    - /url: /admin/companies/9af7dd59-5010-4abf-8cbf-834435825de3
+                - cell "active" [ref=e856]:
+                  - generic [ref=e857]: active
+                - cell "— —" [ref=e858]:
+                  - generic [ref=e859]: —
+                  - generic [ref=e860]: —
+                - cell "—" [ref=e861]
+                - cell "RETAIL" [ref=e862]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e863]:
+                  - generic [ref=e864]: 1 users
+                  - generic [ref=e865]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e866]
+              - row "sub_co_1774208435724_1c9f50c498a47 active — — — RETAIL 0 users 0 invoices · 0 purchases 23/03/2026" [ref=e867]:
+                - cell "sub_co_1774208435724_1c9f50c498a47" [ref=e868]:
+                  - link "sub_co_1774208435724_1c9f50c498a47" [ref=e869] [cursor=pointer]:
+                    - /url: /admin/companies/73960afe-4f03-41d4-b2c6-afffba41680d
+                - cell "active" [ref=e870]:
+                  - generic [ref=e871]: active
+                - cell "— —" [ref=e872]:
+                  - generic [ref=e873]: —
+                  - generic [ref=e874]: —
+                - cell "—" [ref=e875]
+                - cell "RETAIL" [ref=e876]
+                - cell "0 users 0 invoices · 0 purchases" [ref=e877]:
+                  - generic [ref=e878]: 0 users
+                  - generic [ref=e879]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e880]
+              - row "reset_co_1774208433952_f1986f0fe8fce active — — — RETAIL 1 users 0 invoices · 0 purchases 23/03/2026" [ref=e881]:
+                - cell "reset_co_1774208433952_f1986f0fe8fce" [ref=e882]:
+                  - link "reset_co_1774208433952_f1986f0fe8fce" [ref=e883] [cursor=pointer]:
+                    - /url: /admin/companies/1a7fd384-75c6-4c31-966b-bc3c409fb757
+                - cell "active" [ref=e884]:
+                  - generic [ref=e885]: active
+                - cell "— —" [ref=e886]:
+                  - generic [ref=e887]: —
+                  - generic [ref=e888]: —
+                - cell "—" [ref=e889]
+                - cell "RETAIL" [ref=e890]
+                - cell "1 users 0 invoices · 0 purchases" [ref=e891]:
+                  - generic [ref=e892]: 1 users
+                  - generic [ref=e893]: 0 invoices · 0 purchases
+                - cell "23/03/2026" [ref=e894]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e35]

@@ -13,6 +13,12 @@ import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string; invoiceId: string }> };
 
+type ReceiptInvoiceItem = InvoiceItem & {
+  productId?: string;
+  unitPrice?: string | number | null;
+  lineTotal?: string | number | null;
+};
+
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
     const message = (err as { message?: unknown }).message;
@@ -33,7 +39,7 @@ export default function PosReceiptPage({ params }: Props) {
 
   const query = useInvoice({ companyId, invoiceId });
   const invoice = query.data?.data as Invoice | undefined;
-  const items = (invoice?.items ?? []) as InvoiceItem[];
+  const items = (invoice?.items ?? []) as ReceiptInvoiceItem[];
 
   React.useEffect(() => {
     if (!printRequested || printedRef.current || !invoice) return;
@@ -123,12 +129,13 @@ export default function PosReceiptPage({ params }: Props) {
               <div className="space-y-2">
                 {items.map((item, index) => {
                   const qty = toNumber(item.quantity);
-                  const unit = toNumber(item.unit_price);
-                  const lineTotal = toNumber(item.line_total);
+                  const unit = toNumber(item.unitPrice ?? item.unit_price);
+                  const lineTotal = toNumber(item.lineTotal ?? item.line_total);
+                  const productName = item.product?.name ?? item.productId ?? item.product_id;
                   return (
                     <div key={item.id ?? `${item.product_id}_${index}`} className="border-b border-dashed border-black/10 pb-2">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="font-medium">{item.product?.name ?? item.product_id}</div>
+                        <div className="font-medium">{productName}</div>
                         <div className="font-semibold">{lineTotal.toFixed(2)}</div>
                       </div>
                       <div className="mt-1 text-xs text-black/70">

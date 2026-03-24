@@ -14,6 +14,12 @@ function safeEqualHex(a: string, b: string) {
   return timingSafeEqual(aa, bb);
 }
 
+function isUuidLike(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
 @Injectable()
 export class BillingService {
   constructor(private readonly prisma: PrismaService) {}
@@ -335,6 +341,11 @@ export class BillingService {
       object?.metadata?.subscription_id ?? object?.client_reference_id ?? null;
 
     if (!localSubscriptionId) return;
+    if (!isUuidLike(String(localSubscriptionId))) {
+      throw new BadRequestException(
+        'Invalid local subscription reference in Stripe webhook payload',
+      );
+    }
 
     const data: any = {};
     if (eventType === 'checkout.session.completed') {
@@ -376,6 +387,11 @@ export class BillingService {
     const localSubscriptionId =
       entity?.notes?.subscription_id ?? payload?.subscription_id ?? null;
     if (!localSubscriptionId) return;
+    if (!isUuidLike(String(localSubscriptionId))) {
+      throw new BadRequestException(
+        'Invalid local subscription reference in Razorpay webhook payload',
+      );
+    }
 
     const data: any = {};
     if (eventType === 'payment_link.paid' || eventType === 'subscription.activated') {

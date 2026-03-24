@@ -1,0 +1,81 @@
+- generic [ref=e1]:
+  - generic [active]:
+    - generic [ref=e266]:
+      - generic [ref=e267]:
+        - generic [ref=e268]:
+          - navigation [ref=e269]:
+            - button "previous" [disabled] [ref=e270]:
+              - img "previous" [ref=e271]
+            - generic [ref=e273]:
+              - generic [ref=e274]: 1/
+              - text: "1"
+            - button "next" [disabled] [ref=e275]:
+              - img "next" [ref=e276]
+          - img
+        - generic [ref=e278]:
+          - link "Next.js 16.1.6 (stale) Turbopack" [ref=e279] [cursor=pointer]:
+            - /url: https://nextjs.org/docs/messages/version-staleness
+            - img [ref=e280]
+            - generic "There is a newer version (16.2.1) available, upgrade recommended!" [ref=e282]: Next.js 16.1.6 (stale)
+            - generic [ref=e283]: Turbopack
+          - img
+      - dialog "Runtime Error" [ref=e285]:
+        - generic [ref=e288]:
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - generic [ref=e292]: Runtime Error
+                - generic [ref=e293]: Server
+              - generic [ref=e294]:
+                - button "Copy Error Info" [ref=e295] [cursor=pointer]:
+                  - img [ref=e296]
+                - button "No related documentation found" [disabled] [ref=e298]:
+                  - img [ref=e299]
+                - button "Attach Node.js inspector" [ref=e301] [cursor=pointer]:
+                  - img [ref=e302]
+            - generic [ref=e311]: Attempted to call useAuth() from the server but useAuth is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.
+          - generic [ref=e312]:
+            - generic [ref=e313]:
+              - paragraph [ref=e315]:
+                - img [ref=e317]
+                - generic [ref=e320]: src/app/(app)/c/[companyId]/settings/page.tsx (14:30) @ SettingsPage
+                - button "Open in editor" [ref=e321] [cursor=pointer]:
+                  - img [ref=e323]
+              - generic [ref=e326]:
+                - generic [ref=e327]: "12 | export default function SettingsPage({ params }: Props) {"
+                - generic [ref=e328]: "13 | const { companyId } = React.use(params);"
+                - generic [ref=e329]: "> 14 | const { session } = useAuth();"
+                - generic [ref=e330]: "| ^"
+                - generic [ref=e331]: 15 | const sections = [
+                - generic [ref=e332]: "16 | {"
+                - generic [ref=e333]: "17 | title: \"Business identity\","
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - paragraph [ref=e336]:
+                  - text: Call Stack
+                  - generic [ref=e337]: "6"
+                - button "Show 5 ignore-listed frame(s)" [ref=e338] [cursor=pointer]:
+                  - text: Show 5 ignore-listed frame(s)
+                  - img [ref=e339]
+              - generic [ref=e341]:
+                - generic [ref=e342]:
+                  - text: SettingsPage
+                  - button "Open SettingsPage in editor" [ref=e343] [cursor=pointer]:
+                    - img [ref=e344]
+                - text: src/app/(app)/c/[companyId]/settings/page.tsx (14:30)
+        - generic [ref=e346]: "1"
+        - generic [ref=e347]: "2"
+    - generic [ref=e22] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e23]:
+        - img [ref=e24]
+      - generic [ref=e348]:
+        - button "Open issues overlay" [ref=e349]:
+          - generic [ref=e350]:
+            - generic [ref=e351]: "0"
+            - generic [ref=e352]: "1"
+          - generic [ref=e353]: Issue
+        - button "Collapse issues badge" [ref=e354]:
+          - img [ref=e355]
+  - generic [ref=e358]:
+    - 'heading "Application error: a server-side exception has occurred while loading localhost (see the server logs for more information)." [level=2] [ref=e359]'
+    - paragraph [ref=e360]: "Digest: 1892122410"

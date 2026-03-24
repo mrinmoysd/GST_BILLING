@@ -79,9 +79,11 @@ export function usePayments(args: {
   from?: string;
   to?: string;
   method?: string;
+  enabled?: boolean;
 }) {
-  const { companyId, page = 1, limit = 20, from, to, method } = args;
+  const { companyId, page = 1, limit = 20, from, to, method, enabled = true } = args;
   return useQuery({
+    enabled,
     queryKey: ["companies", companyId, "payments", { page, limit, from, to, method }],
     queryFn: async () => {
       const qs = new URLSearchParams();
@@ -398,7 +400,14 @@ export function useLedgers(companyId: string) {
   return useQuery({
     queryKey: ["companies", companyId, "ledgers"],
     queryFn: async () => {
-      return apiClient.get<Ledger[]>(companyPath(companyId, `/ledgers`));
+      const res = await apiClient.get<Ledger[]>(companyPath(companyId, `/ledgers`));
+      return {
+        ...res,
+        data: res.data.map((ledger) => ({
+          ...ledger,
+          name: ledger.name ?? ledger.account_name ?? "",
+        })),
+      };
     },
   });
 }

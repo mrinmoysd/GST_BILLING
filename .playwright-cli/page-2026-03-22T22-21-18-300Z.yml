@@ -1,0 +1,217 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: GST Billing
+        - generic [ref=e26]: "Company: Demo Company"
+        - navigation [ref=e28]:
+          - link "Dashboard" [ref=e29] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e31]
+            - text: Dashboard
+          - link "Customers" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e38]
+            - text: Customers
+          - link "Suppliers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e45]
+            - text: Suppliers
+          - link "Categories" [ref=e49] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e51]
+            - text: Categories
+          - link "Products" [ref=e55] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e57]
+            - text: Products
+          - link "Invoices" [ref=e61] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e63]
+            - text: Invoices
+          - link "POS" [ref=e66] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e68]
+            - text: POS
+          - link "Purchases" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e75]
+            - text: Purchases
+          - link "Payments" [ref=e78] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e80]
+            - text: Payments
+          - link "Inventory" [ref=e83] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e85]
+            - text: Inventory
+          - link "Accounting" [ref=e95] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e97]
+            - text: Accounting
+          - link "Reports" [ref=e99] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e101]
+            - text: Reports
+          - link "Settings" [ref=e103] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e105]
+            - text: Settings
+    - generic [ref=e108]:
+      - banner [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - link "GST Billing" [ref=e112] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e114]:
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Workspace" [ref=e117] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e118]:
+                  - generic [ref=e119]: /
+                  - link "Accounting" [ref=e120] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+                - listitem [ref=e121]:
+                  - generic [ref=e122]: /
+                  - link "Reports" [ref=e123] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/accounting/reports
+                - listitem [ref=e124]:
+                  - generic [ref=e125]: /
+                  - generic [ref=e126]: Trial Balance
+          - generic [ref=e127]:
+            - link "Switch" [ref=e128] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e129]
+            - generic [ref=e131]: owner
+            - button "Demo Company" [ref=e132]:
+              - generic [ref=e133]: Demo Company
+              - img [ref=e134]
+      - main [ref=e137]:
+        - generic [ref=e139]:
+          - generic [ref=e141]:
+            - generic [ref=e142]: Accounting
+            - heading "Trial balance" [level=1] [ref=e143]
+            - generic [ref=e144]: Review ledger balances at a point in time from a cleaner finance report layout.
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - heading "As-of date" [level=3] [ref=e147]
+              - paragraph [ref=e148]: Set the reporting date for the current trial balance snapshot.
+            - generic [ref=e150]:
+              - text: As of (YYYY-MM-DD)
+              - textbox "As of (YYYY-MM-DD)" [ref=e151]
+          - generic [ref=e152]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: As of
+              - generic [ref=e156]: 2026-03-22
+            - generic [ref=e158]:
+              - generic [ref=e159]: Total debit
+              - generic [ref=e160]: "1458.04"
+            - generic [ref=e162]:
+              - generic [ref=e163]: Total credit
+              - generic [ref=e164]: "1458.04"
+            - generic [ref=e166]:
+              - generic [ref=e167]: Difference
+              - generic [ref=e168]: "0.00"
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - heading "Balances" [level=3] [ref=e171]
+              - paragraph [ref=e172]: Debit and credit balances by ledger with classification and net balance.
+            - table [ref=e175]:
+              - rowgroup [ref=e176]:
+                - row "Ledger Class Debit Credit Net" [ref=e177]:
+                  - columnheader "Ledger" [ref=e178]
+                  - columnheader "Class" [ref=e179]
+                  - columnheader "Debit" [ref=e180]
+                  - columnheader "Credit" [ref=e181]
+                  - columnheader "Net" [ref=e182]
+              - rowgroup [ref=e183]:
+                - row "Accounts Payable liability 116.82 116.82 0.00" [ref=e184]:
+                  - cell "Accounts Payable" [ref=e185]
+                  - cell "liability" [ref=e186]
+                  - cell "116.82" [ref=e187]
+                  - cell "116.82" [ref=e188]
+                  - cell "0.00" [ref=e189]
+                - row "Accounts Receivable asset 612.20 612.20 0.00" [ref=e190]:
+                  - cell "Accounts Receivable" [ref=e191]
+                  - cell "asset" [ref=e192]
+                  - cell "612.20" [ref=e193]
+                  - cell "612.20" [ref=e194]
+                  - cell "0.00" [ref=e195]
+                - row "Bank asset 378.56 0.00 378.56" [ref=e196]:
+                  - cell "Bank" [ref=e197]
+                  - cell "asset" [ref=e198]
+                  - cell "378.56" [ref=e199]
+                  - cell "0.00" [ref=e200]
+                  - cell "378.56" [ref=e201]
+                - row "Cash asset 233.64 116.82 116.82" [ref=e202]:
+                  - cell "Cash" [ref=e203]
+                  - cell "asset" [ref=e204]
+                  - cell "233.64" [ref=e205]
+                  - cell "116.82" [ref=e206]
+                  - cell "116.82" [ref=e207]
+                - row "Cost of Goods Sold expense 0.00 0.00 0.00" [ref=e208]:
+                  - cell "Cost of Goods Sold" [ref=e209]
+                  - cell "expense" [ref=e210]
+                  - cell "0.00" [ref=e211]
+                  - cell "0.00" [ref=e212]
+                  - cell "0.00" [ref=e213]
+                - row "GST Input CGST asset 8.91 0.00 8.91" [ref=e214]:
+                  - cell "GST Input CGST" [ref=e215]
+                  - cell "asset" [ref=e216]
+                  - cell "8.91" [ref=e217]
+                  - cell "0.00" [ref=e218]
+                  - cell "8.91" [ref=e219]
+                - row "GST Input IGST asset 0.00 0.00 0.00" [ref=e220]:
+                  - cell "GST Input IGST" [ref=e221]
+                  - cell "asset" [ref=e222]
+                  - cell "0.00" [ref=e223]
+                  - cell "0.00" [ref=e224]
+                  - cell "0.00" [ref=e225]
+                - row "GST Input SGST asset 8.91 0.00 8.91" [ref=e226]:
+                  - cell "GST Input SGST" [ref=e227]
+                  - cell "asset" [ref=e228]
+                  - cell "8.91" [ref=e229]
+                  - cell "0.00" [ref=e230]
+                  - cell "8.91" [ref=e231]
+                - row "GST Output CGST liability 0.00 38.10 -38.10" [ref=e232]:
+                  - cell "GST Output CGST" [ref=e233]
+                  - cell "liability" [ref=e234]
+                  - cell "0.00" [ref=e235]
+                  - cell "38.10" [ref=e236]
+                  - cell "-38.10" [ref=e237]
+                - row "GST Output IGST liability 0.00 0.00 0.00" [ref=e238]:
+                  - cell "GST Output IGST" [ref=e239]
+                  - cell "liability" [ref=e240]
+                  - cell "0.00" [ref=e241]
+                  - cell "0.00" [ref=e242]
+                  - cell "0.00" [ref=e243]
+                - row "GST Output SGST liability 0.00 38.10 -38.10" [ref=e244]:
+                  - cell "GST Output SGST" [ref=e245]
+                  - cell "liability" [ref=e246]
+                  - cell "0.00" [ref=e247]
+                  - cell "38.10" [ref=e248]
+                  - cell "-38.10" [ref=e249]
+                - row "Inventory asset 99.00 0.00 99.00" [ref=e250]:
+                  - cell "Inventory" [ref=e251]
+                  - cell "asset" [ref=e252]
+                  - cell "99.00" [ref=e253]
+                  - cell "0.00" [ref=e254]
+                  - cell "99.00" [ref=e255]
+                - row "Owner Capital equity 0.00 0.00 0.00" [ref=e256]:
+                  - cell "Owner Capital" [ref=e257]
+                  - cell "equity" [ref=e258]
+                  - cell "0.00" [ref=e259]
+                  - cell "0.00" [ref=e260]
+                  - cell "0.00" [ref=e261]
+                - row "Sales income 0.00 536.00 -536.00" [ref=e262]:
+                  - cell "Sales" [ref=e263]
+                  - cell "income" [ref=e264]
+                  - cell "0.00" [ref=e265]
+                  - cell "536.00" [ref=e266]
+                  - cell "-536.00" [ref=e267]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e20]

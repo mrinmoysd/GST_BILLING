@@ -1,0 +1,22 @@
+- generic [active] [ref=e11]:
+  - main [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14]: Internal Admin
+      - heading "Admin login" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Sign in with your super-admin credentials to access platform operations.
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: Email
+          - textbox "Email" [ref=e20]
+        - generic [ref=e21]:
+          - generic [ref=e22]: Password
+          - textbox "Password" [ref=e23]
+        - button "Sign in to admin" [ref=e24]
+        - generic [ref=e25]:
+          - text: Need tenant access instead?
+          - link "Go to workspace login" [ref=e26] [cursor=pointer]:
+            - /url: /login
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - alert [ref=e10]

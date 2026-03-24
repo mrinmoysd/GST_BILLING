@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useProfitLoss } from "@/lib/billing/hooks";
 import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
+import { DateField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -45,8 +45,8 @@ export default function ProfitLossPage({ params }: Props) {
           <CardDescription>Select the period for the current P&amp;L snapshot.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-          <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+          <DateField label="From" value={from} onChange={setFrom} />
+          <DateField label="To" value={to} onChange={setTo} />
         </CardContent>
       </Card>
 

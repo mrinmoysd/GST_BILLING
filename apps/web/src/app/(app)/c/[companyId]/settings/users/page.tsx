@@ -13,6 +13,7 @@ import {
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import type { CompanyUser, RolesResponse } from "@/lib/settings/usersHooks";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -43,8 +44,10 @@ export default function UsersSettingsPage({ params }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
-  const rows = users.data?.data.data ?? [];
-  const rolesData = roles.data?.data.data;
+  const usersPayload = users.data as { ok?: boolean; data?: CompanyUser[] } | undefined;
+  const rolesPayload = roles.data as { ok?: boolean; data?: RolesResponse } | undefined;
+  const rows = usersPayload?.data ?? [];
+  const rolesData = rolesPayload?.data ?? null;
   const builtInRoles = rolesData?.built_in ?? [];
   const customRoles = React.useMemo(() => rolesData?.roles ?? [], [rolesData]);
   const selectedUser = rows.find((user) => user.id === selectedUserId) ?? null;
@@ -144,7 +147,8 @@ export default function UsersSettingsPage({ params }: Props) {
                   primary_role: primaryRole,
                   role_ids: selectedRoleIds,
                 });
-                const pw = res.data.data.dev?.temporary_password;
+                const payload = res as { ok?: boolean; data?: { user?: CompanyUser; dev?: { temporary_password?: string } } };
+                const pw = payload.data?.dev?.temporary_password;
                 setOk(pw ? `Invited. Temporary password: ${pw}` : "Invited.");
                 setEmail("");
                 setName("");

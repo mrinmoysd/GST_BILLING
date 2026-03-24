@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useInvoices, usePayments, usePurchases } from "@/lib/billing/hooks";
+import { useAuth } from "@/lib/auth/session";
 import { useLowStock } from "@/lib/masters/hooks";
 import { useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -19,6 +20,7 @@ type Props = {
 
 export default function CompanyDashboardPage({ params }: Props) {
   const { companyId } = React.use(params);
+  const { session, bootstrapped } = useAuth();
   const today = React.useMemo(() => new Date().toISOString().slice(0, 10), []);
   const monthStart = React.useMemo(() => {
     const now = new Date();
@@ -26,13 +28,15 @@ export default function CompanyDashboardPage({ params }: Props) {
     return `${now.getFullYear()}-${month}-01`;
   }, []);
 
-  const salesTodayQuery = useSalesSummary({ companyId, from: today, to: today });
-  const salesMonthQuery = useSalesSummary({ companyId, from: monthStart, to: today });
-  const outstandingQuery = useOutstandingInvoices({ companyId, page: 1, limit: 5 });
-  const lowStockQuery = useLowStock({ companyId, threshold: 0, page: 1, limit: 5 });
-  const recentInvoicesQuery = useInvoices({ companyId, page: 1, limit: 4 });
-  const recentPurchasesQuery = usePurchases({ companyId, page: 1, limit: 4 });
-  const recentPaymentsQuery = usePayments({ companyId, page: 1, limit: 4 });
+  const queriesEnabled = bootstrapped && Boolean(session.accessToken);
+
+  const salesTodayQuery = useSalesSummary({ companyId, from: today, to: today, enabled: queriesEnabled });
+  const salesMonthQuery = useSalesSummary({ companyId, from: monthStart, to: today, enabled: queriesEnabled });
+  const outstandingQuery = useOutstandingInvoices({ companyId, page: 1, limit: 5, enabled: queriesEnabled });
+  const lowStockQuery = useLowStock({ companyId, threshold: 0, page: 1, limit: 5, enabled: queriesEnabled });
+  const recentInvoicesQuery = useInvoices({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
+  const recentPurchasesQuery = usePurchases({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
+  const recentPaymentsQuery = usePayments({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
 
   const salesToday = ((salesTodayQuery.data?.data as { data?: Record<string, unknown> } | undefined)?.data ?? {}) as Record<string, unknown>;
   const salesMonth = ((salesMonthQuery.data?.data as { data?: Record<string, unknown> } | undefined)?.data ?? {}) as Record<string, unknown>;
@@ -90,6 +94,7 @@ export default function CompanyDashboardPage({ params }: Props) {
   }, [companyId, recentInvoicesPayload?.data, recentPaymentsPayload?.data, recentPurchasesPayload?.data]);
 
   const hasLoadingState =
+    !bootstrapped ||
     salesTodayQuery.isLoading ||
     salesMonthQuery.isLoading ||
     outstandingQuery.isLoading ||

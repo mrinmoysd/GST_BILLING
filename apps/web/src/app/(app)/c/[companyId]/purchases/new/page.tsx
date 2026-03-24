@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreatePurchase } from "@/lib/billing/hooks";
 import { useProducts, useSuppliers } from "@/lib/masters/hooks";
 import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -105,9 +106,12 @@ export default function NewPurchasePage({ params }: Props) {
               notes: notes || undefined,
               items: clean,
             });
+            toast.success("Purchase draft created");
             router.replace(`/c/${companyId}/purchases/${res.data.id}`);
           } catch (e: unknown) {
-            setError(getErrorMessage(e, "Failed to create purchase"));
+            const message = getErrorMessage(e, "Failed to create purchase");
+            setError(message);
+            toast.error(message);
           }
         }}
       >
@@ -119,21 +123,18 @@ export default function NewPurchasePage({ params }: Props) {
             <CardDescription>Select the supplier, add purchased products, and review the draft before saving it.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Supplier</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={supplierId}
-                onChange={(e) => setSupplierId(e.target.value)}
-              >
-                <option value="">Select…</option>
-                {(Array.isArray(suppliers.data?.data) ? suppliers.data.data : []).map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SelectField
+              label="Supplier"
+              value={supplierId}
+              onChange={setSupplierId}
+              options={[
+                { value: "", label: "Select…" },
+                ...(Array.isArray(suppliers.data?.data) ? suppliers.data.data : []).map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                })),
+              ]}
+            />
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
               Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
             </div>
@@ -146,8 +147,8 @@ export default function NewPurchasePage({ params }: Props) {
             <CardDescription>Capture the purchased products, quantities, and unit costs before saving the draft.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
+          <table className="min-w-[880px] w-full text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
               <tr>
                 <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Product</th>
@@ -167,11 +168,11 @@ export default function NewPurchasePage({ params }: Props) {
                 return (
                   <tr key={l.id} className="border-t border-[var(--border)]">
                     <td className="px-3 py-2">
-                      <select
-                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                      <SelectField
+                        label=""
                         value={l.productId}
-                        onChange={(e) => {
-                          const next = e.target.value;
+                        className="mt-0"
+                        onChange={(next) => {
                           const p = productsById.get(next);
                           setLines((prev) =>
                             prev.map((x) =>
@@ -188,14 +189,14 @@ export default function NewPurchasePage({ params }: Props) {
                             ),
                           );
                         }}
-                      >
-                        <option value="">Select…</option>
-                        {(Array.isArray(products.data?.data) ? products.data.data : []).map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
+                        options={[
+                          { value: "", label: "Select…" },
+                          ...(Array.isArray(products.data?.data) ? products.data.data : []).map((p) => ({
+                            value: p.id,
+                            label: p.name,
+                          })),
+                        ]}
+                      />
                       <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -260,7 +261,7 @@ export default function NewPurchasePage({ params }: Props) {
           </div>
         </div>
 
-        <TextField label="Purchase date (YYYY-MM-DD)" value={purchaseDate} onChange={setPurchaseDate} />
+        <DateField label="Purchase date" value={purchaseDate} onChange={setPurchaseDate} />
         <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
 
         {error ? <InlineError message={error} /> : null}

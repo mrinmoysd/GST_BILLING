@@ -25,7 +25,7 @@ export type Company = {
 export function useCompany(companyId: string) {
   return useQuery({
     queryKey: ["companies", companyId, "company"],
-    queryFn: async () => apiClient.get<{ ok: true; data: Company }>(companyPath(companyId, "")),
+    queryFn: async () => apiClient.get<Company>(companyPath(companyId, "")),
   });
 }
 
@@ -43,7 +43,7 @@ export function useUpdateCompany(companyId: string) {
       timezone?: string;
       logo_url?: string;
       allow_negative_stock?: boolean;
-    }) => apiClient.patch<{ ok: true; data: Company }>(companyPath(companyId, ""), patch),
+    }) => apiClient.patch<Company>(companyPath(companyId, ""), patch),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });
     },
@@ -56,13 +56,10 @@ export function useVerifyCompanyGstin(companyId: string) {
     mutationKey: ["companies", companyId, "company", "verify-gstin"],
     mutationFn: async () =>
       apiClient.post<{
-        ok: true;
-        data: {
-          status: string;
-          requested_at: string;
-          gstin: string | null;
-          note: string;
-        };
+        status: string;
+        requested_at: string;
+        gstin: string | null;
+        note: string;
       }>(companyPath(companyId, "/verify-gstin"), {}),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });
@@ -77,7 +74,7 @@ export function useUploadCompanyLogo(companyId: string) {
     mutationFn: async (file: File) => {
       const form = new FormData();
       form.set("file", file);
-      return apiClient.postForm<{ ok: true; data: Company }>(companyPath(companyId, "/logo"), form);
+      return apiClient.postForm<Company>(companyPath(companyId, "/logo"), form);
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });

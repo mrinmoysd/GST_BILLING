@@ -1,0 +1,182 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: GST Billing
+        - generic [ref=e7]: "Company: Browser Fix Co 20260323"
+        - navigation [ref=e9]:
+          - link "Dashboard" [ref=e10] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/dashboard
+            - img [ref=e12]
+            - text: Dashboard
+          - link "Customers" [ref=e17] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/customers
+            - img [ref=e19]
+            - text: Customers
+          - link "Suppliers" [ref=e24] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/suppliers
+            - img [ref=e26]
+            - text: Suppliers
+          - link "Categories" [ref=e30] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/categories
+            - img [ref=e32]
+            - text: Categories
+          - link "Products" [ref=e36] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/products
+            - img [ref=e38]
+            - text: Products
+          - link "Invoices" [ref=e42] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/sales/invoices
+            - img [ref=e44]
+            - text: Invoices
+          - link "POS" [ref=e47] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/pos
+            - img [ref=e49]
+            - text: POS
+          - link "Purchases" [ref=e54] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/purchases
+            - img [ref=e56]
+            - text: Purchases
+          - link "Payments" [ref=e59] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/payments
+            - img [ref=e61]
+            - text: Payments
+          - link "Inventory" [ref=e64] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/inventory
+            - img [ref=e66]
+            - text: Inventory
+          - link "Accounting" [ref=e76] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/accounting
+            - img [ref=e78]
+            - text: Accounting
+          - link "Reports" [ref=e80] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/reports
+            - img [ref=e82]
+            - text: Reports
+          - link "Settings" [ref=e84] [cursor=pointer]:
+            - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/settings
+            - img [ref=e86]
+            - text: Settings
+    - generic [ref=e89]:
+      - banner [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - link "GST Billing" [ref=e93] [cursor=pointer]:
+              - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/dashboard
+            - navigation "Breadcrumb" [ref=e95]:
+              - list [ref=e96]:
+                - listitem [ref=e97]:
+                  - link "Workspace" [ref=e98] [cursor=pointer]:
+                    - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/dashboard
+                - listitem [ref=e99]:
+                  - generic [ref=e100]: /
+                  - generic [ref=e101]: Dashboard
+          - generic [ref=e102]:
+            - link "Switch" [ref=e103] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e104]
+            - generic [ref=e106]: owner
+            - button "Browser Fix Co 20260323" [ref=e107]:
+              - generic [ref=e108]: Browser Fix Co 20260323
+              - img [ref=e109]
+      - main [ref=e112]:
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - generic [ref=e117]: Overview
+              - heading "Dashboard" [level=1] [ref=e118]
+              - generic [ref=e119]: Track operational health, jump into your highest-frequency workflows, and keep billing activity moving.
+            - generic [ref=e121]: Company 5cd37d30
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e125]:
+                - generic [ref=e126]: Today's sales
+                - generic [ref=e127]: ₹0.00
+                - generic [ref=e128]: 0 invoice(s) today.
+              - generic [ref=e130]:
+                - generic [ref=e131]: This month
+                - generic [ref=e132]: ₹0.00
+                - generic [ref=e133]: 0 invoice(s) in the current month.
+              - generic [ref=e135]:
+                - generic [ref=e136]: Outstanding
+                - generic [ref=e137]: ₹0.00
+                - generic [ref=e138]: 0 open receivable(s) in the current view.
+              - generic [ref=e140]:
+                - generic [ref=e141]: Low stock items
+                - generic [ref=e142]: "0"
+                - generic [ref=e143]: Products currently at or below reorder threshold.
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e146]: Workspace
+                - heading "Stay on top of billing velocity" [level=3] [ref=e147]
+                - paragraph [ref=e148]: This dashboard now composes live operational data from the existing invoice, payment, report, and inventory APIs.
+              - generic [ref=e149]:
+                - generic [ref=e150]:
+                  - generic [ref=e151]:
+                    - generic [ref=e152]: Readiness
+                    - generic [ref=e153]: Bootstrapping
+                    - generic [ref=e154]: The workspace is now driven by current business activity rather than placeholders.
+                  - generic [ref=e155]:
+                    - generic [ref=e156]: Attention
+                    - generic [ref=e157]: "0"
+                    - generic [ref=e158]: Products currently need replenishment review or stock action.
+                - link "Open payments" [ref=e159] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/payments
+                  - text: Open payments
+                  - img [ref=e160]
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - heading "Quick actions" [level=3] [ref=e165]
+                - paragraph [ref=e166]: Jump into the workflows your team uses every day.
+              - generic [ref=e167]:
+                - link "Create invoice Draft a new sales invoice and move to issue." [ref=e168] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/sales/invoices/new
+                  - generic [ref=e169]:
+                    - generic [ref=e170]:
+                      - img [ref=e172]
+                      - generic [ref=e175]: Create invoice
+                      - generic [ref=e176]: Draft a new sales invoice and move to issue.
+                    - img [ref=e177]
+                - link "Create purchase Add new stock received from a supplier." [ref=e179] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/purchases/new
+                  - generic [ref=e180]:
+                    - generic [ref=e181]:
+                      - img [ref=e183]
+                      - generic [ref=e186]: Create purchase
+                      - generic [ref=e187]: Add new stock received from a supplier.
+                    - img [ref=e188]
+                - link "Add customer Create a customer profile before billing." [ref=e190] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/customers/new
+                  - generic [ref=e191]:
+                    - generic [ref=e192]:
+                      - img [ref=e194]
+                      - generic [ref=e198]: Add customer
+                      - generic [ref=e199]: Create a customer profile before billing.
+                    - img [ref=e200]
+                - link "Add product Set up stock, price, and GST rate." [ref=e202] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/masters/products/new
+                  - generic [ref=e203]:
+                    - generic [ref=e204]:
+                      - img [ref=e206]
+                      - generic [ref=e210]: Add product
+                      - generic [ref=e211]: Set up stock, price, and GST rate.
+                    - img [ref=e212]
+                - link "Record payment Use the dedicated payments workspace for invoices and purchases." [ref=e214] [cursor=pointer]:
+                  - /url: /c/5cd37d30-a9d0-4aaf-b5b1-253d7e138dba/payments
+                  - generic [ref=e215]:
+                    - generic [ref=e216]:
+                      - img [ref=e218]
+                      - generic [ref=e221]: Record payment
+                      - generic [ref=e222]: Use the dedicated payments workspace for invoices and purchases.
+                    - img [ref=e223]
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - heading "Recent activity" [level=3] [ref=e227]
+                - paragraph [ref=e228]: The latest invoice, purchase, and payment events across the company.
+              - generic [ref=e230]: Recent activity will appear here once invoices, purchases, or payments are recorded.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e236] [cursor=pointer]:
+    - img [ref=e237]
+  - alert [ref=e240]

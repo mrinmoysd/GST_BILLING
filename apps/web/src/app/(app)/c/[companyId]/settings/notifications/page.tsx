@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import {
 } from "@/lib/settings/notificationsHooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -79,15 +80,17 @@ export default function NotificationsSettingsPage({ params }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-          <TextField label="Code" value={code} onChange={setCode} />
-          <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
-            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="whatsapp">WhatsApp</option>
-            </select>
-          </div>
+            <TextField label="Code" value={code} onChange={setCode} />
+            <SelectField
+              label="Channel"
+              value={channel}
+              onChange={setChannel}
+              options={[
+                { value: "email", label: "Email" },
+                { value: "sms", label: "SMS" },
+                { value: "whatsapp", label: "WhatsApp" },
+              ]}
+            />
           </div>
           <TextField label="Subject (optional)" value={subject} onChange={setSubject} />
           <div>
@@ -110,8 +113,11 @@ export default function NotificationsSettingsPage({ params }: Props) {
                 await create.mutateAsync({ code: code.trim(), channel, subject: subject.trim() || undefined, body });
                 setCode("");
                 setSubject("");
+                toast.success("Template created");
               } catch (e: unknown) {
-                setError(getErrorMessage(e, "Failed to create template"));
+                const message = getErrorMessage(e, "Failed to create template");
+                setError(message);
+                toast.error(message);
               }
             }}
           >
@@ -127,29 +133,27 @@ export default function NotificationsSettingsPage({ params }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Channel</label>
-            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={channel} onChange={(e) => setChannel(e.target.value)}>
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="whatsapp">WhatsApp</option>
-            </select>
+            <SelectField
+              label="Channel"
+              value={channel}
+              onChange={setChannel}
+              options={[
+                { value: "email", label: "Email" },
+                { value: "sms", label: "SMS" },
+                { value: "whatsapp", label: "WhatsApp" },
+              ]}
+            />
+            <TextField label="To" value={testTo} onChange={setTestTo} placeholder="email/phone" />
           </div>
-          <TextField label="To" value={testTo} onChange={setTestTo} placeholder="email/phone" />
-          </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Template</label>
-            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={testTemplateCode} onChange={(e) => setTestTemplateCode(e.target.value)}>
-              <option value="">Select template</option>
-              {rows
-                .filter((row) => row.channel === channel)
-                .map((row) => (
-                  <option key={row.id} value={row.code}>
-                    {row.code}
-                  </option>
-                ))}
-            </select>
-          </div>
+          <SelectField
+            label="Template"
+            value={testTemplateCode}
+            onChange={setTestTemplateCode}
+            options={[
+              { value: "", label: "Select template" },
+              ...rows.filter((row) => row.channel === channel).map((row) => ({ value: row.code, label: row.code })),
+            ]}
+          />
           <div>
             <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Sample payload JSON</label>
             <textarea
@@ -178,9 +182,12 @@ export default function NotificationsSettingsPage({ params }: Props) {
                     sample_payload: payload,
                   });
                   setTestOk("Queued test notification.");
+                  toast.success("Test notification queued");
                   void outbox.refetch();
                 } catch (e: unknown) {
-                  setTestError(getErrorMessage(e, "Failed to queue test"));
+                  const message = getErrorMessage(e, "Failed to queue test");
+                  setTestError(message);
+                  toast.error(message);
                 }
               }}
             >
@@ -195,9 +202,12 @@ export default function NotificationsSettingsPage({ params }: Props) {
                 try {
                   await processOutbox.mutateAsync();
                   setTestOk("Processed pending notifications.");
+                  toast.success("Processed pending notifications");
                   void outbox.refetch();
                 } catch (e: unknown) {
-                  setTestError(getErrorMessage(e, "Failed to process outbox"));
+                  const message = getErrorMessage(e, "Failed to process outbox");
+                  setTestError(message);
+                  toast.error(message);
                 }
               }}
             >
@@ -243,8 +253,9 @@ export default function NotificationsSettingsPage({ params }: Props) {
                           if (!newName || !newName.trim()) return;
                           try {
                             await update.mutateAsync({ templateId: t.id, patch: { subject: newName.trim() } });
+                            toast.success("Template updated");
                           } catch (e: unknown) {
-                            window.alert(getErrorMessage(e, "Failed to update template"));
+                            toast.error(getErrorMessage(e, "Failed to update template"));
                           }
                         }}
                       >
@@ -303,8 +314,9 @@ export default function NotificationsSettingsPage({ params }: Props) {
                             onClick={async () => {
                               try {
                                 await retryNotification.mutateAsync(row.id);
+                                toast.success("Notification retry queued");
                               } catch (e: unknown) {
-                                window.alert(getErrorMessage(e, "Retry failed"));
+                                toast.error(getErrorMessage(e, "Retry failed"));
                               }
                             }}
                           >

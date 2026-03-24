@@ -1,0 +1,26 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Auth
+          - heading "Reset password" [level=1] [ref=e7]
+          - generic [ref=e8]: Set a new password using the reset token from the forgot-password flow.
+        - link "Back to login" [ref=e10] [cursor=pointer]:
+          - /url: /login
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "Choose a new password" [level=3] [ref=e13]
+          - paragraph [ref=e14]: The reset token is read from the URL query string.
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - text: New password
+            - textbox "New password" [ref=e17]
+          - generic [ref=e18]:
+            - text: Confirm password
+            - textbox "Confirm password" [ref=e19]
+          - button "Update password" [ref=e20]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e26] [cursor=pointer]:
+    - img [ref=e27]
+  - alert [ref=e30]

@@ -27,11 +27,7 @@ export default function InvoicesPage({ params }: Props) {
   const { bootstrapped } = useAuth();
   const query = useInvoices({ companyId: companyId, q, enabled: bootstrapped });
 
-  // API responses may be one of:
-  // 1) { data: Invoice[], page, limit, total }
-  // 2) { data: Invoice[], meta: { total, page, limit } }
-  // 3) legacy { data: { data: Invoice[], meta } }
-  const payload = query.data?.data as unknown;
+  const payload = query.data as unknown;
 
   function isRecord(v: unknown): v is Record<string, unknown> {
     return !!v && typeof v === "object";
@@ -40,7 +36,6 @@ export default function InvoicesPage({ params }: Props) {
   function readRows(v: unknown): unknown[] {
     if (!isRecord(v)) return [];
     if (Array.isArray(v.data)) return v.data;
-    if (isRecord(v.data) && Array.isArray(v.data.data)) return v.data.data;
     return [];
   }
 
@@ -48,7 +43,6 @@ export default function InvoicesPage({ params }: Props) {
     if (!isRecord(v)) return 0;
     if (typeof v.total === "number") return v.total;
     if (isRecord(v.meta) && typeof v.meta.total === "number") return v.meta.total;
-    if (isRecord(v.data) && isRecord(v.data.meta) && typeof v.data.meta.total === "number") return v.data.meta.total;
     return 0;
   }
 

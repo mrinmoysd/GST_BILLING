@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInvoices, usePayments, usePurchases, useRecordPayment } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -39,13 +40,12 @@ export default function PaymentsPage({ params }: Props) {
   const recordPayment = useRecordPayment({ companyId });
 
   type PaymentRow = Record<string, unknown>;
-  const paymentsPayload = paymentsQuery.data?.data as { data?: PaymentRow[] } | undefined;
-  const paymentRows: PaymentRow[] = paymentsPayload?.data ?? [];
-  const invoiceRows = ((invoicesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined)?.data ?? []).map((row) => ({
+  const paymentRows = (paymentsQuery.data?.data ?? []) as PaymentRow[];
+  const invoiceRows = ((invoicesQuery.data?.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
     id: String(row.id),
     label: String(row.invoiceNumber ?? row.invoice_no ?? row.id),
   }));
-  const purchaseRows = ((purchasesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined)?.data ?? []).map((row) => ({
+  const purchaseRows = ((purchasesQuery.data?.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
     id: String(row.id),
     label: String(row.billNumber ?? row.purchaseNumber ?? row.id),
   }));
@@ -80,52 +80,42 @@ export default function PaymentsPage({ params }: Props) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Target type</label>
-                <select
-                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                  value={targetType}
-                  onChange={(e) => {
-                    const next = e.target.value === "purchase" ? "purchase" : "invoice";
-                    setTargetType(next);
-                    setTargetId("");
-                  }}
-                >
-                  <option value="invoice">Invoice</option>
-                  <option value="purchase">Purchase</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">{targetType === "invoice" ? "Invoice" : "Purchase"}</label>
-                <select
-                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                  value={targetId}
-                  onChange={(e) => setTargetId(e.target.value)}
-                >
-                  <option value="">Select…</option>
-                  {targetOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectField
+                label="Target type"
+                value={targetType}
+                onChange={(value) => {
+                  const next = value === "purchase" ? "purchase" : "invoice";
+                  setTargetType(next);
+                  setTargetId("");
+                }}
+                options={[
+                  { value: "invoice", label: "Invoice" },
+                  { value: "purchase", label: "Purchase" },
+                ]}
+              />
+              <SelectField
+                label={targetType === "invoice" ? "Invoice" : "Purchase"}
+                value={targetId}
+                onChange={setTargetId}
+                options={[
+                  { value: "", label: "Select…" },
+                  ...targetOptions.map((option) => ({ value: option.id, label: option.label })),
+                ]}
+              />
               <TextField label="Amount" value={amount} onChange={setAmount} type="number" />
-              <div>
-                <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
-                <select
-                  className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="cash">Cash</option>
-                  <option value="upi">UPI</option>
-                  <option value="bank">Bank</option>
-                  <option value="card">Card</option>
-                </select>
-              </div>
+              <SelectField
+                label="Method"
+                value={paymentMethod}
+                onChange={setPaymentMethod}
+                options={[
+                  { value: "cash", label: "Cash" },
+                  { value: "upi", label: "UPI" },
+                  { value: "bank", label: "Bank" },
+                  { value: "card", label: "Card" },
+                ]}
+              />
               <TextField label="Reference" value={reference} onChange={setReference} placeholder="Optional" />
-              <TextField label="Payment date (YYYY-MM-DD)" value={paymentDate} onChange={setPaymentDate} placeholder="Optional" />
+              <DateField label="Payment date" value={paymentDate} onChange={setPaymentDate} />
             </div>
 
             {error ? <InlineError message={error} /> : null}
@@ -149,8 +139,12 @@ export default function PaymentsPage({ params }: Props) {
                     });
                     setAmount("");
                     setReference("");
+                    setPaymentDate("");
+                    toast.success("Payment recorded");
                   } catch (err: unknown) {
-                    setError(getErrorMessage(err, "Failed to record payment"));
+                    const message = getErrorMessage(err, "Failed to record payment");
+                    setError(message);
+                    toast.error(message);
                   }
                 }}
               >
@@ -169,22 +163,20 @@ export default function PaymentsPage({ params }: Props) {
             <CardDescription>Review the current payment ledger using date and method filters.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-            <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
-            <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-              >
-                <option value="">All methods</option>
-                <option value="cash">Cash</option>
-                <option value="upi">UPI</option>
-                <option value="bank">Bank</option>
-                <option value="card">Card</option>
-              </select>
-            </div>
+            <DateField label="From" value={from} onChange={setFrom} />
+            <DateField label="To" value={to} onChange={setTo} />
+            <SelectField
+              label="Method"
+              value={method}
+              onChange={setMethod}
+              options={[
+                { value: "", label: "All methods" },
+                { value: "cash", label: "Cash" },
+                { value: "upi", label: "UPI" },
+                { value: "bank", label: "Bank" },
+                { value: "card", label: "Card" },
+              ]}
+            />
             <div className="flex items-end gap-3">
               <Link href={`/c/${companyId}/sales/invoices`} className="text-sm font-medium text-[var(--accent)] hover:underline">
                 Open invoices

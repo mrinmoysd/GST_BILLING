@@ -1,0 +1,221 @@
+- generic [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Pos" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/pos
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - generic [ref=e130]: Billing
+          - generic [ref=e131]:
+            - link "Switch" [ref=e132] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e133]
+            - generic [ref=e135]: owner
+            - button "Demo Company" [ref=e136]:
+              - generic [ref=e137]: Demo Company
+              - img [ref=e138]
+      - main [ref=e141]:
+        - generic [ref=e143]:
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: POS
+              - heading "Retail billing" [level=1] [ref=e147]
+              - generic [ref=e148]: Use a scan-first cart, complete the sale in one pass, and jump straight into a printable receipt.
+            - generic [ref=e150]:
+              - link "POS home" [ref=e151] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/pos
+                - button "POS home" [ref=e152]
+              - link "Invoices" [ref=e153] [cursor=pointer]:
+                - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+                - button "Invoices" [ref=e154]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - generic [ref=e158]:
+                  - generic [ref=e159]:
+                    - generic [ref=e160]: Search first
+                    - generic [ref=e161]: Enter to add
+                  - heading "Product lookup" [level=3] [ref=e162]
+                  - paragraph [ref=e163]: Use SKU or product name. Barcode scanners can be treated as keyboard input targeting this field.
+                - generic [ref=e164]:
+                  - generic [ref=e165]:
+                    - generic [ref=e166]:
+                      - generic [ref=e167]: Scan or search
+                      - textbox "SKU, barcode, or product name" [active] [ref=e168]
+                    - generic [ref=e169]:
+                      - generic [ref=e170]: Customer
+                      - combobox [ref=e171]:
+                        - option "Select customer"
+                        - option "DEMO Customer 05" [selected]
+                        - option "DEMO Customer 04"
+                        - option "DEMO Customer 03"
+                        - option "DEMO Customer 02"
+                        - option "DEMO Customer 01"
+                        - option "E2E Customer 1772886813200"
+                        - option "E2E Customer 1772886777786"
+                        - option "E2E Customer 1772886085794 (Updated)"
+                        - option "E2E Customer 1772886029229 (Updated)"
+                        - option "New Customer"
+                  - generic [ref=e172]:
+                    - generic [ref=e173]:
+                      - generic [ref=e174]: Search results
+                      - generic [ref=e176]: Start typing to search products by SKU or name.
+                    - generic [ref=e177]:
+                      - generic [ref=e178]: Popular products
+                      - generic [ref=e179]:
+                        - button "DEMO Product 08 DEMO-SKU-008 169.00" [ref=e180]:
+                          - generic [ref=e181]: DEMO Product 08
+                          - generic [ref=e182]: DEMO-SKU-008
+                          - generic [ref=e183]: "169.00"
+                        - button "DEMO Product 07 DEMO-SKU-007 159.00" [ref=e184]:
+                          - generic [ref=e185]: DEMO Product 07
+                          - generic [ref=e186]: DEMO-SKU-007
+                          - generic [ref=e187]: "159.00"
+                        - button "DEMO Product 06 DEMO-SKU-006 149.00" [ref=e188]:
+                          - generic [ref=e189]: DEMO Product 06
+                          - generic [ref=e190]: DEMO-SKU-006
+                          - generic [ref=e191]: "149.00"
+                        - button "DEMO Product 05 DEMO-SKU-005 139.00" [ref=e192]:
+                          - generic [ref=e193]: DEMO Product 05
+                          - generic [ref=e194]: DEMO-SKU-005
+                          - generic [ref=e195]: "139.00"
+                        - button "DEMO Product 04 DEMO-SKU-004 129.00" [ref=e196]:
+                          - generic [ref=e197]: DEMO Product 04
+                          - generic [ref=e198]: DEMO-SKU-004
+                          - generic [ref=e199]: "129.00"
+                        - button "DEMO Product 03 DEMO-SKU-003 119.00" [ref=e200]:
+                          - generic [ref=e201]: DEMO Product 03
+                          - generic [ref=e202]: DEMO-SKU-003
+                          - generic [ref=e203]: "119.00"
+                        - button "DEMO Product 02 DEMO-SKU-002 109.00" [ref=e204]:
+                          - generic [ref=e205]: DEMO Product 02
+                          - generic [ref=e206]: DEMO-SKU-002
+                          - generic [ref=e207]: "109.00"
+                        - button "DEMO Product 01 DEMO-SKU-001 99.00" [ref=e208]:
+                          - generic [ref=e209]: DEMO Product 01
+                          - generic [ref=e210]: DEMO-SKU-001
+                          - generic [ref=e211]: "99.00"
+              - generic [ref=e212]:
+                - generic [ref=e213]:
+                  - heading "Cart" [level=3] [ref=e214]
+                  - paragraph [ref=e215]: Adjust quantities, prices, and discounts before completing the sale.
+                - generic [ref=e217]: No items in cart. Scan a barcode or pick a product from the lists above.
+            - generic [ref=e219]:
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - generic [ref=e222]: 0 items
+                  - generic [ref=e223]: CASH
+                - heading "Sale summary" [level=3] [ref=e224]
+                - paragraph [ref=e225]: Complete the transaction, post the payment, and open the receipt immediately.
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - generic [ref=e228]:
+                    - generic [ref=e229]: Sub-total
+                    - generic [ref=e230]: "0.00"
+                  - generic [ref=e231]:
+                    - generic [ref=e232]: GST
+                    - generic [ref=e233]: "0.00"
+                  - generic [ref=e234]:
+                    - generic [ref=e235]: Grand total
+                    - generic [ref=e236]: "0.00"
+                - generic [ref=e237]:
+                  - generic [ref=e238]:
+                    - generic [ref=e239]: Payment method
+                    - combobox [ref=e240]:
+                      - option "Cash" [selected]
+                      - option "UPI"
+                      - option "Card"
+                      - option "Bank"
+                  - generic [ref=e241]:
+                    - text: Amount received
+                    - textbox "Amount received" [ref=e242]:
+                      - /placeholder: "0.00"
+                  - generic [ref=e243]:
+                    - text: Reference
+                    - textbox "Reference" [ref=e244]:
+                      - /placeholder: Optional
+                  - generic [ref=e245]:
+                    - text: Notes
+                    - textbox "Notes" [ref=e246]:
+                      - /placeholder: Optional
+                      - text: POS sale
+                  - generic [ref=e248]:
+                    - generic [ref=e249]: Outstanding after payment
+                    - generic [ref=e250]: "0.00"
+                - generic [ref=e251]:
+                  - button "Complete sale" [disabled]
+                  - button "Clear cart" [ref=e252]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]

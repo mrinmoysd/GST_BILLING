@@ -1,0 +1,212 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e29]:
+    - complementary [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: GST Billing
+        - generic [ref=e33]: "Company: Demo Company"
+        - navigation [ref=e35]:
+          - link "Dashboard" [ref=e36] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - img [ref=e38]
+            - text: Dashboard
+          - link "Customers" [ref=e43] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/customers
+            - img [ref=e45]
+            - text: Customers
+          - link "Suppliers" [ref=e50] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/suppliers
+            - img [ref=e52]
+            - text: Suppliers
+          - link "Categories" [ref=e56] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/categories
+            - img [ref=e58]
+            - text: Categories
+          - link "Products" [ref=e62] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/masters/products
+            - img [ref=e64]
+            - text: Products
+          - link "Invoices" [ref=e68] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/sales/invoices
+            - img [ref=e70]
+            - text: Invoices
+          - link "POS" [ref=e73] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/pos
+            - img [ref=e75]
+            - text: POS
+          - link "Purchases" [ref=e80] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+            - img [ref=e82]
+            - text: Purchases
+          - link "Payments" [ref=e85] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/payments
+            - img [ref=e87]
+            - text: Payments
+          - link "Inventory" [ref=e90] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/inventory
+            - img [ref=e92]
+            - text: Inventory
+          - link "Accounting" [ref=e102] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/accounting
+            - img [ref=e104]
+            - text: Accounting
+          - link "Reports" [ref=e106] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/reports
+            - img [ref=e108]
+            - text: Reports
+          - link "Settings" [ref=e110] [cursor=pointer]:
+            - /url: /c/00000000-0000-0000-0000-000000000001/settings
+            - img [ref=e112]
+            - text: Settings
+    - generic [ref=e115]:
+      - banner [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - link "GST Billing" [ref=e119] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+            - navigation "Breadcrumb" [ref=e121]:
+              - list [ref=e122]:
+                - listitem [ref=e123]:
+                  - link "Workspace" [ref=e124] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/dashboard
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: /
+                  - link "Purchases" [ref=e127] [cursor=pointer]:
+                    - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: /
+                  - generic [ref=e130]: 208734df...
+          - generic [ref=e131]:
+            - link "Switch" [ref=e132] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Switch
+              - img [ref=e133]
+            - generic [ref=e135]: owner
+            - button "Demo Company" [ref=e136]:
+              - generic [ref=e137]: Demo Company
+              - img [ref=e138]
+      - main [ref=e141]:
+        - generic [ref=e216]:
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - generic [ref=e219]: Purchases
+              - heading "Purchase" [level=1] [ref=e220]
+              - generic [ref=e221]: Handle receiving, supplier bill attachment, purchase returns, payments, and lifecycle history from one operational surface.
+            - link "Back" [ref=e223] [cursor=pointer]:
+              - /url: /c/00000000-0000-0000-0000-000000000001/purchases
+          - generic [ref=e224]:
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - generic [ref=e228]:
+                    - generic [ref=e229]: received
+                    - generic [ref=e230]: Purchase 208734df
+                    - generic [ref=e231]: Returned 0.00
+                  - heading "Purchase detail" [level=3] [ref=e232]
+                  - paragraph [ref=e233]: Track receive state, bill attachment, purchase returns, and supplier payments.
+                - generic [ref=e234]:
+                  - generic [ref=e235]:
+                    - generic [ref=e236]: Purchase date
+                    - generic [ref=e237]: —
+                  - generic [ref=e238]:
+                    - generic [ref=e239]: Supplier bill
+                    - link "Download attachment" [ref=e241] [cursor=pointer]:
+                      - /url: http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/purchases/208734df-a047-4b93-8da7-8a86f66117b2/bill
+                  - generic [ref=e242]:
+                    - generic [ref=e243]: Purchase total
+                    - generic [ref=e244]: "116.82"
+                  - generic [ref=e245]:
+                    - generic [ref=e246]: Net after returns
+                    - generic [ref=e247]: "116.82"
+              - generic [ref=e248]:
+                - generic [ref=e249]:
+                  - heading "Document actions" [level=3] [ref=e250]
+                  - paragraph [ref=e251]: Receive stock, cancel the purchase, or upload the supplier bill.
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - button "Receive" [ref=e254]
+                    - button "Cancel" [ref=e255]
+                  - generic [ref=e256]:
+                    - generic [ref=e257]: Bill attachment
+                    - generic [ref=e258]:
+                      - button "Choose File" [ref=e259]
+                      - link "Download" [ref=e260] [cursor=pointer]:
+                        - /url: http://localhost:4000/api/companies/00000000-0000-0000-0000-000000000001/purchases/208734df-a047-4b93-8da7-8a86f66117b2/bill
+                      - generic [ref=e261]: PDF/JPG/PNG supported
+              - generic [ref=e323]: Payment recorded.
+            - generic [ref=e262]:
+              - generic [ref=e263]:
+                - generic [ref=e264]:
+                  - heading "Purchase returns" [level=3] [ref=e265]
+                  - paragraph [ref=e266]: Create post-receipt returns and push the stock reversal through the workflow.
+                - generic [ref=e267]:
+                  - generic [ref=e268]:
+                    - generic [ref=e269]:
+                      - text: Return date (YYYY-MM-DD)
+                      - textbox "Return date (YYYY-MM-DD)" [ref=e270]:
+                        - /placeholder: Optional
+                    - generic [ref=e271]:
+                      - text: Notes
+                      - textbox "Notes" [ref=e272]:
+                        - /placeholder: Optional
+                  - generic [ref=e274]:
+                    - generic [ref=e275]:
+                      - generic [ref=e276]: DEMO Product 01
+                      - generic [ref=e277]: Received 1 • Already returned 0
+                    - generic [ref=e278]: Available 1
+                    - generic [ref=e279]: Unit 99.00
+                    - spinbutton [ref=e280]
+                  - button "Create purchase return" [ref=e281]
+                  - generic [ref=e283]: No purchase returns have been created yet.
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - heading "Payments" [level=3] [ref=e286]
+                  - paragraph [ref=e287]: Record supplier payments and review settlement activity for this purchase.
+                - generic [ref=e288]:
+                  - generic [ref=e289]:
+                    - generic [ref=e290]:
+                      - text: Amount
+                      - spinbutton "Amount" [ref=e291]
+                    - generic [ref=e292]:
+                      - generic [ref=e293]: Method
+                      - combobox [ref=e294]:
+                        - option "Cash" [selected]
+                        - option "UPI"
+                        - option "Bank"
+                        - option "Card"
+                    - generic [ref=e295]:
+                      - text: Reference
+                      - textbox "Reference" [ref=e296]:
+                        - /placeholder: Optional
+                    - generic [ref=e297]:
+                      - button "Record" [ref=e298]
+                      - button "Today" [ref=e299]
+                    - generic [ref=e301]:
+                      - text: Payment date (YYYY-MM-DD)
+                      - textbox "Payment date (YYYY-MM-DD)" [ref=e302]:
+                        - /placeholder: Optional
+                  - table [ref=e304]:
+                    - rowgroup [ref=e305]:
+                      - row "Date Method Reference Amount" [ref=e306]:
+                        - columnheader "Date" [ref=e307]
+                        - columnheader "Method" [ref=e308]
+                        - columnheader "Reference" [ref=e309]
+                        - columnheader "Amount" [ref=e310]
+                    - rowgroup
+              - generic [ref=e311]:
+                - generic [ref=e312]:
+                  - heading "Lifecycle history" [level=3] [ref=e313]
+                  - paragraph [ref=e314]: Track receive, return, payment, bill attachment, and cancellation events.
+                - generic [ref=e315]:
+                  - generic [ref=e324]:
+                    - generic [ref=e325]: Payment of 116.82 recorded for purchase
+                    - generic [ref=e326]: purchase.payment_recorded • 2026-03-22T20:49:49.027Z
+                  - generic [ref=e320]:
+                    - generic [ref=e321]: Purchase 208734df-a047-4b93-8da7-8a86f66117b2 received into stock
+                    - generic [ref=e322]: purchase.received • 2026-03-22T20:49:43.965Z
+                  - generic [ref=e316]:
+                    - generic [ref=e317]: Draft purchase created
+                    - generic [ref=e318]: purchase.draft_created • 2026-03-22T20:49:26.860Z
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e23] [cursor=pointer]:
+    - img [ref=e24]
+  - alert [ref=e27]
