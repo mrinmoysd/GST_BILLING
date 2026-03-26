@@ -14,6 +14,14 @@ Phase 3 (12 weeks)
 Phase 4+ (ongoing)
 - AI invoice OCR, auto GST filing connectors, advanced analytics, marketplace integrations (Shopify), multi-warehouse, advanced permissions.
 
+V2 Distributor / Wholesaler Track
+- Quotations / estimates
+- Sales orders
+- Warehouses / godowns and stock transfer
+- Salesperson attribution and reporting
+- Distributor analytics for sales, dues, stock, and collections
+- Pilot-led go-to-market for trading and wholesale businesses
+
 Team & Roles
 - Backend engineers (NestJS/Prisma) x2
 - Frontend (Next.js/Tailwind) x1-2

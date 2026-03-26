@@ -11,6 +11,14 @@ import {
 import { Type } from 'class-transformer';
 import { IsDecimalStringSafe } from '../../common/validation/is-decimal-string-safe';
 
+export class CreateInvoiceItemBatchAllocationDto {
+  @IsUUID()
+  product_batch_id!: string;
+
+  @IsDecimalStringSafe()
+  quantity!: string;
+}
+
 export class CreateInvoiceItemDto {
   @IsUUID()
   product_id!: string;
@@ -24,11 +32,26 @@ export class CreateInvoiceItemDto {
   @IsOptional()
   @IsDecimalStringSafe()
   discount?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(3, 240)
+  override_reason?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateInvoiceItemBatchAllocationDto)
+  batch_allocations?: CreateInvoiceItemBatchAllocationDto[];
 }
 
 export class CreateInvoiceDto {
   @IsUUID()
   customer_id!: string;
+
+  @IsOptional()
+  @IsUUID()
+  salesperson_user_id?: string;
 
   @IsOptional()
   @IsString()
@@ -46,6 +69,10 @@ export class CreateInvoiceDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsUUID()
+  warehouse_id?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

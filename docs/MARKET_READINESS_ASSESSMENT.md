@@ -35,6 +35,8 @@ It does **not yet appear ready** for:
 - paid self-serve production onboarding at scale
 - low-touch SaaS launch where reliability, provider integration, and support operations must already be proven live
 
+It is also **not yet ready** to be positioned as a distributor / wholesaler operating system beyond trading / wholesale-lite use cases. That requires the V2 track now documented separately.
+
 ## Why
 
 The codebase is broad and materially implemented. The main blockers are no longer feature breadth. The blockers are:

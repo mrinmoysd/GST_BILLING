@@ -1,0 +1,497 @@
+{
+  "company": {
+    "name": "Demo Company",
+    "gstin": null,
+    "state_code": null
+  },
+  "period": {
+    "from": "2026-03-01",
+    "to": "2026-03-26"
+  },
+  "summary": {
+    "invoice_count": 12,
+    "b2b_count": 0,
+    "b2c_count": 12,
+    "credit_note_count": 0
+  },
+  "b2b": [],
+  "b2c": [
+    {
+      "invoice_number": "INV-3",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 02",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "342",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "366.73",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "3e8789cf-c5d1-420d-a224-93a9e5b3976b",
+          "product_name": "DEMO Product 02",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "12",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "122.08"
+        },
+        {
+          "product_id": "f796905b-d67e-4b75-b153-4741b879fff9",
+          "product_name": "DEMO Product 03",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "0",
+          "rate": "5",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "244.65"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-1",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 01",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "99",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "116.82",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "e47a83dc-7a47-4e05-896d-5c7e64d848ef",
+          "product_name": "DEMO Product 01",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "18",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "116.82"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-2",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 01",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "99",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "116.82",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "e47a83dc-7a47-4e05-896d-5c7e64d848ef",
+          "product_name": "DEMO Product 01",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "18",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "116.82"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-4",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 03",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "784",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "884.93",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "f796905b-d67e-4b75-b153-4741b879fff9",
+          "product_name": "DEMO Product 03",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "5",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "124.95"
+        },
+        {
+          "product_id": "fa0c3ab6-3422-49c3-91c4-e32acb80f205",
+          "product_name": "DEMO Product 04",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "0",
+          "rate": "18",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "298.54"
+        },
+        {
+          "product_id": "f0250065-a7a9-4c94-b3d5-93b37fc4d4f8",
+          "product_name": "DEMO Product 05",
+          "hsn_code": "8507",
+          "quantity": "3",
+          "taxable_value": "0",
+          "rate": "12",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "461.44"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-5",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 04",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "129",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "152.22",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "fa0c3ab6-3422-49c3-91c4-e32acb80f205",
+          "product_name": "DEMO Product 04",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "18",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "152.22"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-6",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 05",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "432",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "463.33",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "f0250065-a7a9-4c94-b3d5-93b37fc4d4f8",
+          "product_name": "DEMO Product 05",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "12",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "155.68"
+        },
+        {
+          "product_id": "a85b297c-68c6-4292-84c9-369c53c42ea7",
+          "product_name": "DEMO Product 06",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "0",
+          "rate": "5",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "307.65"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-7",
+      "invoice_date": "2026-03-09",
+      "customer_name": "DEMO Customer 01",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "964",
+      "cgst_amount": "0.00",
+      "sgst_amount": "0.00",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "1088.03",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "a85b297c-68c6-4292-84c9-369c53c42ea7",
+          "product_name": "DEMO Product 06",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "0",
+          "rate": "5",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "156.45"
+        },
+        {
+          "product_id": "1a14e43e-ece1-41af-90f7-b36fbc58875f",
+          "product_name": "DEMO Product 07",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "0",
+          "rate": "18",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "369.34"
+        },
+        {
+          "product_id": "67514652-979b-4a74-967e-7377a56dab3f",
+          "product_name": "DEMO Product 08 QA3",
+          "hsn_code": "8507",
+          "quantity": "3",
+          "taxable_value": "0",
+          "rate": "12",
+          "cgst_amount": "0",
+          "sgst_amount": "0",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "562.24"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-8",
+      "invoice_date": "2026-03-22",
+      "customer_name": "DEMO Customer 05",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "338",
+      "cgst_amount": "20.28",
+      "sgst_amount": "20.28",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "378.56",
+      "status": "paid",
+      "items": [
+        {
+          "product_id": "67514652-979b-4a74-967e-7377a56dab3f",
+          "product_name": "DEMO Product 08 QA3",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "338",
+          "rate": "12",
+          "cgst_amount": "20.28",
+          "sgst_amount": "20.28",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "378.56"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-9",
+      "invoice_date": "2026-03-22",
+      "customer_name": "DEMO Customer 01",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "99",
+      "cgst_amount": "8.91",
+      "sgst_amount": "8.91",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "116.82",
+      "status": "paid",
+      "items": [
+        {
+          "product_id": "e47a83dc-7a47-4e05-896d-5c7e64d848ef",
+          "product_name": "DEMO Product 01",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "99",
+          "rate": "18",
+          "cgst_amount": "8.91",
+          "sgst_amount": "8.91",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "116.82"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-10",
+      "invoice_date": "2026-03-22",
+      "customer_name": "DEMO Customer 05",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "99",
+      "cgst_amount": "8.91",
+      "sgst_amount": "8.91",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "116.82",
+      "status": "paid",
+      "items": [
+        {
+          "product_id": "e47a83dc-7a47-4e05-896d-5c7e64d848ef",
+          "product_name": "DEMO Product 01",
+          "hsn_code": "8507",
+          "quantity": "1",
+          "taxable_value": "99",
+          "rate": "18",
+          "cgst_amount": "8.91",
+          "sgst_amount": "8.91",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "116.82"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-11",
+      "invoice_date": "2026-03-23",
+      "customer_name": "DEMO Customer 05",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "338",
+      "cgst_amount": "20.28",
+      "sgst_amount": "20.28",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "378.56",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "67514652-979b-4a74-967e-7377a56dab3f",
+          "product_name": "DEMO Product 08 QA3",
+          "hsn_code": "8507",
+          "quantity": "2",
+          "taxable_value": "338",
+          "rate": "12",
+          "cgst_amount": "20.28",
+          "sgst_amount": "20.28",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "378.56"
+        }
+      ]
+    },
+    {
+      "invoice_number": "INV-12",
+      "invoice_date": "2026-03-23",
+      "customer_name": "DEMO Customer 05",
+      "customer_gstin": "",
+      "pos_state_code": "",
+      "taxable_value": "1908",
+      "cgst_amount": "171.72",
+      "sgst_amount": "171.72",
+      "igst_amount": "0.00",
+      "cess_amount": "0.00",
+      "invoice_value": "2251.44",
+      "status": "issued",
+      "items": [
+        {
+          "product_id": "1a14e43e-ece1-41af-90f7-b36fbc58875f",
+          "product_name": "DEMO Product 07",
+          "hsn_code": "8507",
+          "quantity": "12",
+          "taxable_value": "1908",
+          "rate": "18",
+          "cgst_amount": "171.72",
+          "sgst_amount": "171.72",
+          "igst_amount": "0",
+          "cess_amount": "0",
+          "line_total": "2251.44"
+        }
+      ]
+    }
+  ],
+  "cdnr": [],
+  "hsn_summary": [
+    {
+      "hsn_code": "8507",
+      "rate": "12",
+      "quantity": 12,
+      "taxable_value": 676,
+      "cgst_amount": 40.56,
+      "sgst_amount": 40.56,
+      "igst_amount": 0,
+      "cess_amount": 0
+    },
+    {
+      "hsn_code": "8507",
+      "rate": "5",
+      "quantity": 6,
+      "taxable_value": 0,
+      "cgst_amount": 0,
+      "sgst_amount": 0,
+      "igst_amount": 0,
+      "cess_amount": 0
+    },
+    {
+      "hsn_code": "8507",
+      "rate": "18",
+      "quantity": 21,
+      "taxable_value": 2106,
+      "cgst_amount": 189.54,
+      "sgst_amount": 189.54,
+      "igst_amount": 0,
+      "cess_amount": 0
+    }
+  ],
+  "warnings": [
+    "Invoice INV-3 is missing place of supply",
+    "Invoice INV-1 is missing place of supply",
+    "Invoice INV-2 is missing place of supply",
+    "Invoice INV-4 is missing place of supply",
+    "Invoice INV-5 is missing place of supply",
+    "Invoice INV-6 is missing place of supply",
+    "Invoice INV-7 is missing place of supply",
+    "Invoice INV-8 is missing place of supply",
+    "Invoice INV-9 is missing place of supply",
+    "Invoice INV-10 is missing place of supply",
+    "Invoice INV-11 is missing place of supply",
+    "Invoice INV-12 is missing place of supply"
+  ],
+  "reconciliation": {
+    "outward_taxable_value": 5631,
+    "credit_note_value": 0
+  }
+}

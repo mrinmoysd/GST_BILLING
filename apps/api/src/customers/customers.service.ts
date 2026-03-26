@@ -19,6 +19,33 @@ type LedgerRow = {
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async assertSalespersonBelongsToCompany(
+    companyId: string,
+    salespersonUserId?: string | null,
+  ) {
+    if (!salespersonUserId) return null;
+
+    const salesperson = await this.prisma.user.findFirst({
+      where: {
+        id: salespersonUserId,
+        companyId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    if (!salesperson) {
+      throw new NotFoundException('Salesperson not found');
+    }
+
+    return salesperson;
+  }
+
   private toNumber(value: unknown): number {
     if (value == null) return 0;
     if (typeof value === 'number') return value;
@@ -54,6 +81,16 @@ export class CustomersService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          salesperson: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
       }),
     ]);
 
@@ -77,16 +114,53 @@ export class CustomersService {
       shippingAddress: dto.shipping_address
         ? (dto.shipping_address as any)
         : (Prisma as any).JsonNull,
+      pricingTier: dto.pricing_tier?.trim() || null,
+      creditLimit: dto.credit_limit?.trim() || null,
+      creditDays: dto.credit_days ?? null,
+      creditControlMode: dto.credit_control_mode?.trim() || 'warn',
+      creditWarningPercent: dto.credit_warning_percent?.trim() || '80',
+      creditBlockPercent: dto.credit_block_percent?.trim() || '100',
+      creditHold: dto.credit_hold ?? false,
+      creditHoldReason: dto.credit_hold_reason?.trim() || null,
+      creditOverrideUntil: dto.credit_override_until
+        ? new Date(dto.credit_override_until)
+        : null,
+      creditOverrideReason: dto.credit_override_reason?.trim() || null,
+      salespersonUserId:
+        (await this.assertSalespersonBelongsToCompany(
+          companyId,
+          dto.salesperson_user_id,
+        ))?.id ?? null,
     } satisfies Prisma.CustomerUncheckedCreateInput;
 
     return this.prisma.customer.create({
       data,
+      include: {
+        salesperson: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
   }
 
   async get(companyId: string, customerId: string) {
     const customer = await this.prisma.customer.findFirst({
       where: { id: customerId, companyId, deletedAt: null },
+      include: {
+        salesperson: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
 
     if (!customer) throw new NotFoundException('Customer not found');
@@ -95,6 +169,14 @@ export class CustomersService {
 
   async update(companyId: string, customerId: string, dto: UpdateCustomerDto) {
     await this.get(companyId, customerId);
+
+    const salesperson =
+      dto.salesperson_user_id !== undefined
+        ? await this.assertSalespersonBelongsToCompany(
+            companyId,
+            dto.salesperson_user_id,
+          )
+        : undefined;
 
     const data = {
       name: dto.name,
@@ -106,11 +188,55 @@ export class CustomersService {
       shippingAddress: dto.shipping_address
         ? (dto.shipping_address as any)
         : undefined,
+      pricingTier:
+        dto.pricing_tier !== undefined ? dto.pricing_tier?.trim() || null : undefined,
+      creditLimit:
+        dto.credit_limit !== undefined ? dto.credit_limit?.trim() || null : undefined,
+      creditDays: dto.credit_days,
+      creditControlMode:
+        dto.credit_control_mode !== undefined
+          ? dto.credit_control_mode?.trim() || 'warn'
+          : undefined,
+      creditWarningPercent:
+        dto.credit_warning_percent !== undefined
+          ? dto.credit_warning_percent?.trim() || '80'
+          : undefined,
+      creditBlockPercent:
+        dto.credit_block_percent !== undefined
+          ? dto.credit_block_percent?.trim() || '100'
+          : undefined,
+      creditHold: dto.credit_hold,
+      creditHoldReason:
+        dto.credit_hold_reason !== undefined
+          ? dto.credit_hold_reason?.trim() || null
+          : undefined,
+      creditOverrideUntil:
+        dto.credit_override_until !== undefined
+          ? dto.credit_override_until
+            ? new Date(dto.credit_override_until)
+            : null
+          : undefined,
+      creditOverrideReason:
+        dto.credit_override_reason !== undefined
+          ? dto.credit_override_reason?.trim() || null
+          : undefined,
+      salespersonUserId:
+        dto.salesperson_user_id !== undefined ? salesperson?.id ?? null : undefined,
     } satisfies Prisma.CustomerUncheckedUpdateInput;
 
     return this.prisma.customer.update({
       where: { id: customerId },
       data,
+      include: {
+        salesperson: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
   }
 

@@ -169,3 +169,27 @@ Planned phases:
 - N3 — provider and platform integration validation
 - N4 — launch perimeter completion
 - N5 — launch readiness signoff
+
+---
+
+## Post-launch / V2 strategic track
+
+After the current product is stabilized for launch and pilot usage, the next major product-expansion track is:
+
+- [V2_DISTRIBUTOR_EXECUTION_MASTER_PLAN.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/todo/V2_DISTRIBUTOR_EXECUTION_MASTER_PLAN.md)
+
+Supporting product-definition docs:
+
+- [V2_DISTRIBUTOR_WHOLESALER_READINESS_PLAN.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/V2_DISTRIBUTOR_WHOLESALER_READINESS_PLAN.md)
+- [V2_DISTRIBUTOR_USER_STORIES.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/V2_DISTRIBUTOR_USER_STORIES.md)
+- [V2_DISTRIBUTOR_SCHEMA_CHANGE_SPEC.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/V2_DISTRIBUTOR_SCHEMA_CHANGE_SPEC.md)
+- [V2_DISTRIBUTOR_USER_FLOW_SPEC.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/V2_DISTRIBUTOR_USER_FLOW_SPEC.md)
+
+Current V2 progress:
+
+- D1 quotations: completed
+- D2 sales orders: completed
+- D3 warehouses / transfers: completed
+- D4 sales staff model: completed
+- D5 distributor analytics: completed
+- D6 QA, packaging, and pilot proof: completed

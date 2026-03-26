@@ -80,7 +80,7 @@ export class PurchasesService {
       where: { companyId: args.companyId, id: args.purchaseId },
       include: {
         supplier: true,
-        items: { include: { product: true } },
+        items: { include: { product: true, batchEntries: true } },
         purchaseReturns: {
           include: { items: { include: { product: true } } },
           orderBy: { createdAt: 'desc' },
@@ -107,6 +107,17 @@ export class PurchasesService {
           },
         });
         if (!supplier) throw new NotFoundException('Supplier not found');
+
+        if (args.dto.warehouse_id) {
+          const warehouse = await tx.warehouse.findFirst({
+            where: {
+              id: args.dto.warehouse_id,
+              companyId: args.companyId,
+              isActive: true,
+            },
+          });
+          if (!warehouse) throw new NotFoundException('Warehouse not found');
+        }
 
         const gstContext = await this.gst.resolvePurchaseContext(
           args.companyId,
@@ -141,6 +152,42 @@ export class PurchasesService {
           const product = products.find(
             (p: (typeof products)[number]) => p.id === item.product_id,
           )!;
+          const batchEntries = (item.batches ?? []).map((batch) => ({
+            batchNumber: batch.batch_number.trim(),
+            quantity: toDecimal(batch.quantity),
+            expiryDate: batch.expiry_date ? new Date(batch.expiry_date) : null,
+            manufacturingDate: batch.manufacturing_date
+              ? new Date(batch.manufacturing_date)
+              : null,
+          }));
+          const batchTotal = batchEntries.reduce(
+            (acc, batch) => acc.add(batch.quantity),
+            new Decimal(0),
+          );
+          if (product.batchTrackingEnabled) {
+            if (!batchEntries.length) {
+              throw new BadRequestException(
+                `Batch entries are required for product ${product.name}`,
+              );
+            }
+            if (!batchTotal.equals(quantity)) {
+              throw new BadRequestException(
+                `Batch quantities must equal purchase quantity for product ${product.name}`,
+              );
+            }
+            if (product.expiryTrackingEnabled) {
+              const missingExpiry = batchEntries.some((batch) => !batch.expiryDate);
+              if (missingExpiry) {
+                throw new BadRequestException(
+                  `Expiry date is required for product ${product.name}`,
+                );
+              }
+            }
+          } else if (batchEntries.length) {
+            throw new BadRequestException(
+              `Batch entries are only allowed for batch-tracked product ${product.name}`,
+            );
+          }
           const taxRate = product.taxRate;
           const split = this.gst.computeTaxSplit({
             companyStateCode: gstContext.companyStateCode,
@@ -157,6 +204,7 @@ export class PurchasesService {
             quantity,
             unitCost,
             discount,
+            batchEntries,
             taxRate,
             taxableValue: split.taxableValue,
             cgstAmount: split.cgstAmount,
@@ -188,6 +236,7 @@ export class PurchasesService {
             status: 'draft',
             supplierGstin: gstContext.supplierGstin,
             placeOfSupplyStateCode: gstContext.placeOfSupplyStateCode,
+            warehouseId: args.dto.warehouse_id ?? null,
             purchaseDate: args.dto.purchase_date
               ? new Date(args.dto.purchase_date)
               : null,
@@ -203,6 +252,17 @@ export class PurchasesService {
                   quantity: i.quantity,
                   unitCost: i.unitCost,
                   discount: i.discount,
+                  batchEntries: i.batchEntries.length
+                    ? {
+                        create: i.batchEntries.map((batch) => ({
+                          companyId: args.companyId,
+                          batchNumber: batch.batchNumber,
+                          quantity: batch.quantity,
+                          expiryDate: batch.expiryDate,
+                          manufacturingDate: batch.manufacturingDate,
+                        })),
+                      }
+                    : undefined,
                   taxRate: i.taxRate,
                   taxableValue: i.taxableValue,
                   cgstAmount: i.cgstAmount,
@@ -269,7 +329,7 @@ export class PurchasesService {
     return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const purchase = await tx.purchase.findFirst({
         where: { companyId: args.companyId, id: args.purchaseId },
-        include: { items: true },
+        include: { items: { include: { batchEntries: true } } },
       });
       if (!purchase) throw new NotFoundException('Purchase not found');
       if (purchase.status !== 'draft') {
@@ -295,13 +355,30 @@ export class PurchasesService {
 
       // Increase stock for each item
       for (const item of purchase.items) {
+        await this.inventory.recordPurchaseBatchReceipt({
+          tx,
+          companyId: args.companyId,
+          warehouseId: purchase.warehouseId ?? undefined,
+          productId: item.productId,
+          purchaseItemId: item.id,
+          quantity: new Decimal(item.quantity),
+          entries: item.batchEntries.map((entry) => ({
+            id: entry.id,
+            batchNumber: entry.batchNumber,
+            quantity: new Decimal(entry.quantity),
+            expiryDate: entry.expiryDate ?? null,
+            manufacturingDate: entry.manufacturingDate ?? null,
+          })),
+        });
         await this.inventory.adjustStock({
+          tx,
           companyId: args.companyId,
           productId: item.productId,
           delta: new Decimal(item.quantity),
           sourceType: 'purchase',
           sourceId: purchase.id,
           note: 'Purchase received',
+          warehouseId: purchase.warehouseId ?? undefined,
         });
       }
 
@@ -320,7 +397,7 @@ export class PurchasesService {
     return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const purchase = await tx.purchase.findFirst({
         where: { companyId: args.companyId, id: args.purchaseId },
-        include: { items: true },
+        include: { items: { include: { batchEntries: true } } },
       });
       if (!purchase) throw new NotFoundException('Purchase not found');
       if (purchase.status === 'cancelled') {
@@ -350,13 +427,26 @@ export class PurchasesService {
 
       // Reverse stock for each item. Negative stock enforcement is respected.
       for (const item of purchase.items) {
+        await this.inventory.reversePurchaseBatchReceipt({
+          tx,
+          companyId: args.companyId,
+          warehouseId: purchase.warehouseId ?? undefined,
+          productId: item.productId,
+          entries: item.batchEntries.map((entry) => ({
+            productBatchId: entry.productBatchId ?? null,
+            batchNumber: entry.batchNumber,
+            quantity: new Decimal(entry.quantity),
+          })),
+        });
         await this.inventory.adjustStock({
+          tx,
           companyId: args.companyId,
           productId: item.productId,
           delta: new Decimal(item.quantity).mul(-1),
           sourceType: 'purchase_return',
           sourceId: purchase.id,
           note: 'Purchase cancelled (reversal)',
+          warehouseId: purchase.warehouseId ?? undefined,
         });
       }
 
@@ -436,6 +526,15 @@ export class PurchasesService {
               id: true,
               productId: true,
               quantity: true,
+              batchEntries: {
+                select: {
+                  productBatchId: true,
+                  batchNumber: true,
+                  quantity: true,
+                  createdAt: true,
+                },
+                orderBy: { createdAt: 'asc' },
+              },
               unitCost: true,
               hsnCode: true,
               taxRate: true,
@@ -529,11 +628,21 @@ export class PurchasesService {
         const lineSubTotal = perUnitSubTotal.mul(quantity);
         const lineTaxTotal = perUnitTaxTotal.mul(quantity);
         const lineTotal = lineSubTotal.add(lineTaxTotal);
+        const batchReversalEntries = this.computePurchaseReturnBatchEntries({
+          batchEntries: purchaseItem.batchEntries.map((entry) => ({
+            productBatchId: entry.productBatchId ?? null,
+            batchNumber: entry.batchNumber,
+            quantity: new Decimal(entry.quantity),
+          })),
+          priorReturnedQuantity: alreadyReturned,
+          returnQuantity: quantity,
+        });
 
         return {
           purchaseItemId: purchaseItem.id,
           productId: purchaseItem.productId,
           quantity,
+          batchReversalEntries,
           unitCost: new Decimal(purchaseItem.unitCost),
           hsnCode: purchaseItem.hsnCode,
           taxRate: purchaseItem.taxRate,
@@ -599,13 +708,22 @@ export class PurchasesService {
       });
 
       for (const item of computedItems) {
+        await this.inventory.reversePurchaseBatchReceipt({
+          tx,
+          companyId: args.companyId,
+          warehouseId: purchase.warehouseId ?? undefined,
+          productId: item.productId,
+          entries: item.batchReversalEntries,
+        });
         await this.inventory.adjustStock({
+          tx,
           companyId: args.companyId,
           productId: item.productId,
           delta: item.quantity.mul(-1),
           sourceType: 'purchase_return',
           sourceId: purchaseReturn.id,
           note: `Purchase return ${purchaseReturn.returnNumber}`,
+          warehouseId: purchase.warehouseId ?? undefined,
         });
       }
 
@@ -678,6 +796,48 @@ export class PurchasesService {
       return returned.gte(item.quantity);
     });
     return fullyReturned ? 'returned' : 'returned_partial';
+  }
+
+  private computePurchaseReturnBatchEntries(args: {
+    batchEntries: Array<{
+      productBatchId: string | null;
+      batchNumber: string;
+      quantity: Decimal;
+    }>;
+    priorReturnedQuantity: Decimal;
+    returnQuantity: Decimal;
+  }) {
+    if (!args.batchEntries.length || args.returnQuantity.lte(0)) return [];
+
+    let skip = new Decimal(args.priorReturnedQuantity);
+    let remaining = new Decimal(args.returnQuantity);
+    const allocations: Array<{
+      productBatchId: string | null;
+      batchNumber: string;
+      quantity: Decimal;
+    }> = [];
+
+    for (const entry of args.batchEntries) {
+      if (remaining.lte(0)) break;
+      if (skip.gte(entry.quantity)) {
+        skip = skip.sub(entry.quantity);
+        continue;
+      }
+
+      const availableFromEntry = entry.quantity.sub(skip);
+      const take = Decimal.min(availableFromEntry, remaining);
+      if (take.gt(0)) {
+        allocations.push({
+          productBatchId: entry.productBatchId,
+          batchNumber: entry.batchNumber,
+          quantity: take,
+        });
+        remaining = remaining.sub(take);
+      }
+      skip = new Decimal(0);
+    }
+
+    return allocations;
   }
 
   private async createLifecycleEvent(

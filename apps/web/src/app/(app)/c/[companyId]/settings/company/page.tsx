@@ -6,7 +6,7 @@ import Image from "next/image";
 import { apiClient } from "@/lib/api/client";
 import { useCompany, useUpdateCompany, useUploadCompanyLogo, useVerifyCompanyGstin } from "@/lib/settings/companyHooks";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -35,14 +35,35 @@ export default function CompanySettingsPage({ params }: Props) {
   const [logoUrl, setLogoUrl] = React.useState("");
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [allowNegStock, setAllowNegStock] = React.useState(false);
+  const [complianceProvider, setComplianceProvider] = React.useState("disabled");
+  const [eInvoiceEnabled, setEInvoiceEnabled] = React.useState(false);
+  const [eWayBillEnabled, setEWayBillEnabled] = React.useState(false);
+  const [autoGenerateOnIssue, setAutoGenerateOnIssue] = React.useState(false);
+  const [defaultDistanceKm, setDefaultDistanceKm] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
   const [gstVerifyMessage, setGstVerifyMessage] = React.useState<string | null>(null);
   const companyRecord = company.data?.data;
+  const invoiceSettings =
+    companyRecord?.invoiceSettings && typeof companyRecord.invoiceSettings === "object"
+      ? (companyRecord.invoiceSettings as Record<string, unknown>)
+      : {};
+  const complianceSettings =
+    invoiceSettings.compliance && typeof invoiceSettings.compliance === "object"
+      ? (invoiceSettings.compliance as Record<string, unknown>)
+      : {};
 
   React.useEffect(() => {
     const c = companyRecord;
     if (!c) return;
+    const currentInvoiceSettings =
+      c.invoiceSettings && typeof c.invoiceSettings === "object"
+        ? (c.invoiceSettings as Record<string, unknown>)
+        : {};
+    const currentCompliance =
+      currentInvoiceSettings.compliance && typeof currentInvoiceSettings.compliance === "object"
+        ? (currentInvoiceSettings.compliance as Record<string, unknown>)
+        : {};
     setName(c.name ?? "");
     setGstin(c.gstin ?? "");
     setPan(c.pan ?? "");
@@ -52,6 +73,15 @@ export default function CompanySettingsPage({ params }: Props) {
     setLogoUrl(c.logoUrl ?? "");
     setLogoFile(null);
     setAllowNegStock(Boolean(c.allowNegativeStock));
+    setComplianceProvider(typeof currentCompliance.provider === "string" ? currentCompliance.provider : "disabled");
+    setEInvoiceEnabled(currentCompliance.e_invoice_enabled !== false && (typeof currentCompliance.provider === "string" ? currentCompliance.provider : "disabled") !== "disabled");
+    setEWayBillEnabled(currentCompliance.e_way_bill_enabled !== false && (typeof currentCompliance.provider === "string" ? currentCompliance.provider : "disabled") !== "disabled");
+    setAutoGenerateOnIssue(currentCompliance.auto_generate_on_issue === true);
+    setDefaultDistanceKm(
+      currentCompliance.default_distance_km !== null && currentCompliance.default_distance_km !== undefined
+        ? String(currentCompliance.default_distance_km)
+        : "",
+    );
   }, [companyRecord]);
 
   return (
@@ -155,6 +185,57 @@ export default function CompanySettingsPage({ params }: Props) {
                 Allow negative stock
               </label>
 
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="text-sm font-semibold text-[var(--foreground)]">Compliance settings</div>
+                <div className="mt-1 text-sm text-[var(--muted)]">Configure the local provider mode for D11 e-invoice and e-way bill workflows.</div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <SelectField
+                    label="Compliance provider"
+                    value={complianceProvider}
+                    onChange={setComplianceProvider}
+                    options={[
+                      { value: "disabled", label: "Disabled" },
+                      { value: "sandbox_local", label: "Sandbox local" },
+                    ]}
+                  />
+                  <TextField
+                    label="Default e-way distance (km)"
+                    value={defaultDistanceKm}
+                    onChange={setDefaultDistanceKm}
+                    placeholder="100"
+                  />
+                </div>
+                <div className="mt-4 grid gap-3 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={eInvoiceEnabled}
+                      onChange={(e) => setEInvoiceEnabled(e.target.checked)}
+                      disabled={complianceProvider === "disabled"}
+                    />
+                    Enable e-invoice workflow
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={eWayBillEnabled}
+                      onChange={(e) => setEWayBillEnabled(e.target.checked)}
+                      disabled={complianceProvider === "disabled"}
+                    />
+                    Enable e-way bill workflow
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={autoGenerateOnIssue}
+                      onChange={(e) => setAutoGenerateOnIssue(e.target.checked)}
+                      disabled={complianceProvider === "disabled"}
+                    />
+                    Auto-generate on invoice issue later
+                  </label>
+                </div>
+              </div>
+
               {error ? <InlineError message={error} /> : null}
               {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
 
@@ -168,6 +249,21 @@ export default function CompanySettingsPage({ params }: Props) {
                     if (!name.trim()) return setError("Company name is required.");
 
                     try {
+                      const nextInvoiceSettings = {
+                        ...invoiceSettings,
+                        compliance: {
+                          ...(complianceSettings ?? {}),
+                          provider: complianceProvider,
+                          e_invoice_enabled: complianceProvider === "disabled" ? false : eInvoiceEnabled,
+                          e_way_bill_enabled: complianceProvider === "disabled" ? false : eWayBillEnabled,
+                          auto_generate_on_issue: complianceProvider === "disabled" ? false : autoGenerateOnIssue,
+                          default_distance_km:
+                            defaultDistanceKm.trim() && Number(defaultDistanceKm) > 0
+                              ? Number(defaultDistanceKm)
+                              : null,
+                          default_transport_mode: "road",
+                        },
+                      };
                       await update.mutateAsync({
                         name: name.trim(),
                         gstin: gstin.trim() || undefined,
@@ -177,6 +273,7 @@ export default function CompanySettingsPage({ params }: Props) {
                         timezone: timezone.trim() || undefined,
                         logo_url: logoUrl.trim() || undefined,
                         allow_negative_stock: allowNegStock,
+                        invoice_settings: nextInvoiceSettings,
                       });
                       setOk("Saved.");
                     } catch (e: unknown) {

@@ -83,7 +83,17 @@ function AdminRouteGate({ children }: { children: React.ReactNode }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminAuthProvider>
-      <AdminRouteGate>{children}</AdminRouteGate>
+      <React.Suspense
+        fallback={
+          <main className="min-h-screen px-4 py-10 md:px-6">
+            <div className="mx-auto max-w-3xl">
+              <LoadingBlock label="Loading admin workspace..." />
+            </div>
+          </main>
+        }
+      >
+        <AdminRouteGate>{children}</AdminRouteGate>
+      </React.Suspense>
     </AdminAuthProvider>
   );
 }

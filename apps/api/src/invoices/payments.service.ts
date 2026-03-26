@@ -9,6 +9,7 @@ import { AccountingService } from '../accounting/accounting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { IdempotencyService } from '../idempotency/idempotency.service';
+import { UpdatePaymentInstrumentDto } from './dto/update-payment-instrument.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -18,11 +19,28 @@ export class PaymentsService {
     private readonly accounting: AccountingService,
   ) {}
 
+  private normalizeInstrumentStatus(args: {
+    method: string;
+    instrumentType?: string | null;
+  }) {
+    const method = args.method.trim().toLowerCase();
+    const instrumentType = args.instrumentType?.trim().toLowerCase() ?? '';
+    if (
+      ['cheque', 'pdc'].includes(method) ||
+      ['cheque', 'pdc'].includes(instrumentType)
+    ) {
+      return 'received';
+    }
+    return 'cleared';
+  }
+
   async list(args: {
     companyId: string;
     from?: string;
     to?: string;
     method?: string;
+    instrumentStatus?: string;
+    bankAccountId?: string;
     page: number;
     limit: number;
   }) {
@@ -30,6 +48,10 @@ export class PaymentsService {
     const where: any = {
       companyId: args.companyId,
       ...(args.method ? { method: args.method } : {}),
+      ...(args.instrumentStatus
+        ? { instrumentStatus: args.instrumentStatus }
+        : {}),
+      ...(args.bankAccountId ? { bankAccountId: args.bankAccountId } : {}),
       ...(args.from || args.to
         ? {
             paymentDate: {
@@ -46,7 +68,29 @@ export class PaymentsService {
         orderBy: { paymentDate: 'desc' },
         skip,
         take: args.limit,
-        include: { invoice: true },
+        include: {
+          invoice: true,
+          purchase: true,
+          bankAccount: {
+            select: {
+              id: true,
+              nickname: true,
+              bankName: true,
+              accountNumberLast4: true,
+            },
+          },
+          bankStatementLine: {
+            select: {
+              id: true,
+              txnDate: true,
+              description: true,
+              matchedAt: true,
+            },
+          },
+          salesperson: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
       }),
       this.prisma.payment.count({ where }),
     ]);
@@ -113,14 +157,59 @@ export class PaymentsService {
               }
             }
 
+            if (args.dto.bank_account_id) {
+              const bankAccount = await tx.companyBankAccount.findFirst({
+                where: {
+                  id: args.dto.bank_account_id,
+                  companyId: args.companyId,
+                  isActive: true,
+                },
+                select: { id: true },
+              });
+              if (!bankAccount) {
+                throw new NotFoundException('Bank account not found');
+              }
+            }
+
+            const instrumentType = args.dto.instrument_type?.trim() || null;
+            const instrumentStatus = this.normalizeInstrumentStatus({
+              method: args.dto.method,
+              instrumentType,
+            });
+
             const payment = await tx.payment.create({
               data: {
                 companyId: args.companyId,
                 invoiceId: invoice?.id ?? null,
                 purchaseId: purchase?.id ?? null,
+                salespersonUserId: invoice?.salespersonUserId ?? null,
+                bankAccountId: args.dto.bank_account_id ?? null,
                 amount,
                 method: args.dto.method,
+                instrumentType,
+                instrumentStatus,
+                instrumentNumber: args.dto.instrument_number?.trim() || null,
+                instrumentDate: args.dto.instrument_date
+                  ? new Date(args.dto.instrument_date)
+                  : null,
+                depositDate: args.dto.deposit_date
+                  ? new Date(args.dto.deposit_date)
+                  : null,
+                clearanceDate:
+                  instrumentStatus === 'cleared'
+                    ? args.dto.clearance_date
+                      ? new Date(args.dto.clearance_date)
+                      : args.dto.payment_date
+                        ? new Date(args.dto.payment_date)
+                        : new Date()
+                    : args.dto.clearance_date
+                      ? new Date(args.dto.clearance_date)
+                      : null,
+                bounceDate: args.dto.bounce_date
+                  ? new Date(args.dto.bounce_date)
+                  : null,
                 reference: args.dto.reference ?? null,
+                notes: args.dto.notes?.trim() || null,
                 paymentDate: args.dto.payment_date
                   ? new Date(args.dto.payment_date)
                   : new Date(),
@@ -159,6 +248,7 @@ export class PaymentsService {
                     payment_id: payment.id,
                     amount: amount.toString(),
                     method: payment.method,
+                    instrument_status: payment.instrumentStatus,
                   },
                 },
               });
@@ -183,6 +273,7 @@ export class PaymentsService {
                     payment_id: payment.id,
                     amount: amount.toString(),
                     method: payment.method,
+                    instrument_status: payment.instrumentStatus,
                   },
                 },
               });
@@ -197,5 +288,109 @@ export class PaymentsService {
     });
 
     return out.body;
+  }
+
+  async updateInstrument(args: {
+    companyId: string;
+    paymentId: string;
+    dto: UpdatePaymentInstrumentDto;
+  }) {
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const payment = await tx.payment.findFirst({
+        where: { id: args.paymentId, companyId: args.companyId },
+      });
+      if (!payment) throw new NotFoundException('Payment not found');
+
+      if (args.dto.bank_account_id) {
+        const bankAccount = await tx.companyBankAccount.findFirst({
+          where: {
+            id: args.dto.bank_account_id,
+            companyId: args.companyId,
+            isActive: true,
+          },
+          select: { id: true },
+        });
+        if (!bankAccount) {
+          throw new NotFoundException('Bank account not found');
+        }
+      }
+
+      const nextStatus = args.dto.instrument_status?.trim() || undefined;
+      const updated = await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          bankAccountId:
+            args.dto.bank_account_id !== undefined
+              ? args.dto.bank_account_id || null
+              : undefined,
+          instrumentStatus: nextStatus,
+          instrumentNumber:
+            args.dto.instrument_number !== undefined
+              ? args.dto.instrument_number?.trim() || null
+              : undefined,
+          instrumentDate:
+            args.dto.instrument_date !== undefined
+              ? args.dto.instrument_date
+                ? new Date(args.dto.instrument_date)
+                : null
+              : undefined,
+          depositDate:
+            args.dto.deposit_date !== undefined
+              ? args.dto.deposit_date
+                ? new Date(args.dto.deposit_date)
+                : null
+              : undefined,
+          clearanceDate:
+            args.dto.clearance_date !== undefined
+              ? args.dto.clearance_date
+                ? new Date(args.dto.clearance_date)
+                : null
+              : undefined,
+          bounceDate:
+            args.dto.bounce_date !== undefined
+              ? args.dto.bounce_date
+                ? new Date(args.dto.bounce_date)
+                : null
+              : undefined,
+          notes:
+            args.dto.notes !== undefined ? args.dto.notes?.trim() || null : undefined,
+        },
+      });
+
+      if (
+        nextStatus === 'bounced' &&
+        payment.invoiceId
+      ) {
+        const invoice = await tx.invoice.findFirst({
+          where: { id: payment.invoiceId, companyId: args.companyId },
+          select: {
+            id: true,
+            customerId: true,
+            salespersonUserId: true,
+            invoiceNumber: true,
+            dueDate: true,
+            balanceDue: true,
+          },
+        });
+        if (invoice) {
+          await tx.collectionTask.create({
+            data: {
+              companyId: args.companyId,
+              customerId: invoice.customerId,
+              invoiceId: invoice.id,
+              salespersonUserId: invoice.salespersonUserId ?? null,
+              status: 'open',
+              priority: 'high',
+              channel: 'bounce_followup',
+              dueDate: invoice.dueDate ?? new Date(),
+              nextActionDate: new Date(),
+              notes: `Auto-created after bounced instrument on invoice ${invoice.invoiceNumber ?? invoice.id}`,
+            },
+          });
+        }
+      }
+
+      return { data: updated };
+    });
   }
 }

@@ -26,12 +26,23 @@ export default function SettingsPage({ params }: Props) {
         { href: `/c/${companyId}/settings/users`, title: "Users", hint: "Invite teammates and adjust current role assignments.", permission: "settings.users.manage" },
         { href: `/c/${companyId}/settings/roles`, title: "Roles", hint: "Create custom roles and choose their permission inventory.", permission: "settings.roles.manage" },
         { href: `/c/${companyId}/settings/notifications`, title: "Notifications", hint: "Template configuration and test-send workspace.", permission: "settings.notifications.manage" },
+        { href: `/c/${companyId}/settings/sales/assignments`, title: "Field sales", hint: "Territories, routes, beats, and customer coverage for D12 execution.", permission: "masters.manage" },
       ],
     },
     {
       title: "Commercial",
       items: [
+        { href: `/c/${companyId}/settings/pricing`, title: "Pricing", hint: "Pricing tiers, price lists, and customer special rates.", permission: "settings.pricing.manage" },
         { href: `/c/${companyId}/settings/subscription`, title: "Subscription", hint: "Current plan status and provider checkout flow.", permission: "settings.subscription.manage" },
+      ],
+    },
+    {
+      title: "Migration and integration",
+      items: [
+        { href: `/c/${companyId}/settings/migrations`, title: "Migrations", hint: "Projects, import templates, profiles, and dry-run imports for go-live.", permission: "settings.migrations.manage" },
+        { href: `/c/${companyId}/settings/print-templates`, title: "Print templates", hint: "Draft, preview, publish, and default document layouts.", permission: "settings.print_templates.manage" },
+        { href: `/c/${companyId}/settings/custom-fields`, title: "Custom fields", hint: "Controlled typed metadata for customer, product, invoice, and purchase records.", permission: "settings.custom_fields.manage" },
+        { href: `/c/${companyId}/settings/integrations`, title: "Integrations", hint: "Outbound webhooks, delivery logs, and API keys for partner systems.", permission: "integrations.webhooks.manage" },
       ],
     },
   ];

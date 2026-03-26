@@ -15,10 +15,51 @@ import { CreateCreditNoteDto } from './dto/create-credit-note.dto';
 import { ShareInvoiceDto } from './dto/share-invoice.dto';
 import { GstService } from '../gst/gst.service';
 import { IdempotencyService } from '../idempotency/idempotency.service';
+import { PricingService } from '../pricing/pricing.service';
+import { InvoiceComplianceService } from './invoice-compliance.service';
+import { SalesOrdersService } from '../sales-orders/sales-orders.service';
 
 function toDecimal(value: string | undefined, fallback = '0'): Decimal {
   const v = (value ?? fallback).trim();
   return new Decimal(v);
+}
+
+function extractLegacyFreeQuantity(snapshot: unknown): Decimal {
+  if (!snapshot || typeof snapshot !== 'object') return new Decimal(0);
+  const raw = (snapshot as Record<string, unknown>).free_quantity;
+  if (raw === null || raw === undefined || raw === '') return new Decimal(0);
+  return new Decimal(String(raw));
+}
+
+function extractPreferredBatchAllocations(snapshot: unknown) {
+  if (!snapshot || typeof snapshot !== 'object') return [];
+  const raw = (snapshot as Record<string, unknown>).preferred_batch_allocations;
+  if (!Array.isArray(raw)) return [];
+  const allocations: Array<{ productBatchId: string; quantity?: Decimal }> = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue;
+    const productBatchId = (entry as Record<string, unknown>).product_batch_id;
+    const quantity = (entry as Record<string, unknown>).quantity;
+    if (typeof productBatchId !== 'string' || !productBatchId) continue;
+    allocations.push({
+      productBatchId,
+      quantity:
+        quantity === null || quantity === undefined || quantity === ''
+          ? undefined
+          : new Decimal(String(quantity)),
+    });
+  }
+  return allocations;
+}
+
+function resolveTotalQuantityForStock(item: {
+  quantity: Decimal;
+  totalQuantity?: Decimal | null;
+  pricingSnapshot?: unknown;
+}) {
+  const storedTotal = item.totalQuantity ? new Decimal(item.totalQuantity) : new Decimal(0);
+  if (storedTotal.gt(0)) return storedTotal;
+  return new Decimal(item.quantity).add(extractLegacyFreeQuantity(item.pricingSnapshot));
 }
 
 @Injectable()
@@ -30,7 +71,140 @@ export class InvoicesService {
     private readonly gst: GstService,
     private readonly idempotency: IdempotencyService,
     private readonly accounting: AccountingService,
+    private readonly pricing: PricingService,
+    private readonly compliance: InvoiceComplianceService,
+    private readonly salesOrders: SalesOrdersService,
   ) {}
+
+  private async resolveSalespersonUserId(args: {
+    tx: Prisma.TransactionClient;
+    companyId: string;
+    customerSalespersonUserId?: string | null;
+    explicitSalespersonUserId?: string | null;
+  }) {
+    const candidateId =
+      args.explicitSalespersonUserId ?? args.customerSalespersonUserId ?? null;
+    if (!candidateId) return null;
+
+    const salesperson = await args.tx.user.findFirst({
+      where: {
+        id: candidateId,
+        companyId: args.companyId,
+        isActive: true,
+      },
+      select: { id: true },
+    });
+    if (!salesperson) throw new NotFoundException('Salesperson not found');
+    return salesperson.id;
+  }
+
+  private async evaluateCreditControl(args: {
+    tx: Prisma.TransactionClient;
+    companyId: string;
+    customerId: string;
+    draftInvoiceId: string;
+    nextInvoiceTotal: Decimal;
+    overrideReason?: string | null;
+  }) {
+    const customer = await args.tx.customer.findFirst({
+      where: {
+        id: args.customerId,
+        companyId: args.companyId,
+        deletedAt: null,
+      },
+      select: {
+        creditLimit: true,
+        creditDays: true,
+        creditControlMode: true,
+        creditWarningPercent: true,
+        creditBlockPercent: true,
+        creditHold: true,
+        creditHoldReason: true,
+        creditOverrideUntil: true,
+      },
+    });
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    const openInvoices = await args.tx.invoice.findMany({
+      where: {
+        companyId: args.companyId,
+        customerId: args.customerId,
+        id: { not: args.draftInvoiceId },
+        status: { in: ['issued', 'paid'] },
+        balanceDue: { gt: 0 },
+      },
+      select: {
+        dueDate: true,
+        balanceDue: true,
+      },
+    });
+
+    const openExposure = openInvoices.reduce(
+      (acc, invoice) => acc.add(invoice.balanceDue),
+      new Decimal(0),
+    );
+    const projectedExposure = openExposure.add(args.nextInvoiceTotal);
+    const warnings: string[] = [];
+    const activeOverride =
+      customer.creditOverrideUntil &&
+      customer.creditOverrideUntil.getTime() >= Date.now();
+
+    if (customer.creditHold && !activeOverride && !args.overrideReason?.trim()) {
+      throw new BadRequestException(
+        customer.creditHoldReason || 'Customer is on credit hold',
+      );
+    }
+
+    if (customer.creditLimit) {
+      const warningThreshold = new Decimal(customer.creditLimit)
+        .mul(customer.creditWarningPercent)
+        .div(100);
+      const blockThreshold = new Decimal(customer.creditLimit)
+        .mul(customer.creditBlockPercent)
+        .div(100);
+
+      if (projectedExposure.gte(warningThreshold)) {
+        warnings.push(
+          `Projected exposure ${projectedExposure.toFixed(2)} crosses warning threshold`,
+        );
+      }
+
+      if (
+        projectedExposure.gte(blockThreshold) &&
+        !activeOverride &&
+        !args.overrideReason?.trim()
+      ) {
+        throw new BadRequestException(
+          `Projected exposure ${projectedExposure.toFixed(2)} exceeds credit limit policy`,
+        );
+      }
+    }
+
+    if (customer.creditDays && customer.creditDays > 0) {
+      const now = Date.now();
+      const maxOverdueDays = openInvoices.reduce((acc, invoice) => {
+        if (!invoice.dueDate) return acc;
+        const dueAt = new Date(invoice.dueDate).getTime();
+        if (!Number.isFinite(dueAt) || dueAt >= now) return acc;
+        const days = Math.floor((now - dueAt) / 86_400_000);
+        return Math.max(acc, days);
+      }, 0);
+
+      if (maxOverdueDays > customer.creditDays) {
+        const message = `Customer overdue by ${maxOverdueDays} days exceeds allowed credit days`;
+        warnings.push(message);
+        if (!activeOverride && !args.overrideReason?.trim()) {
+          throw new BadRequestException(message);
+        }
+      }
+    }
+
+    return {
+      projectedExposure,
+      warnings,
+      overrideApplied: Boolean(args.overrideReason?.trim()),
+    };
+  }
 
   async list(args: {
     companyId: string;
@@ -70,7 +244,12 @@ export class InvoicesService {
         orderBy: { createdAt: 'desc' },
         skip,
         take: args.limit,
-        include: { customer: true },
+        include: {
+          customer: true,
+          salesperson: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
       }),
       this.prisma.invoice.count({ where }),
     ]);
@@ -84,6 +263,9 @@ export class InvoicesService {
       include: {
         items: { include: { product: true } },
         customer: true,
+        salesperson: {
+          select: { id: true, name: true, email: true, role: true },
+        },
         creditNotes: {
           include: { items: { include: { product: true } } },
           orderBy: { createdAt: 'desc' },
@@ -98,7 +280,7 @@ export class InvoicesService {
 
   async createDraft(args: {
     companyId: string;
-    createdByUserId: string;
+    createdByUserId?: string | null;
     dto: CreateInvoiceDto;
     idempotencyKey?: string;
   }) {
@@ -124,6 +306,23 @@ export class InvoicesService {
               },
             });
             if (!customer) throw new NotFoundException('Customer not found');
+            const salespersonUserId = await this.resolveSalespersonUserId({
+              tx,
+              companyId: args.companyId,
+              customerSalespersonUserId: customer.salespersonUserId,
+              explicitSalespersonUserId: args.dto.salesperson_user_id,
+            });
+
+            if (args.dto.warehouse_id) {
+              const warehouse = await tx.warehouse.findFirst({
+                where: {
+                  id: args.dto.warehouse_id,
+                  companyId: args.companyId,
+                  isActive: true,
+                },
+              });
+              if (!warehouse) throw new NotFoundException('Warehouse not found');
+            }
 
             const gstContext = await this.gst.resolveSalesContext(
               args.companyId,
@@ -143,7 +342,7 @@ export class InvoicesService {
               throw new BadRequestException('One or more products not found');
             }
 
-            const itemsComputed = args.dto.items.map((item) => {
+            const itemsComputed = await Promise.all(args.dto.items.map(async (item) => {
               const quantity = toDecimal(item.quantity);
               const unitPrice = toDecimal(item.unit_price);
               const discount = toDecimal(item.discount, '0');
@@ -158,6 +357,39 @@ export class InvoicesService {
               const product = products.find(
                 (p: (typeof products)[number]) => p.id === item.product_id,
               )!;
+              const resolvedPricing = await this.pricing.resolveLine({
+                tx,
+                companyId: args.companyId,
+                customerId: customer.id,
+                productId: item.product_id,
+                quantity,
+                documentDate: args.dto.issue_date
+                  ? new Date(args.dto.issue_date)
+                  : undefined,
+                documentType: 'invoice',
+              });
+              const resolvedCommercial = await this.pricing.resolveCommercialLine({
+                tx,
+                companyId: args.companyId,
+                customerId: customer.id,
+                productId: item.product_id,
+                quantity,
+                documentDate: args.dto.issue_date
+                  ? new Date(args.dto.issue_date)
+                  : undefined,
+                documentType: 'invoice',
+              });
+              const guardrails = await this.pricing.evaluateCommercialGuardrails({
+                tx,
+                companyId: args.companyId,
+                quantity,
+                resolvedUnitPrice: resolvedPricing.resolvedUnitPrice,
+                resolvedDiscount: resolvedCommercial.resolvedDiscount,
+                enteredUnitPrice: unitPrice,
+                enteredDiscount: discount,
+                costPrice: product.costPrice,
+                overrideReason: item.override_reason,
+              });
               const taxRate = product.taxRate;
               const split = this.gst.computeTaxSplit({
                 companyStateCode: gstContext.companyStateCode,
@@ -167,13 +399,72 @@ export class InvoicesService {
               });
               const lineTaxTotal = split.taxTotal;
               const lineTotal = lineSubTotal.add(lineTaxTotal);
+              const freeQuantity = resolvedCommercial.freeQuantity;
+              const totalQuantity = quantity.add(freeQuantity);
+              const preferredBatchAllocations = (item.batch_allocations ?? []).map(
+                (allocation) => ({
+                  product_batch_id: allocation.product_batch_id,
+                  quantity: allocation.quantity,
+                }),
+              );
+              if (
+                preferredBatchAllocations.length > 0 &&
+                !args.dto.warehouse_id
+              ) {
+                throw new BadRequestException(
+                  'warehouse_id is required when batch_allocations are provided',
+                );
+              }
+              const preferredBatchTotal = preferredBatchAllocations.reduce(
+                (acc, allocation) => acc.add(new Decimal(allocation.quantity)),
+                new Decimal(0),
+              );
+              if (preferredBatchTotal.gt(totalQuantity)) {
+                throw new BadRequestException(
+                  'Preferred batch allocation exceeds invoice line quantity',
+                );
+              }
 
               return {
                 productId: item.product_id,
                 hsnCode: product.hsn,
                 quantity,
+                freeQuantity,
+                totalQuantity,
                 unitPrice,
                 discount,
+                pricingSource:
+                  guardrails.hasCommercialOverride
+                    ? 'manual_override'
+                    : resolvedPricing.source,
+                pricingSnapshot: {
+                  ...resolvedCommercial.snapshot,
+                  entered_unit_price: unitPrice.toString(),
+                  entered_discount: discount.toString(),
+                  override_reason: guardrails.overrideReason,
+                  warnings: guardrails.warnings,
+                  policy: guardrails.policy,
+                  effective_discount_percent:
+                    guardrails.effectiveDiscountPercent.toString(),
+                  margin_percent: guardrails.marginPercent?.toString() ?? null,
+                  applied_schemes: resolvedCommercial.appliedSchemes,
+                  resolved_discount: resolvedCommercial.resolvedDiscount.toString(),
+                  free_quantity: resolvedCommercial.freeQuantity.toString(),
+                  preferred_batch_allocations:
+                    preferredBatchAllocations.length > 0
+                      ? preferredBatchAllocations
+                      : undefined,
+                  override:
+                    guardrails.hasCommercialOverride
+                      ? {
+                          type: 'commercial_override',
+                          resolved_unit_price:
+                            resolvedPricing.resolvedUnitPrice.toString(),
+                          entered_unit_price: unitPrice.toString(),
+                          override_reason: guardrails.overrideReason,
+                        }
+                      : null,
+                },
                 taxRate,
                 taxableValue: split.taxableValue,
                 cgstAmount: split.cgstAmount,
@@ -184,7 +475,7 @@ export class InvoicesService {
                 lineTaxTotal,
                 lineTotal,
               };
-            });
+            }));
 
             const subTotal = itemsComputed.reduce(
               (acc, i) => acc.add(i.lineSubTotal),
@@ -202,9 +493,11 @@ export class InvoicesService {
             const invoiceData = {
                 companyId: args.companyId,
                 customerId: customer.id,
+                salespersonUserId,
                 status: 'draft',
                 customerGstin: gstContext.customerGstin,
                 placeOfSupplyStateCode: gstContext.placeOfSupplyStateCode,
+                warehouseId: args.dto.warehouse_id ?? null,
                 issueDate: args.dto.issue_date
                   ? new Date(args.dto.issue_date)
                   : null,
@@ -223,8 +516,12 @@ export class InvoicesService {
                     productId: i.productId,
                     hsnCode: i.hsnCode,
                     quantity: i.quantity,
+                    freeQuantity: i.freeQuantity,
+                    totalQuantity: i.totalQuantity,
                     unitPrice: i.unitPrice,
                     discount: i.discount,
+                    pricingSource: i.pricingSource,
+                    pricingSnapshot: i.pricingSnapshot as Prisma.InputJsonValue,
                     taxRate: i.taxRate,
                     taxableValue: i.taxableValue,
                     cgstAmount: i.cgstAmount,
@@ -241,6 +538,31 @@ export class InvoicesService {
             const invoice = await tx.invoice.create({
               data: invoiceData,
               include: { items: true },
+            });
+
+            await this.pricing.createCommercialAuditLogs({
+              tx,
+              companyId: args.companyId,
+              actorUserId: args.createdByUserId,
+              documentType: 'invoice',
+              documentId: invoice.id,
+              rows: invoice.items.map((item) => ({
+                documentLineId: item.id,
+                customerId: invoice.customerId,
+                productId: item.productId,
+                pricingSource: item.pricingSource,
+                action:
+                  item.pricingSource === 'manual_override'
+                    ? 'manual_override'
+                    : 'resolved_pricing',
+                overrideReason:
+                  (item.pricingSnapshot as Record<string, unknown> | null)
+                    ?.override_reason as string | null | undefined,
+                warnings:
+                  (item.pricingSnapshot as Record<string, unknown> | null)
+                    ?.warnings,
+                snapshot: item.pricingSnapshot as Prisma.InputJsonValue,
+              })),
             });
 
             await this.createLifecycleEvent(tx, {
@@ -298,6 +620,7 @@ export class InvoicesService {
     companyId: string;
     invoiceId: string;
     seriesCode?: string;
+    creditOverrideReason?: string | null;
   }) {
     return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const invoice: any = await tx.invoice.findFirst({
@@ -305,9 +628,11 @@ export class InvoicesService {
         include: {
           items: {
             include: {
+              batchAllocations: true,
               product: {
                 select: {
                   costPrice: true,
+                  batchTrackingEnabled: true,
                 },
               },
             },
@@ -319,6 +644,15 @@ export class InvoicesService {
         throw new ConflictException('Only draft invoices can be issued');
       }
 
+      const creditDecision = await this.evaluateCreditControl({
+        tx,
+        companyId: args.companyId,
+        customerId: invoice.customerId,
+        draftInvoiceId: invoice.id,
+        nextInvoiceTotal: new Decimal(invoice.total),
+        overrideReason: args.creditOverrideReason,
+      });
+
       const { seriesId, invoiceNumber } =
         await this.invoiceNumber.reserveNextInvoiceNumber({
           tx,
@@ -328,13 +662,41 @@ export class InvoicesService {
 
       // Decrement stock per invoice item.
       for (const item of invoice.items) {
+        const stockQuantity = resolveTotalQuantityForStock(item);
+        if (item.product?.batchTrackingEnabled) {
+          await this.inventory.allocateInvoiceItemBatches({
+            tx,
+            companyId: args.companyId,
+            warehouseId: invoice.warehouseId ?? undefined,
+            invoiceItemId: item.id,
+            productId: item.productId,
+            quantity: stockQuantity,
+            preferredAllocations: extractPreferredBatchAllocations(
+              item.pricingSnapshot,
+            ),
+          });
+        }
         await this.inventory.adjustStock({
+          tx,
           companyId: args.companyId,
           productId: item.productId,
-          delta: new Decimal(item.quantity).mul(-1),
+          delta: stockQuantity.mul(-1),
           note: `Invoice ${invoiceNumber}`,
           sourceType: 'invoice',
           sourceId: invoice.id,
+          warehouseId: invoice.warehouseId ?? undefined,
+        });
+      }
+
+      if (invoice.salesOrderId) {
+        await this.salesOrders.reverseFulfillment({
+          tx,
+          companyId: args.companyId,
+          salesOrderId: invoice.salesOrderId,
+          invoiceItems: invoice.items.map((item: any) => ({
+            salesOrderItemId: item.salesOrderItemId ?? null,
+            quantity: new Decimal(item.quantity),
+          })),
         });
       }
 
@@ -368,6 +730,11 @@ export class InvoicesService {
         payload: {
           invoice_number: invoiceNumber,
           series_id: seriesId,
+          credit_control: {
+            warnings: creditDecision.warnings,
+            projected_exposure: creditDecision.projectedExposure.toString(),
+            override_reason: args.creditOverrideReason ?? null,
+          },
         },
       });
 
@@ -382,9 +749,11 @@ export class InvoicesService {
         include: {
           items: {
             include: {
+              batchAllocations: true,
               product: {
                 select: {
                   costPrice: true,
+                  batchTrackingEnabled: true,
                 },
               },
             },
@@ -405,15 +774,35 @@ export class InvoicesService {
         );
       }
 
+      await this.compliance.assertNoActiveComplianceForInvoiceCancellation({
+        tx,
+        companyId: args.companyId,
+        invoiceId: invoice.id,
+      });
+
       // Reverse stock.
       for (const item of invoice.items) {
+        const stockQuantity = resolveTotalQuantityForStock(item);
+        if (item.product?.batchTrackingEnabled && item.batchAllocations?.length) {
+          await this.inventory.restoreInvoiceItemBatches({
+            tx,
+            companyId: args.companyId,
+            warehouseId: invoice.warehouseId ?? undefined,
+            allocations: item.batchAllocations.map((allocation: any) => ({
+              productBatchId: allocation.productBatchId,
+              quantity: new Decimal(allocation.quantity),
+            })),
+          });
+        }
         await this.inventory.adjustStock({
+          tx,
           companyId: args.companyId,
           productId: item.productId,
-          delta: new Decimal(item.quantity),
+          delta: stockQuantity,
           note: `Invoice cancel ${invoice.invoiceNumber ?? invoice.id}`,
           sourceType: 'invoice_cancel',
           sourceId: invoice.id,
+          warehouseId: invoice.warehouseId ?? undefined,
         });
       }
 
@@ -459,6 +848,8 @@ export class InvoicesService {
               id: true,
               productId: true,
               quantity: true,
+              totalQuantity: true,
+              pricingSnapshot: true,
               unitPrice: true,
               hsnCode: true,
               taxRate: true,
@@ -555,11 +946,19 @@ export class InvoicesService {
         const lineSubTotal = perUnitSubTotal.mul(quantity);
         const lineTaxTotal = perUnitTaxTotal.mul(quantity);
         const lineTotal = lineSubTotal.add(lineTaxTotal);
+        const stockQuantity = resolveTotalQuantityForStock({
+          quantity: new Decimal(invoiceItem.quantity),
+          totalQuantity: invoiceItem.totalQuantity
+            ? new Decimal(invoiceItem.totalQuantity)
+            : null,
+          pricingSnapshot: invoiceItem.pricingSnapshot,
+        }).mul(quantity.div(invoiceItem.quantity));
 
         return {
           invoiceItemId: invoiceItem.id,
           productId: invoiceItem.productId,
           quantity,
+          stockQuantity,
               unitPrice: new Decimal(invoiceItem.unitPrice),
               hsnCode: invoiceItem.hsnCode,
               taxRate: invoiceItem.taxRate,
@@ -639,12 +1038,14 @@ export class InvoicesService {
       if (creditNote.restock) {
         for (const item of computedItems) {
           await this.inventory.adjustStock({
+            tx,
             companyId: args.companyId,
             productId: item.productId,
-            delta: item.quantity,
+            delta: item.stockQuantity,
             sourceType: 'credit_note',
             sourceId: creditNote.id,
             note: `Credit note ${creditNote.noteNumber}`,
+            warehouseId: invoice.warehouseId ?? undefined,
           });
         }
       }

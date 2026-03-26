@@ -49,9 +49,18 @@ export default function InventoryPage({ params }: Props) {
         <Card>
           <CardHeader>
             <CardTitle>Next step</CardTitle>
-            <CardDescription>Use dedicated movements and adjustments pages to work inventory issues faster.</CardDescription>
+            <CardDescription>Use dedicated movements, warehouses, transfers, and adjustments pages to work inventory issues faster.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            <Link className="block font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/inventory/warehouses`}>
+              Manage warehouses
+            </Link>
+            <Link className="block font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/inventory/batches`}>
+              Review batch and expiry stock
+            </Link>
+            <Link className="block font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/inventory/transfers`}>
+              Track stock transfers
+            </Link>
             <Link className="block font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/inventory/movements`}>
               View all stock movements
             </Link>

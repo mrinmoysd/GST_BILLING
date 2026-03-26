@@ -20,7 +20,17 @@ function getErrorMessage(err: unknown, fallback: string) {
 
 type Props = { params: Promise<{ companyId: string }> };
 
-type CustomerRow = { id: string; name: string; email?: string | null; phone?: string | null };
+type CustomerRow = {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  salesperson?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+  } | null;
+};
 
 export default function CustomersPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -83,6 +93,7 @@ export default function CustomersPage({ params }: Props) {
                 <DataTh>Name</DataTh>
                 <DataTh>Email</DataTh>
                 <DataTh>Phone</DataTh>
+                <DataTh>Salesperson</DataTh>
               </tr>
             </DataThead>
             <tbody>
@@ -98,6 +109,7 @@ export default function CustomersPage({ params }: Props) {
                   </DataTd>
                   <DataTd>{c.email ?? "—"}</DataTd>
                   <DataTd>{c.phone ?? "—"}</DataTd>
+                  <DataTd>{c.salesperson?.name ?? c.salesperson?.email ?? "—"}</DataTd>
                 </DataTr>
               ))}
             </tbody>

@@ -38,6 +38,10 @@ export default function ProductDetailPage({ params }: Props) {
   const [costPrice, setCostPrice] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("");
   const [reorderLevel, setReorderLevel] = React.useState("");
+  const [batchTrackingEnabled, setBatchTrackingEnabled] = React.useState(false);
+  const [expiryTrackingEnabled, setExpiryTrackingEnabled] = React.useState(false);
+  const [batchIssuePolicy, setBatchIssuePolicy] = React.useState<"NONE" | "FIFO" | "FEFO">("NONE");
+  const [nearExpiryDays, setNearExpiryDays] = React.useState("");
   const [changeQty, setChangeQty] = React.useState("");
   const [note, setNote] = React.useState("");
   const [formError, setFormError] = React.useState<string | null>(null);
@@ -55,6 +59,18 @@ export default function ProductDetailPage({ params }: Props) {
     );
   setTaxRate(p.taxRate !== null && p.taxRate !== undefined ? String(p.taxRate) : "");
     setReorderLevel(p.reorderLevel !== null && p.reorderLevel !== undefined ? String(p.reorderLevel) : "");
+    setBatchTrackingEnabled(Boolean(p.batchTrackingEnabled ?? p.batch_tracking_enabled));
+    setExpiryTrackingEnabled(Boolean(p.expiryTrackingEnabled ?? p.expiry_tracking_enabled));
+    setBatchIssuePolicy(
+      ((p.batchIssuePolicy ?? p.batch_issue_policy ?? "NONE") as "NONE" | "FIFO" | "FEFO"),
+    );
+    setNearExpiryDays(
+      p.nearExpiryDays !== null && p.nearExpiryDays !== undefined
+        ? String(p.nearExpiryDays)
+        : p.near_expiry_days !== null && p.near_expiry_days !== undefined
+          ? String(p.near_expiry_days)
+          : "",
+    );
   }, [query.data]);
 
   return (
@@ -108,6 +124,14 @@ export default function ProductDetailPage({ params }: Props) {
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax rate</div>
                   <div className="mt-2 text-sm font-medium">{query.data.data.taxRate ?? "—"}%</div>
                 </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Batch mode</div>
+                  <div className="mt-2 text-sm font-medium">
+                    {query.data.data.batchTrackingEnabled || query.data.data.batch_tracking_enabled
+                      ? `${query.data.data.batchIssuePolicy ?? query.data.data.batch_issue_policy ?? "NONE"}`
+                      : "Not tracked"}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -133,6 +157,13 @@ export default function ProductDetailPage({ params }: Props) {
                     costPrice: costPrice ? Number(costPrice) : null,
                     gstRate: taxRate ? Number(taxRate) : null,
                     reorderLevel: reorderLevel ? Number(reorderLevel) : null,
+                    batchTrackingEnabled,
+                    expiryTrackingEnabled: batchTrackingEnabled ? expiryTrackingEnabled : false,
+                    batchIssuePolicy: batchTrackingEnabled ? batchIssuePolicy : "NONE",
+                    nearExpiryDays:
+                      batchTrackingEnabled && expiryTrackingEnabled && nearExpiryDays
+                        ? Number(nearExpiryDays)
+                        : null,
                   });
                   toast.success("Product updated");
                 } catch (e: unknown) {
@@ -161,6 +192,46 @@ export default function ProductDetailPage({ params }: Props) {
                   label="Reorder level"
                   value={reorderLevel}
                   onChange={setReorderLevel}
+                  type="number"
+                />
+                <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={batchTrackingEnabled}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setBatchTrackingEnabled(next);
+                      if (!next) {
+                        setExpiryTrackingEnabled(false);
+                        setBatchIssuePolicy("NONE");
+                        setNearExpiryDays("");
+                      }
+                    }}
+                  />
+                  Batch tracking enabled
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={expiryTrackingEnabled}
+                    disabled={!batchTrackingEnabled}
+                    onChange={(e) => setExpiryTrackingEnabled(e.target.checked)}
+                  />
+                  Expiry tracking enabled
+                </label>
+                <SelectField
+                  label="Batch issue policy"
+                  value={batchIssuePolicy}
+                  onChange={(value) => setBatchIssuePolicy(value as "NONE" | "FIFO" | "FEFO")}
+                >
+                  <option value="NONE">No enforced policy</option>
+                  <option value="FIFO">FIFO</option>
+                  <option value="FEFO">FEFO</option>
+                </SelectField>
+                <TextField
+                  label="Near expiry days"
+                  value={nearExpiryDays}
+                  onChange={setNearExpiryDays}
                   type="number"
                 />
               </div>

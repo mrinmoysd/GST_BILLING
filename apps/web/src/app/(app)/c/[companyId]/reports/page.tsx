@@ -18,6 +18,7 @@ export default function ReportsPage({ params }: Props) {
         { href: `/c/${companyId}/reports/purchases-summary`, title: "Purchases summary", hint: "Spend and purchase counts for a date range." },
         { href: `/c/${companyId}/reports/outstanding`, title: "Outstanding invoices", hint: "Receivables and overdue exposure." },
         { href: `/c/${companyId}/reports/top-products`, title: "Top products", hint: "Best performers by amount or quantity." },
+        { href: `/c/${companyId}/reports/credit-control`, title: "Credit and banking risk", hint: "Aging, task load, pending instruments, and reconciliation pressure." },
       ],
     },
     {
@@ -26,6 +27,19 @@ export default function ReportsPage({ params }: Props) {
       items: [
         { href: `/c/${companyId}/reports/profit-snapshot`, title: "Profit snapshot", hint: "Quick margin view for a selected period." },
         { href: `/c/${companyId}/reports/gst/gstr1`, title: "GST compliance center", hint: "GSTR-1, GSTR-3B, HSN, ITC, and export job tracking." },
+        { href: `/c/${companyId}/reports/gst/compliance`, title: "Invoice compliance exceptions", hint: "Blocked, failed, or pending e-invoice and e-way bill follow-up." },
+      ],
+    },
+    {
+      title: "Distributor control",
+      description: "Track distributor performance across team ownership, customer dues, warehouse stock, and product movement.",
+      items: [
+        { href: `/c/${companyId}/reports/distributor/sales-team`, title: "Sales team performance", hint: "Sales, collections, and outstanding grouped by salesperson." },
+        { href: `/c/${companyId}/reports/distributor/analytics`, title: "Distributor analytics", hint: "Owner view for dues, warehouse stock, and fast / slow movement." },
+        { href: `/c/${companyId}/reports/distributor/dispatch`, title: "Dispatch operations", hint: "Pending dispatch, partial orders, in-transit challans, and delivered-not-invoiced pressure." },
+        { href: `/c/${companyId}/reports/distributor/commercial`, title: "Commercial control", hint: "Scheme usage, pricing overrides, discount leakage, and rule coverage." },
+        { href: `/c/${companyId}/reports/distributor/routes`, title: "Route coverage", hint: "Route discipline, productive visits, and route-linked dues." },
+        { href: `/c/${companyId}/reports/distributor/dcr`, title: "DCR and visit discipline", hint: "Daily closeout register, missed visits, and rep productivity." },
       ],
     },
   ];
@@ -45,8 +59,9 @@ export default function ReportsPage({ params }: Props) {
             <CardDescription>Use business summaries for day-to-day control, GST filing review, and route formal books to the accounting area.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">6 live report routes</Badge>
+            <Badge variant="secondary">11 live report routes</Badge>
             <Badge variant="outline">Business + GST filing</Badge>
+            <Badge variant="outline">Distributor baseline</Badge>
           </CardContent>
         </Card>
         <Card>

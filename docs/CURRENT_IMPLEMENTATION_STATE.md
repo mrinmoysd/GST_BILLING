@@ -17,6 +17,8 @@ This document summarizes what is implemented, what is partial, and what remains 
 - RBAC: role catalog, role CRUD, role assignment, permission-aware session access
 - Masters: customers, suppliers, products, categories
 - Inventory: stock adjustment, stock movements, low stock, inventory workflow routes
+- Distributor V2 D3: warehouse master, warehouse stock balances, warehouse-aware purchase/invoice context, stock transfer workflow
+- Distributor V2 D4: salesperson role, customer assignment, document/payment attribution, and rep-wise distributor reports
 - Sales: invoice draft, issue, cancel, payments, credit notes, sales returns, share logging, PDF jobs/download
 - Purchases: draft, receive, cancel, purchase returns, bill upload/download, payments
 - GST: GSTR-1, GSTR-3B, HSN summary, ITC reports, GST export jobs/downloads
@@ -96,6 +98,41 @@ This document summarizes what is implemented, what is partial, and what remains 
 - Full Playwright execution against a live seeded app
 - Staging validation checklist results captured in docs
 
+### Distributor / wholesaler V2
+
+- the V2 readiness track is now started
+- D1 quotations is implemented end to end:
+  - quotation storage and numbering
+  - quotation list / create / detail workspace
+  - status transitions
+  - quotation to invoice draft conversion
+- D2 sales orders is implemented end to end:
+  - sales order storage and numbering
+  - direct sales order create / list / detail workspace
+  - quotation to sales order conversion
+  - sales order to invoice conversion
+  - partial fulfillment tracking
+- D3 warehouses / transfers is implemented end to end:
+  - warehouse master and default warehouse handling
+  - stock by warehouse
+  - transfer request / dispatch / receive flow
+  - warehouse-aware purchase and invoice draft creation
+- D4 sales staff model is implemented end to end:
+  - built-in salesperson role
+  - customer salesperson assignment
+  - quotation / sales-order / invoice / payment attribution
+  - sales, collections, and outstanding by salesperson
+- D5 distributor analytics is implemented end to end:
+  - outstanding by customer with salesperson context
+  - stock by warehouse with stock value and low-stock pressure
+  - fast-moving and slow-moving product views
+  - distributor analytics workspace
+  - owner dashboard enrichment for distributor operations
+- D6 QA, packaging, and pilot proof is implemented:
+  - distributor demo seed
+  - distributor Playwright smoke baseline
+  - distributor QA/demo documentation and pilot packaging
+
 ---
 
 ## Conclusion
@@ -103,3 +140,4 @@ This document summarizes what is implemented, what is partial, and what remains 
 The product application itself is broad and largely implemented across tenant workflows, GST, accounting, platform integrations, POS, reports, and public-facing pages. The largest remaining gaps are now:
 
 - live environment validation and deployment confidence
+- vertical expansion if targeting distributor / wholesaler workflows beyond the current trading-business fit

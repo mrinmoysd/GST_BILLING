@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+} from 'class-validator';
 
 export class StockAdjustmentV2Dto {
   @ApiProperty({ description: 'Positive or negative adjustment quantity' })
@@ -21,4 +28,10 @@ export class StockAdjustmentV2Dto {
   @IsOptional()
   @IsString()
   source_id?: string;
+
+  @ApiPropertyOptional({ description: 'Optional warehouse / godown context' })
+  @IsOptional()
+  @IsUUID()
+  @Length(36, 36)
+  warehouse_id?: string;
 }

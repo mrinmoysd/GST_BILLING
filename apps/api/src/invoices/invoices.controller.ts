@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Res } from '@nestjs/common';
@@ -67,10 +68,11 @@ export class InvoicesController {
     @Param('companyId') companyId: string,
     @Body() dto: CreateInvoiceDto,
     @Headers('idempotency-key') idempotencyKey?: string,
+    @Req() req?: any,
   ) {
     return this.invoices.createDraft({
       companyId,
-      createdByUserId: 'TODO',
+      createdByUserId: req?.user?.sub ?? null,
       dto,
       idempotencyKey,
     });
@@ -103,6 +105,7 @@ export class InvoicesController {
       companyId,
       invoiceId,
       seriesCode: dto.series_code,
+      creditOverrideReason: dto.credit_override_reason,
     });
   }
 

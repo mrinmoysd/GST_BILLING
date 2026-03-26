@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useInvoices, usePayments, usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
 import { useLowStock } from "@/lib/masters/hooks";
-import { useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
+import { useDistributorDashboard, useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
@@ -31,22 +31,30 @@ export default function CompanyDashboardPage({ params }: Props) {
 
   const salesTodayQuery = useSalesSummary({ companyId, from: today, to: today, enabled: queriesEnabled });
   const salesMonthQuery = useSalesSummary({ companyId, from: monthStart, to: today, enabled: queriesEnabled });
+  const distributorDashboardQuery = useDistributorDashboard({
+    companyId,
+    from: monthStart,
+    to: today,
+    asOf: today,
+    enabled: queriesEnabled,
+  });
   const outstandingQuery = useOutstandingInvoices({ companyId, page: 1, limit: 5, enabled: queriesEnabled });
   const lowStockQuery = useLowStock({ companyId, threshold: 0, page: 1, limit: 5, enabled: queriesEnabled });
   const recentInvoicesQuery = useInvoices({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
   const recentPurchasesQuery = usePurchases({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
   const recentPaymentsQuery = usePayments({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
 
-  const salesToday = ((salesTodayQuery.data?.data as { data?: Record<string, unknown> } | undefined)?.data ?? {}) as Record<string, unknown>;
-  const salesMonth = ((salesMonthQuery.data?.data as { data?: Record<string, unknown> } | undefined)?.data ?? {}) as Record<string, unknown>;
+  const salesToday = (salesTodayQuery.data?.data ?? {}) as Record<string, unknown>;
+  const salesMonth = (salesMonthQuery.data?.data ?? {}) as Record<string, unknown>;
+  const distributorDashboard = distributorDashboardQuery.data?.data;
   const outstandingPayload = outstandingQuery.data?.data as { data?: Array<{ balanceDue?: string | number | null }> } | undefined;
   const lowStockItems = Array.isArray(lowStockQuery.data?.data) ? lowStockQuery.data.data : [];
   const recentInvoicesPayload = recentInvoicesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
   const recentPurchasesPayload = recentPurchasesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
   const recentPaymentsPayload = recentPaymentsQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
 
-  const todaysSalesValue = Number(salesToday.total ?? 0);
-  const monthlySalesValue = Number(salesMonth.total ?? 0);
+  const todaysSalesValue = Number(salesToday.gross_sales ?? 0);
+  const monthlySalesValue = Number(salesMonth.gross_sales ?? 0);
   const outstandingValue = React.useMemo(
     () =>
       (outstandingPayload?.data ?? []).reduce((sum, row) => {
@@ -102,6 +110,7 @@ export default function CompanyDashboardPage({ params }: Props) {
   const dashboardError =
     salesTodayQuery.isError ||
     salesMonthQuery.isError ||
+    distributorDashboardQuery.isError ||
     outstandingQuery.isError ||
     lowStockQuery.isError
       ? "Some dashboard widgets could not be loaded. The page is showing the data that is currently available."
@@ -205,6 +214,127 @@ export default function CompanyDashboardPage({ params }: Props) {
           <StatCard label="Low stock items" value={lowStockItems.length} hint="Products currently at or below reorder threshold." tone="quiet" />
         </div>
       </WorkspaceSection>
+
+      <WorkspaceSection
+        eyebrow="Distributor view"
+        title="Owner operating view"
+        subtitle="Use this layer to understand rep contribution, due concentration, warehouse stock posture, and product movement."
+      >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Gross sales" value={formatCurrency(distributorDashboard?.totals.gross_sales ?? 0)} hint="Selected distributor period." />
+          <StatCard label="Collections" value={formatCurrency(distributorDashboard?.totals.collections ?? 0)} hint="Payments recorded in the same window." />
+          <StatCard label="Outstanding" value={formatCurrency(distributorDashboard?.totals.outstanding ?? 0)} hint="Open dues as of today." tone="quiet" />
+          <StatCard label="Stock value" value={formatCurrency(distributorDashboard?.totals.stock_value ?? 0)} hint="Approximate cost-value across warehouses." tone="quiet" />
+        </div>
+      </WorkspaceSection>
+
+      <section className="grid gap-4 xl:grid-cols-3">
+        <WorkspacePanel title="Top salespeople" subtitle="Who is driving invoiced value this period.">
+          <div className="space-y-3">
+            {(distributorDashboard?.top_salespeople ?? []).slice(0, 5).map((row) => (
+              <div key={row.salesperson_user_id ?? row.salesperson_name} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-[var(--foreground)]">{row.salesperson_name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted)]">{row.invoices_count} invoice(s)</div>
+                  </div>
+                  <div className="text-sm font-semibold text-[var(--foreground)]">{formatCurrency(row.gross_sales)}</div>
+                </div>
+              </div>
+            ))}
+            {(distributorDashboard?.top_salespeople?.length ?? 0) === 0 ? (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+                Salesperson analytics will appear once attributed invoices are issued.
+              </div>
+            ) : null}
+          </div>
+        </WorkspacePanel>
+
+        <WorkspacePanel title="Top due customers" subtitle="Which accounts need the fastest follow-up.">
+          <div className="space-y-3">
+            {(distributorDashboard?.top_due_customers ?? []).slice(0, 5).map((row) => (
+              <div key={row.customer_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-[var(--foreground)]">{row.customer_name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted)]">{row.salesperson_name} · {row.invoices_count} open invoice(s)</div>
+                  </div>
+                  <div className="text-sm font-semibold text-[var(--foreground)]">{formatCurrency(row.outstanding_amount)}</div>
+                </div>
+              </div>
+            ))}
+            {(distributorDashboard?.top_due_customers?.length ?? 0) === 0 ? (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+                No open customer dues are currently visible in the distributor window.
+              </div>
+            ) : null}
+          </div>
+        </WorkspacePanel>
+
+        <WorkspacePanel title="Warehouse snapshot" subtitle="How stock is distributed across active locations.">
+          <div className="space-y-3">
+            {(distributorDashboard?.warehouse_snapshot ?? []).slice(0, 5).map((row) => (
+              <div key={row.warehouse_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-[var(--foreground)]">{row.warehouse_name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted)]">{row.sku_count} SKU · {row.low_stock_lines} low-stock line(s)</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-[var(--foreground)]">{formatCurrency(row.stock_value)}</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{row.total_quantity} units</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(distributorDashboard?.warehouse_snapshot?.length ?? 0) === 0 ? (
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+                Warehouse analytics will appear once active locations hold stock.
+              </div>
+            ) : null}
+          </div>
+        </WorkspacePanel>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        <WorkspacePanel title="Fast-moving products" subtitle="Products with the strongest sell-through this period.">
+          <div className="space-y-3">
+            {(distributorDashboard?.fast_moving ?? []).slice(0, 5).map((row) => (
+              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-[var(--foreground)]">{row.product_name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted)]">Current stock {row.current_stock}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-[var(--foreground)]">{row.sold_quantity} sold</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{formatCurrency(row.sales_amount)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </WorkspacePanel>
+
+        <WorkspacePanel title="Slow-moving products" subtitle="Products with stock still sitting against low movement.">
+          <div className="space-y-3">
+            {(distributorDashboard?.slow_moving ?? []).slice(0, 5).map((row) => (
+              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-[var(--foreground)]">{row.product_name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted)]">Sold {row.sold_quantity} in period</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-[var(--foreground)]">{row.current_stock} in stock</div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">{formatCurrency(row.sales_amount)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </WorkspacePanel>
+      </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <WorkspacePanel title="Quick actions" subtitle="Jump into the workflows your team uses every day.">

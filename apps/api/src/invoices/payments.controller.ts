@@ -4,6 +4,7 @@ import {
   Get,
   Headers,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -13,6 +14,7 @@ import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { PaymentsService } from './payments.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import { UpdatePaymentInstrumentDto } from './dto/update-payment-instrument.dto';
 
 @ApiTags('Payments')
 @ApiBearerAuth()
@@ -29,6 +31,8 @@ export class PaymentsController {
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('method') method?: string,
+    @Query('instrument_status') instrumentStatus?: string,
+    @Query('bank_account_id') bankAccountId?: string,
   ) {
     return this.payments.list({
       companyId,
@@ -37,6 +41,8 @@ export class PaymentsController {
       from,
       to,
       method,
+      instrumentStatus,
+      bankAccountId,
     });
   }
 
@@ -47,5 +53,14 @@ export class PaymentsController {
     @Headers('idempotency-key') idempotencyKey?: string,
   ) {
     return this.payments.record({ companyId, dto, idempotencyKey });
+  }
+
+  @Patch(':paymentId')
+  updateInstrument(
+    @Param('companyId') companyId: string,
+    @Param('paymentId') paymentId: string,
+    @Body() dto: UpdatePaymentInstrumentDto,
+  ) {
+    return this.payments.updateInstrument({ companyId, paymentId, dto });
   }
 }

@@ -15,6 +15,14 @@ export type CompanyUser = {
   lastLogin?: string | null;
 };
 
+export type SalespersonOption = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role: string;
+  isActive: boolean;
+};
+
 export type PermissionDefinition = {
   code: string;
   group: string;
@@ -60,6 +68,14 @@ export function useCompanyUsers(companyId: string) {
   return useQuery({
     queryKey: ["companies", companyId, "users"],
     queryFn: async () => apiClient.get<CompanyUser[]>(companyPath(companyId, "/users")),
+  });
+}
+
+export function useCompanySalespeople(companyId: string) {
+  return useQuery({
+    queryKey: ["companies", companyId, "users", "salespeople"],
+    queryFn: async () =>
+      apiClient.get<SalespersonOption[]>(companyPath(companyId, "/users/salespeople")),
   });
 }
 

@@ -6,7 +6,11 @@ import { IdempotencyModule } from '../idempotency/idempotency.module';
 import { JobsModule } from '../jobs/jobs.module';
 import { RbacModule } from '../rbac/rbac.module';
 import { GstModule } from '../gst/gst.module';
+import { PricingModule } from '../pricing/pricing.module';
+import { SalesOrdersModule } from '../sales-orders/sales-orders.module';
 import { InvoicesController } from './invoices.controller';
+import { InvoiceComplianceController } from './invoice-compliance.controller';
+import { InvoiceComplianceService } from './invoice-compliance.service';
 import { PaymentsController } from './payments.controller';
 import { InvoiceSeriesController } from './invoice-series.controller';
 import { InvoiceNumberService } from './invoice-number.service';
@@ -22,15 +26,19 @@ import { InvoicePdfService } from './pdf/invoice-pdf.service';
     IdempotencyModule,
     RbacModule,
     GstModule,
+    PricingModule,
+    SalesOrdersModule,
     forwardRef(() => JobsModule),
   ],
   controllers: [
     InvoicesController,
+    InvoiceComplianceController,
     PaymentsController,
     InvoiceSeriesController,
   ],
   providers: [
     InvoicesService,
+    InvoiceComplianceService,
     PaymentsService,
     InvoiceNumberService,
     InvoicePdfService,

@@ -4,7 +4,8 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
-import { useInvoices, usePayments, usePurchases, useRecordPayment } from "@/lib/billing/hooks";
+import { useInvoices, usePayments, usePurchases, useRecordPayment, useUpdatePaymentInstrument } from "@/lib/billing/hooks";
+import { useBankAccounts } from "@/lib/finance/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
@@ -25,18 +26,39 @@ export default function PaymentsPage({ params }: Props) {
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
   const [method, setMethod] = React.useState("");
+  const [instrumentStatus, setInstrumentStatus] = React.useState("");
   const [targetType, setTargetType] = React.useState<"invoice" | "purchase">("invoice");
   const [targetId, setTargetId] = React.useState("");
   const [amount, setAmount] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("cash");
+  const [instrumentType, setInstrumentType] = React.useState("");
+  const [bankAccountId, setBankAccountId] = React.useState("");
+  const [filterBankAccountId, setFilterBankAccountId] = React.useState("");
+  const [instrumentNumber, setInstrumentNumber] = React.useState("");
+  const [instrumentDate, setInstrumentDate] = React.useState("");
   const [reference, setReference] = React.useState("");
+  const [notes, setNotes] = React.useState("");
   const [paymentDate, setPaymentDate] = React.useState("");
+  const [selectedPaymentId, setSelectedPaymentId] = React.useState("");
+  const [nextInstrumentStatus, setNextInstrumentStatus] = React.useState("deposited");
+  const [nextBankAccountId, setNextBankAccountId] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
-  const paymentsQuery = usePayments({ companyId, page: 1, limit: 50, from: from || undefined, to: to || undefined, method: method || undefined });
+  const paymentsQuery = usePayments({
+    companyId,
+    page: 1,
+    limit: 50,
+    from: from || undefined,
+    to: to || undefined,
+    method: method || undefined,
+    instrument_status: instrumentStatus || undefined,
+    bank_account_id: filterBankAccountId || undefined,
+  });
   const invoicesQuery = useInvoices({ companyId, page: 1, limit: 50, status: "issued" });
   const purchasesQuery = usePurchases({ companyId, page: 1, limit: 50 });
   const recordPayment = useRecordPayment({ companyId });
+  const bankAccountsQuery = useBankAccounts(companyId);
+  const updateInstrument = useUpdatePaymentInstrument({ companyId, paymentId: selectedPaymentId || "pending" });
 
   type PaymentRow = Record<string, unknown>;
   const paymentRows = (paymentsQuery.data?.data ?? []) as PaymentRow[];
@@ -49,6 +71,7 @@ export default function PaymentsPage({ params }: Props) {
     label: String(row.billNumber ?? row.purchaseNumber ?? row.id),
   }));
   const targetOptions = targetType === "invoice" ? invoiceRows : purchaseRows;
+  const bankAccountRows = bankAccountsQuery.data?.data.data ?? [];
 
   const paymentTotals = paymentRows.reduce<{ amount: number; count: number }>(
     (acc, row) => {
@@ -107,10 +130,41 @@ export default function PaymentsPage({ params }: Props) {
                   { value: "upi", label: "UPI" },
                   { value: "bank", label: "Bank" },
                   { value: "card", label: "Card" },
+                  { value: "cheque", label: "Cheque" },
+                  { value: "pdc", label: "PDC" },
                 ]}
               />
+              <SelectField
+                label="Instrument type"
+                value={instrumentType}
+                onChange={setInstrumentType}
+                options={[
+                  { value: "", label: "Auto from method" },
+                  { value: "cash", label: "Cash" },
+                  { value: "upi", label: "UPI" },
+                  { value: "bank", label: "Bank transfer" },
+                  { value: "card", label: "Card" },
+                  { value: "cheque", label: "Cheque" },
+                  { value: "pdc", label: "PDC" },
+                ]}
+              />
+              <SelectField
+                label="Bank account"
+                value={bankAccountId}
+                onChange={setBankAccountId}
+                options={[
+                  { value: "", label: "None" },
+                  ...bankAccountRows.map((account) => ({
+                    value: account.id,
+                    label: `${account.nickname}${account.accountNumberLast4 ? ` • ${account.accountNumberLast4}` : ""}`,
+                  })),
+                ]}
+              />
+              <TextField label="Instrument number" value={instrumentNumber} onChange={setInstrumentNumber} placeholder="Cheque / UTR / txn ref" />
+              <DateField label="Instrument date" value={instrumentDate} onChange={setInstrumentDate} />
               <TextField label="Reference" value={reference} onChange={setReference} placeholder="Optional" />
               <DateField label="Payment date" value={paymentDate} onChange={setPaymentDate} />
+              <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional internal note" />
             </div>
 
             {error ? <InlineError message={error} /> : null}
@@ -129,11 +183,18 @@ export default function PaymentsPage({ params }: Props) {
                       purchase_id: targetType === "purchase" ? targetId : undefined,
                       amount,
                       method: paymentMethod,
+                      instrument_type: instrumentType || undefined,
+                      bank_account_id: bankAccountId || undefined,
+                      instrument_number: instrumentNumber || undefined,
+                      instrument_date: instrumentDate || undefined,
                       reference: reference || undefined,
+                      notes: notes || undefined,
                       payment_date: paymentDate || undefined,
                     });
                     setAmount("");
+                    setInstrumentNumber("");
                     setReference("");
+                    setNotes("");
                     setPaymentDate("");
                     toast.success("Payment recorded");
                   } catch (err: unknown) {
@@ -166,6 +227,32 @@ export default function PaymentsPage({ params }: Props) {
                 { value: "upi", label: "UPI" },
                 { value: "bank", label: "Bank" },
                 { value: "card", label: "Card" },
+                { value: "cheque", label: "Cheque" },
+                { value: "pdc", label: "PDC" },
+              ]}
+            />
+            <SelectField
+              label="Instrument status"
+              value={instrumentStatus}
+              onChange={setInstrumentStatus}
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "received", label: "Received" },
+                { value: "deposited", label: "Deposited" },
+                { value: "cleared", label: "Cleared" },
+                { value: "bounced", label: "Bounced" },
+              ]}
+            />
+            <SelectField
+              label="Bank account"
+              value={filterBankAccountId}
+              onChange={setFilterBankAccountId}
+              options={[
+                { value: "", label: "All bank accounts" },
+                ...bankAccountRows.map((account) => ({
+                  value: account.id,
+                  label: `${account.nickname}${account.accountNumberLast4 ? ` • ${account.accountNumberLast4}` : ""}`,
+                })),
               ]}
             />
             <div className="flex items-end gap-3">
@@ -175,10 +262,76 @@ export default function PaymentsPage({ params }: Props) {
               <Link href={`/c/${companyId}/purchases`} className="text-sm font-medium text-[var(--accent)] hover:underline">
                 Open purchases
               </Link>
+              <Link href={`/c/${companyId}/payments/collections`} className="text-sm font-medium text-[var(--accent)] hover:underline">
+                Collections
+              </Link>
+              <Link href={`/c/${companyId}/payments/banking`} className="text-sm font-medium text-[var(--accent)] hover:underline">
+                Banking
+              </Link>
             </div>
           </div>
         </WorkspacePanel>
       </div>
+
+      <WorkspacePanel title="Instrument lifecycle" subtitle="Update cheque, PDC, or bank instrument status after receipt.">
+        <div className="grid gap-4 md:grid-cols-4">
+          <SelectField
+            label="Payment"
+            value={selectedPaymentId}
+            onChange={setSelectedPaymentId}
+            options={[
+              { value: "", label: "Select payment" },
+              ...paymentRows.map((row) => ({
+                value: String(row.id),
+                label: `${String(row.method ?? "payment")} • ${Number(row.amount ?? 0).toFixed(2)}`,
+              })),
+            ]}
+          />
+          <SelectField
+            label="Next status"
+            value={nextInstrumentStatus}
+            onChange={setNextInstrumentStatus}
+            options={[
+              { value: "received", label: "Received" },
+              { value: "deposited", label: "Deposited" },
+              { value: "cleared", label: "Cleared" },
+              { value: "bounced", label: "Bounced" },
+            ]}
+          />
+          <SelectField
+            label="Bank account"
+            value={nextBankAccountId}
+            onChange={setNextBankAccountId}
+            options={[
+              { value: "", label: "Keep current" },
+              ...bankAccountRows.map((account) => ({
+                value: account.id,
+                label: `${account.nickname}${account.accountNumberLast4 ? ` • ${account.accountNumberLast4}` : ""}`,
+              })),
+            ]}
+          />
+          <div className="flex items-end">
+            <PrimaryButton
+              type="button"
+              disabled={updateInstrument.isPending || !selectedPaymentId}
+              onClick={async () => {
+                if (!selectedPaymentId) return;
+                try {
+                  await updateInstrument.mutateAsync({
+                    instrument_status: nextInstrumentStatus,
+                    bank_account_id: nextBankAccountId || undefined,
+                  });
+                  toast.success("Instrument updated");
+                } catch (err: unknown) {
+                  toast.error(getErrorMessage(err, "Failed to update instrument"));
+                }
+              }}
+            >
+              {updateInstrument.isPending ? "Updating…" : "Update"}
+            </PrimaryButton>
+          </div>
+        </div>
+      </WorkspacePanel>
 
       {paymentsQuery.isLoading ? <LoadingBlock label="Loading payments…" /> : null}
       {paymentsQuery.isError ? <InlineError message={getErrorMessage(paymentsQuery.error, "Failed to load payments")} /> : null}
@@ -200,6 +353,8 @@ export default function PaymentsPage({ params }: Props) {
                     <DataTh>Date</DataTh>
                     <DataTh>Target</DataTh>
                     <DataTh>Method</DataTh>
+                    <DataTh>Status</DataTh>
+                    <DataTh>Bank</DataTh>
                     <DataTh>Reference</DataTh>
                     <DataTh className="text-right">Amount</DataTh>
                   </tr>
@@ -226,6 +381,8 @@ export default function PaymentsPage({ params }: Props) {
                           )}
                         </DataTd>
                         <DataTd>{String(row.method ?? "—")}</DataTd>
+                        <DataTd>{String(row.instrumentStatus ?? row.instrument_status ?? "—")}</DataTd>
+                        <DataTd>{String((row.bankAccount as { nickname?: string } | null | undefined)?.nickname ?? "—")}</DataTd>
                         <DataTd>{String(row.reference ?? "—")}</DataTd>
                         <DataTd className="text-right">{Number(row.amount ?? 0).toFixed(2)}</DataTd>
                       </DataTr>

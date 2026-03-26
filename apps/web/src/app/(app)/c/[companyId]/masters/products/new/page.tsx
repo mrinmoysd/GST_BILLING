@@ -23,6 +23,10 @@ export default function NewProductPage({ params }: Props) {
   const [price, setPrice] = React.useState("");
   const [costPrice, setCostPrice] = React.useState("");
   const [taxRate, setTaxRate] = React.useState("");
+  const [batchTrackingEnabled, setBatchTrackingEnabled] = React.useState(false);
+  const [expiryTrackingEnabled, setExpiryTrackingEnabled] = React.useState(false);
+  const [batchIssuePolicy, setBatchIssuePolicy] = React.useState<"NONE" | "FIFO" | "FEFO">("NONE");
+  const [nearExpiryDays, setNearExpiryDays] = React.useState("30");
   const [error, setError] = React.useState<string | null>(null);
 
   return (
@@ -43,6 +47,13 @@ export default function NewProductPage({ params }: Props) {
               price: price ? Number(price) : undefined,
               costPrice: costPrice ? Number(costPrice) : undefined,
               gstRate: taxRate ? Number(taxRate) : undefined,
+              batchTrackingEnabled,
+              expiryTrackingEnabled: batchTrackingEnabled ? expiryTrackingEnabled : false,
+              batchIssuePolicy: batchTrackingEnabled ? batchIssuePolicy : "NONE",
+              nearExpiryDays:
+                batchTrackingEnabled && expiryTrackingEnabled && nearExpiryDays
+                  ? Number(nearExpiryDays)
+                  : undefined,
             });
             toast.success("Product created");
             router.replace(`/c/${companyId}/masters/products/${res.data.id}`);
@@ -70,6 +81,45 @@ export default function NewProductPage({ params }: Props) {
         <TextField label="Price" value={price} onChange={setPrice} type="number" />
         <TextField label="Cost price" value={costPrice} onChange={setCostPrice} type="number" />
         <TextField label="Tax rate (%)" value={taxRate} onChange={setTaxRate} type="number" />
+        <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={batchTrackingEnabled}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setBatchTrackingEnabled(next);
+              if (!next) {
+                setExpiryTrackingEnabled(false);
+                setBatchIssuePolicy("NONE");
+              }
+            }}
+          />
+          Batch tracking enabled
+        </label>
+        <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={expiryTrackingEnabled}
+            disabled={!batchTrackingEnabled}
+            onChange={(e) => setExpiryTrackingEnabled(e.target.checked)}
+          />
+          Expiry tracking enabled
+        </label>
+        <SelectField
+          label="Batch issue policy"
+          value={batchIssuePolicy}
+          onChange={(value) => setBatchIssuePolicy(value as "NONE" | "FIFO" | "FEFO")}
+        >
+          <option value="NONE">No enforced policy</option>
+          <option value="FIFO">FIFO</option>
+          <option value="FEFO">FEFO</option>
+        </SelectField>
+        <TextField
+          label="Near expiry days"
+          value={nearExpiryDays}
+          onChange={setNearExpiryDays}
+          type="number"
+        />
 
         {error ? <InlineError message={error} /> : null}
 

@@ -5,10 +5,10 @@ import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useInventoryAdjustment, useLowStock, useProducts, useStockMovements } from "@/lib/masters/hooks";
+import { useInventoryAdjustment, useLowStock, useProducts, useStockMovements, useWarehouses } from "@/lib/masters/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -25,9 +25,11 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
   const productsQuery = useProducts({ companyId, page: 1, limit: 100 });
   const lowStockQuery = useLowStock({ companyId, threshold: 0, page: 1, limit: 6 });
   const movementsQuery = useStockMovements({ companyId, page: 1, limit: 10 });
+  const warehousesQuery = useWarehouses({ companyId, activeOnly: true });
   const adjust = useInventoryAdjustment({ companyId });
 
   const [productId, setProductId] = React.useState("");
+  const [warehouseId, setWarehouseId] = React.useState("");
   const [changeQty, setChangeQty] = React.useState("");
   const [note, setNote] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -57,21 +59,32 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Product</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+              <SelectField
+                label="Product"
                 value={productId}
-                onChange={(e) => setProductId(e.target.value)}
-              >
-                <option value="">Select…</option>
-                {productRows.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name} {product.stock !== undefined && product.stock !== null ? `(${product.stock})` : ""}
-                  </option>
-                ))}
-              </select>
+                onChange={setProductId}
+                options={[
+                  { value: "", label: "Select…" },
+                  ...productRows.map((product) => ({
+                    value: product.id,
+                    label: `${product.name}${product.stock !== undefined && product.stock !== null ? ` (${product.stock})` : ""}`,
+                  })),
+                ]}
+              />
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
+              <SelectField
+                label="Warehouse"
+                value={warehouseId}
+                onChange={setWarehouseId}
+                options={[
+                  { value: "", label: "Company stock" },
+                  ...((Array.isArray(warehousesQuery.data?.data.data) ? warehousesQuery.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
+                    value: warehouse.id,
+                    label: warehouse.name,
+                  }))),
+                ]}
+              />
               <TextField label="Change quantity" value={changeQty} onChange={setChangeQty} type="number" />
               <TextField label="Reason / note" value={note} onChange={setNote} placeholder="Optional" />
             </div>
@@ -85,7 +98,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                 if (!productId) return setError("Select a product.");
                 if (!Number.isFinite(qty) || qty === 0) return setError("Enter a non-zero quantity.");
                 try {
-                  await adjust.mutateAsync({ productId, changeQty: qty, note: note || undefined });
+                  await adjust.mutateAsync({ productId, changeQty: qty, note: note || undefined, warehouseId: warehouseId || undefined });
                   setChangeQty("");
                   setNote("");
                 } catch (err: unknown) {
@@ -141,6 +154,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                   <tr>
                     <DataTh>When</DataTh>
                     <DataTh>Product</DataTh>
+                    <DataTh>Warehouse</DataTh>
                     <DataTh>Change</DataTh>
                     <DataTh>Balance</DataTh>
                     <DataTh>Source</DataTh>
@@ -152,9 +166,10 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                       <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
                       <DataTd>
                         <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
-                          {row.productId.slice(0, 8)}
+                          {row.product?.name ?? row.productId.slice(0, 8)}
                         </Link>
                       </DataTd>
+                      <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
                       <DataTd>{row.changeQty}</DataTd>
                       <DataTd>{row.balanceQty}</DataTd>
                       <DataTd>{row.sourceType}</DataTd>

@@ -35,6 +35,8 @@ Company / Onboarding
 Users
 - GET /api/companies/:cid/users?page=&limit=
   - 200: { data: [users], meta }
+- GET /api/companies/:cid/users/salespeople
+  - 200: { ok: true, data: [active assignable salespeople] }
 - POST /api/companies/:cid/users
   - Body: { email, name, role }
   - 201: { data: user }
@@ -43,7 +45,7 @@ Customers
 - GET /api/companies/:cid/customers?page=&limit=&q=
   - 200: { data: [customers], meta }
 - POST /api/companies/:cid/customers
-  - Body: { name, gstin, mobile, email, billing_address, shipping_address, credit_limit }
+  - Body: { name, gstin, mobile, email, billing_address, shipping_address, salesperson_user_id? }
   - 201: { data: customer }
 
 Products
@@ -76,6 +78,41 @@ Purchases
 - POST /api/companies/:cid/purchases
   - Body: { supplier_id, bill_number, date, items: [ { product_id, batch_id?, quantity, unit_price, gst_percent } ], notes }
   - 201: { data: purchase }
+
+Distributor V2
+- GET /api/companies/:cid/quotations?page=&limit=&q=&status=&customer_id=&from=&to=
+- POST /api/companies/:cid/quotations
+  - Body accepts optional `salesperson_user_id`
+- GET /api/companies/:cid/quotations/:quotationId
+- PATCH /api/companies/:cid/quotations/:quotationId
+  - Body accepts optional `salesperson_user_id`
+- POST /api/companies/:cid/quotations/:quotationId/send
+- POST /api/companies/:cid/quotations/:quotationId/approve
+- POST /api/companies/:cid/quotations/:quotationId/expire
+- POST /api/companies/:cid/quotations/:quotationId/cancel
+- POST /api/companies/:cid/quotations/:quotationId/convert-to-invoice
+  - Converts a quotation into a draft invoice and stores `quotation_id` on the invoice
+- POST /api/companies/:cid/quotations/:quotationId/convert-to-sales-order
+- GET /api/companies/:cid/sales-orders?page=&limit=&q=&status=&from=&to=
+- POST /api/companies/:cid/sales-orders
+  - Body accepts optional `salesperson_user_id`
+- GET /api/companies/:cid/sales-orders/:salesOrderId
+- PATCH /api/companies/:cid/sales-orders/:salesOrderId
+  - Body accepts optional `salesperson_user_id`
+- POST /api/companies/:cid/sales-orders/:salesOrderId/confirm
+- POST /api/companies/:cid/sales-orders/:salesOrderId/cancel
+- POST /api/companies/:cid/sales-orders/:salesOrderId/convert-to-invoice
+  - Converts full or partial remaining order quantity into a draft invoice and updates order fulfillment
+- GET /api/companies/:cid/warehouses?page=&limit=&q=&active_only=
+- POST /api/companies/:cid/warehouses
+- PATCH /api/companies/:cid/warehouses/:warehouseId
+- GET /api/companies/:cid/warehouses/:warehouseId/stock?page=&limit=&q=
+- GET /api/companies/:cid/stock-transfers?page=&limit=&status=
+- GET /api/companies/:cid/stock-transfers/:transferId
+- POST /api/companies/:cid/stock-transfers
+- POST /api/companies/:cid/stock-transfers/:transferId/dispatch
+- POST /api/companies/:cid/stock-transfers/:transferId/receive
+- POST /api/companies/:cid/stock-transfers/:transferId/cancel
 
 Reports
 - GET /api/companies/:cid/reports/gstr1?from=&to=&format=json|excel
@@ -141,14 +178,16 @@ Products & Inventory
 - PATCH /api/companies/:cid/products/:id
 - DELETE /api/companies/:cid/products/:id
 - POST /api/companies/:cid/products/:id/stock-adjustment
-  - Body: { change_qty, reason, effective_at? }
+  - Body: { change_qty, reason, warehouse_id?, effective_at? }
   - Writes `stock_movements` with source_type=manual
 
-- GET /api/companies/:cid/stock-movements?product_id=&from=&to=&page=&limit=
+- GET /api/companies/:cid/stock-movements?product_id=&warehouse_id=&from=&to=&page=&limit=
 - GET /api/companies/:cid/inventory/low-stock?threshold=
 
 Invoices (full lifecycle)
 - GET /api/companies/:cid/invoices?page=&limit=&q=&status=&from=&to=
+- POST /api/companies/:cid/invoices
+  - Body accepts optional `warehouse_id` and `salesperson_user_id`
 - PATCH /api/companies/:cid/invoices/:id
   - Allowed only when status=draft (configurable)
 - POST /api/companies/:cid/invoices/:id/issue
@@ -173,6 +212,8 @@ Payments
 
 Purchases
 - GET /api/companies/:cid/purchases?page=&limit=&q=&from=&to=
+- POST /api/companies/:cid/purchases
+  - Body accepts optional `warehouse_id`
 - GET /api/companies/:cid/purchases/:id
 - PATCH /api/companies/:cid/purchases/:id
 - POST /api/companies/:cid/purchases/:id/cancel
@@ -183,6 +224,13 @@ Purchases
 Reports (business)
 - GET /api/companies/:cid/reports/sales-summary?from=&to=&group_by=day|month
 - GET /api/companies/:cid/reports/purchase-summary?from=&to=&group_by=day|month
+- GET /api/companies/:cid/reports/distributor/sales-by-salesperson?from=&to=
+- GET /api/companies/:cid/reports/distributor/collections-by-salesperson?from=&to=
+- GET /api/companies/:cid/reports/distributor/outstanding-by-salesperson?as_of=
+- GET /api/companies/:cid/reports/distributor/outstanding-by-customer?as_of=
+- GET /api/companies/:cid/reports/distributor/stock-by-warehouse
+- GET /api/companies/:cid/reports/distributor/product-movement?from=&to=&limit=
+- GET /api/companies/:cid/reports/distributor/dashboard?from=&to=&as_of=
 - GET /api/companies/:cid/reports/customer-outstanding?as_of=
 - GET /api/companies/:cid/reports/vendor-outstanding?as_of=
 - GET /api/companies/:cid/reports/top-products?from=&to=&limit=10
@@ -218,6 +266,9 @@ Accounting
 - GET /api/companies/:cid/books/cash?from=&to=
 - GET /api/companies/:cid/books/bank?from=&to=
 
+See also:
+- `docs/D1_QUOTATIONS_IMPLEMENTATION_SPEC.md`
+
 Notifications
 - GET /api/companies/:cid/notification-templates
 - POST /api/companies/:cid/notification-templates
@@ -249,4 +300,3 @@ Admin (ops)
 
 Webhook security
 - Verify provider signatures. Store all webhook payloads in `webhook_events` to support retries and support audits.
-

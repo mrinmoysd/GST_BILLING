@@ -1,9 +1,10 @@
 # Seeding (Demo Data)
 
-This repo uses Postgres + Prisma. There are two seed scripts:
+This repo uses Postgres + Prisma. There are three seed scripts:
 
 - `seed:auth`: creates a demo company + owner user (login) + default invoice series.
 - `seed:full`: creates master data + transactional data (invoices issued + payments recorded + purchases received) so the UI has realistic data.
+- `seed:distributor`: creates a distributor-style demo workspace with salespeople, warehouses, transfers, quotations, sales orders, invoices, and collections.
 
 ## Prerequisites
 
@@ -59,3 +60,48 @@ Optional env:
 
 - `seed:full` expects the owner user from `seed:auth` to exist (so API login works).
 - Seeding is designed to be re-runnable. It may create additional invoices/purchases each run; tune counts/prefix as needed.
+
+## Distributor Seed (V2 demo)
+
+This builds on `seed:auth` and creates a stronger distributor / wholesaler demo setup.
+
+Run:
+
+```bash
+npm --workspace apps/api run seed:distributor
+```
+
+What it adds:
+
+- billing, warehouse, and salesperson users
+- warehouse master:
+  - `MAIN`
+  - `BR01`
+- distributor-style products, customers, and suppliers
+- purchase receive into warehouse stock
+- stock transfer dispatch / receive
+- quotation to sales order to invoice flow
+- partial payment for collections and outstanding views
+
+Default seeded distributor users:
+
+- owner from `seed:auth`
+- `billing.distro@example.com`
+- `warehouse.distro@example.com`
+- `north.rep.distro@example.com`
+- `south.rep.distro@example.com`
+
+Default password for additional distributor users:
+
+- `password123`
+
+Optional env:
+
+- `SEED_DISTRIBUTOR_USER_PASSWORD`
+- `SEED_PREFIX`
+- `SEED_COMPANY_NAME`
+
+Notes:
+
+- `seed:distributor` expects the owner user from `seed:auth` to exist.
+- the API must be running because the seed drives business flows through real endpoints.

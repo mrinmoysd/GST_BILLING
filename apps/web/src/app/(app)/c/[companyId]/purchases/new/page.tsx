@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreatePurchase } from "@/lib/billing/hooks";
-import { useProducts, useSuppliers } from "@/lib/masters/hooks";
+import { useProducts, useSuppliers, useWarehouses } from "@/lib/masters/hooks";
 import { InlineError, PageHeader } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
@@ -28,19 +28,46 @@ export default function NewPurchasePage({ params }: Props) {
   const create = useCreatePurchase({ companyId: companyId });
   const suppliers = useSuppliers({ companyId: companyId, limit: 50 });
   const products = useProducts({ companyId: companyId, limit: 50 });
+  const warehouses = useWarehouses({ companyId, activeOnly: true });
 
   const [supplierId, setSupplierId] = React.useState("");
+  const [warehouseId, setWarehouseId] = React.useState("");
   const [purchaseDate, setPurchaseDate] = React.useState("");
   const [notes, setNotes] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
-  type Line = { id: string; productId: string; quantity: string; unitCost: string; discount?: string };
+  type BatchLine = {
+    id: string;
+    batchNumber: string;
+    quantity: string;
+    expiryDate?: string;
+    manufacturingDate?: string;
+  };
+  type Line = {
+    id: string;
+    productId: string;
+    quantity: string;
+    unitCost: string;
+    discount?: string;
+    batches: BatchLine[];
+  };
   const [lines, setLines] = React.useState<Line[]>([
-    { id: "l1", productId: "", quantity: "1", unitCost: "" },
+    { id: "l1", productId: "", quantity: "1", unitCost: "", batches: [] },
   ]);
 
   const productsById = React.useMemo(() => {
-    const map = new Map<string, { id: string; name: string; price?: string | number | null }>();
+    const map = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        price?: string | number | null;
+        batchTrackingEnabled?: boolean;
+        batch_tracking_enabled?: boolean;
+        expiryTrackingEnabled?: boolean;
+        expiry_tracking_enabled?: boolean;
+      }
+    >();
     for (const p of (Array.isArray(products.data?.data) ? products.data.data : [])) map.set(p.id, p);
     return map;
   }, [products.data]);
@@ -80,6 +107,15 @@ export default function NewPurchasePage({ params }: Props) {
               quantity: l.quantity,
               unit_cost: l.unitCost,
               discount: l.discount || undefined,
+              batches:
+                l.batches.length > 0
+                  ? l.batches.map((batch) => ({
+                      batch_number: batch.batchNumber,
+                      quantity: batch.quantity,
+                      expiry_date: batch.expiryDate || undefined,
+                      manufacturing_date: batch.manufacturingDate || undefined,
+                    }))
+                  : undefined,
             }))
             .filter((l) => l.product_id);
 
@@ -97,11 +133,40 @@ export default function NewPurchasePage({ params }: Props) {
               setError(`Line ${idx + 1}: enter unit cost.`);
               return;
             }
+            const product = productsById.get(l.product_id);
+            const batchTrackingEnabled = Boolean(
+              product?.batchTrackingEnabled ?? product?.batch_tracking_enabled,
+            );
+            const expiryTrackingEnabled = Boolean(
+              product?.expiryTrackingEnabled ?? product?.expiry_tracking_enabled,
+            );
+            if (batchTrackingEnabled) {
+              if (!l.batches?.length) {
+                setError(`Line ${idx + 1}: add at least one batch entry.`);
+                return;
+              }
+              const batchTotal = l.batches.reduce((sum, batch) => sum + Number(batch.quantity || 0), 0);
+              if (Math.abs(batchTotal - Number(l.quantity)) > 0.0001) {
+                setError(`Line ${idx + 1}: batch quantities must match line quantity.`);
+                return;
+              }
+              const invalidBatch = l.batches.find(
+                (batch) =>
+                  !batch.batch_number?.trim() ||
+                  Number(batch.quantity || 0) <= 0 ||
+                  (expiryTrackingEnabled && !batch.expiry_date),
+              );
+              if (invalidBatch) {
+                setError(`Line ${idx + 1}: complete all batch details.`);
+                return;
+              }
+            }
           }
 
           try {
             const res = await create.mutateAsync({
               supplier_id: supplierId,
+              warehouse_id: warehouseId || undefined,
               purchase_date: purchaseDate || undefined,
               notes: notes || undefined,
               items: clean,
@@ -135,6 +200,18 @@ export default function NewPurchasePage({ params }: Props) {
                 })),
               ]}
             />
+            <SelectField
+              label="Warehouse"
+              value={warehouseId}
+              onChange={setWarehouseId}
+              options={[
+                { value: "", label: "Select warehouse (optional)" },
+                ...((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
+                  value: warehouse.id,
+                  label: warehouse.name,
+                }))),
+              ]}
+            />
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
               Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
             </div>
@@ -165,9 +242,17 @@ export default function NewPurchasePage({ params }: Props) {
                 const uc = Number(l.unitCost || 0);
                 const disc = Number(l.discount || 0);
                 const lt = Math.max(0, q * uc - disc);
+                const product = productsById.get(l.productId);
+                const batchTrackingEnabled = Boolean(
+                  product?.batchTrackingEnabled ?? product?.batch_tracking_enabled,
+                );
+                const expiryTrackingEnabled = Boolean(
+                  product?.expiryTrackingEnabled ?? product?.expiry_tracking_enabled,
+                );
                 return (
-                  <tr key={l.id} className="border-t border-[var(--border)]">
-                    <td className="px-3 py-2">
+                  <React.Fragment key={l.id}>
+                  <tr className="border-t border-[var(--border)]">
+                    <td className="px-3 py-2 align-top">
                       <SelectField
                         label=""
                         value={l.productId}
@@ -180,6 +265,20 @@ export default function NewPurchasePage({ params }: Props) {
                                 ? {
                                     ...x,
                                     productId: next,
+                                    batches:
+                                      p?.batchTrackingEnabled || p?.batch_tracking_enabled
+                                        ? x.batches.length > 0
+                                          ? x.batches
+                                          : [
+                                              {
+                                                id: `b_${x.id}_1`,
+                                                batchNumber: "",
+                                                quantity: x.quantity || "1",
+                                                expiryDate: "",
+                                                manufacturingDate: "",
+                                              },
+                                            ]
+                                        : [],
                                     unitCost:
                                       x.unitCost || p?.price === undefined || p?.price === null
                                         ? x.unitCost
@@ -204,7 +303,24 @@ export default function NewPurchasePage({ params }: Props) {
                         className="w-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-sm text-right shadow-sm"
                         value={l.quantity}
                         onChange={(e) =>
-                          setLines((prev) => prev.map((x) => (x.id === l.id ? { ...x, quantity: e.target.value } : x)))
+                          setLines((prev) =>
+                            prev.map((x) =>
+                              x.id === l.id
+                                ? {
+                                    ...x,
+                                    quantity: e.target.value,
+                                    batches:
+                                      x.batches.length > 0
+                                        ? x.batches.map((batch, batchIdx) =>
+                                            batchIdx === 0
+                                              ? { ...batch, quantity: e.target.value }
+                                              : batch,
+                                          )
+                                        : x.batches,
+                                  }
+                                : x,
+                            ),
+                          )
                         }
                       />
                     </td>
@@ -238,6 +354,161 @@ export default function NewPurchasePage({ params }: Props) {
                       </button>
                     </td>
                   </tr>
+                  {batchTrackingEnabled ? (
+                    <tr className="border-t border-[var(--border)] bg-[var(--surface-muted)]/40">
+                      <td colSpan={6} className="px-3 py-3">
+                        <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-medium">Batch breakdown</div>
+                              <div className="text-xs text-[var(--muted)]">
+                                {expiryTrackingEnabled
+                                  ? "Capture batch number, quantity, and expiry."
+                                  : "Capture batch number and quantity."}
+                              </div>
+                            </div>
+                            <SecondaryButton
+                              type="button"
+                              onClick={() =>
+                                setLines((prev) =>
+                                  prev.map((x) =>
+                                    x.id === l.id
+                                      ? {
+                                          ...x,
+                                          batches: [
+                                            ...x.batches,
+                                            {
+                                              id: `b_${x.id}_${x.batches.length + 1}`,
+                                              batchNumber: "",
+                                              quantity: "",
+                                              expiryDate: "",
+                                              manufacturingDate: "",
+                                            },
+                                          ],
+                                        }
+                                      : x,
+                                  ),
+                                )
+                              }
+                            >
+                              Add batch
+                            </SecondaryButton>
+                          </div>
+                          <div className="space-y-2">
+                            {l.batches.map((batch) => (
+                              <div key={batch.id} className="grid gap-2 lg:grid-cols-[1.2fr_0.7fr_0.8fr_0.8fr_auto]">
+                                <input
+                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                  value={batch.batchNumber}
+                                  onChange={(e) =>
+                                    setLines((prev) =>
+                                      prev.map((x) =>
+                                        x.id === l.id
+                                          ? {
+                                              ...x,
+                                              batches: x.batches.map((entry) =>
+                                                entry.id === batch.id
+                                                  ? { ...entry, batchNumber: e.target.value }
+                                                  : entry,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  placeholder="Batch number"
+                                />
+                                <input
+                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                  value={batch.quantity}
+                                  onChange={(e) =>
+                                    setLines((prev) =>
+                                      prev.map((x) =>
+                                        x.id === l.id
+                                          ? {
+                                              ...x,
+                                              batches: x.batches.map((entry) =>
+                                                entry.id === batch.id
+                                                  ? { ...entry, quantity: e.target.value }
+                                                  : entry,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  placeholder="Qty"
+                                />
+                                <input
+                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                  value={batch.expiryDate ?? ""}
+                                  onChange={(e) =>
+                                    setLines((prev) =>
+                                      prev.map((x) =>
+                                        x.id === l.id
+                                          ? {
+                                              ...x,
+                                              batches: x.batches.map((entry) =>
+                                                entry.id === batch.id
+                                                  ? { ...entry, expiryDate: e.target.value }
+                                                  : entry,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  type="date"
+                                  placeholder="Expiry"
+                                />
+                                <input
+                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                  value={batch.manufacturingDate ?? ""}
+                                  onChange={(e) =>
+                                    setLines((prev) =>
+                                      prev.map((x) =>
+                                        x.id === l.id
+                                          ? {
+                                              ...x,
+                                              batches: x.batches.map((entry) =>
+                                                entry.id === batch.id
+                                                  ? { ...entry, manufacturingDate: e.target.value }
+                                                  : entry,
+                                              ),
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  type="date"
+                                  placeholder="Mfg"
+                                />
+                                <button
+                                  type="button"
+                                  className="text-sm font-medium text-[var(--danger)] underline"
+                                  onClick={() =>
+                                    setLines((prev) =>
+                                      prev.map((x) =>
+                                        x.id === l.id
+                                          ? {
+                                              ...x,
+                                              batches: x.batches.filter((entry) => entry.id !== batch.id),
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                  </React.Fragment>
                 );
               })}
             </tbody>
@@ -250,7 +521,13 @@ export default function NewPurchasePage({ params }: Props) {
             onClick={() =>
               setLines((prev) => [
                 ...prev,
-                { id: `l${prev.length + 1}_${Date.now()}`, productId: "", quantity: "1", unitCost: "" },
+                {
+                  id: `l${prev.length + 1}_${Date.now()}`,
+                  productId: "",
+                  quantity: "1",
+                  unitCost: "",
+                  batches: [],
+                },
               ])
             }
           >

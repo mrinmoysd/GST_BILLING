@@ -4,10 +4,10 @@ import Link from "next/link";
 import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useStockMovements } from "@/lib/masters/hooks";
+import { useStockMovements, useWarehouses } from "@/lib/masters/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
+import { SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -23,7 +23,9 @@ export default function InventoryMovementsPage({ params }: Props) {
   const { companyId } = React.use(params);
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
-  const query = useStockMovements({ companyId, from: from || undefined, to: to || undefined, page: 1, limit: 50 });
+  const [warehouseId, setWarehouseId] = React.useState("");
+  const warehouses = useWarehouses({ companyId, activeOnly: true });
+  const query = useStockMovements({ companyId, warehouseId: warehouseId || undefined, from: from || undefined, to: to || undefined, page: 1, limit: 50 });
   const rows = query.data?.data.data ?? [];
 
   return (
@@ -43,6 +45,18 @@ export default function InventoryMovementsPage({ params }: Props) {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
           <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+          <SelectField
+            label="Warehouse"
+            value={warehouseId}
+            onChange={setWarehouseId}
+            options={[
+              { value: "", label: "All warehouses" },
+              ...((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
+                value: warehouse.id,
+                label: warehouse.name,
+              }))),
+            ]}
+          />
         </CardContent>
       </Card>
 
@@ -63,6 +77,7 @@ export default function InventoryMovementsPage({ params }: Props) {
                   <tr>
                     <DataTh>When</DataTh>
                     <DataTh>Product</DataTh>
+                    <DataTh>Warehouse</DataTh>
                     <DataTh>Change</DataTh>
                     <DataTh>Balance</DataTh>
                     <DataTh>Source</DataTh>
@@ -75,9 +90,10 @@ export default function InventoryMovementsPage({ params }: Props) {
                       <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
                       <DataTd>
                         <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
-                          {row.productId.slice(0, 8)}
+                          {row.product?.name ?? row.productId.slice(0, 8)}
                         </Link>
                       </DataTd>
+                      <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
                       <DataTd>{row.changeQty}</DataTd>
                       <DataTd>{row.balanceQty}</DataTd>
                       <DataTd>{row.sourceType}</DataTd>

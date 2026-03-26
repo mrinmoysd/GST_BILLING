@@ -24,6 +24,13 @@ export class CompaniesUsersController {
     return { ok: true, data: rows };
   }
 
+  @Get('/salespeople')
+  @RequirePermissions('masters.view')
+  async listSalespeople(@Param('companyId') companyId: string) {
+    const rows = await this.rbac.listAssignableSalespeople(companyId);
+    return { ok: true, data: rows };
+  }
+
   @Post()
   @RequirePermissions('settings.users.manage')
   async invite(

@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -56,4 +58,46 @@ export class CreateProductDto {
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   meta?: Record<string, unknown>;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  batchTrackingEnabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  batch_tracking_enabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  expiryTrackingEnabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  expiry_tracking_enabled?: boolean;
+
+  @ApiPropertyOptional({ enum: ['NONE', 'FIFO', 'FEFO'] })
+  @IsOptional()
+  @IsString()
+  @IsIn(['NONE', 'FIFO', 'FEFO'])
+  batchIssuePolicy?: 'NONE' | 'FIFO' | 'FEFO';
+
+  @ApiPropertyOptional({ enum: ['NONE', 'FIFO', 'FEFO'] })
+  @IsOptional()
+  @IsString()
+  @IsIn(['NONE', 'FIFO', 'FEFO'])
+  batch_issue_policy?: 'NONE' | 'FIFO' | 'FEFO';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  nearExpiryDays?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  near_expiry_days?: number;
 }

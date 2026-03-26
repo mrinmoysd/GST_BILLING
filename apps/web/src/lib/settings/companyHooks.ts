@@ -43,6 +43,7 @@ export function useUpdateCompany(companyId: string) {
       timezone?: string;
       logo_url?: string;
       allow_negative_stock?: boolean;
+      invoice_settings?: Record<string, unknown>;
     }) => apiClient.patch<Company>(companyPath(companyId, ""), patch),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "company"] });

@@ -32,6 +32,28 @@ export class ProductsService {
     return (input as any)?.reorderLevel ?? legacy;
   }
 
+  private getBatchTrackingEnabled(input: CreateProductDto | UpdateProductDto) {
+    return (
+      (input as any)?.batchTrackingEnabled ??
+      (input as any)?.batch_tracking_enabled
+    );
+  }
+
+  private getExpiryTrackingEnabled(input: CreateProductDto | UpdateProductDto) {
+    return (
+      (input as any)?.expiryTrackingEnabled ??
+      (input as any)?.expiry_tracking_enabled
+    );
+  }
+
+  private getBatchIssuePolicy(input: CreateProductDto | UpdateProductDto) {
+    return (input as any)?.batchIssuePolicy ?? (input as any)?.batch_issue_policy;
+  }
+
+  private getNearExpiryDays(input: CreateProductDto | UpdateProductDto) {
+    return (input as any)?.nearExpiryDays ?? (input as any)?.near_expiry_days;
+  }
+
   async list(companyId: string, page = 1, limit = 20, q?: string) {
     const skip = (page - 1) * limit;
 
@@ -91,6 +113,14 @@ export class ProductsService {
           this.getReorderLevel(dto) !== null
             ? new this.d(this.getReorderLevel(dto) as any)
             : null,
+        batchTrackingEnabled: Boolean(this.getBatchTrackingEnabled(dto)),
+        expiryTrackingEnabled: Boolean(this.getExpiryTrackingEnabled(dto)),
+        batchIssuePolicy: this.getBatchIssuePolicy(dto) ?? 'NONE',
+        nearExpiryDays:
+          this.getNearExpiryDays(dto) !== undefined &&
+          this.getNearExpiryDays(dto) !== null
+            ? Number(this.getNearExpiryDays(dto))
+            : 0,
         stock: new this.d(0),
         metadata: dto.meta ? (dto.meta as any) : (Prisma as any).JsonNull,
       } satisfies Prisma.ProductUncheckedCreateInput;
@@ -148,6 +178,24 @@ export class ProductsService {
       const reorderLevel = this.getReorderLevel(dto);
       data.reorderLevel =
         reorderLevel === null ? null : new this.d(reorderLevel as any);
+    }
+
+    if (this.getBatchTrackingEnabled(dto) !== undefined) {
+      data.batchTrackingEnabled = Boolean(this.getBatchTrackingEnabled(dto));
+    }
+
+    if (this.getExpiryTrackingEnabled(dto) !== undefined) {
+      data.expiryTrackingEnabled = Boolean(this.getExpiryTrackingEnabled(dto));
+    }
+
+    if (this.getBatchIssuePolicy(dto) !== undefined) {
+      data.batchIssuePolicy = this.getBatchIssuePolicy(dto);
+    }
+
+    if (this.getNearExpiryDays(dto) !== undefined) {
+      const nearExpiryDays = this.getNearExpiryDays(dto);
+      data.nearExpiryDays =
+        nearExpiryDays === null ? null : Number(nearExpiryDays);
     }
 
     return this.prisma.product.update({

@@ -24,6 +24,7 @@ Recommended setup:
 ```bash
 npm --workspace apps/api run prisma:migrate:dev
 npm --workspace apps/api run seed:auth
+npm --workspace apps/api run seed:distributor
 npm --workspace apps/api run dev
 npm --workspace apps/web run dev
 ```
@@ -303,6 +304,63 @@ Checks:
 
 1. Create purchase return.
 2. Verify lifecycle, stock, and financial changes.
+
+---
+
+## 8B. Distributor V2 extension
+
+Run this section after `seed:distributor`.
+
+### Quotations
+
+1. Open `/c/{companyId}/sales/quotations`.
+2. Verify quotation list renders seeded rows.
+3. Open a quotation detail.
+4. Verify customer, salesperson, totals, and lifecycle actions render.
+
+### Sales orders
+
+1. Open `/c/{companyId}/sales/orders`.
+2. Verify seeded sales-order rows render.
+3. Open a sales order detail.
+4. Verify source quotation context and fulfillment state render.
+
+### Warehouses
+
+1. Open `/c/{companyId}/inventory/warehouses`.
+2. Verify `Main Godown` and `Branch Warehouse` appear.
+3. Verify stock view shows warehouse-level rows.
+
+### Transfers
+
+1. Open `/c/{companyId}/inventory/transfers`.
+2. Verify seeded transfer rows render.
+3. Verify dispatch / receive lifecycle is visible.
+
+### Sales team report
+
+1. Open `/c/{companyId}/reports/distributor/sales-team`.
+2. Verify sales, collections, and outstanding are grouped by salesperson.
+
+### Distributor analytics
+
+1. Open `/c/{companyId}/reports/distributor/analytics`.
+2. Verify:
+   - top salespeople
+   - top due customers
+   - warehouse stock snapshot
+   - fast-moving products
+   - slow-moving products
+
+### Distributor dashboard
+
+1. Open `/c/{companyId}/dashboard`.
+2. Verify the owner operating view shows:
+   - gross sales
+   - collections
+   - outstanding
+   - stock value
+   - warehouse and movement blocks
 
 ---
 

@@ -25,6 +25,12 @@ import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { GstModule } from './gst/gst.module';
+import { QuotationsModule } from './quotations/quotations.module';
+import { SalesOrdersModule } from './sales-orders/sales-orders.module';
+import { PricingModule } from './pricing/pricing.module';
+import { FinanceOpsModule } from './finance-ops/finance-ops.module';
+import { FieldSalesModule } from './field-sales/field-sales.module';
+import { MigrationOpsModule } from './migration-ops/migration-ops.module';
 
 @Module({
   imports: [
@@ -56,6 +62,12 @@ import { GstModule } from './gst/gst.module';
     CategoriesModule,
     OnboardingModule,
     GstModule,
+    QuotationsModule,
+    SalesOrdersModule,
+    PricingModule,
+    FinanceOpsModule,
+    FieldSalesModule,
+    MigrationOpsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -45,7 +46,21 @@ const ALL_PERMISSION_DEFINITIONS: PermissionDefinition[] = [
   { code: 'settings.users.manage', group: 'settings', description: 'Invite users and update user access' },
   { code: 'settings.roles.manage', group: 'settings', description: 'Create and maintain custom roles' },
   { code: 'settings.notifications.manage', group: 'settings', description: 'Manage notification templates and test sends' },
+  { code: 'settings.pricing.manage', group: 'settings', description: 'Manage pricing tiers, price lists, and customer special rates' },
   { code: 'settings.subscription.manage', group: 'settings', description: 'Manage subscription and billing setup' },
+  { code: 'settings.migrations.manage', group: 'settings', description: 'Manage migration projects, import profiles, and import jobs' },
+  { code: 'settings.print_templates.manage', group: 'settings', description: 'Manage print templates, preview, publish, and defaults' },
+  { code: 'settings.custom_fields.manage', group: 'settings', description: 'Manage controlled custom fields and field values' },
+  { code: 'integrations.webhooks.manage', group: 'integrations', description: 'Manage outbound webhooks and review delivery logs' },
+  { code: 'integrations.api_keys.manage', group: 'integrations', description: 'Manage integration API keys' },
+  { code: 'field_sales.manage_masters', group: 'field_sales', description: 'Create and update territories, routes, beats, and assignments' },
+  { code: 'field_sales.view_team_worklists', group: 'field_sales', description: 'Review team plans, visits, and route activity' },
+  { code: 'field_sales.log_visits', group: 'field_sales', description: 'Start, update, and complete visits' },
+  { code: 'field_sales.create_documents', group: 'field_sales', description: 'Create field quotations and sales orders' },
+  { code: 'field_sales.record_followups', group: 'field_sales', description: 'Capture collection promises and field follow-up context' },
+  { code: 'field_sales.submit_dcr', group: 'field_sales', description: 'Submit daily call reports' },
+  { code: 'field_sales.review_dcr', group: 'field_sales', description: 'Review or approve daily call reports' },
+  { code: 'field_sales.view_reports', group: 'field_sales', description: 'Open field route, visit, and DCR reports' },
 ];
 
 const ALL_PERMISSION_CODES = ALL_PERMISSION_DEFINITIONS.map(
@@ -65,12 +80,37 @@ const STAFF_PERMISSION_CODES = [
   'inventory.view',
   'inventory.manage',
   'reports.view',
+  'field_sales.manage_masters',
+  'field_sales.view_team_worklists',
+  'field_sales.log_visits',
+  'field_sales.create_documents',
+  'field_sales.record_followups',
+  'field_sales.submit_dcr',
+  'field_sales.review_dcr',
+  'field_sales.view_reports',
+];
+
+const SALESPERSON_PERMISSION_CODES = [
+  'dashboard.view',
+  'masters.view',
+  'masters.manage',
+  'sales.view',
+  'sales.manage',
+  'payments.view',
+  'payments.manage',
+  'reports.view',
+  'field_sales.log_visits',
+  'field_sales.create_documents',
+  'field_sales.record_followups',
+  'field_sales.submit_dcr',
+  'field_sales.view_reports',
 ];
 
 const BUILTIN_ROLE_PERMISSIONS: Record<string, string[]> = {
   owner: ALL_PERMISSION_CODES,
   admin: ALL_PERMISSION_CODES,
   staff: STAFF_PERMISSION_CODES,
+  salesperson: SALESPERSON_PERMISSION_CODES,
 };
 
 const RESERVED_ROLE_NAMES = new Set(Object.keys(BUILTIN_ROLE_PERMISSIONS));
@@ -366,6 +406,36 @@ export class RbacService {
     });
   }
 
+  async listAssignableSalespeople(companyId: string) {
+    await this.ensureCompanyRbac(companyId);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        companyId,
+        isActive: true,
+        role: {
+          in: ['owner', 'admin', 'salesperson', 'OWNER', 'ADMIN', 'SALESPERSON'],
+        },
+      },
+      orderBy: [{ name: 'asc' }, { email: 'asc' }],
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+      },
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: this.normalizePrimaryRole(user.role),
+      isActive: user.isActive,
+    }));
+  }
+
   async inviteUser(
     companyId: string,
     dto: {
@@ -380,7 +450,6 @@ export class RbacService {
     actorUserId: string,
   ) {
     await this.ensureCompanyRbac(companyId);
-    const { default: bcrypt } = await import('bcryptjs');
 
     const primaryRole = this.normalizePrimaryRole(
       dto.primary_role ?? dto.role ?? 'staff',

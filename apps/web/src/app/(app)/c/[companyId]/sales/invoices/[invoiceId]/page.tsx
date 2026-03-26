@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { InvoiceCompliancePanel } from "@/components/invoices/invoice-compliance-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
@@ -269,6 +270,8 @@ export default function InvoiceDetailPage({ params }: Props) {
                 </SecondaryButton>
               </div>
             </WorkspacePanel>
+
+            <InvoiceCompliancePanel companyId={companyId} invoiceId={invoiceId} />
 
             <Card>
               <CardHeader>

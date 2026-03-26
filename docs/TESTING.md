@@ -28,6 +28,7 @@ Test categories
 - Reports:
   - API contract tests for sales summary, purchases summary, outstanding, top products, profit snapshot, GST summary, and accounting statements
   - Web smoke for reports hub, business reports, GST compliance center, and accounting report pages
+  - Distributor V2 smoke for quotations, sales orders, warehouses, transfers, and distributor analytics
 
 Sample unit test cases
 - TaxEngine: intra-state vs inter-state tax splits
@@ -45,6 +46,13 @@ npm ci
 npm --workspace apps/api run test
 npm --workspace apps/api run test:e2e
 npm --workspace apps/web run test:e2e
+```
+
+Distributor V2 demo/QA setup
+```bash
+npm --workspace apps/api run seed:auth
+npm --workspace apps/api run seed:distributor
+npm --workspace apps/web run test:e2e -- --list tests/distributor-v2.spec.ts
 ```
 
 Coverage targets

@@ -6,7 +6,467 @@ import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
 import { createIdempotencyKey, idempotencyHeaders } from "@/lib/api/idempotency";
 import type { Paginated } from "@/lib/masters/types";
-import type { Invoice, Ledger, Journal, PaginatedPayments, Payment, Purchase } from "@/lib/billing/types";
+import type {
+  DeliveryChallan,
+  DispatchQueueRow,
+  Invoice,
+  InvoiceComplianceExceptionRow,
+  InvoiceComplianceSummary,
+  Journal,
+  Ledger,
+  PaginatedPayments,
+  Payment,
+  Purchase,
+  Quotation,
+  SalesOrder,
+} from "@/lib/billing/types";
+
+export function useQuotations(args: {
+  companyId: string;
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+  from?: string;
+  to?: string;
+  enabled?: boolean;
+}) {
+  const { companyId, page = 1, limit = 20, q, status, from, to, enabled = true } = args;
+  return useQuery({
+    queryKey: ["companies", companyId, "quotations", { page, limit, q, status, from, to }],
+    enabled,
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      qs.set("page", String(page));
+      qs.set("limit", String(limit));
+      if (q) qs.set("q", q);
+      if (status) qs.set("status", status);
+      if (from) qs.set("from", from);
+      if (to) qs.set("to", to);
+      return apiClient.get<Paginated<Quotation>>(companyPath(companyId, `/quotations?${qs.toString()}`));
+    },
+  });
+}
+
+export function useQuotation(args: { companyId: string; quotationId: string }) {
+  const { companyId, quotationId } = args;
+  return useQuery({
+    queryKey: ["companies", companyId, "quotations", quotationId],
+    queryFn: async () => {
+      return apiClient.get<Quotation>(companyPath(companyId, `/quotations/${quotationId}`));
+    },
+  });
+}
+
+export function useCreateQuotation(args: { companyId: string }) {
+  const qc = useQueryClient();
+  const { companyId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "quotations", "create"],
+    mutationFn: async (body: {
+      customer_id: string;
+      salesperson_user_id?: string;
+      issue_date?: string;
+      expiry_date?: string;
+      notes?: string;
+      items: Array<{ product_id: string; quantity: string; unit_price: string; discount?: string; override_reason?: string }>;
+    }) => {
+      return apiClient.post<Quotation>(companyPath(companyId, "/quotations"), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations"] });
+    },
+  });
+}
+
+export function usePatchQuotation(args: { companyId: string; quotationId: string }) {
+  const qc = useQueryClient();
+  const { companyId, quotationId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "quotations", quotationId, "patch"],
+    mutationFn: async (body: {
+      customer_id?: string;
+      salesperson_user_id?: string | null;
+      issue_date?: string;
+      expiry_date?: string;
+      notes?: string;
+      items?: Array<{ product_id: string; quantity: string; unit_price: string; discount?: string }>;
+    }) => {
+      return apiClient.patch<Quotation>(companyPath(companyId, `/quotations/${quotationId}`), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations", quotationId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations"] });
+    },
+  });
+}
+
+function useQuotationAction(args: { companyId: string; quotationId: string; action: string }) {
+  const qc = useQueryClient();
+  const { companyId, quotationId, action } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "quotations", quotationId, action],
+    mutationFn: async (input: void) => {
+      void input;
+      return apiClient.post<Quotation>(companyPath(companyId, `/quotations/${quotationId}/${action}`), {});
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations", quotationId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations"] });
+    },
+  });
+}
+
+export function useSendQuotation(args: { companyId: string; quotationId: string }) {
+  return useQuotationAction({ ...args, action: "send" });
+}
+
+export function useApproveQuotation(args: { companyId: string; quotationId: string }) {
+  return useQuotationAction({ ...args, action: "approve" });
+}
+
+export function useExpireQuotation(args: { companyId: string; quotationId: string }) {
+  return useQuotationAction({ ...args, action: "expire" });
+}
+
+export function useCancelQuotation(args: { companyId: string; quotationId: string }) {
+  return useQuotationAction({ ...args, action: "cancel" });
+}
+
+export function useConvertQuotationToInvoice(args: { companyId: string; quotationId: string }) {
+  const qc = useQueryClient();
+  const { companyId, quotationId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "quotations", quotationId, "convert-to-invoice"],
+    mutationFn: async (body?: { series_code?: string }) => {
+      return apiClient.post<Invoice>(
+        companyPath(companyId, `/quotations/${quotationId}/convert-to-invoice`),
+        body ?? {},
+      );
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations", quotationId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
+    },
+  });
+}
+
+export function useConvertQuotationToSalesOrder(args: { companyId: string; quotationId: string }) {
+  const qc = useQueryClient();
+  const { companyId, quotationId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "quotations", quotationId, "convert-to-sales-order"],
+    mutationFn: async () => {
+      return apiClient.post<SalesOrder>(
+        companyPath(companyId, `/quotations/${quotationId}/convert-to-sales-order`),
+        {},
+      );
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations", quotationId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "quotations"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+    },
+  });
+}
+
+export function useSalesOrders(args: {
+  companyId: string;
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+  from?: string;
+  to?: string;
+  enabled?: boolean;
+}) {
+  const { companyId, page = 1, limit = 20, q, status, from, to, enabled = true } = args;
+  return useQuery({
+    queryKey: ["companies", companyId, "sales-orders", { page, limit, q, status, from, to }],
+    enabled,
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      qs.set("page", String(page));
+      qs.set("limit", String(limit));
+      if (q) qs.set("q", q);
+      if (status) qs.set("status", status);
+      if (from) qs.set("from", from);
+      if (to) qs.set("to", to);
+      return apiClient.get<Paginated<SalesOrder>>(companyPath(companyId, `/sales-orders?${qs.toString()}`));
+    },
+  });
+}
+
+export function useSalesOrder(args: { companyId: string; salesOrderId: string }) {
+  const { companyId, salesOrderId } = args;
+  return useQuery({
+    queryKey: ["companies", companyId, "sales-orders", salesOrderId],
+    queryFn: async () => {
+      return apiClient.get<SalesOrder>(companyPath(companyId, `/sales-orders/${salesOrderId}`));
+    },
+  });
+}
+
+export function useCreateSalesOrder(args: { companyId: string }) {
+  const qc = useQueryClient();
+  const { companyId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "sales-orders", "create"],
+    mutationFn: async (body: {
+      customer_id: string;
+      salesperson_user_id?: string;
+      quotation_id?: string;
+      order_date?: string;
+      expected_dispatch_date?: string;
+      notes?: string;
+      items: Array<{ product_id: string; quantity: string; unit_price: string; discount?: string; override_reason?: string }>;
+    }) => {
+      return apiClient.post<SalesOrder>(companyPath(companyId, "/sales-orders"), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+    },
+  });
+}
+
+export function usePatchSalesOrder(args: { companyId: string; salesOrderId: string }) {
+  const qc = useQueryClient();
+  const { companyId, salesOrderId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "sales-orders", salesOrderId, "patch"],
+    mutationFn: async (body: {
+      customer_id?: string;
+      salesperson_user_id?: string | null;
+      order_date?: string;
+      expected_dispatch_date?: string;
+      notes?: string;
+      items?: Array<{ product_id: string; quantity: string; unit_price: string; discount?: string }>;
+    }) => {
+      return apiClient.patch<SalesOrder>(companyPath(companyId, `/sales-orders/${salesOrderId}`), body);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders", salesOrderId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+    },
+  });
+}
+
+function useSalesOrderAction(args: { companyId: string; salesOrderId: string; action: string }) {
+  const qc = useQueryClient();
+  const { companyId, salesOrderId, action } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "sales-orders", salesOrderId, action],
+    mutationFn: async () => {
+      return apiClient.post<SalesOrder>(companyPath(companyId, `/sales-orders/${salesOrderId}/${action}`), {});
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders", salesOrderId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+    },
+  });
+}
+
+export function useConfirmSalesOrder(args: { companyId: string; salesOrderId: string }) {
+  return useSalesOrderAction({ ...args, action: "confirm" });
+}
+
+export function useCancelSalesOrder(args: { companyId: string; salesOrderId: string }) {
+  return useSalesOrderAction({ ...args, action: "cancel" });
+}
+
+export function useConvertSalesOrderToInvoice(args: { companyId: string; salesOrderId: string }) {
+  const qc = useQueryClient();
+  const { companyId, salesOrderId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "sales-orders", salesOrderId, "convert-to-invoice"],
+    mutationFn: async (body?: {
+      series_code?: string;
+      items?: Array<{ sales_order_item_id: string; quantity: string }>;
+    }) => {
+      return apiClient.post<Invoice>(
+        companyPath(companyId, `/sales-orders/${salesOrderId}/convert-to-invoice`),
+        body ?? {},
+      );
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders", salesOrderId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
+    },
+  });
+}
+
+export function useDispatchQueue(args: {
+  companyId: string;
+  q?: string;
+  warehouse_id?: string;
+  enabled?: boolean;
+}) {
+  const { companyId, q, warehouse_id, enabled = true } = args;
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "dispatch-queue", { q, warehouse_id }],
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      if (q) qs.set("q", q);
+      if (warehouse_id) qs.set("warehouse_id", warehouse_id);
+      return apiClient.get<{ data: DispatchQueueRow[] }>(
+        companyPath(companyId, `/dispatch-queue?${qs.toString()}`),
+      );
+    },
+  });
+}
+
+export function useDeliveryChallans(args: {
+  companyId: string;
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+  sales_order_id?: string;
+  enabled?: boolean;
+}) {
+  const {
+    companyId,
+    page = 1,
+    limit = 20,
+    q,
+    status,
+    sales_order_id,
+    enabled = true,
+  } = args;
+  return useQuery({
+    enabled,
+    queryKey: [
+      "companies",
+      companyId,
+      "delivery-challans",
+      { page, limit, q, status, sales_order_id },
+    ],
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      qs.set("page", String(page));
+      qs.set("limit", String(limit));
+      if (q) qs.set("q", q);
+      if (status) qs.set("status", status);
+      if (sales_order_id) qs.set("sales_order_id", sales_order_id);
+      return apiClient.get<Paginated<DeliveryChallan>>(
+        companyPath(companyId, `/delivery-challans?${qs.toString()}`),
+      );
+    },
+  });
+}
+
+export function useDeliveryChallan(args: { companyId: string; challanId: string }) {
+  const { companyId, challanId } = args;
+  return useQuery({
+    queryKey: ["companies", companyId, "delivery-challans", challanId],
+    queryFn: async () =>
+      apiClient.get<DeliveryChallan>(
+        companyPath(companyId, `/delivery-challans/${challanId}`),
+      ),
+  });
+}
+
+export function useCreateDeliveryChallan(args: {
+  companyId: string;
+  salesOrderId: string;
+}) {
+  const qc = useQueryClient();
+  const { companyId, salesOrderId } = args;
+  return useMutation({
+    mutationKey: [
+      "companies",
+      companyId,
+      "sales-orders",
+      salesOrderId,
+      "delivery-challans",
+      "create",
+    ],
+    mutationFn: async (body: Record<string, unknown>) =>
+      apiClient.post<DeliveryChallan>(
+        companyPath(companyId, `/sales-orders/${salesOrderId}/delivery-challans`),
+        body,
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders", salesOrderId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "dispatch-queue"] });
+    },
+  });
+}
+
+export function usePatchDeliveryChallan(args: {
+  companyId: string;
+  challanId: string;
+}) {
+  const qc = useQueryClient();
+  const { companyId, challanId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "delivery-challans", challanId, "patch"],
+    mutationFn: async (body: Record<string, unknown>) =>
+      apiClient.patch<DeliveryChallan>(
+        companyPath(companyId, `/delivery-challans/${challanId}`),
+        body,
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans", challanId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "dispatch-queue"] });
+    },
+  });
+}
+
+export function useTransitionDeliveryChallan(args: {
+  companyId: string;
+  challanId: string;
+}) {
+  const qc = useQueryClient();
+  const { companyId, challanId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "delivery-challans", challanId, "status"],
+    mutationFn: async (body: { status: string; dispatch_notes?: string; delivery_notes?: string }) =>
+      apiClient.post<DeliveryChallan>(
+        companyPath(companyId, `/delivery-challans/${challanId}/status`),
+        body,
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans", challanId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "dispatch-queue"] });
+    },
+  });
+}
+
+export function useConvertDeliveryChallanToInvoice(args: {
+  companyId: string;
+  challanId: string;
+}) {
+  const qc = useQueryClient();
+  const { companyId, challanId } = args;
+  return useMutation({
+    mutationKey: [
+      "companies",
+      companyId,
+      "delivery-challans",
+      challanId,
+      "convert-to-invoice",
+    ],
+    mutationFn: async (body?: { series_code?: string }) =>
+      apiClient.post<Invoice>(
+        companyPath(companyId, `/delivery-challans/${challanId}/convert-to-invoice`),
+        body ?? {},
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans", challanId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "delivery-challans"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "sales-orders"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "dispatch-queue"] });
+    },
+  });
+}
 
 export function useInvoices(args: {
   companyId: string;
@@ -53,11 +513,23 @@ export function useCreateInvoice(args: { companyId: string }) {
     mutationKey: ["companies", companyId, "invoices", "create"],
     mutationFn: async (body: {
       customer_id: string;
+      salesperson_user_id?: string;
+      warehouse_id?: string;
       series_code?: string;
       issue_date?: string;
       due_date?: string;
       notes?: string;
-      items: Array<{ product_id: string; quantity: string; unit_price: string; discount?: string }>;
+      items: Array<{
+        product_id: string;
+        quantity: string;
+        unit_price: string;
+        discount?: string;
+        override_reason?: string;
+        batch_allocations?: Array<{
+          product_batch_id: string;
+          quantity: string;
+        }>;
+      }>;
     }) => {
       const key = createIdempotencyKey("invoice_create");
       return apiClient.post<Invoice>(
@@ -79,12 +551,24 @@ export function usePayments(args: {
   from?: string;
   to?: string;
   method?: string;
+  instrument_status?: string;
+  bank_account_id?: string;
   enabled?: boolean;
 }) {
-  const { companyId, page = 1, limit = 20, from, to, method, enabled = true } = args;
+  const {
+    companyId,
+    page = 1,
+    limit = 20,
+    from,
+    to,
+    method,
+    instrument_status,
+    bank_account_id,
+    enabled = true,
+  } = args;
   return useQuery({
     enabled,
-    queryKey: ["companies", companyId, "payments", { page, limit, from, to, method }],
+    queryKey: ["companies", companyId, "payments", { page, limit, from, to, method, instrument_status, bank_account_id }],
     queryFn: async () => {
       const qs = new URLSearchParams();
       qs.set("page", String(page));
@@ -92,6 +576,8 @@ export function usePayments(args: {
       if (from) qs.set("from", from);
       if (to) qs.set("to", to);
       if (method) qs.set("method", method);
+      if (instrument_status) qs.set("instrument_status", instrument_status);
+      if (bank_account_id) qs.set("bank_account_id", bank_account_id);
       return apiClient.get<PaginatedPayments>(companyPath(companyId, `/payments?${qs.toString()}`));
     },
   });
@@ -107,7 +593,15 @@ export function useRecordPayment(args: { companyId: string }) {
   purchase_id?: string;
       amount: string;
       method: string;
+      instrument_type?: string;
+      bank_account_id?: string;
+      instrument_number?: string;
+      instrument_date?: string;
+      deposit_date?: string;
+      clearance_date?: string;
+      bounce_date?: string;
       reference?: string;
+      notes?: string;
       payment_date?: string;
     }) => {
       const key = createIdempotencyKey("payment_record");
@@ -127,6 +621,20 @@ export function useRecordPayment(args: { companyId: string }) {
         await qc.invalidateQueries({ queryKey: ["companies", companyId, "purchases", vars.purchase_id] });
         await qc.invalidateQueries({ queryKey: ["companies", companyId, "purchases"] });
       }
+    },
+  });
+}
+
+export function useUpdatePaymentInstrument(args: { companyId: string; paymentId: string }) {
+  const qc = useQueryClient();
+  const { companyId, paymentId } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "payments", paymentId, "update"],
+    mutationFn: async (body: Record<string, unknown>) =>
+      apiClient.patch<Payment>(companyPath(companyId, `/payments/${paymentId}`), body),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "payments"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "reports"] });
     },
   });
 }
@@ -174,6 +682,89 @@ export function useCancelInvoice(args: { companyId: string; invoiceId: string })
       await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
     },
   });
+}
+
+export function useInvoiceCompliance(args: { companyId: string; invoiceId: string; enabled?: boolean }) {
+  const { companyId, invoiceId, enabled = true } = args;
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "invoices", invoiceId, "compliance"],
+    queryFn: async () =>
+      apiClient.get<InvoiceComplianceSummary>(companyPath(companyId, `/invoices/${invoiceId}/compliance`)),
+  });
+}
+
+export function useInvoiceComplianceExceptions(args: {
+  companyId: string;
+  q?: string;
+  limit?: number;
+  enabled?: boolean;
+}) {
+  const { companyId, q, limit = 100, enabled = true } = args;
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "invoices", "compliance", "exceptions", { q, limit }],
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      qs.set("limit", String(limit));
+      if (q) qs.set("q", q);
+      return apiClient.get<{ data: InvoiceComplianceExceptionRow[]; meta: { limit: number } }>(
+        companyPath(companyId, `/invoices/compliance/exceptions?${qs.toString()}`),
+      );
+    },
+  });
+}
+
+function useInvoiceComplianceAction(args: {
+  companyId: string;
+  invoiceId: string;
+  path: string;
+  key: string;
+}) {
+  const qc = useQueryClient();
+  const { companyId, invoiceId, path, key } = args;
+  return useMutation({
+    mutationKey: ["companies", companyId, "invoices", invoiceId, "compliance", key],
+    mutationFn: async (body?: Record<string, unknown>) =>
+      apiClient.post<InvoiceComplianceSummary>(
+        companyPath(companyId, `/invoices/${invoiceId}/compliance/${path}`),
+        body ?? {},
+      ),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices", invoiceId, "compliance"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices", invoiceId] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices"] });
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "invoices", "compliance", "exceptions"] });
+    },
+  });
+}
+
+export function useGenerateEInvoice(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-invoice/generate", key: "generate-einvoice" });
+}
+
+export function useCancelEInvoice(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-invoice/cancel", key: "cancel-einvoice" });
+}
+
+export function useSyncEInvoice(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-invoice/sync", key: "sync-einvoice" });
+}
+
+export function useGenerateEWayBill(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-way-bill/generate", key: "generate-eway" });
+}
+
+export function useUpdateEWayBillVehicle(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-way-bill/update-vehicle", key: "update-eway-vehicle" });
+}
+
+export function useCancelEWayBill(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-way-bill/cancel", key: "cancel-eway" });
+}
+
+export function useSyncEWayBill(args: { companyId: string; invoiceId: string }) {
+  return useInvoiceComplianceAction({ ...args, path: "e-way-bill/sync", key: "sync-eway" });
 }
 
 export function useCreateCreditNote(args: { companyId: string; invoiceId: string }) {
@@ -298,9 +889,21 @@ export function useCreatePurchase(args: { companyId: string }) {
     mutationKey: ["companies", companyId, "purchases", "create"],
     mutationFn: async (body: {
       supplier_id: string;
+      warehouse_id?: string;
       purchase_date?: string;
       notes?: string;
-      items: Array<{ product_id: string; quantity: string; unit_cost: string; discount?: string }>;
+      items: Array<{
+        product_id: string;
+        quantity: string;
+        unit_cost: string;
+        discount?: string;
+        batches?: Array<{
+          batch_number: string;
+          quantity: string;
+          expiry_date?: string;
+          manufacturing_date?: string;
+        }>;
+      }>;
     }) => {
       return apiClient.post<Purchase>(companyPath(companyId, `/purchases`), body);
     },

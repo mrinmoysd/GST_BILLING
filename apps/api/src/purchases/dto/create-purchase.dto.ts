@@ -13,6 +13,26 @@ import { Type } from 'class-transformer';
 
 import { IsDecimalStringSafe } from '../../common/validation/is-decimal-string-safe';
 
+export class CreatePurchaseItemBatchDto {
+  @ApiProperty({ example: 'BATCH-001' })
+  @IsString()
+  batch_number!: string;
+
+  @ApiProperty({ example: '10' })
+  @IsDecimalStringSafe()
+  quantity!: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsISO8601()
+  expiry_date?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsISO8601()
+  manufacturing_date?: string;
+}
+
 export class CreatePurchaseItemDto {
   @ApiProperty({ example: 'uuid', description: 'Product ID' })
   @IsUUID()
@@ -34,6 +54,17 @@ export class CreatePurchaseItemDto {
   @IsOptional()
   @IsDecimalStringSafe()
   discount?: string;
+
+  @ApiProperty({
+    required: false,
+    type: [Object],
+    description: 'Optional batch breakdown for batch-tracked products',
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePurchaseItemBatchDto)
+  batches?: CreatePurchaseItemBatchDto[];
 }
 
 export class CreatePurchaseDto {
@@ -51,6 +82,12 @@ export class CreatePurchaseDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiProperty({ required: false, description: 'Warehouse / godown ID' })
+  @IsOptional()
+  @IsUUID()
+  @Length(36, 36)
+  warehouse_id?: string;
 
   @ApiProperty({ type: [CreatePurchaseItemDto] })
   @IsArray()
