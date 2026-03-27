@@ -278,16 +278,24 @@ export type Invoice = {
   salesperson_user_id?: string | null;
   salespersonUserId?: string | null;
   warehouse_id?: string | null;
+  warehouseId?: string | null;
   series_code?: string | null;
+  seriesId?: string | null;
   invoice_no?: string | null;
+  invoiceNumber?: string | null;
   issue_date?: string | null;
+  issueDate?: string | null;
   due_date?: string | null;
+  dueDate?: string | null;
   notes?: string | null;
   status?: InvoiceStatus;
   total?: string | number | null;
   sub_total?: string | number | null;
+  subTotal?: string | number | null;
   tax_total?: string | number | null;
-  invoiceNumber?: string | null;
+  taxTotal?: string | number | null;
+  amountPaid?: string | number | null;
+  balanceDue?: string | number | null;
   customer?: {
     id: string;
     name: string;

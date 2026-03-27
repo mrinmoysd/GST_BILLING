@@ -6,8 +6,9 @@ import { useBankBook } from "@/lib/billing/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { QueueInspector, QueueMetaList, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { StatCard } from "@/lib/ui/stat";
-import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection } from "@/lib/ui/workspace";
+import { WorkspaceHero } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -23,6 +24,9 @@ export default function BankBookPage({ params }: Props) {
   const { companyId } = React.use(params);
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedRowKey, setSelectedRowKey] = React.useState("");
 
   const query = useBankBook({
     companyId,
@@ -30,7 +34,10 @@ export default function BankBookPage({ params }: Props) {
     to: to || undefined,
   });
 
-  const items = (query.data?.data as Array<{ date: string; narration: string | null; amount: number }> | undefined) ?? [];
+  const items = React.useMemo(
+    () => ((query.data?.data as Array<{ date: string; narration: string | null; amount: number }> | undefined) ?? []),
+    [query.data],
+  );
   const totals = items.reduce(
     (acc, item) => {
       if (item.amount >= 0) acc.receipts += item.amount;
@@ -40,10 +47,31 @@ export default function BankBookPage({ params }: Props) {
     },
     { receipts: 0, payments: 0, balance: 0 },
   );
-  const rows = items.map((item, index) => {
-    const priorBalance = items.slice(0, index + 1).reduce((sum, current) => sum + current.amount, 0);
-    return { ...item, runningBalance: priorBalance };
-  });
+  const rows = React.useMemo(
+    () =>
+      items.map((item, index) => {
+        const priorBalance = items.slice(0, index + 1).reduce((sum, current) => sum + current.amount, 0);
+        return { ...item, runningBalance: priorBalance };
+      }),
+    [items],
+  );
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      if (segment === "receipts") return row.amount >= 0;
+      if (segment === "payments") return row.amount < 0;
+      return true;
+    });
+  }, [rows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedRowKey("");
+      return;
+    }
+    if (!selectedRowKey) setSelectedRowKey(`${filteredRows[0]?.date}-0`);
+  }, [filteredRows, selectedRowKey]);
+
+  const selectedRow = filteredRows.find((row, index) => `${row.date}-${index}` === selectedRowKey) ?? filteredRows[0] ?? null;
 
   return (
     <div className="space-y-7">
@@ -53,19 +81,45 @@ export default function BankBookPage({ params }: Props) {
         subtitle="Review bank movement as a readable book with inflow, outflow, and running balance instead of raw payload output."
       />
 
-      <WorkspaceFilterBar>
-        <div className="grid gap-3 md:grid-cols-2">
-          <DateField label="From" value={from} onChange={setFrom} />
-          <DateField label="To" value={to} onChange={setTo} />
-        </div>
-      </WorkspaceFilterBar>
+      <QueueSegmentBar
+        items={[
+          { id: "all", label: "All entries", count: rows.length },
+          { id: "receipts", label: "Receipts", count: rows.filter((row) => row.amount >= 0).length },
+          { id: "payments", label: "Payments", count: rows.filter((row) => row.amount < 0).length },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "all", label: "Full book" },
+              { id: "receipts", label: "Bank in" },
+              { id: "payments", label: "Bank out" },
+            ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
+          />
+        }
+      />
+
+      <QueueToolbar
+        filters={
+          <div className="grid gap-3 md:grid-cols-2">
+            <DateField label="From" value={from} onChange={setFrom} />
+            <DateField label="To" value={to} onChange={setTo} />
+          </div>
+        }
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading bank book…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load bank book")} /> : null}
 
       {!query.isLoading && !query.isError && items.length === 0 ? <EmptyState title="No entries" hint="Try adjusting the date range." /> : null}
 
-      {!query.isLoading && !query.isError && rows.length > 0 ? (
+      {!query.isLoading && !query.isError && filteredRows.length > 0 ? (
         <>
           <div className="grid gap-4 md:grid-cols-3">
             <StatCard label="Receipts" value={totals.receipts.toFixed(2)} tone="quiet" />
@@ -73,7 +127,22 @@ export default function BankBookPage({ params }: Props) {
             <StatCard label="Net bank movement" value={totals.balance.toFixed(2)} tone="strong" />
           </div>
 
-          <WorkspaceSection eyebrow="Book" title="Bank entries" subtitle="Chronological bank movement with running balance.">
+          <QueueShell
+            inspector={
+              <QueueInspector eyebrow="Selected entry" title={selectedRow?.date ?? "Select entry"} subtitle="Use the right rail to keep the transaction posture visible while the book stays dense.">
+                {selectedRow ? (
+                  <QueueMetaList
+                    items={[
+                      { label: "Narration", value: selectedRow.narration ?? "—" },
+                      { label: "Receipt", value: selectedRow.amount >= 0 ? selectedRow.amount.toFixed(2) : "—" },
+                      { label: "Payment", value: selectedRow.amount < 0 ? Math.abs(selectedRow.amount).toFixed(2) : "—" },
+                      { label: "Running balance", value: selectedRow.runningBalance.toFixed(2) },
+                    ]}
+                  />
+                ) : null}
+              </QueueInspector>
+            }
+          >
             <DataTableShell>
               <DataTable>
                 <DataThead>
@@ -86,9 +155,14 @@ export default function BankBookPage({ params }: Props) {
                   </tr>
                 </DataThead>
                 <tbody>
-                  {rows.map((item, index) => {
+                  {filteredRows.map((item, index) => {
+                    const key = `${item.date}-${index}`;
                     return (
-                      <DataTr key={`${item.date}-${index}`}>
+                      <DataTr
+                        key={key}
+                        className={selectedRowKey === key ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                        onClick={() => setSelectedRowKey(key)}
+                      >
                         <DataTd>{item.date}</DataTd>
                         <DataTd>{item.narration ?? "—"}</DataTd>
                         <DataTd className="text-right">{item.amount >= 0 ? item.amount.toFixed(2) : "—"}</DataTd>
@@ -100,7 +174,7 @@ export default function BankBookPage({ params }: Props) {
                 </tbody>
               </DataTable>
             </DataTableShell>
-          </WorkspaceSection>
+          </QueueShell>
         </>
       ) : null}
     </div>

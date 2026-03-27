@@ -10,7 +10,17 @@ import type { Quotation } from "@/lib/billing/types";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import {
+  QueueInspector,
+  QueueMetaList,
+  QueueQuickActions,
+  QueueRowStateBadge,
+  QueueSavedViews,
+  QueueSegmentBar,
+  QueueShell,
+  QueueToolbar,
+} from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -26,6 +36,9 @@ export default function QuotationsPage({ params }: Props) {
   const { companyId } = React.use(params);
   const { bootstrapped } = useAuth();
   const [q, setQ] = React.useState("");
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedQuotationId, setSelectedQuotationId] = React.useState<string | null>(null);
   const query = useQuotations({ companyId, q, enabled: bootstrapped });
   const payload = query.data?.data as unknown;
 
@@ -47,6 +60,36 @@ export default function QuotationsPage({ params }: Props) {
 
   const rows = readRows(payload);
   const total = readTotal(payload);
+  const counts = React.useMemo(() => {
+    const draft = rows.filter((row) => String(row.status ?? "").toUpperCase() === "DRAFT").length;
+    const sent = rows.filter((row) => String(row.status ?? "").toUpperCase() === "SENT").length;
+    const ready = rows.filter((row) =>
+      ["APPROVED", "CONVERTED"].includes(String(row.status ?? "").toUpperCase()),
+    ).length;
+    return { all: rows.length, draft, sent, ready };
+  }, [rows]);
+
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      const status = String(row.status ?? "").toUpperCase();
+      if (segment === "draft") return status === "DRAFT";
+      if (segment === "sent") return status === "SENT";
+      if (segment === "ready") return ["APPROVED", "CONVERTED"].includes(status);
+      return true;
+    });
+  }, [rows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedQuotationId(null);
+      return;
+    }
+    if (!selectedQuotationId || !filteredRows.some((row) => row.id === selectedQuotationId)) {
+      setSelectedQuotationId(filteredRows[0]?.id ?? null);
+    }
+  }, [filteredRows, selectedQuotationId]);
+
+  const selectedQuotation = filteredRows.find((row) => row.id === selectedQuotationId) ?? filteredRows[0] ?? null;
 
   return (
     <div className="space-y-7">
@@ -65,14 +108,45 @@ export default function QuotationsPage({ params }: Props) {
         }
       />
 
-      <WorkspaceFilterBar summary={<Badge variant="secondary">{total} total</Badge>}>
-        <TextField label="Search quotations" value={q} onChange={setQ} placeholder="Quote no / customer" />
-      </WorkspaceFilterBar>
+      <QueueSegmentBar
+        items={[
+          { id: "all", label: "All quotes", count: counts.all },
+          { id: "draft", label: "Draft", count: counts.draft },
+          { id: "sent", label: "Sent", count: counts.sent },
+          { id: "ready", label: "Approved / converted", count: counts.ready },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "all", label: "Full pipeline" },
+              { id: "sent", label: "Follow-up" },
+              { id: "ready", label: "Ready to close" },
+            ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
+          />
+        }
+      />
+
+      <QueueToolbar
+        filters={<TextField label="Search quotations" value={q} onChange={setQ} placeholder="Quote no / customer" />}
+        summary={
+          <>
+            <Badge variant="secondary">{filteredRows.length} in view</Badge>
+            <Badge variant="outline">{total} total</Badge>
+          </>
+        }
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading quotations…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load quotations")} /> : null}
 
-      {!query.isLoading && !query.isError && rows.length === 0 ? (
+      {!query.isLoading && !query.isError && filteredRows.length === 0 ? (
         <EmptyState
           title="No quotations"
           hint="Create a quotation to start your quote-to-invoice workflow."
@@ -84,11 +158,49 @@ export default function QuotationsPage({ params }: Props) {
         />
       ) : null}
 
-      {rows.length > 0 ? (
-        <WorkspaceSection
-          eyebrow="Quotation plane"
-          title="Offers in view"
-          subtitle="Scan quote number, customer, value, and current sales posture from one list-first workspace."
+      {filteredRows.length > 0 ? (
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected quotation"
+              title={selectedQuotation?.quoteNumber ?? selectedQuotation?.quote_number ?? "Select quotation"}
+              subtitle="Review commercial posture, expiry, and conversion readiness without leaving the quote queue."
+              footer={
+                selectedQuotation ? (
+                  <QueueQuickActions>
+                    <Link href={`/c/${companyId}/sales/quotations/${selectedQuotation.id}`}>
+                      <SecondaryButton type="button">Open quotation</SecondaryButton>
+                    </Link>
+                    <Link href={`/c/${companyId}/sales/quotations/new`}>
+                      <SecondaryButton type="button">New quotation</SecondaryButton>
+                    </Link>
+                  </QueueQuickActions>
+                ) : null
+              }
+            >
+              {selectedQuotation ? (
+                <>
+                  <QueueQuickActions>
+                    <QueueRowStateBadge label={selectedQuotation.status ?? "—"} />
+                    <Badge variant="outline">{selectedQuotation.customer?.name ?? "No customer"}</Badge>
+                  </QueueQuickActions>
+                  <QueueMetaList
+                    items={[
+                      { label: "Issue date", value: selectedQuotation.issueDate?.slice?.(0, 10) ?? selectedQuotation.issue_date ?? "—" },
+                      { label: "Expiry", value: selectedQuotation.expiryDate?.slice?.(0, 10) ?? selectedQuotation.expiry_date ?? "—" },
+                      {
+                        label: "Salesperson",
+                        value: selectedQuotation.salesperson?.name ?? selectedQuotation.salesperson?.email ?? "Unassigned",
+                      },
+                      { label: "Total", value: selectedQuotation.total ?? "—" },
+                    ]}
+                  />
+                </>
+              ) : (
+                <div className="text-sm text-[var(--muted)]">Select a quote to inspect commercial posture and next step.</div>
+              )}
+            </QueueInspector>
+          }
         >
           <DataTableShell>
             <DataTable>
@@ -102,8 +214,12 @@ export default function QuotationsPage({ params }: Props) {
                 </tr>
               </DataThead>
               <tbody>
-                {rows.map((quote) => (
-                  <DataTr key={quote.id}>
+                {filteredRows.map((quote) => (
+                  <DataTr
+                    key={quote.id}
+                    className={selectedQuotation?.id === quote.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    onClick={() => setSelectedQuotationId(quote.id)}
+                  >
                     <DataTd>
                       <Link
                         className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
@@ -114,7 +230,7 @@ export default function QuotationsPage({ params }: Props) {
                     </DataTd>
                     <DataTd>{quote.customer?.name ?? "—"}</DataTd>
                     <DataTd>
-                      <Badge variant="secondary">{quote.status ?? "—"}</Badge>
+                      <QueueRowStateBadge label={quote.status ?? "—"} />
                     </DataTd>
                     <DataTd>{quote.expiryDate?.slice?.(0, 10) ?? quote.expiry_date ?? "—"}</DataTd>
                     <DataTd className="text-right">{quote.total ?? "—"}</DataTd>
@@ -123,7 +239,7 @@ export default function QuotationsPage({ params }: Props) {
               </tbody>
             </DataTable>
           </DataTableShell>
-        </WorkspaceSection>
+        </QueueShell>
       ) : null}
     </div>
   );

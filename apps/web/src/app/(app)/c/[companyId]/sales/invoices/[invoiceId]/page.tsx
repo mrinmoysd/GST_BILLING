@@ -55,6 +55,22 @@ type InvoiceItemLike = {
   line_total?: string | number | null;
 };
 
+function readInvoiceNumber(invoice: { invoiceNumber?: string | null; invoice_no?: string | null; id?: string | null } | null | undefined) {
+  return invoice?.invoiceNumber ?? invoice?.invoice_no ?? invoice?.id ?? "Invoice";
+}
+
+function readInvoiceIssueDate(
+  invoice: { issueDate?: string | null; issue_date?: string | null } | null | undefined,
+) {
+  return invoice?.issueDate ?? invoice?.issue_date ?? "—";
+}
+
+function readInvoiceDueDate(
+  invoice: { dueDate?: string | null; due_date?: string | null } | null | undefined,
+) {
+  return invoice?.dueDate ?? invoice?.due_date ?? "—";
+}
+
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
     const message = (err as { message?: unknown }).message;
@@ -207,8 +223,8 @@ export default function InvoiceDetailPage({ params }: Props) {
         <DetailInfoList
           items={[
             { label: "Status", value: invoice.status ?? "—" },
-            { label: "Issue date", value: invoice.issue_date ?? "—" },
-            { label: "Due date", value: invoice.due_date ?? "—" },
+            { label: "Issue date", value: readInvoiceIssueDate(invoice) },
+            { label: "Due date", value: readInvoiceDueDate(invoice) },
             { label: "Total", value: Number(invoice.total ?? 0).toFixed(2) },
             { label: "Credited", value: totalCredited.toFixed(2) },
             { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
@@ -222,7 +238,7 @@ export default function InvoiceDetailPage({ params }: Props) {
     <div className="space-y-7">
       <WorkspaceDetailHero
         eyebrow="Sales detail"
-        title={invoice?.invoice_no ?? "Invoice"}
+        title={readInvoiceNumber(invoice)}
         subtitle="Handle issuance, sharing, credit notes, sales returns, payments, and lifecycle history from one operational surface."
         badges={[
           <WorkspaceStatBadge key="status" label="Status" value={invoice?.status ?? "—"} />,
@@ -236,8 +252,8 @@ export default function InvoiceDetailPage({ params }: Props) {
         metrics={
           invoice
             ? [
-                { label: "Issue date", value: invoice.issue_date ?? "—" },
-                { label: "Due date", value: invoice.due_date ?? "—" },
+                { label: "Issue date", value: readInvoiceIssueDate(invoice) },
+                { label: "Due date", value: readInvoiceDueDate(invoice) },
                 { label: "Invoice total", value: Number(invoice.total ?? 0).toFixed(2) },
                 { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
               ]
@@ -264,11 +280,11 @@ export default function InvoiceDetailPage({ params }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Issue date</div>
-                  <div className="mt-2 text-sm font-medium">{invoice.issue_date ?? "—"}</div>
+                  <div className="mt-2 text-sm font-medium">{readInvoiceIssueDate(invoice)}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Due date</div>
-                  <div className="mt-2 text-sm font-medium">{invoice.due_date ?? "—"}</div>
+                  <div className="mt-2 text-sm font-medium">{readInvoiceDueDate(invoice)}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Invoice total</div>

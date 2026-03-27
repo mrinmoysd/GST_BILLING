@@ -15,6 +15,14 @@ import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
+function readInvoiceNumber(invoice: Invoice) {
+  return invoice.invoiceNumber ?? invoice.invoice_no ?? invoice.id;
+}
+
+function readInvoiceDate(invoice: Invoice) {
+  return invoice.issueDate ?? invoice.issue_date ?? "—";
+}
+
 function getErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
     const message = (err as { message?: unknown }).message;
@@ -154,7 +162,7 @@ export default function InvoicesPage({ params }: Props) {
           inspector={
             <QueueInspector
               eyebrow="Inspector"
-              title={selectedInvoice?.invoiceNumber ?? selectedInvoice?.invoice_no ?? "Select invoice"}
+              title={selectedInvoice ? readInvoiceNumber(selectedInvoice) : "Select invoice"}
               subtitle="Keep billing decisions close to the list instead of opening every document in a new context."
               footer={
                 selectedInvoice ? (
@@ -177,8 +185,8 @@ export default function InvoicesPage({ params }: Props) {
                   </QueueQuickActions>
                   <QueueMetaList
                     items={[
-                      { label: "Issue date", value: selectedInvoice.issue_date ?? "—" },
-                      { label: "Due date", value: selectedInvoice.due_date ?? "—" },
+                      { label: "Issue date", value: readInvoiceDate(selectedInvoice) },
+                      { label: "Due date", value: selectedInvoice.dueDate ?? selectedInvoice.due_date ?? "—" },
                       { label: "Warehouse", value: selectedInvoice.warehouse?.name ?? selectedInvoice.warehouse?.code ?? "—" },
                       { label: "Total", value: selectedInvoice.total ?? "—" },
                     ]}
@@ -210,7 +218,7 @@ export default function InvoicesPage({ params }: Props) {
                   >
                     <DataTd>
                       <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
-                        {inv.invoiceNumber ?? inv.invoice_no ?? inv.id}
+                        {readInvoiceNumber(inv)}
                       </Link>
                     </DataTd>
                     <DataTd>
@@ -219,7 +227,7 @@ export default function InvoicesPage({ params }: Props) {
                     <DataTd>
                       <QueueRowStateBadge label={inv.status ?? "—"} />
                     </DataTd>
-                    <DataTd>{inv.issue_date ?? "—"}</DataTd>
+                    <DataTd>{readInvoiceDate(inv)}</DataTd>
                     <DataTd className="text-right">{inv.total ?? "—"}</DataTd>
                   </DataTr>
                 ))}

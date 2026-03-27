@@ -10,7 +10,17 @@ import type { SalesOrder } from "@/lib/billing/types";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import {
+  QueueInspector,
+  QueueMetaList,
+  QueueQuickActions,
+  QueueRowStateBadge,
+  QueueSavedViews,
+  QueueSegmentBar,
+  QueueShell,
+  QueueToolbar,
+} from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -26,6 +36,9 @@ export default function SalesOrdersPage({ params }: Props) {
   const { companyId } = React.use(params);
   const { bootstrapped } = useAuth();
   const [q, setQ] = React.useState("");
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
   const query = useSalesOrders({ companyId, q, enabled: bootstrapped });
   const payload = query.data?.data as unknown;
 
@@ -47,6 +60,36 @@ export default function SalesOrdersPage({ params }: Props) {
 
   const rows = readRows(payload);
   const total = readTotal(payload);
+  const counts = React.useMemo(() => {
+    const draft = rows.filter((row) => String(row.status ?? "").toUpperCase() === "DRAFT").length;
+    const confirmed = rows.filter((row) => String(row.status ?? "").toUpperCase() === "CONFIRMED").length;
+    const activeFulfillment = rows.filter((row) =>
+      ["PARTIALLY_FULFILLED", "FULFILLED"].includes(String(row.status ?? "").toUpperCase()),
+    ).length;
+    return { all: rows.length, draft, confirmed, activeFulfillment };
+  }, [rows]);
+
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      const status = String(row.status ?? "").toUpperCase();
+      if (segment === "draft") return status === "DRAFT";
+      if (segment === "confirmed") return status === "CONFIRMED";
+      if (segment === "fulfillment") return ["PARTIALLY_FULFILLED", "FULFILLED"].includes(status);
+      return true;
+    });
+  }, [rows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedOrderId(null);
+      return;
+    }
+    if (!selectedOrderId || !filteredRows.some((row) => row.id === selectedOrderId)) {
+      setSelectedOrderId(filteredRows[0]?.id ?? null);
+    }
+  }, [filteredRows, selectedOrderId]);
+
+  const selectedOrder = filteredRows.find((row) => row.id === selectedOrderId) ?? filteredRows[0] ?? null;
 
   return (
     <div className="space-y-7">
@@ -76,14 +119,45 @@ export default function SalesOrdersPage({ params }: Props) {
         }
       />
 
-      <WorkspaceFilterBar summary={<Badge variant="secondary">{total} total</Badge>}>
-        <TextField label="Search orders" value={q} onChange={setQ} placeholder="Order no / customer" />
-      </WorkspaceFilterBar>
+      <QueueSegmentBar
+        items={[
+          { id: "all", label: "All orders", count: counts.all },
+          { id: "draft", label: "Draft", count: counts.draft },
+          { id: "confirmed", label: "Confirmed", count: counts.confirmed },
+          { id: "fulfillment", label: "In fulfillment", count: counts.activeFulfillment },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "all", label: "Full queue" },
+              { id: "confirmed", label: "Ready to convert" },
+              { id: "fulfillment", label: "Warehouse follow-up" },
+            ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
+          />
+        }
+      />
+
+      <QueueToolbar
+        filters={<TextField label="Search orders" value={q} onChange={setQ} placeholder="Order no / customer" />}
+        summary={
+          <>
+            <Badge variant="secondary">{filteredRows.length} in view</Badge>
+            <Badge variant="outline">{total} total</Badge>
+          </>
+        }
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading sales orders…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load sales orders")} /> : null}
 
-      {!query.isLoading && !query.isError && rows.length === 0 ? (
+      {!query.isLoading && !query.isError && filteredRows.length === 0 ? (
         <EmptyState
           title="No sales orders"
           hint="Create a sales order to separate order capture from invoice issue."
@@ -95,11 +169,53 @@ export default function SalesOrdersPage({ params }: Props) {
         />
       ) : null}
 
-      {rows.length > 0 ? (
-        <WorkspaceSection
-          eyebrow="Order plane"
-          title="Demand in view"
-          subtitle="Order capture, linked quotation context, and fulfillment posture live together in one operating table."
+      {filteredRows.length > 0 ? (
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected order"
+              title={selectedOrder?.orderNumber ?? selectedOrder?.order_number ?? "Select order"}
+              subtitle="Keep customer, source quotation, and fulfillment posture visible while you work the order queue."
+              footer={
+                selectedOrder ? (
+                  <QueueQuickActions>
+                    <Link href={`/c/${companyId}/sales/orders/${selectedOrder.id}`}>
+                      <SecondaryButton type="button">Open order</SecondaryButton>
+                    </Link>
+                    <Link href={`/c/${companyId}/sales/dispatch`}>
+                      <SecondaryButton type="button">Dispatch queue</SecondaryButton>
+                    </Link>
+                  </QueueQuickActions>
+                ) : null
+              }
+            >
+              {selectedOrder ? (
+                <>
+                  <QueueQuickActions>
+                    <QueueRowStateBadge label={selectedOrder.status ?? "—"} />
+                    {selectedOrder.quotation?.id ? (
+                      <Badge variant="outline">
+                        {selectedOrder.quotation?.quoteNumber ?? selectedOrder.quotation?.quote_number ?? "Quoted"}
+                      </Badge>
+                    ) : null}
+                  </QueueQuickActions>
+                  <QueueMetaList
+                    items={[
+                      { label: "Customer", value: selectedOrder.customer?.name ?? "—" },
+                      { label: "Order date", value: selectedOrder.orderDate?.slice?.(0, 10) ?? selectedOrder.order_date ?? "—" },
+                      {
+                        label: "Expected dispatch",
+                        value: selectedOrder.expectedDispatchDate?.slice?.(0, 10) ?? selectedOrder.expected_dispatch_date ?? "—",
+                      },
+                      { label: "Total", value: selectedOrder.total ?? "—" },
+                    ]}
+                  />
+                </>
+              ) : (
+                <div className="text-sm text-[var(--muted)]">Select an order to review conversion readiness and fulfillment posture.</div>
+              )}
+            </QueueInspector>
+          }
         >
           <DataTableShell>
             <DataTable>
@@ -113,15 +229,19 @@ export default function SalesOrdersPage({ params }: Props) {
                 </tr>
               </DataThead>
               <tbody>
-                {rows.map((order) => (
-                  <DataTr key={order.id}>
+                {filteredRows.map((order) => (
+                  <DataTr
+                    key={order.id}
+                    className={selectedOrder?.id === order.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    onClick={() => setSelectedOrderId(order.id)}
+                  >
                     <DataTd>
                       <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/orders/${order.id}`}>
                         {order.orderNumber ?? order.order_number ?? order.id}
                       </Link>
                     </DataTd>
                     <DataTd>{order.customer?.name ?? "—"}</DataTd>
-                    <DataTd><Badge variant="secondary">{order.status ?? "—"}</Badge></DataTd>
+                    <DataTd><QueueRowStateBadge label={order.status ?? "—"} /></DataTd>
                     <DataTd>{order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</DataTd>
                     <DataTd className="text-right">{order.total ?? "—"}</DataTd>
                   </DataTr>
@@ -129,7 +249,7 @@ export default function SalesOrdersPage({ params }: Props) {
               </tbody>
             </DataTable>
           </DataTableShell>
-        </WorkspaceSection>
+        </QueueShell>
       ) : null}
     </div>
   );

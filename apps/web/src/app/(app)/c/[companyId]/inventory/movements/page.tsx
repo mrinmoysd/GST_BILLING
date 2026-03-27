@@ -3,11 +3,19 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStockMovements, useWarehouses } from "@/lib/masters/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SelectField, TextField } from "@/lib/ui/form";
+import {
+  QueueInspector,
+  QueueMetaList,
+  QueueSavedViews,
+  QueueSegmentBar,
+  QueueShell,
+  QueueToolbar,
+} from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -24,87 +32,160 @@ export default function InventoryMovementsPage({ params }: Props) {
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
   const [warehouseId, setWarehouseId] = React.useState("");
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedMovementId, setSelectedMovementId] = React.useState("");
   const warehouses = useWarehouses({ companyId, activeOnly: true });
   const query = useStockMovements({ companyId, warehouseId: warehouseId || undefined, from: from || undefined, to: to || undefined, page: 1, limit: 50 });
-  const rows = query.data?.data.data ?? [];
+  const rows = React.useMemo(() => query.data?.data.data ?? [], [query.data]);
+  const counts = React.useMemo(() => {
+    const inbound = rows.filter((row) => Number(row.changeQty ?? 0) > 0).length;
+    const outbound = rows.filter((row) => Number(row.changeQty ?? 0) < 0).length;
+    return { all: rows.length, inbound, outbound };
+  }, [rows]);
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      if (segment === "inbound") return Number(row.changeQty ?? 0) > 0;
+      if (segment === "outbound") return Number(row.changeQty ?? 0) < 0;
+      return true;
+    });
+  }, [rows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedMovementId("");
+      return;
+    }
+    if (!selectedMovementId || !filteredRows.some((row) => row.id === selectedMovementId)) {
+      setSelectedMovementId(filteredRows[0]?.id ?? "");
+    }
+  }, [filteredRows, selectedMovementId]);
+
+  const selectedRow = filteredRows.find((row) => row.id === selectedMovementId) ?? filteredRows[0] ?? null;
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="Inventory"
         title="Stock movements"
-        subtitle="Review stock changes across the company with a dedicated movement ledger."
-        actions={<Link href={`/c/${companyId}/inventory`} className="text-sm underline">Back</Link>}
+        subtitle="Use one movement explorer for inbound, outbound, and warehouse-filtered stock history without dropping into raw ledger screens."
+        badges={[
+          <WorkspaceStatBadge key="all" label="Movements" value={rows.length} />,
+          <WorkspaceStatBadge key="outbound" label="Outbound" value={counts.outbound} variant="outline" />,
+        ]}
       />
 
-      <Card className="max-w-3xl">
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Use the date range to isolate the stock activity you want to review.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
-          <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
-          <SelectField
-            label="Warehouse"
-            value={warehouseId}
-            onChange={setWarehouseId}
-            options={[
-              { value: "", label: "All warehouses" },
-              ...((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
-                value: warehouse.id,
-                label: warehouse.name,
-              }))),
+      <QueueSegmentBar
+        items={[
+          { id: "all", label: "All movement", count: counts.all },
+          { id: "inbound", label: "Inbound", count: counts.inbound },
+          { id: "outbound", label: "Outbound", count: counts.outbound },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "all", label: "Full ledger" },
+              { id: "outbound", label: "Stock depletion" },
+              { id: "inbound", label: "Replenishment" },
             ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
           />
-        </CardContent>
-      </Card>
+        }
+      />
+
+      <QueueToolbar
+        filters={
+          <div className="grid gap-4 md:grid-cols-3">
+            <TextField label="From (YYYY-MM-DD)" value={from} onChange={setFrom} />
+            <TextField label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
+            <SelectField
+              label="Warehouse"
+              value={warehouseId}
+              onChange={setWarehouseId}
+              options={[
+                { value: "", label: "All warehouses" },
+                ...((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
+                  value: warehouse.id,
+                  label: warehouse.name,
+                }))),
+              ]}
+            />
+          </div>
+        }
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading stock movements…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load stock movements")} /> : null}
-      {!query.isLoading && !query.isError && rows.length === 0 ? <EmptyState title="No movements" hint="Try adjusting the date range." /> : null}
+      {!query.isLoading && !query.isError && filteredRows.length === 0 ? <EmptyState title="No movements" hint="Try adjusting the date range." /> : null}
 
-      {rows.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Movement ledger</CardTitle>
-            <CardDescription>Most recent stock movements returned by the current query.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>When</DataTh>
-                    <DataTh>Product</DataTh>
-                    <DataTh>Warehouse</DataTh>
-                    <DataTh>Change</DataTh>
-                    <DataTh>Balance</DataTh>
-                    <DataTh>Source</DataTh>
-                    <DataTh>Note</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {rows.map((row) => (
-                    <DataTr key={row.id}>
-                      <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
-                      <DataTd>
-                        <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
-                          {row.product?.name ?? row.productId.slice(0, 8)}
-                        </Link>
-                      </DataTd>
-                      <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
-                      <DataTd>{row.changeQty}</DataTd>
-                      <DataTd>{row.balanceQty}</DataTd>
-                      <DataTd>{row.sourceType}</DataTd>
-                      <DataTd>{row.note ?? "—"}</DataTd>
-                    </DataTr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
-          </CardContent>
-        </Card>
+      {filteredRows.length > 0 ? (
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected movement"
+              title={selectedRow?.product?.name ?? selectedRow?.productId?.slice?.(0, 8) ?? "Select movement"}
+              subtitle="Keep the source and balance context beside the ledger instead of burying it in dense rows."
+            >
+              {selectedRow ? (
+                <QueueMetaList
+                  items={[
+                    { label: "When", value: new Date(selectedRow.createdAt).toLocaleString() },
+                    { label: "Warehouse", value: selectedRow.warehouse?.name ?? "Company" },
+                    { label: "Change", value: selectedRow.changeQty },
+                    { label: "Balance", value: selectedRow.balanceQty },
+                    { label: "Source", value: selectedRow.sourceType },
+                    { label: "Note", value: selectedRow.note ?? "—" },
+                  ]}
+                />
+              ) : (
+                <div className="text-sm text-[var(--muted)]">Select a movement row to inspect the source and balance context.</div>
+              )}
+            </QueueInspector>
+          }
+        >
+          <DataTableShell>
+            <DataTable>
+              <DataThead>
+                <tr>
+                  <DataTh>When</DataTh>
+                  <DataTh>Product</DataTh>
+                  <DataTh>Warehouse</DataTh>
+                  <DataTh>Change</DataTh>
+                  <DataTh>Balance</DataTh>
+                  <DataTh>Source</DataTh>
+                  <DataTh>Note</DataTh>
+                </tr>
+              </DataThead>
+              <tbody>
+                {filteredRows.map((row) => (
+                  <DataTr
+                    key={row.id}
+                    className={selectedRow?.id === row.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    onClick={() => setSelectedMovementId(row.id)}
+                  >
+                    <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
+                    <DataTd>
+                      <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
+                        {row.product?.name ?? row.productId.slice(0, 8)}
+                      </Link>
+                    </DataTd>
+                    <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
+                    <DataTd>{row.changeQty}</DataTd>
+                    <DataTd>{row.balanceQty}</DataTd>
+                    <DataTd>{row.sourceType}</DataTd>
+                    <DataTd>{row.note ?? "—"}</DataTd>
+                  </DataTr>
+                ))}
+              </tbody>
+            </DataTable>
+          </DataTableShell>
+        </QueueShell>
       ) : null}
     </div>
   );

@@ -741,6 +741,14 @@ Success criteria:
 
 ## 4. P1 Backlog
 
+Status:
+
+- Implemented at code/build level on 2026-03-27
+- The `P1` band now has the redesigned orders, quotations, purchases, supplier, and inventory overview/explorer pages running on the shared queue, detail-tab, and composer systems
+- Reports, settings, and field-sales pages remain in `P1` for consistency polish, but the core page-architecture gap across the band is now materially closed
+- Validation passed for the redesigned `P1` routes with targeted `eslint` plus `npm --workspace apps/web run build`
+- Remaining work for `P1` is live browser QA and visual refinement, not missing structural redesign work
+
 ## P1-01. Orders family redesign
 
 Routes:
@@ -1071,6 +1079,14 @@ Success criteria:
 ---
 
 ## 5. Deferred P3 Backlog
+
+Status:
+
+- Implemented at code/build level on 2026-03-27
+- The specialist band now has the accounting ledger/detail/book pages, GST compliance exception queue, and admin company operations aligned to the shared queue/detail system
+- Public/auth and several admin/public routes were already near the approved direction and remain in this band only for later polish, not structural redesign debt
+- Validation passed for the redesigned specialist routes with targeted `eslint` plus `npm --workspace apps/web run build`
+- Remaining work for `P3` is browser-level QA and refinement, not missing page-family architecture
 
 ## P3-01. Accounting workspace modernization
 

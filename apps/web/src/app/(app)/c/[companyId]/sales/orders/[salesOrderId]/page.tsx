@@ -15,9 +15,10 @@ import {
 } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
 import { useWarehouses } from "@/lib/masters/hooks";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { WorkspaceDetailHero, WorkspacePanel, WorkspaceSection } from "@/lib/ui/workspace";
+import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; salesOrderId: string }> };
 
@@ -86,6 +87,52 @@ export default function SalesOrderDetailPage({ params }: Props) {
     | { data?: Array<{ id: string; name?: string; code?: string }> }
     | undefined;
   const warehouseRows = warehousePayload?.data ?? [];
+  const detailRail = (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Order controls"
+        subtitle="Keep the main document decisions visible while moving between fulfillment, dispatch, and conversion tabs."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/sales/orders`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to orders</SecondaryButton>
+          </Link>
+          <Link href={`/c/${companyId}/sales/dispatch`}>
+            <SecondaryButton type="button" className="w-full justify-start">Dispatch queue</SecondaryButton>
+          </Link>
+          {canConfirm ? (
+            <SecondaryButton type="button" className="w-full justify-start" disabled={confirm.isPending} onClick={() => runAction(() => confirm.mutateAsync(), "Failed to confirm sales order")}>
+              {confirm.isPending ? "Confirming…" : "Confirm order"}
+            </SecondaryButton>
+          ) : null}
+          {status !== "fulfilled" && status !== "cancelled" ? (
+            <SecondaryButton type="button" className="w-full justify-start" disabled={cancel.isPending || status === "partially_fulfilled"} onClick={() => runAction(() => cancel.mutateAsync(), "Failed to cancel sales order")}>
+              {cancel.isPending ? "Cancelling…" : "Cancel order"}
+            </SecondaryButton>
+          ) : null}
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Order posture"
+        subtitle="These details stay visible while the main tab body focuses on one workflow at a time."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Customer", value: order.customer?.name ?? "—" },
+            { label: "Status", value: order.status ?? "—" },
+            { label: "Order date", value: order.orderDate?.slice?.(0, 10) ?? order.order_date ?? "—" },
+            {
+              label: "Expected dispatch",
+              value: order.expectedDispatchDate?.slice?.(0, 10) ?? order.expected_dispatch_date ?? "—",
+            },
+            { label: "Total", value: order.total ?? "—" },
+          ]}
+        />
+      </DetailRail>
+    </>
+  );
 
   return (
     <div className="space-y-7">
@@ -122,9 +169,16 @@ export default function SalesOrderDetailPage({ params }: Props) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <WorkspaceSection eyebrow="Fulfillment body" title="Ordered items" subtitle="Remaining quantity stays visible so invoice conversion can be partial or complete.">
-          <WorkspacePanel>
+      <DetailTabs
+        defaultValue="summary"
+        items={[
+          { id: "summary", label: "Summary", badge: items.length },
+          { id: "dispatch", label: "Dispatch", badge: challanRows.length },
+          { id: "conversion", label: "Invoice conversion", badge: invoices.length },
+        ]}
+      >
+        <DetailTabPanel value="summary" rail={detailRail}>
+          <WorkspacePanel title="Ordered items" subtitle="Remaining quantity stays visible so invoice conversion can be partial or complete.">
             <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
               <table className="min-w-[820px] w-full text-sm">
                 <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -157,9 +211,16 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </table>
             </div>
           </WorkspacePanel>
-        </WorkspaceSection>
+          <WorkspacePanel title="Commercial context" subtitle="The order preserves both customer and quotation origin, so fulfillment stays tied to the selling conversation.">
+            <div className="space-y-3 text-sm">
+              <div><span className="font-semibold text-[var(--foreground)]">Customer:</span> {order.customer?.name ?? "—"}</div>
+              <div><span className="font-semibold text-[var(--foreground)]">Quotation:</span> {order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</div>
+              <div><span className="font-semibold text-[var(--foreground)]">Notes:</span> {order.notes ?? "—"}</div>
+            </div>
+          </WorkspacePanel>
+        </DetailTabPanel>
 
-        <div className="space-y-6">
+        <DetailTabPanel value="dispatch" rail={detailRail}>
           <WorkspacePanel title="Create delivery challan" subtitle="Move the order into warehouse execution without posting stock or accounting yet.">
             {challanError ? <InlineError message={challanError} /> : null}
             <div className="space-y-4">
@@ -262,7 +323,32 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </PrimaryButton>
             </div>
           </WorkspacePanel>
+          <WorkspacePanel title="Delivery challans" subtitle="Dispatch can now happen before invoice creation, with visible source traceability.">
+            {challansQuery.isLoading ? <div className="text-sm text-[var(--muted)]">Loading challans…</div> : null}
+            {!challansQuery.isLoading && challanRows.length === 0 ? (
+              <div className="text-sm text-[var(--muted)]">No challans created from this sales order yet.</div>
+            ) : (
+              <div className="space-y-3">
+                {challanRows.map((challan) => (
+                  <Link
+                    key={String(challan.id)}
+                    href={`/c/${companyId}/sales/challans/${challan.id}`}
+                    className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm hover:border-[var(--accent)]"
+                  >
+                    <div className="font-semibold text-[var(--foreground)]">
+                      {String(challan.challanNumber ?? challan.challan_number ?? challan.id)}
+                    </div>
+                    <div className="mt-1 text-[var(--muted)]">
+                      Status: {String(challan.status ?? "draft")} · Warehouse: {String((challan.warehouse as { name?: string } | undefined)?.name ?? "—")}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </WorkspacePanel>
+        </DetailTabPanel>
 
+        <DetailTabPanel value="conversion" rail={detailRail}>
           <WorkspacePanel title="Invoice conversion" subtitle="Generate a draft invoice from all remaining quantity or only the selected partial quantities.">
             {convertError ? <InlineError message={convertError} /> : null}
             <div className="flex flex-wrap gap-3">
@@ -290,14 +376,6 @@ export default function SalesOrderDetailPage({ params }: Props) {
             </div>
           </WorkspacePanel>
 
-          <WorkspacePanel title="Commercial context" subtitle="The order preserves both customer and quotation origin, so fulfillment stays tied to the selling conversation.">
-            <div className="space-y-3 text-sm">
-              <div><span className="font-semibold text-[var(--foreground)]">Customer:</span> {order.customer?.name ?? "—"}</div>
-              <div><span className="font-semibold text-[var(--foreground)]">Quotation:</span> {order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</div>
-              <div><span className="font-semibold text-[var(--foreground)]">Notes:</span> {order.notes ?? "—"}</div>
-            </div>
-          </WorkspacePanel>
-
           <WorkspacePanel title="Generated invoices" subtitle="Each conversion creates a draft invoice linked back to this order.">
             {invoices.length === 0 ? (
               <div className="text-sm text-[var(--muted)]">No invoices generated from this sales order yet.</div>
@@ -316,32 +394,8 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </div>
             )}
           </WorkspacePanel>
-
-          <WorkspacePanel title="Delivery challans" subtitle="Dispatch can now happen before invoice creation, with visible source traceability.">
-            {challansQuery.isLoading ? <div className="text-sm text-[var(--muted)]">Loading challans…</div> : null}
-            {!challansQuery.isLoading && challanRows.length === 0 ? (
-              <div className="text-sm text-[var(--muted)]">No challans created from this sales order yet.</div>
-            ) : (
-              <div className="space-y-3">
-                {challanRows.map((challan) => (
-                  <Link
-                    key={String(challan.id)}
-                    href={`/c/${companyId}/sales/challans/${challan.id}`}
-                    className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm hover:border-[var(--accent)]"
-                  >
-                    <div className="font-semibold text-[var(--foreground)]">
-                      {String(challan.challanNumber ?? challan.challan_number ?? challan.id)}
-                    </div>
-                    <div className="mt-1 text-[var(--muted)]">
-                      Status: {String(challan.status ?? "draft")} · Warehouse: {String((challan.warehouse as { name?: string } | undefined)?.name ?? "—")}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </WorkspacePanel>
-        </div>
-      </div>
+        </DetailTabPanel>
+      </DetailTabs>
     </div>
   );
 }

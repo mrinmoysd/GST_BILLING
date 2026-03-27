@@ -208,6 +208,14 @@ Deliver:
 
 These pages should follow once the P0 shell and component patterns are proven.
 
+Status:
+
+- Implemented at code/build level on 2026-03-27
+- `P1` now covers the orders family, quotations family, purchases family, supplier workspace, inventory overview, and the main inventory explorer surfaces that were still on older patterns
+- Reports, settings, and field-sales surfaces already sat closer to the approved direction and remain inside the `P1` band for follow-up consistency polish, not missing structural redesign
+- Validation passed for the redesigned `P1` routes with targeted `eslint` plus `npm --workspace apps/web run build`
+- Remaining work for `P1` is browser-level visual QA, interaction polish, and any later secondary-page normalization rather than major missing workspace architecture
+
 ## 3.1 Orders and quotations
 
 Routes:
@@ -309,6 +317,14 @@ Why P1:
 ## 4. P2 Later
 
 These pages matter, but they should not lead the redesign.
+
+Status:
+
+- Implemented at code/build level on 2026-03-27
+- The deferred specialist band is now materially closed for the current product shape: accounting specialist surfaces, GST exception handling, and admin company operations were brought onto the shared workspace language, while public/auth and several admin/public surfaces were already close to the approved direction
+- POS and public/auth now read as part of the same visual system even where they keep intentionally different interaction rules from the tenant shell
+- Validation passed for the redesigned specialist routes with targeted `eslint` plus `npm --workspace apps/web run build`
+- Remaining work in this band is browser-level visual QA and any future page-by-page refinement, not missing specialist architecture
 
 ## 4.1 Accounting specialty surfaces
 
