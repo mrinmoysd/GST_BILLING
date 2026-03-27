@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for distributor pricing control, party special rates, discount governance, and scheme automation.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; live staging validation and dedicated browser/integration coverage are still pending
 
 Source:
 
@@ -1455,4 +1455,3 @@ Once D7 is stable, later phases can extend into:
 - retailer-specific secondary-sales incentives
 - mobile commercial approvals
 - AI-assisted pricing suggestions
-

@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for dispatch operations, delivery challans, pick/pack flow, and invoice generation tied to actual fulfillment.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; staging dispatch walkthroughs and live regression evidence are still pending
 
 Source:
 
@@ -981,4 +981,3 @@ Once D10 is stable, later phases can extend into:
 - route-linked dispatch optimization
 - stock reservation engine
 - reverse logistics and return pickup workflows
-

@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for operational e-invoice and e-way bill workflows on top of the current GST and invoice foundation.  
-**Implementation status**: Planned
+**Implementation status**: Implemented for the internal product flow with `sandbox_local`; live provider-backed IRP and EWB integration is still pending
 
 Source:
 
@@ -1013,4 +1013,3 @@ Once D11 is stable, later phases can extend into:
 - challan-driven EWB flows
 - deeper GSTR reconciliation against e-invoice state
 - multi-provider failover strategy
-

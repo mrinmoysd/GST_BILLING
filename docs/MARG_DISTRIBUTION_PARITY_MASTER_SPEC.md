@@ -1,6 +1,6 @@
 # Marg Distribution Parity Master Spec
 
-**Date**: 2026-03-25  
+**Date**: 2026-03-27  
 **Purpose**: Define the capability-by-capability product specification required to make the current solution competitive with Marg ERP9 Distribution for distributor and wholesaler use cases while preserving the current SaaS-native product strengths.
 
 This document is grounded in:
@@ -51,6 +51,26 @@ The correct goal is **not** to clone all of Marg. The correct goal is to reach o
 - owner-led and operator-led supply businesses
 
 The product should avoid claiming full manufacturing ERP parity until BOM, production order, costing, WIP, and job-work capabilities exist.
+
+### 1.1 Validation update on 2026-03-27
+
+The D7-D13 implementation pass has materially changed the gap picture:
+
+- D7 pricing and scheme engine is implemented at code/build level
+- D8 batch, expiry, and clearance is implemented at code/build level
+- D9 collections, banking, and credit control is implemented at code/build level
+- D10 dispatch, delivery, and challan is implemented at code/build level
+- D11 e-invoice and e-way bill is implemented internally, but still needs live provider-backed IRP/EWB integration
+- D12 field sales and route operations is implemented at code/build level
+- D13 import, migration, and customization is implemented at code/build level
+
+So the main remaining parity gaps are no longer the entire D7-D12 tracks themselves. The biggest remaining gaps are:
+
+- live provider-backed D11 integration
+- D13 live workflow validation across migrations, print, and integrations
+- retailer/customer self-ordering
+- broader branch-oriented operating controls beyond the current warehouse model
+- live staging proof and release readiness across the expanded scope
 
 ---
 
@@ -109,18 +129,9 @@ It should still avoid claiming:
 
 ### 3.3 Missing for Marg-like distribution parity
 
-- pricing and scheme engine
-- party-wise special rates and discount governance
-- batch / expiry / near-expiry stock management
-- deeper credit and collections operations
-- banking and cheque workflows
-- e-invoice / e-way bill operations
-- route / beat / territory model
-- field-sales mobile / assisted order capture
-- delivery / dispatch execution workflows
+- live provider-backed e-invoice / e-way bill operations
 - retailer / customer self-ordering surface
-- custom print / report / field extension tools
-- import bridges and migration tooling
+- live validation and operational hardening of the implemented D13 migration/integration surface
 - branch-oriented operating controls beyond current warehouse scope
 
 ---
@@ -1055,4 +1066,3 @@ Each of those documents should follow the repo's normal pattern:
 - permissions
 - test plan
 - acceptance criteria
-

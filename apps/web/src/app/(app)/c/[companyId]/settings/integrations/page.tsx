@@ -9,7 +9,9 @@ import {
   useCreateWebhookEndpoint,
   useIntegrationApiKeys,
   useRevokeIntegrationApiKey,
+  useRetryWebhookDelivery,
   useTestWebhookEndpoint,
+  useWebhookEventCatalog,
   useWebhookDeliveries,
   useWebhookEndpoints,
 } from "@/lib/migration/hooks";
@@ -29,21 +31,30 @@ function getMessage(error: unknown, fallback: string) {
 export default function IntegrationsPage({ params }: Props) {
   const { companyId } = React.use(params);
   const webhooks = useWebhookEndpoints(companyId);
+  const webhookEvents = useWebhookEventCatalog(companyId);
   const apiKeys = useIntegrationApiKeys(companyId);
   const createWebhook = useCreateWebhookEndpoint(companyId);
   const createKey = useCreateIntegrationApiKey(companyId);
   const revokeKey = useRevokeIntegrationApiKey(companyId);
   const testWebhook = useTestWebhookEndpoint(companyId);
+  const retryWebhookDelivery = useRetryWebhookDelivery(companyId);
 
   const [name, setName] = React.useState("");
   const [url, setUrl] = React.useState("");
   const [secret, setSecret] = React.useState("");
+  const [subscribedEvents, setSubscribedEvents] = React.useState<string[]>([
+    "integration.test",
+    "import.job.committed",
+    "invoice.issued",
+    "invoice.payment_recorded",
+  ]);
   const [selectedEndpointId, setSelectedEndpointId] = React.useState<string | null>(null);
   const deliveries = useWebhookDeliveries(companyId, selectedEndpointId);
   const [apiKeyName, setApiKeyName] = React.useState("");
   const [revealedSecret, setRevealedSecret] = React.useState<string | null>(null);
 
   const webhookRows = Array.isArray(webhooks.data?.data) ? webhooks.data.data : [];
+  const eventRows = Array.isArray(webhookEvents.data?.data) ? webhookEvents.data.data : [];
   const apiKeyRows = Array.isArray(apiKeys.data?.data) ? apiKeys.data.data : [];
   const deliveryRows = Array.isArray(deliveries.data?.data) ? deliveries.data.data : [];
 
@@ -55,8 +66,9 @@ export default function IntegrationsPage({ params }: Props) {
         subtitle="Manage D13 webhook endpoints, test deliveries, and create partner API keys without leaving the tenant workspace."
       />
 
-      {(webhooks.isLoading || apiKeys.isLoading) ? <LoadingBlock label="Loading integrations…" /> : null}
+      {(webhooks.isLoading || apiKeys.isLoading || webhookEvents.isLoading) ? <LoadingBlock label="Loading integrations…" /> : null}
       {webhooks.isError ? <InlineError message={getMessage(webhooks.error, "Failed to load webhooks")} /> : null}
+      {webhookEvents.isError ? <InlineError message={getMessage(webhookEvents.error, "Failed to load webhook event catalog")} /> : null}
       {apiKeys.isError ? <InlineError message={getMessage(apiKeys.error, "Failed to load API keys")} /> : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
@@ -64,7 +76,7 @@ export default function IntegrationsPage({ params }: Props) {
           <CardHeader>
             <Badge variant="secondary" className="w-fit">D13.6 webhooks</Badge>
             <CardTitle>Create webhook endpoint</CardTitle>
-            <CardDescription>Use this for outbound event delivery. The D13 implementation currently includes signed test delivery, import-commit delivery, and delivery history.</CardDescription>
+            <CardDescription>Use this for outbound event delivery. D13 now supports signed deliveries for imports plus invoice and payment lifecycle events, with stored retries in the delivery log.</CardDescription>
           </CardHeader>
           <CardContent>
             <form
@@ -75,7 +87,7 @@ export default function IntegrationsPage({ params }: Props) {
                   name,
                   url,
                   secret,
-                  subscribed_events: ["integration.test", "import.job.committed"],
+                  subscribed_events: subscribedEvents,
                 });
                 setName("");
                 setUrl("");
@@ -85,6 +97,36 @@ export default function IntegrationsPage({ params }: Props) {
               <TextField label="Name" value={name} onChange={setName} required />
               <TextField label="URL" value={url} onChange={setUrl} required />
               <TextField label="Secret" value={secret} onChange={setSecret} required />
+              <div className="grid gap-2">
+                <div className="text-[13px] font-semibold text-[var(--muted-strong)]">Subscribed events</div>
+                <div className="grid gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+                  {eventRows.map((eventRow) => {
+                    const checked = subscribedEvents.includes(eventRow.code);
+                    return (
+                      <label key={eventRow.code} className="flex items-start gap-3 text-sm text-[var(--foreground)]">
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={checked}
+                          onChange={(evt) => {
+                            setSubscribedEvents((current) =>
+                              evt.target.checked
+                                ? Array.from(new Set([...current, eventRow.code]))
+                                : current.filter((item) => item !== eventRow.code),
+                            );
+                          }}
+                        />
+                        <span>
+                          <span className="font-medium">{eventRow.label}</span>
+                          <span className="block text-xs text-[var(--muted)]">
+                            {eventRow.code} · {eventRow.description}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
               <PrimaryButton type="submit" disabled={createWebhook.isPending}>
                 {createWebhook.isPending ? "Saving…" : "Create endpoint"}
               </PrimaryButton>
@@ -125,7 +167,7 @@ export default function IntegrationsPage({ params }: Props) {
           <CardHeader>
             <Badge variant="secondary" className="w-fit">D13.6 delivery log</Badge>
             <CardTitle>Webhook endpoints</CardTitle>
-            <CardDescription>Test an endpoint, then inspect the stored response excerpt and status in the delivery log.</CardDescription>
+            <CardDescription>Test an endpoint, inspect delivery attempts, and manually retry failed or queued deliveries from the same workspace.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
             <div className="grid gap-3">
@@ -173,9 +215,28 @@ export default function IntegrationsPage({ params }: Props) {
                     <div className="mt-2 text-xs text-[var(--muted)]">
                       Status: {delivery.responseStatus ?? delivery.response_status ?? "n/a"}
                     </div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">
+                      Attempts: {delivery.attemptCount ?? delivery.attempt_count ?? 1}
+                      {delivery.nextRetryAt ?? delivery.next_retry_at ? ` · Next retry ${delivery.nextRetryAt ?? delivery.next_retry_at}` : ""}
+                    </div>
                     <div className="mt-2 text-xs text-[var(--muted-strong)]">
                       {delivery.responseBodyExcerpt ?? delivery.response_body_excerpt ?? "No response excerpt"}
                     </div>
+                    {selectedEndpointId && delivery.status !== "delivered" ? (
+                      <div className="mt-3">
+                        <PrimaryButton
+                          type="button"
+                          onClick={() =>
+                            retryWebhookDelivery.mutate({
+                              endpointId: selectedEndpointId,
+                              deliveryId: delivery.id,
+                            })
+                          }
+                        >
+                          Retry delivery
+                        </PrimaryButton>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

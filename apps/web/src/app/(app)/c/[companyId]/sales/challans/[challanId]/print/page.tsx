@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useDeliveryChallan } from "@/lib/billing/hooks";
+import { usePrintTemplates } from "@/lib/migration/hooks";
 import { SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 
@@ -19,11 +20,30 @@ function getErrorMessage(err: unknown, fallback: string) {
 export default function DeliveryChallanPrintPage({ params }: Props) {
   const { companyId, challanId } = React.use(params);
   const query = useDeliveryChallan({ companyId, challanId });
+  const printTemplates = usePrintTemplates(companyId);
   const challan = query.data?.data;
   const items = Array.isArray(challan?.items) ? challan.items : [];
+  const templateRows = Array.isArray(printTemplates.data?.data) ? printTemplates.data.data : [];
+  const challanTemplate = templateRows.find(
+    (template) =>
+      (template.templateType ?? template.template_type) === "challan" &&
+      Boolean(template.isDefault ?? template.is_default),
+  );
+  const latestVersion = Array.isArray(challanTemplate?.versions) ? challanTemplate?.versions?.[0] : null;
+  const layout = (latestVersion?.layoutJson ?? latestVersion?.layout_json ?? {}) as {
+    header?: { title?: string };
+    sections?: Array<{ key?: string }>;
+    footer?: { text?: string };
+  };
+  const visibleSections = new Set(
+    Array.isArray(layout.sections) && layout.sections.length > 0
+      ? layout.sections.map((section) => String(section.key ?? ""))
+      : ["party", "items", "footer"],
+  );
 
-  if (query.isLoading) return <LoadingBlock label="Loading printable challan…" />;
+  if (query.isLoading || printTemplates.isLoading) return <LoadingBlock label="Loading printable challan…" />;
   if (query.isError) return <InlineError message={getErrorMessage(query.error, "Failed to load challan")} />;
+  if (printTemplates.isError) return <InlineError message={getErrorMessage(printTemplates.error, "Failed to load challan template")} />;
   if (!challan) return <EmptyState title="Delivery challan not found" />;
 
   return (
@@ -43,7 +63,9 @@ export default function DeliveryChallanPrintPage({ params }: Props) {
       <div className="rounded-3xl border border-[var(--border)] bg-white p-8 text-black shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none">
         <div className="flex items-start justify-between gap-6 border-b pb-6">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Delivery challan</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {layout.header?.title ?? "Delivery challan"}
+            </div>
             <div className="mt-2 text-3xl font-semibold">
               {challan.challanNumber ?? challan.challan_number ?? challan.id}
             </div>
@@ -62,24 +84,27 @@ export default function DeliveryChallanPrintPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-6 border-b py-6 md:grid-cols-2">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Customer</div>
-            <div className="mt-2 text-lg font-medium">{challan.customer?.name ?? "—"}</div>
-            <div className="text-sm text-slate-600">{challan.customer?.phone ?? "—"}</div>
-            <div className="text-sm text-slate-600">{challan.customer?.gstin ?? "—"}</div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Notes</div>
-            <div className="mt-2 text-sm text-slate-700">
-              Dispatch: {challan.dispatchNotes ?? challan.dispatch_notes ?? "—"}
+        {visibleSections.has("party") ? (
+          <div className="grid gap-6 border-b py-6 md:grid-cols-2">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Customer</div>
+              <div className="mt-2 text-lg font-medium">{challan.customer?.name ?? "—"}</div>
+              <div className="text-sm text-slate-600">{challan.customer?.phone ?? "—"}</div>
+              <div className="text-sm text-slate-600">{challan.customer?.gstin ?? "—"}</div>
             </div>
-            <div className="text-sm text-slate-700">
-              Delivery: {challan.deliveryNotes ?? challan.delivery_notes ?? "—"}
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Notes</div>
+              <div className="mt-2 text-sm text-slate-700">
+                Dispatch: {challan.dispatchNotes ?? challan.dispatch_notes ?? "—"}
+              </div>
+              <div className="text-sm text-slate-700">
+                Delivery: {challan.deliveryNotes ?? challan.delivery_notes ?? "—"}
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
+        {visibleSections.has("items") ? (
         <div className="py-6">
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -107,6 +132,13 @@ export default function DeliveryChallanPrintPage({ params }: Props) {
             </tbody>
           </table>
         </div>
+        ) : null}
+
+        {visibleSections.has("footer") ? (
+          <div className="border-t pt-4 text-sm text-slate-600">
+            {layout.footer?.text ?? "Generated from the active challan print template."}
+          </div>
+        ) : null}
       </div>
     </div>
   );

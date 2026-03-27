@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInvoice } from "@/lib/billing/hooks";
 import type { Invoice, InvoiceItem } from "@/lib/billing/types";
+import { usePrintTemplates } from "@/lib/migration/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 
@@ -38,8 +39,26 @@ export default function PosReceiptPage({ params }: Props) {
   const printedRef = React.useRef(false);
 
   const query = useInvoice({ companyId, invoiceId });
+  const printTemplates = usePrintTemplates(companyId);
   const invoice = query.data?.data as Invoice | undefined;
   const items = (invoice?.items ?? []) as ReceiptInvoiceItem[];
+  const templateRows = Array.isArray(printTemplates.data?.data) ? printTemplates.data.data : [];
+  const receiptTemplate = templateRows.find(
+    (template) =>
+      (template.templateType ?? template.template_type) === "receipt" &&
+      Boolean(template.isDefault ?? template.is_default),
+  );
+  const latestVersion = Array.isArray(receiptTemplate?.versions) ? receiptTemplate?.versions?.[0] : null;
+  const layout = (latestVersion?.layoutJson ?? latestVersion?.layout_json ?? {}) as {
+    header?: { title?: string };
+    sections?: Array<{ key?: string }>;
+    footer?: { text?: string };
+  };
+  const visibleSections = new Set(
+    Array.isArray(layout.sections) && layout.sections.length > 0
+      ? layout.sections.map((section) => String(section.key ?? ""))
+      : ["party", "items", "totals", "footer"],
+  );
 
   React.useEffect(() => {
     if (!printRequested || printedRef.current || !invoice) return;
@@ -97,8 +116,9 @@ export default function PosReceiptPage({ params }: Props) {
         />
       </div>
 
-      {query.isLoading ? <LoadingBlock label="Loading receipt…" /> : null}
+      {(query.isLoading || printTemplates.isLoading) ? <LoadingBlock label="Loading receipt…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load receipt")} /> : null}
+      {printTemplates.isError ? <InlineError message={getErrorMessage(printTemplates.error, "Failed to load receipt template")} /> : null}
 
       {invoice ? (
         <div className="receipt-page flex justify-center">
@@ -108,7 +128,7 @@ export default function PosReceiptPage({ params }: Props) {
                 <Badge variant="secondary">{invoice.status ?? "ISSUED"}</Badge>
                 <Badge variant="outline">{invoice.invoice_no ?? invoice.id.slice(0, 8)}</Badge>
               </div>
-              <CardTitle className="text-xl">Tax invoice</CardTitle>
+              <CardTitle className="text-xl">{layout.header?.title ?? "Tax invoice"}</CardTitle>
               <CardDescription className="text-black/70">
                 Receipt-ready thermal layout for browser print.
               </CardDescription>
@@ -120,51 +140,59 @@ export default function PosReceiptPage({ params }: Props) {
                 <div>Date {invoice.issue_date ?? "—"}</div>
               </div>
 
-              <div className="rounded-xl border border-black/10 p-3">
-                <div className="font-semibold">{invoice.customer?.name ?? "Walk-in customer"}</div>
-                {invoice.customer?.phone ? <div>{invoice.customer.phone}</div> : null}
-                {invoice.customer?.gstin ? <div>GSTIN {invoice.customer.gstin}</div> : null}
-              </div>
+              {visibleSections.has("party") ? (
+                <div className="rounded-xl border border-black/10 p-3">
+                  <div className="font-semibold">{invoice.customer?.name ?? "Walk-in customer"}</div>
+                  {invoice.customer?.phone ? <div>{invoice.customer.phone}</div> : null}
+                  {invoice.customer?.gstin ? <div>GSTIN {invoice.customer.gstin}</div> : null}
+                </div>
+              ) : null}
 
-              <div className="space-y-2">
-                {items.map((item, index) => {
-                  const qty = toNumber(item.quantity);
-                  const unit = toNumber(item.unitPrice ?? item.unit_price);
-                  const lineTotal = toNumber(item.lineTotal ?? item.line_total);
-                  const productName = item.product?.name ?? item.productId ?? item.product_id;
-                  return (
-                    <div key={item.id ?? `${item.product_id}_${index}`} className="border-b border-dashed border-black/10 pb-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="font-medium">{productName}</div>
-                        <div className="font-semibold">{lineTotal.toFixed(2)}</div>
+              {visibleSections.has("items") ? (
+                <div className="space-y-2">
+                  {items.map((item, index) => {
+                    const qty = toNumber(item.quantity);
+                    const unit = toNumber(item.unitPrice ?? item.unit_price);
+                    const lineTotal = toNumber(item.lineTotal ?? item.line_total);
+                    const productName = item.product?.name ?? item.productId ?? item.product_id;
+                    return (
+                      <div key={item.id ?? `${item.product_id}_${index}`} className="border-b border-dashed border-black/10 pb-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="font-medium">{productName}</div>
+                          <div className="font-semibold">{lineTotal.toFixed(2)}</div>
+                        </div>
+                        <div className="mt-1 text-xs text-black/70">
+                          {qty.toFixed(2)} × {unit.toFixed(2)}
+                          {item.tax_rate ? ` · GST ${toNumber(item.tax_rate).toFixed(0)}%` : ""}
+                        </div>
                       </div>
-                      <div className="mt-1 text-xs text-black/70">
-                        {qty.toFixed(2)} × {unit.toFixed(2)}
-                        {item.tax_rate ? ` · GST ${toNumber(item.tax_rate).toFixed(0)}%` : ""}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : null}
 
-              <div className="space-y-1 rounded-xl border border-black/10 p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-black/70">Sub-total</span>
-                  <span>{subTotal.toFixed(2)}</span>
+              {visibleSections.has("totals") ? (
+                <div className="space-y-1 rounded-xl border border-black/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-black/70">Sub-total</span>
+                    <span>{subTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-black/70">GST</span>
+                    <span>{taxTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-base font-semibold">
+                    <span>Total</span>
+                    <span>{total.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-black/70">GST</span>
-                  <span>{taxTotal.toFixed(2)}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-base font-semibold">
-                  <span>Total</span>
-                  <span>{total.toFixed(2)}</span>
-                </div>
-              </div>
+              ) : null}
 
-              <div className="text-center text-xs text-black/60">
-                Thank you for your purchase.
-              </div>
+              {visibleSections.has("footer") ? (
+                <div className="text-center text-xs text-black/60">
+                  {layout.footer?.text ?? "Thank you for your purchase."}
+                </div>
+              ) : null}
 
               <div className="print-hidden flex flex-wrap gap-2 pt-2">
                 <PrimaryButton type="button" className="flex-1" onClick={() => window.print()}>

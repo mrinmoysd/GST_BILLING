@@ -165,7 +165,17 @@ export default function PrintTemplatesPage({ params }: Props) {
                       <PrimaryButton type="button" onClick={() => setDefault.mutate(template.id)}>
                         Set default
                       </PrimaryButton>
-                      <PrimaryButton type="button" onClick={() => preview.mutate({ templateId: template.id, document_type: "invoice" })}>
+                      <PrimaryButton
+                        type="button"
+                        onClick={() =>
+                          preview.mutate({
+                            templateId: template.id,
+                            document_type: String(
+                              template.templateType ?? template.template_type ?? "invoice",
+                            ),
+                          })
+                        }
+                      >
                         Preview
                       </PrimaryButton>
                     </div>

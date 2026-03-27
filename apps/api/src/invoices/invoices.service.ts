@@ -18,6 +18,7 @@ import { IdempotencyService } from '../idempotency/idempotency.service';
 import { PricingService } from '../pricing/pricing.service';
 import { InvoiceComplianceService } from './invoice-compliance.service';
 import { SalesOrdersService } from '../sales-orders/sales-orders.service';
+import { MigrationOpsService } from '../migration-ops/migration-ops.service';
 
 function toDecimal(value: string | undefined, fallback = '0'): Decimal {
   const v = (value ?? fallback).trim();
@@ -74,6 +75,7 @@ export class InvoicesService {
     private readonly pricing: PricingService,
     private readonly compliance: InvoiceComplianceService,
     private readonly salesOrders: SalesOrdersService,
+    private readonly migrationOps: MigrationOpsService,
   ) {}
 
   private async resolveSalespersonUserId(args: {
@@ -584,6 +586,20 @@ export class InvoicesService {
       },
     });
 
+    if (!out.replayed) {
+      await this.migrationOps.publishWebhookEvent(
+        args.companyId,
+        'invoice.draft_created',
+        `invoice:${out.data.id}:draft_created`,
+        {
+          invoice_id: out.data.id,
+          customer_id: out.data.customerId,
+          status: out.data.status,
+          total: out.data.total.toString(),
+        },
+      );
+    }
+
     return out.body;
   }
 
@@ -622,7 +638,7 @@ export class InvoicesService {
     seriesCode?: string;
     creditOverrideReason?: string | null;
   }) {
-    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const invoice: any = await tx.invoice.findFirst({
         where: { id: args.invoiceId, companyId: args.companyId },
         include: {
@@ -738,12 +754,33 @@ export class InvoicesService {
         },
       });
 
-      return { data: updated };
+      return {
+        data: updated,
+        eventPayload: {
+          invoice_id: updated.id,
+          invoice_number: invoiceNumber,
+          customer_id: invoice.customerId,
+          status: updated.status,
+          total: invoice.total.toString(),
+          credit_control: {
+            warnings: creditDecision.warnings,
+            projected_exposure: creditDecision.projectedExposure.toString(),
+            override_reason: args.creditOverrideReason ?? null,
+          },
+        },
+      };
     });
+    await this.migrationOps.publishWebhookEvent(
+      args.companyId,
+      'invoice.issued',
+      `invoice:${result.data.id}:issued`,
+      result.eventPayload,
+    );
+    return { data: result.data };
   }
 
   async cancel(args: { companyId: string; invoiceId: string }) {
-    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const invoice: any = await tx.invoice.findFirst({
         where: { id: args.invoiceId, companyId: args.companyId },
         include: {
@@ -830,8 +867,25 @@ export class InvoicesService {
         summary: `Invoice ${invoice.invoiceNumber ?? invoice.id} cancelled`,
       });
 
-      return { data: updated };
+      return {
+        data: updated,
+        eventPayload: {
+          invoice_id: updated.id,
+          invoice_number: invoice.invoiceNumber,
+          customer_id: invoice.customerId,
+          status: updated.status,
+          cancelled_at: updated.cancelledAt,
+          total: invoice.total.toString(),
+        },
+      };
     });
+    await this.migrationOps.publishWebhookEvent(
+      args.companyId,
+      'invoice.cancelled',
+      `invoice:${result.data.id}:cancelled`,
+      result.eventPayload,
+    );
+    return { data: result.data };
   }
 
   async createCreditNote(args: {

@@ -1,6 +1,6 @@
 # Marg Distribution Execution Master Plan
 
-**Date**: 2026-03-25  
+**Date**: 2026-03-27  
 **Purpose**: Convert the Marg distribution parity master spec into a build sequence that can be executed feature by feature.
 
 Source:
@@ -60,7 +60,7 @@ Exit:
 
 Status:
 
-- Planned
+- Implemented at code/build level; live validation still pending
 
 Scope:
 
@@ -80,7 +80,7 @@ Exit:
 
 Status:
 
-- Planned
+- Implemented at code/build level; live validation still pending
 
 Scope:
 
@@ -100,7 +100,7 @@ Exit:
 
 Status:
 
-- Planned
+- Implemented at code/build level; live validation still pending
 
 Scope:
 
@@ -120,7 +120,7 @@ Exit:
 
 Status:
 
-- Planned
+- Partially implemented: D10 is implemented at code/build level and D11 is implemented internally, but live provider-backed compliance integration is still pending
 
 Scope:
 
@@ -140,7 +140,7 @@ Exit:
 
 Status:
 
-- Planned
+- Implemented at code/build level; browser/staging validation still pending
 
 Scope:
 
@@ -160,7 +160,7 @@ Exit:
 
 Status:
 
-- Planned
+- Implemented at code/build level; live workflow validation still pending
 
 Scope:
 
@@ -211,4 +211,3 @@ This plan is successful when:
 - implementation work can be decomposed into clear feature slices
 - every delivered slice has matching business rules, UI, API, and test expectations
 - the product is measurably closer to distributor-grade market readiness after each track
-

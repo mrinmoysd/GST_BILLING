@@ -143,8 +143,18 @@ export type WebhookDelivery = {
   responseBodyExcerpt?: string | null;
   response_body_excerpt?: string | null;
   status: string;
+  attemptCount?: number;
+  attempt_count?: number;
+  nextRetryAt?: string | null;
+  next_retry_at?: string | null;
   createdAt?: string;
   created_at?: string;
+};
+
+export type WebhookEventCatalogItem = {
+  code: string;
+  label: string;
+  description: string;
 };
 
 export type IntegrationApiKey = {
@@ -438,6 +448,14 @@ export function useWebhookEndpoints(companyId: string) {
   });
 }
 
+export function useWebhookEventCatalog(companyId: string) {
+  return useQuery({
+    queryKey: ["companies", companyId, "webhook-events"],
+    queryFn: async () =>
+      apiClient.get<WebhookEventCatalogItem[]>(companyPath(companyId, "/integrations/webhooks/events")),
+  });
+}
+
 export function useCreateWebhookEndpoint(companyId: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -480,6 +498,27 @@ export function useWebhookDeliveries(companyId: string, endpointId: string | nul
       apiClient.get<WebhookDelivery[]>(
         companyPath(companyId, `/integrations/webhooks/${endpointId}/deliveries`),
       ),
+  });
+}
+
+export function useRetryWebhookDelivery(companyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["companies", companyId, "webhook-deliveries", "retry"],
+    mutationFn: async (args: { endpointId: string; deliveryId: string }) =>
+      apiClient.post(
+        companyPath(
+          companyId,
+          `/integrations/webhooks/${args.endpointId}/deliveries/${args.deliveryId}/retry`,
+        ),
+        {},
+      ),
+    onSuccess: async (_, args) => {
+      await qc.invalidateQueries({ queryKey: ["companies", companyId, "webhook-endpoints"] });
+      await qc.invalidateQueries({
+        queryKey: ["companies", companyId, "webhook-deliveries", args.endpointId],
+      });
+    },
   });
 }
 

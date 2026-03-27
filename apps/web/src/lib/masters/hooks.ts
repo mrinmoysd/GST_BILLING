@@ -88,6 +88,10 @@ export function useCreateCustomer(args: { companyId: string }) {
       name: string;
       email?: string;
       phone?: string;
+      gstin?: string;
+      state_code?: string;
+      billing_address?: Record<string, unknown> | null;
+      shipping_address?: Record<string, unknown> | null;
       salesperson_user_id?: string;
       pricing_tier?: string;
       credit_limit?: string;
@@ -118,6 +122,10 @@ export function useUpdateCustomer(args: { companyId: string; customerId: string 
       name?: string;
       email?: string | null;
       phone?: string | null;
+      gstin?: string | null;
+      state_code?: string | null;
+      billing_address?: Record<string, unknown> | null;
+      shipping_address?: Record<string, unknown> | null;
       salesperson_user_id?: string | null;
       pricing_tier?: string | null;
       credit_limit?: string | null;

@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for route-led field-sales execution, assisted order capture, visit logging, and manager visibility on top of the current salesperson attribution foundation.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; dedicated browser and staging validation of field workflows are still pending
 
 Source:
 

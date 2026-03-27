@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for guided data migration, opening imports, custom print templates, controlled custom fields, and integration hooks that reduce switching friction from legacy desktop systems.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; migration/import/customization flows, broader print runtime, webhook retries/business events, and focused regression coverage are in code, while live browser/staging execution is still pending
 
 Source:
 

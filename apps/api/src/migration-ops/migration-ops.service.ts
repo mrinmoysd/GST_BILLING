@@ -311,6 +311,53 @@ const PRINT_TEMPLATE_TYPES = new Set([
   'purchase',
 ]);
 
+const SUPPORTED_WEBHOOK_EVENTS = [
+  {
+    code: 'integration.test',
+    label: 'Manual test delivery',
+    description: 'Send a signed test payload to verify endpoint reachability.',
+  },
+  {
+    code: 'import.job.committed',
+    label: 'Import job committed',
+    description: 'Fire when a migration import job completes its commit step.',
+  },
+  {
+    code: 'invoice.draft_created',
+    label: 'Invoice draft created',
+    description: 'Fire when a draft invoice is saved.',
+  },
+  {
+    code: 'invoice.issued',
+    label: 'Invoice issued',
+    description: 'Fire when an invoice is issued and becomes commercial stock/accounting truth.',
+  },
+  {
+    code: 'invoice.cancelled',
+    label: 'Invoice cancelled',
+    description: 'Fire when an issued invoice is cancelled.',
+  },
+  {
+    code: 'invoice.payment_recorded',
+    label: 'Invoice payment recorded',
+    description: 'Fire when a receipt is posted against an invoice.',
+  },
+  {
+    code: 'purchase.payment_recorded',
+    label: 'Purchase payment recorded',
+    description: 'Fire when a payment is posted against a purchase bill.',
+  },
+  {
+    code: 'payment.instrument_updated',
+    label: 'Payment instrument updated',
+    description: 'Fire when cheque, PDC, or bank instrument details are updated.',
+  },
+] as const;
+
+const SUPPORTED_WEBHOOK_EVENT_CODES: Set<string> = new Set(
+  SUPPORTED_WEBHOOK_EVENTS.map((event) => event.code),
+);
+
 @Injectable()
 export class MigrationOpsService {
   constructor(
@@ -612,6 +659,275 @@ export class MigrationOpsService {
     });
     if (!endpoint) throw new NotFoundException('Webhook endpoint not found');
     return endpoint;
+  }
+
+  private async ensureWebhookDelivery(
+    companyId: string,
+    endpointId: string,
+    deliveryId: string,
+  ) {
+    const delivery = await this.prisma.outboundWebhookDelivery.findFirst({
+      where: { id: deliveryId, companyId, endpointId },
+    });
+    if (!delivery) throw new NotFoundException('Webhook delivery not found');
+    return delivery;
+  }
+
+  private nextWebhookRetryAt(attemptCount: number, allowRetry = true) {
+    if (!allowRetry) return null;
+    const backoffMinutes = [5, 15, 60];
+    const delay = backoffMinutes[attemptCount - 1];
+    if (!delay) return null;
+    return new Date(Date.now() + delay * 60_000);
+  }
+
+  private ensureSubscribedWebhookEvents(events?: string[]) {
+    const normalized = (events ?? [])
+      .map((event) => String(event ?? '').trim())
+      .filter(Boolean);
+    for (const event of normalized) {
+      if (!SUPPORTED_WEBHOOK_EVENT_CODES.has(event)) {
+        throw new BadRequestException(`Unsupported webhook event: ${event}`);
+      }
+    }
+    return normalized;
+  }
+
+  private async resolvePrintPreviewData(args: {
+    companyId: string;
+    templateType: string;
+    documentType?: string;
+    documentId?: string;
+  }) {
+    const documentType = (args.documentType?.trim() || args.templateType).toLowerCase();
+    const company = await this.prisma.company.findFirst({
+      where: { id: args.companyId },
+      select: { id: true, name: true, gstin: true },
+    });
+
+    const fallback = {
+      company: {
+        id: company?.id ?? args.companyId,
+        name: company?.name ?? 'Sample Company',
+        gstin: company?.gstin ?? null,
+      },
+      document: { number: 'SAMPLE-001', date: new Date().toISOString().slice(0, 10) },
+      party: { name: 'Sample Party', gstin: '27ABCDE1234F1Z5' },
+      items: [],
+      totals: { total: 0 },
+      meta: { template_type: args.templateType, document_type: documentType },
+    } satisfies Record<string, unknown>;
+
+    if (documentType === 'invoice' || documentType === 'receipt') {
+      if (!args.documentId) return fallback;
+      const invoice = await this.prisma.invoice.findFirst({
+        where: { id: args.documentId, companyId: args.companyId },
+        include: {
+          customer: { select: { name: true, gstin: true, phone: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } },
+        },
+      });
+      if (!invoice) return fallback;
+      return {
+        company: fallback.company,
+        document: {
+          id: invoice.id,
+          number: invoice.invoiceNumber,
+          status: invoice.status,
+          issue_date: invoice.issueDate,
+        },
+        party: {
+          name: invoice.customer.name,
+          gstin: invoice.customer.gstin,
+          phone: invoice.customer.phone,
+        },
+        items: invoice.items.map((item) => ({
+          product: item.product.name,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          free_quantity: item.freeQuantity,
+          total_quantity: item.totalQuantity,
+          rate: item.unitPrice,
+          total: item.lineTotal,
+        })),
+        totals: {
+          sub_total: invoice.subTotal,
+          tax_total: invoice.taxTotal,
+          total: invoice.total,
+        },
+        meta: { template_type: args.templateType, document_type: documentType },
+      } satisfies Record<string, unknown>;
+    }
+
+    if (documentType === 'quotation') {
+      if (!args.documentId) return fallback;
+      const quotation = await this.prisma.quotation.findFirst({
+        where: { id: args.documentId, companyId: args.companyId },
+        include: {
+          customer: { select: { name: true, gstin: true, phone: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } },
+        },
+      });
+      if (!quotation) return fallback;
+      return {
+        company: fallback.company,
+        document: {
+          id: quotation.id,
+          number: quotation.quoteNumber,
+          status: quotation.status,
+          issue_date: quotation.issueDate,
+          expiry_date: quotation.expiryDate,
+        },
+        party: {
+          name: quotation.customer.name,
+          gstin: quotation.customer.gstin,
+          phone: quotation.customer.phone,
+        },
+        items: quotation.items.map((item) => ({
+          product: item.product.name,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          free_quantity: item.freeQuantity,
+          total_quantity: item.totalQuantity,
+          rate: item.unitPrice,
+          total: item.lineTotal,
+        })),
+        totals: {
+          sub_total: quotation.subTotal,
+          tax_total: quotation.taxTotal,
+          total: quotation.total,
+        },
+        meta: { template_type: args.templateType, document_type: documentType },
+      } satisfies Record<string, unknown>;
+    }
+
+    if (documentType === 'sales_order') {
+      if (!args.documentId) return fallback;
+      const order = await this.prisma.salesOrder.findFirst({
+        where: { id: args.documentId, companyId: args.companyId },
+        include: {
+          customer: { select: { name: true, gstin: true, phone: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } },
+        },
+      });
+      if (!order) return fallback;
+      return {
+        company: fallback.company,
+        document: {
+          id: order.id,
+          number: order.orderNumber,
+          status: order.status,
+          order_date: order.orderDate,
+          expected_dispatch_date: order.expectedDispatchDate,
+        },
+        party: {
+          name: order.customer.name,
+          gstin: order.customer.gstin,
+          phone: order.customer.phone,
+        },
+        items: order.items.map((item) => ({
+          product: item.product.name,
+          sku: item.product.sku,
+          quantity: item.quantityOrdered,
+          free_quantity: item.freeQuantity,
+          total_quantity: item.totalQuantity,
+          fulfilled_quantity: item.quantityFulfilled,
+          rate: item.unitPrice,
+          total: item.lineTotal,
+        })),
+        totals: {
+          sub_total: order.subTotal,
+          tax_total: order.taxTotal,
+          total: order.total,
+        },
+        meta: { template_type: args.templateType, document_type: documentType },
+      } satisfies Record<string, unknown>;
+    }
+
+    if (documentType === 'purchase') {
+      if (!args.documentId) return fallback;
+      const purchase = await this.prisma.purchase.findFirst({
+        where: { id: args.documentId, companyId: args.companyId },
+        include: {
+          supplier: { select: { name: true, gstin: true, phone: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } },
+        },
+      });
+      if (!purchase) return fallback;
+      return {
+        company: fallback.company,
+        document: {
+          id: purchase.id,
+          number: purchase.migrationSourceRef ?? purchase.id,
+          status: purchase.status,
+          purchase_date: purchase.purchaseDate,
+        },
+        party: {
+          name: purchase.supplier.name,
+          gstin: purchase.supplier.gstin,
+          phone: purchase.supplier.phone,
+        },
+        items: purchase.items.map((item) => ({
+          product: item.product.name,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          rate: item.unitCost,
+          total: item.lineTotal,
+        })),
+        totals: {
+          sub_total: purchase.subTotal,
+          tax_total: purchase.taxTotal,
+          total: purchase.total,
+        },
+        meta: { template_type: args.templateType, document_type: documentType },
+      } satisfies Record<string, unknown>;
+    }
+
+    if (documentType === 'challan') {
+      if (!args.documentId) return fallback;
+      const challan = await this.prisma.deliveryChallan.findFirst({
+        where: { id: args.documentId, companyId: args.companyId },
+        include: {
+          customer: { select: { name: true, gstin: true, phone: true } },
+          warehouse: { select: { name: true, code: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } },
+          salesOrder: { select: { orderNumber: true } },
+        },
+      });
+      if (!challan) return fallback;
+      return {
+        company: fallback.company,
+        document: {
+          id: challan.id,
+          number: challan.challanNumber,
+          status: challan.status,
+          challan_date: challan.challanDate,
+          transporter_name: challan.transporterName,
+          vehicle_number: challan.vehicleNumber,
+          order_number: challan.salesOrder.orderNumber,
+          warehouse_name: challan.warehouse.name,
+        },
+        party: {
+          name: challan.customer.name,
+          gstin: challan.customer.gstin,
+          phone: challan.customer.phone,
+        },
+        items: challan.items.map((item) => ({
+          product: item.product.name,
+          sku: item.product.sku,
+          quantity_requested: item.quantityRequested,
+          quantity_dispatched: item.quantityDispatched,
+          quantity_delivered: item.quantityDelivered,
+          short_supply_quantity: item.shortSupplyQuantity,
+        })),
+        totals: {
+          total_lines: challan.items.length,
+        },
+        meta: { template_type: args.templateType, document_type: documentType },
+      } satisfies Record<string, unknown>;
+    }
+
+    return fallback;
   }
 
   private normalizeGstin(value: unknown) {
@@ -2034,50 +2350,12 @@ export class MigrationOpsService {
     if (!version) {
       throw new BadRequestException('Template has no versions');
     }
-
-    let sampleData: Record<string, unknown> = {
-      company: { name: 'Sample Company' },
-      document: { number: 'SAMPLE-001', date: new Date().toISOString().slice(0, 10) },
-      party: { name: 'Sample Party', gstin: '27ABCDE1234F1Z5' },
-      totals: { total: 0 },
-    };
-
-    if (dto.document_type === 'invoice' && dto.document_id) {
-      const invoice = await this.prisma.invoice.findFirst({
-        where: { id: dto.document_id, companyId },
-        include: {
-          customer: { select: { name: true, gstin: true } },
-          items: {
-            include: { product: { select: { name: true, sku: true } } },
-          },
-        },
-      });
-      if (invoice) {
-        sampleData = {
-          document: {
-            number: invoice.invoiceNumber,
-            status: invoice.status,
-            issue_date: invoice.issueDate,
-          },
-          party: {
-            name: invoice.customer.name,
-            gstin: invoice.customer.gstin,
-          },
-          items: invoice.items.map((item) => ({
-            product: item.product.name,
-            sku: item.product.sku,
-            quantity: item.quantity,
-            rate: item.unitPrice,
-            total: item.lineTotal,
-          })),
-          totals: {
-            sub_total: invoice.subTotal,
-            tax_total: invoice.taxTotal,
-            total: invoice.total,
-          },
-        };
-      }
-    }
+    const sampleData = await this.resolvePrintPreviewData({
+      companyId,
+      templateType: template.templateType,
+      documentType: dto.document_type,
+      documentId: dto.document_id,
+    });
 
     return {
       data: {
@@ -2289,11 +2567,20 @@ export class MigrationOpsService {
     };
   }
 
+  async listSupportedWebhookEvents() {
+    return {
+      data: SUPPORTED_WEBHOOK_EVENTS,
+    };
+  }
+
   async createWebhookEndpoint(
     companyId: string,
     dto: CreateWebhookEndpointDto,
     userId?: string | null,
   ) {
+    const subscribedEvents = this.ensureSubscribedWebhookEvents(
+      dto.subscribed_events ?? ['integration.test', 'import.job.committed'],
+    );
     const endpoint = await this.prisma.outboundWebhookEndpoint.create({
       data: {
         companyId,
@@ -2301,10 +2588,7 @@ export class MigrationOpsService {
         url: dto.url.trim(),
         // Stored value is the shared signing secret; response never exposes it.
         secretHash: dto.secret.trim(),
-        subscribedEvents: (dto.subscribed_events ?? [
-          'integration.test',
-          'import.job.committed',
-        ]) as Prisma.InputJsonValue,
+        subscribedEvents: subscribedEvents as Prisma.InputJsonValue,
         createdByUserId: userId ?? null,
       },
     });
@@ -2319,6 +2603,10 @@ export class MigrationOpsService {
     dto: UpdateWebhookEndpointDto,
   ) {
     await this.ensureWebhookEndpoint(companyId, endpointId);
+    const subscribedEvents =
+      dto.subscribed_events !== undefined
+        ? this.ensureSubscribedWebhookEvents(dto.subscribed_events)
+        : undefined;
     const endpoint = await this.prisma.outboundWebhookEndpoint.update({
       where: { id: endpointId },
       data: {
@@ -2326,8 +2614,8 @@ export class MigrationOpsService {
         url: dto.url?.trim(),
         secretHash: dto.secret ? dto.secret.trim() : undefined,
         subscribedEvents:
-          dto.subscribed_events !== undefined
-            ? (dto.subscribed_events as Prisma.InputJsonValue)
+          subscribedEvents !== undefined
+            ? (subscribedEvents as Prisma.InputJsonValue)
             : undefined,
         status: dto.status?.trim(),
       },
@@ -2347,6 +2635,8 @@ export class MigrationOpsService {
     responseStatus?: number;
     responseBodyExcerpt?: string | null;
     status: 'pending' | 'delivered' | 'retrying' | 'failed';
+    attemptCount?: number;
+    nextRetryAt?: Date | null;
   }) {
     return this.prisma.outboundWebhookDelivery.create({
       data: {
@@ -2359,8 +2649,130 @@ export class MigrationOpsService {
         responseStatus: args.responseStatus ?? null,
         responseBodyExcerpt: args.responseBodyExcerpt ?? null,
         status: args.status,
+        attemptCount: args.attemptCount ?? 1,
+        nextRetryAt: args.nextRetryAt ?? null,
       },
     });
+  }
+
+  private async attemptWebhookDelivery(args: {
+    endpoint: {
+      id: string;
+      url: string;
+      secretHash: string;
+    };
+    companyId: string;
+    eventType: string;
+    eventKey: string;
+    body: Record<string, unknown>;
+    attemptCount: number;
+    deliveryId?: string;
+    allowRetry?: boolean;
+  }) {
+    const requestBody = JSON.stringify(args.body);
+    const headers = {
+      'content-type': 'application/json',
+      'x-gst-billing-event': args.eventType,
+      'x-gst-billing-signature': this.signWebhook(args.endpoint.secretHash, requestBody),
+    };
+
+    const delivery =
+      args.deliveryId
+        ? await this.prisma.outboundWebhookDelivery.update({
+            where: { id: args.deliveryId },
+            data: {
+              requestHeadersJson: headers as Prisma.InputJsonValue,
+              requestBodyJson: args.body as Prisma.InputJsonValue,
+              responseStatus: null,
+              responseBodyExcerpt: null,
+              status: 'pending',
+              attemptCount: args.attemptCount,
+              nextRetryAt: null,
+            },
+          })
+        : await this.recordWebhookDelivery({
+            companyId: args.companyId,
+            endpointId: args.endpoint.id,
+            eventType: args.eventType,
+            eventKey: args.eventKey,
+            requestHeaders: headers,
+            requestBody: args.body,
+            status: 'pending',
+            attemptCount: args.attemptCount,
+          });
+
+    try {
+      const response = await fetch(args.endpoint.url, {
+        method: 'POST',
+        headers,
+        body: requestBody,
+      });
+      const responseBody = await response.text();
+      const nextRetryAt = response.ok
+        ? null
+        : this.nextWebhookRetryAt(args.attemptCount, args.allowRetry !== false);
+      const status = response.ok
+        ? 'delivered'
+        : nextRetryAt
+          ? 'retrying'
+          : 'failed';
+
+      const updated = await this.prisma.outboundWebhookDelivery.update({
+        where: { id: delivery.id },
+        data: {
+          responseStatus: response.status,
+          responseBodyExcerpt: responseBody.slice(0, 500),
+          status,
+          nextRetryAt,
+        },
+      });
+
+      await this.prisma.outboundWebhookEndpoint.update({
+        where: { id: args.endpoint.id },
+        data: response.ok
+          ? {
+              lastSuccessAt: new Date(),
+            }
+          : {
+              lastFailureAt: new Date(),
+            },
+      });
+
+      return {
+        delivery: updated,
+        ok: response.ok,
+        responseStatus: response.status,
+        responseBodyExcerpt: responseBody.slice(0, 500),
+      };
+    } catch (error) {
+      const nextRetryAt = this.nextWebhookRetryAt(
+        args.attemptCount,
+        args.allowRetry !== false,
+      );
+      const updated = await this.prisma.outboundWebhookDelivery.update({
+        where: { id: delivery.id },
+        data: {
+          responseStatus: null,
+          responseBodyExcerpt:
+            error instanceof Error ? error.message.slice(0, 500) : 'Request failed',
+          status: nextRetryAt ? 'retrying' : 'failed',
+          nextRetryAt,
+        },
+      });
+
+      await this.prisma.outboundWebhookEndpoint.update({
+        where: { id: args.endpoint.id },
+        data: { lastFailureAt: new Date() },
+      });
+
+      return {
+        delivery: updated,
+        ok: false,
+        responseStatus: null,
+        responseBodyExcerpt:
+          error instanceof Error ? error.message : 'Request failed',
+      };
+    }
   }
 
   async publishWebhookEvent(
@@ -2389,54 +2801,15 @@ export class MigrationOpsService {
         occurred_at: new Date().toISOString(),
         payload,
       };
-      const signature = this.signWebhook(endpoint.secretHash, JSON.stringify(body));
-      const headers = {
-        'content-type': 'application/json',
-        'x-gst-billing-event': eventType,
-        'x-gst-billing-signature': signature,
-      };
-      try {
-        const response = await fetch(endpoint.url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(body),
-        });
-        const responseBody = await response.text();
-        await this.recordWebhookDelivery({
-          companyId,
-          endpointId: endpoint.id,
-          eventType,
-          eventKey,
-          requestHeaders: headers,
-          requestBody: body,
-          responseStatus: response.status,
-          responseBodyExcerpt: responseBody.slice(0, 500),
-          status: response.ok ? 'delivered' : 'failed',
-        });
-        await this.prisma.outboundWebhookEndpoint.update({
-          where: { id: endpoint.id },
-          data: {
-            lastSuccessAt: response.ok ? new Date() : undefined,
-            lastFailureAt: response.ok ? undefined : new Date(),
-          },
-        });
-      } catch (error) {
-        await this.recordWebhookDelivery({
-          companyId,
-          endpointId: endpoint.id,
-          eventType,
-          eventKey,
-          requestHeaders: headers,
-          requestBody: body,
-          responseBodyExcerpt:
-            error instanceof Error ? error.message.slice(0, 500) : 'Request failed',
-          status: 'failed',
-        });
-        await this.prisma.outboundWebhookEndpoint.update({
-          where: { id: endpoint.id },
-          data: { lastFailureAt: new Date() },
-        });
-      }
+      await this.attemptWebhookDelivery({
+        endpoint,
+        companyId,
+        eventType,
+        eventKey,
+        body,
+        attemptCount: 1,
+        allowRetry: true,
+      });
     }
   }
 
@@ -2447,6 +2820,7 @@ export class MigrationOpsService {
   ) {
     const endpoint = await this.ensureWebhookEndpoint(companyId, endpointId);
     const eventType = dto.event_type?.trim() || 'integration.test';
+    this.ensureSubscribedWebhookEvents([eventType]);
     const payload = {
       endpoint_id: endpoint.id,
       test: true,
@@ -2459,59 +2833,23 @@ export class MigrationOpsService {
       occurred_at: new Date().toISOString(),
       payload,
     };
-    const headers = {
-      'content-type': 'application/json',
-      'x-gst-billing-event': eventType,
-      'x-gst-billing-signature': this.signWebhook(endpoint.secretHash, JSON.stringify(body)),
+    const result = await this.attemptWebhookDelivery({
+      endpoint,
+      companyId,
+      eventType,
+      eventKey: body.event_key,
+      body,
+      attemptCount: 1,
+      allowRetry: false,
+    });
+    return {
+      data: {
+        delivery: result.delivery,
+        ok: result.ok,
+        response_status: result.responseStatus,
+        response_body_excerpt: result.responseBodyExcerpt,
+      },
     };
-    try {
-      const response = await fetch(endpoint.url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-      });
-      const responseBody = await response.text();
-      const delivery = await this.recordWebhookDelivery({
-        companyId,
-        endpointId,
-        eventType,
-        eventKey: body.event_key,
-        requestHeaders: headers,
-        requestBody: body,
-        responseStatus: response.status,
-        responseBodyExcerpt: responseBody.slice(0, 500),
-        status: response.ok ? 'delivered' : 'failed',
-      });
-      return {
-        data: {
-          delivery,
-          ok: response.ok,
-          response_status: response.status,
-          response_body_excerpt: responseBody.slice(0, 500),
-        },
-      };
-    } catch (error) {
-      const delivery = await this.recordWebhookDelivery({
-        companyId,
-        endpointId,
-        eventType,
-        eventKey: body.event_key,
-        requestHeaders: headers,
-        requestBody: body,
-        responseBodyExcerpt:
-          error instanceof Error ? error.message.slice(0, 500) : 'Request failed',
-        status: 'failed',
-      });
-      return {
-        data: {
-          delivery,
-          ok: false,
-          response_status: null,
-          response_body_excerpt:
-            error instanceof Error ? error.message : 'Request failed',
-        },
-      };
-    }
   }
 
   async listWebhookDeliveries(companyId: string, endpointId: string) {
@@ -2522,6 +2860,39 @@ export class MigrationOpsService {
         orderBy: [{ createdAt: 'desc' }],
         take: 100,
       }),
+    };
+  }
+
+  async retryWebhookDelivery(
+    companyId: string,
+    endpointId: string,
+    deliveryId: string,
+  ) {
+    const endpoint = await this.ensureWebhookEndpoint(companyId, endpointId);
+    const delivery = await this.ensureWebhookDelivery(companyId, endpointId, deliveryId);
+    if (delivery.status === 'delivered') {
+      throw new BadRequestException('Delivered webhook does not need retry');
+    }
+
+    const body = delivery.requestBodyJson as Record<string, unknown>;
+    const result = await this.attemptWebhookDelivery({
+      endpoint,
+      companyId,
+      eventType: delivery.eventType,
+      eventKey: delivery.eventKey,
+      body,
+      attemptCount: delivery.attemptCount + 1,
+      deliveryId: delivery.id,
+      allowRetry: true,
+    });
+
+    return {
+      data: {
+        delivery: result.delivery,
+        ok: result.ok,
+        response_status: result.responseStatus,
+        response_body_excerpt: result.responseBodyExcerpt,
+      },
     };
   }
 

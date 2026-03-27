@@ -8,6 +8,7 @@ import { RbacModule } from '../rbac/rbac.module';
 import { GstModule } from '../gst/gst.module';
 import { PricingModule } from '../pricing/pricing.module';
 import { SalesOrdersModule } from '../sales-orders/sales-orders.module';
+import { MigrationOpsModule } from '../migration-ops/migration-ops.module';
 import { InvoicesController } from './invoices.controller';
 import { InvoiceComplianceController } from './invoice-compliance.controller';
 import { InvoiceComplianceService } from './invoice-compliance.service';
@@ -28,6 +29,7 @@ import { InvoicePdfService } from './pdf/invoice-pdf.service';
     GstModule,
     PricingModule,
     SalesOrdersModule,
+    MigrationOpsModule,
     forwardRef(() => JobsModule),
   ],
   controllers: [

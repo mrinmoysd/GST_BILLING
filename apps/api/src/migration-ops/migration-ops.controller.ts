@@ -356,6 +356,11 @@ export class MigrationOpsController {
     return this.migrationOps.listWebhookEndpoints(companyId);
   }
 
+  @Get('integrations/webhooks/events')
+  listWebhookEvents() {
+    return this.migrationOps.listSupportedWebhookEvents();
+  }
+
   @Post('integrations/webhooks')
   createWebhookEndpoint(
     @Param('companyId') companyId: string,
@@ -389,6 +394,15 @@ export class MigrationOpsController {
     @Param('endpointId') endpointId: string,
   ) {
     return this.migrationOps.listWebhookDeliveries(companyId, endpointId);
+  }
+
+  @Post('integrations/webhooks/:endpointId/deliveries/:deliveryId/retry')
+  retryWebhookDelivery(
+    @Param('companyId') companyId: string,
+    @Param('endpointId') endpointId: string,
+    @Param('deliveryId') deliveryId: string,
+  ) {
+    return this.migrationOps.retryWebhookDelivery(companyId, endpointId, deliveryId);
   }
 
   @Get('integrations/api-keys')

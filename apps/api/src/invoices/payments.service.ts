@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { IdempotencyService } from '../idempotency/idempotency.service';
 import { UpdatePaymentInstrumentDto } from './dto/update-payment-instrument.dto';
+import { MigrationOpsService } from '../migration-ops/migration-ops.service';
 
 @Injectable()
 export class PaymentsService {
@@ -17,6 +18,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly idempotency: IdempotencyService,
     private readonly accounting: AccountingService,
+    private readonly migrationOps: MigrationOpsService,
   ) {}
 
   private normalizeInstrumentStatus(args: {
@@ -287,6 +289,33 @@ export class PaymentsService {
       },
     });
 
+    if (!out.replayed) {
+      const payment = out.data as {
+        id: string;
+        invoiceId?: string | null;
+        purchaseId?: string | null;
+        amount: Prisma.Decimal;
+        method: string;
+        instrumentStatus?: string | null;
+      };
+      const eventType = payment.invoiceId
+        ? 'invoice.payment_recorded'
+        : 'purchase.payment_recorded';
+      await this.migrationOps.publishWebhookEvent(
+        args.companyId,
+        eventType,
+        `payment:${payment.id}:recorded`,
+        {
+          payment_id: payment.id,
+          invoice_id: payment.invoiceId ?? null,
+          purchase_id: payment.purchaseId ?? null,
+          amount: payment.amount.toString(),
+          method: payment.method,
+          instrument_status: payment.instrumentStatus ?? null,
+        },
+      );
+    }
+
     return out.body;
   }
 
@@ -295,7 +324,7 @@ export class PaymentsService {
     paymentId: string;
     dto: UpdatePaymentInstrumentDto;
   }) {
-    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const payment = await tx.payment.findFirst({
         where: { id: args.paymentId, companyId: args.companyId },
       });
@@ -390,7 +419,27 @@ export class PaymentsService {
         }
       }
 
-      return { data: updated };
+      return {
+        data: updated,
+        eventPayload: {
+          payment_id: updated.id,
+          invoice_id: updated.invoiceId ?? null,
+          purchase_id: updated.purchaseId ?? null,
+          instrument_status: updated.instrumentStatus ?? null,
+          instrument_number: updated.instrumentNumber ?? null,
+          bank_account_id: updated.bankAccountId ?? null,
+          deposit_date: updated.depositDate ?? null,
+          clearance_date: updated.clearanceDate ?? null,
+          bounce_date: updated.bounceDate ?? null,
+        },
+      };
     });
+    await this.migrationOps.publishWebhookEvent(
+      args.companyId,
+      'payment.instrument_updated',
+      `payment:${result.data.id}:instrument_updated:${new Date().toISOString()}`,
+      result.eventPayload,
+    );
+    return { data: result.data };
   }
 }

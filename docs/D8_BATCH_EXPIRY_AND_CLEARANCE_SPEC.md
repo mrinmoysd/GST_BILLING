@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for batch-aware inventory, expiry-date control, near-expiry visibility, and stock-clearance workflows.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; live staging validation and focused regression coverage are still pending
 
 Source:
 
@@ -1338,4 +1338,3 @@ Once D8 is stable, later phases can extend into:
 - serial-number tracking
 - quarantine and QA release workflow
 - batch-cost valuation improvements
-

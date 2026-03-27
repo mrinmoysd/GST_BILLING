@@ -1,10 +1,10 @@
 # End-to-End Validation Report
 
-**Generated**: 2026-03-22
+**Generated**: 2026-03-27
 
 ## Scope
 
-Validate the current implementation state of the solution after the A-K execution track and reports phases R1-R5, then identify what is still missing.
+Validate the current implementation state of the solution after the A-K execution track, reports phases R1-R5, and the D7-D13 parity implementation pass, then identify what is still missing.
 
 This pass used:
 
@@ -12,6 +12,8 @@ This pass used:
 - route inventory review
 - latest successful build/typecheck/lint/test evidence already produced in the repo workstream
 - local reachability check for `http://127.0.0.1:3000` and `http://127.0.0.1:4000`
+- direct D7-D13 acceptance-criteria comparison against their implementation specs
+- fresh local command validation for API/web generate, typecheck, build, and lint
 
 ## Validation result
 
@@ -20,6 +22,10 @@ The tenant product is broadly implemented and no longer in MVP-planning-only sta
 However, this is **not yet a fully finished end-to-end product** because one validation track remains incomplete:
 
 1. live staging validation
+
+There is also a narrower parity-specific boundary:
+
+1. D11 is product-complete internally, but not yet provider-complete
 
 ## What was validated as working at codebase level
 
@@ -31,6 +37,8 @@ However, this is **not yet a fully finished end-to-end product** because one val
 - API build/typecheck and web build/lint have passing evidence
 - report, GST, and accounting unit tests have passing evidence
 - admin Playwright smoke coverage now exists for dashboard, governance, and core operational routes
+- D7 through D12 are implemented at code/build level based on the validation pass captured in [D7_TO_D13_VALIDATION_STATUS.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/D7_TO_D13_VALIDATION_STATUS.md)
+- D13 is implemented at code/build level, with live execution still pending and the latest closure work documented in [D13_IMPORT_MIGRATION_AND_CUSTOMIZATION_SPEC.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/D13_IMPORT_MIGRATION_AND_CUSTOMIZATION_SPEC.md)
 
 ## What could not be fully validated live
 
@@ -40,6 +48,26 @@ However, this is **not yet a fully finished end-to-end product** because one val
 - DB-backed API e2e still depends on reachable Postgres and Redis
 
 This means the current validation is strong at code/build/test level, but **not a substitute for a staging run with real services**.
+
+## D7-D13 validation addendum
+
+Detailed parity-track findings are captured in [D7_TO_D13_VALIDATION_STATUS.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/D7_TO_D13_VALIDATION_STATUS.md).
+
+Plain-English status:
+
+- D7 pricing and scheme engine: implemented at code/build level
+- D8 batch, expiry, and clearance: implemented at code/build level
+- D9 collections, banking, and credit control: implemented at code/build level
+- D10 dispatch, delivery, and challan: implemented at code/build level
+- D11 e-invoice and e-way bill: implemented internally with a `sandbox_local` provider boundary still open
+- D12 field sales and route operations: implemented at code/build level
+- D13 import, migration, and customization: implemented at code/build level
+
+This means the largest remaining D7-D13 risks are no longer "missing big product slices" except for:
+
+- D11 live provider-backed IRP/EWB integration
+- D13 live workflow validation
+- lack of staging and environment-backed regression proof
 
 ## Admin validation findings
 
@@ -123,6 +151,8 @@ The public perimeter is now structurally complete. The remaining work on that su
 1. live staging validation
 2. environment-backed e2e execution evidence
 3. production-readiness proof around real provider integrations and seeded flows
+4. D11 provider cutover after credentials are available
+5. D13 live browser/staging proof for migration, print-template, and integration workflows
 
 ### Medium priority
 
@@ -132,11 +162,14 @@ The public perimeter is now structurally complete. The remaining work on that su
 
 ## Recommended next phase order
 
-1. Phase M — Admin completion and super-admin auth
-2. Staging deployment + full live validation pass
+1. Staging deployment + full live validation pass
+2. D11 provider integration after credentials and onboarding are complete
+3. D13 live workflow validation plus focused migration/customization regression execution
 
 ## Conclusion
 
 The core GST Billing application is substantially built. The main missing work is no longer the tenant billing engine; it is the product perimeter:
 
 - live environment validation
+- D11 provider-backed compliance integration
+- D13 live validation depth

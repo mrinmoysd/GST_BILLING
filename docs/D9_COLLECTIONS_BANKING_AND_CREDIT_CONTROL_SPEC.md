@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-26  
 **Purpose**: Define the implementation-ready scope for receivables control, supplier payment discipline, cheque/PDC workflows, bank reconciliation, and collection operations.  
-**Implementation status**: Planned
+**Implementation status**: Implemented at code/build level; live finance-ops validation and end-to-end regression coverage are still pending
 
 Source:
 
@@ -1352,4 +1352,3 @@ Once D9 is stable, later phases can extend into:
 - automated bank feeds
 - multi-line reconciliation
 - finance approvals for large write-offs
-

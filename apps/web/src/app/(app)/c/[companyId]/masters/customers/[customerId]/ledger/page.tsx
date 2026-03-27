@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
+import { useCustomer } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
@@ -18,6 +19,11 @@ type LedgerRow = {
   debit: number;
   credit: number;
   balance: number;
+  invoice_id?: string;
+  invoice_number?: string | null;
+  payment_id?: string;
+  payment_method?: string | null;
+  payment_reference?: string | null;
 };
 
 type LedgerResp = {
@@ -38,8 +44,17 @@ function getErrorMessage(err: unknown, fallback: string) {
   return fallback;
 }
 
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 export default function CustomerLedgerPage({ params }: Props) {
   const { companyId, customerId } = React.use(params);
+  const customer = useCustomer({ companyId, customerId });
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
   const [page, setPage] = React.useState(1);
@@ -90,10 +105,12 @@ export default function CustomerLedgerPage({ params }: Props) {
         title="Customer ledger"
         subtitle={
           <span>
-            <code>{customerId}</code>
+            <span className="font-medium">
+              {customer.data?.data?.name ?? "Customer"} <code>{customerId}</code>
+            </span>
             {data ? (
               <span className="ml-3 text-sm text-neutral-500">
-                Opening: {data.opening_balance} · Closing: {data.closing_balance}
+                Opening: {formatMoney(data.opening_balance)} · Closing: {formatMoney(data.closing_balance)}
               </span>
             ) : null}
           </span>
@@ -157,12 +174,42 @@ export default function CustomerLedgerPage({ params }: Props) {
                 <tr key={r.ref_id} className="border-t">
                   <td className="px-4 py-3 whitespace-nowrap">{r.date || "—"}</td>
                   <td className="px-4 py-3">
-                    <div className="font-medium">{r.description}</div>
-                    <div className="text-xs text-neutral-500">{r.type}</div>
+                    <div className="font-medium">
+                      {r.type === "invoice" && r.invoice_id ? (
+                        <Link
+                          className="underline"
+                          href={`/c/${companyId}/sales/invoices/${r.invoice_id}`}
+                        >
+                          {r.description}
+                        </Link>
+                      ) : (
+                        r.description
+                      )}
+                    </div>
+                    <div className="text-xs text-neutral-500 capitalize">
+                      {r.type}
+                      {r.type === "payment" && r.payment_method ? ` · ${r.payment_method}` : ""}
+                      {r.type === "payment" && r.payment_reference ? ` · Ref ${r.payment_reference}` : ""}
+                    </div>
+                    {r.type === "payment" ? (
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-neutral-500">
+                        <Link className="underline" href={`/c/${companyId}/payments`}>
+                          Open payments workspace
+                        </Link>
+                        {r.invoice_id ? (
+                          <Link
+                            className="underline"
+                            href={`/c/${companyId}/sales/invoices/${r.invoice_id}`}
+                          >
+                            {`Invoice ${r.invoice_number ?? r.invoice_id}`}
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </td>
-                  <td className="px-4 py-3 text-right">{r.debit ? r.debit : "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.credit ? r.credit : "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.balance}</td>
+                  <td className="px-4 py-3 text-right">{r.debit ? formatMoney(r.debit) : "—"}</td>
+                  <td className="px-4 py-3 text-right">{r.credit ? formatMoney(r.credit) : "—"}</td>
+                  <td className="px-4 py-3 text-right">{formatMoney(r.balance)}</td>
                 </tr>
               ))}
             </tbody>

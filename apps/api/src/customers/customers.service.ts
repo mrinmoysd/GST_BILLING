@@ -13,11 +13,35 @@ type LedgerRow = {
   debit: number;
   credit: number;
   balance: number;
+  invoice_id?: string;
+  invoice_number?: string | null;
+  payment_id?: string;
+  payment_method?: string | null;
+  payment_reference?: string | null;
 };
 
 @Injectable()
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async findCustomerRecord(companyId: string, customerId: string) {
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, companyId, deletedAt: null },
+      include: {
+        salesperson: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!customer) throw new NotFoundException('Customer not found');
+    return customer;
+  }
 
   private async assertSalespersonBelongsToCompany(
     companyId: string,
@@ -60,6 +84,12 @@ export class CustomersService {
     if (!d) return '';
     const dt = typeof d === 'string' ? new Date(d) : d;
     return Number.isNaN(dt.valueOf()) ? '' : dt.toISOString().slice(0, 10);
+  }
+
+  private toIsoString(d: Date | string | null | undefined): string | null {
+    if (!d) return null;
+    const dt = typeof d === 'string' ? new Date(d) : d;
+    return Number.isNaN(dt.valueOf()) ? null : dt.toISOString();
   }
 
   async list(companyId: string, page = 1, limit = 20, q?: string) {
@@ -149,26 +179,295 @@ export class CustomersService {
   }
 
   async get(companyId: string, customerId: string) {
-    const customer = await this.prisma.customer.findFirst({
-      where: { id: customerId, companyId, deletedAt: null },
-      include: {
-        salesperson: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
+    const customer = await this.findCustomerRecord(companyId, customerId);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const openTaskWhere: Prisma.CollectionTaskWhereInput = {
+      companyId,
+      customerId,
+      status: { notIn: ['closed', 'completed', 'cancelled'] },
+    };
+
+    const [
+      openInvoiceSummary,
+      overdueInvoiceSummary,
+      recentInvoices,
+      recentPayments,
+      activeCoverage,
+      latestVisit,
+      nextPlannedVisit,
+      openTasksCount,
+      overdueTasksCount,
+      nextActionDate,
+      latestOpenTask,
+    ] = await Promise.all([
+      this.prisma.invoice.aggregate({
+        where: {
+          companyId,
+          customerId,
+          status: { in: ['issued', 'paid'] },
+          balanceDue: { gt: 0 },
+        },
+        _count: { _all: true },
+        _sum: { balanceDue: true },
+      }),
+      this.prisma.invoice.aggregate({
+        where: {
+          companyId,
+          customerId,
+          status: { in: ['issued', 'paid'] },
+          balanceDue: { gt: 0 },
+          dueDate: { lt: today },
+        },
+        _count: { _all: true },
+        _sum: { balanceDue: true },
+      }),
+      this.prisma.invoice.findMany({
+        where: {
+          companyId,
+          customerId,
+          status: { not: 'cancelled' },
+        },
+        select: {
+          id: true,
+          invoiceNumber: true,
+          status: true,
+          issueDate: true,
+          dueDate: true,
+          total: true,
+          balanceDue: true,
+        },
+        orderBy: [{ issueDate: 'desc' }, { createdAt: 'desc' }],
+        take: 5,
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          companyId,
+          invoice: { companyId, customerId },
+        },
+        select: {
+          id: true,
+          paymentDate: true,
+          amount: true,
+          method: true,
+          instrumentStatus: true,
+          reference: true,
+          invoice: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+            },
           },
         },
-      },
-    });
+        orderBy: [{ paymentDate: 'desc' }, { createdAt: 'desc' }],
+        take: 5,
+      }),
+      this.prisma.customerSalesCoverage.findFirst({
+        where: {
+          companyId,
+          customerId,
+          isActive: true,
+        },
+        include: {
+          salesperson: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+          territory: {
+            select: { id: true, code: true, name: true },
+          },
+          route: {
+            select: { id: true, code: true, name: true },
+          },
+          beat: {
+            select: { id: true, code: true, name: true, dayOfWeek: true },
+          },
+        },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      }),
+      this.prisma.salesVisit.findFirst({
+        where: { companyId, customerId },
+        select: {
+          id: true,
+          visitDate: true,
+          status: true,
+          primaryOutcome: true,
+          productiveFlag: true,
+          nextFollowUpDate: true,
+        },
+        orderBy: [{ visitDate: 'desc' }, { createdAt: 'desc' }],
+      }),
+      this.prisma.salesVisitPlan.findFirst({
+        where: {
+          companyId,
+          customerId,
+          visitDate: { gte: today },
+          status: { in: ['planned', 'started', 'in_progress'] },
+        },
+        select: {
+          id: true,
+          visitDate: true,
+          status: true,
+          priority: true,
+          route: { select: { id: true, code: true, name: true } },
+          beat: { select: { id: true, code: true, name: true, dayOfWeek: true } },
+        },
+        orderBy: [{ visitDate: 'asc' }, { createdAt: 'asc' }],
+      }),
+      this.prisma.collectionTask.count({
+        where: openTaskWhere,
+      }),
+      this.prisma.collectionTask.count({
+        where: {
+          ...openTaskWhere,
+          dueDate: { lt: today },
+        },
+      }),
+      this.prisma.collectionTask.aggregate({
+        where: {
+          ...openTaskWhere,
+          nextActionDate: { not: null },
+        },
+        _min: { nextActionDate: true },
+      }),
+      this.prisma.collectionTask.findFirst({
+        where: openTaskWhere,
+        include: {
+          assignee: {
+            select: { id: true, name: true, email: true },
+          },
+          salesperson: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      }),
+    ]);
 
-    if (!customer) throw new NotFoundException('Customer not found');
-    return customer;
+    const lastPayment = recentPayments[0] ?? null;
+    const collectionsOwner =
+      latestOpenTask?.assignee ??
+      latestOpenTask?.salesperson ??
+      customer.salesperson ??
+      null;
+
+    return {
+      ...customer,
+      summary: {
+        credit: {
+          current_exposure: this.toNumber(openInvoiceSummary._sum.balanceDue),
+          open_invoices_count: openInvoiceSummary._count._all,
+          overdue_invoices_count: overdueInvoiceSummary._count._all,
+          overdue_amount: this.toNumber(overdueInvoiceSummary._sum.balanceDue),
+          last_payment: lastPayment
+            ? {
+                id: lastPayment.id,
+                payment_date: this.toIsoString(lastPayment.paymentDate),
+                amount: this.toNumber(lastPayment.amount),
+                method: lastPayment.method,
+                instrument_status: lastPayment.instrumentStatus,
+                invoice_id: lastPayment.invoice?.id ?? null,
+                invoice_number: lastPayment.invoice?.invoiceNumber ?? null,
+              }
+            : null,
+        },
+        collections: {
+          owner: collectionsOwner,
+          open_tasks_count: openTasksCount,
+          overdue_tasks_count: overdueTasksCount,
+          next_action_date: this.toDateString(nextActionDate._min.nextActionDate),
+          latest_open_task: latestOpenTask
+            ? {
+                id: latestOpenTask.id,
+                status: latestOpenTask.status,
+                priority: latestOpenTask.priority,
+                channel: latestOpenTask.channel,
+                due_date: this.toDateString(latestOpenTask.dueDate),
+                next_action_date: this.toDateString(latestOpenTask.nextActionDate),
+                promise_to_pay_date: this.toDateString(
+                  latestOpenTask.promiseToPayDate,
+                ),
+                promise_to_pay_amount: this.toNumber(
+                  latestOpenTask.promiseToPayAmount,
+                ),
+                notes: latestOpenTask.notes,
+              }
+            : null,
+        },
+        coverage: {
+          active_assignment: activeCoverage
+            ? {
+                id: activeCoverage.id,
+                salesperson: activeCoverage.salesperson,
+                territory: activeCoverage.territory,
+                route: activeCoverage.route,
+                beat: activeCoverage.beat
+                  ? {
+                      ...activeCoverage.beat,
+                      day_of_week: activeCoverage.beat.dayOfWeek,
+                    }
+                  : null,
+                visit_frequency: activeCoverage.visitFrequency,
+                preferred_visit_day: activeCoverage.preferredVisitDay,
+                priority: activeCoverage.priority,
+                notes: activeCoverage.notes,
+              }
+            : null,
+          latest_visit: latestVisit
+            ? {
+                id: latestVisit.id,
+                visit_date: this.toDateString(latestVisit.visitDate),
+                status: latestVisit.status,
+                primary_outcome: latestVisit.primaryOutcome,
+                productive_flag: latestVisit.productiveFlag,
+                next_follow_up_date: this.toDateString(
+                  latestVisit.nextFollowUpDate,
+                ),
+              }
+            : null,
+          next_planned_visit: nextPlannedVisit
+            ? {
+                id: nextPlannedVisit.id,
+                visit_date: this.toDateString(nextPlannedVisit.visitDate),
+                status: nextPlannedVisit.status,
+                priority: nextPlannedVisit.priority,
+                route: nextPlannedVisit.route,
+                beat: nextPlannedVisit.beat
+                  ? {
+                      ...nextPlannedVisit.beat,
+                      day_of_week: nextPlannedVisit.beat.dayOfWeek,
+                    }
+                  : null,
+              }
+            : null,
+        },
+        activity: {
+          recent_invoices: recentInvoices.map((invoice) => ({
+            id: invoice.id,
+            invoice_number: invoice.invoiceNumber,
+            status: invoice.status,
+            issue_date: this.toDateString(invoice.issueDate),
+            due_date: this.toDateString(invoice.dueDate),
+            total: this.toNumber(invoice.total),
+            balance_due: this.toNumber(invoice.balanceDue),
+          })),
+          recent_payments: recentPayments.map((payment) => ({
+            id: payment.id,
+            payment_date: this.toIsoString(payment.paymentDate),
+            amount: this.toNumber(payment.amount),
+            method: payment.method,
+            instrument_status: payment.instrumentStatus,
+            invoice_id: payment.invoice?.id ?? null,
+            invoice_number: payment.invoice?.invoiceNumber ?? null,
+            reference: payment.reference ?? null,
+          })),
+        },
+      },
+    };
   }
 
   async update(companyId: string, customerId: string, dto: UpdateCustomerDto) {
-    await this.get(companyId, customerId);
+    await this.findCustomerRecord(companyId, customerId);
 
     const salesperson =
       dto.salesperson_user_id !== undefined
@@ -241,7 +540,7 @@ export class CustomersService {
   }
 
   async remove(companyId: string, customerId: string) {
-    await this.get(companyId, customerId);
+    await this.findCustomerRecord(companyId, customerId);
     return this.prisma.customer.update({
       where: { id: customerId },
       data: { deletedAt: new Date() },
@@ -264,7 +563,7 @@ export class CustomersService {
       to?: string;
     };
   }> {
-    await this.get(companyId, customerId);
+    await this.findCustomerRecord(companyId, customerId);
 
     const fromDate = args.from ? new Date(args.from) : null;
     const toDate = args.to ? new Date(args.to) : null;
@@ -350,7 +649,15 @@ export class CustomersService {
           id: true,
           paymentDate: true,
           amount: true,
+          method: true,
+          reference: true,
           invoiceId: true,
+          invoice: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+            },
+          },
         },
         orderBy: [{ paymentDate: 'asc' }, { createdAt: 'asc' }],
       }),
@@ -379,6 +686,8 @@ export class CustomersService {
           date: dateStr,
           type: 'invoice',
           ref_id: inv.id,
+          invoice_id: inv.id,
+          invoice_number: inv.invoiceNumber ?? null,
           description: inv.invoiceNumber
             ? `Invoice ${inv.invoiceNumber}`
             : 'Invoice',
@@ -398,8 +707,13 @@ export class CustomersService {
           date: dateStr,
           type: 'payment',
           ref_id: p.id,
-          description: p.invoiceId
-            ? `Payment (Invoice ${p.invoiceId})`
+          invoice_id: p.invoice?.id ?? p.invoiceId ?? undefined,
+          invoice_number: p.invoice?.invoiceNumber ?? null,
+          payment_id: p.id,
+          payment_method: p.method,
+          payment_reference: p.reference ?? null,
+          description: p.invoice?.invoiceNumber
+            ? `Payment (Invoice ${p.invoice.invoiceNumber})`
             : 'Payment',
           debit: 0,
           credit: amt,
