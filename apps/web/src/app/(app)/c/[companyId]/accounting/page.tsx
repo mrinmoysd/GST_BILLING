@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/lib/ui/state";
+import { PageContextStrip, PageHeader } from "@/lib/ui/state";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -37,26 +37,29 @@ export default function AccountingPage({ params }: Props) {
         eyebrow="Finance"
         title="Accounting"
         subtitle="Use a dedicated hub for journals, ledgers, books, and financial statements."
+        badges={[
+          <Badge key="routes" variant="secondary">7 accounting routes</Badge>,
+          <Badge key="mode" variant="outline">Manual-first subsystem</Badge>,
+        ]}
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Operational accounting</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Ledgers and journals stay close to day-to-day posting work.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Books</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Cash and bank books remain fast entry points for finance operators.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Statements</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Formal reports stay grouped for review, export, and final checks.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-          <CardHeader>
-            <CardTitle>Books and statements</CardTitle>
-            <CardDescription>The accounting surface now groups operational posting separately from read-oriented finance reports.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">7 accounting routes</Badge>
-            <Badge variant="outline">Journals + books + statements</Badge>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Current model</CardTitle>
-            <CardDescription>The subsystem is still manual-first, so clear routing and dense summaries matter more than workflow automation.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {sections.map((section) => (

@@ -51,33 +51,28 @@ export default function CompanyLayout({ params, children }: Props) {
   if (!session.user) return null;
 
   return (
-    <div className="min-h-dvh text-[var(--foreground)]">
+    <div className="min-h-dvh bg-[#f3f5f8] text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
-        <SheetContent side="left" className="border-[var(--border)] bg-[var(--surface-elevated)] md:hidden">
+        <SheetContent side="left" className="border-[var(--border)] bg-[#0f1723] text-white md:hidden">
           <div className="font-semibold text-lg tracking-[-0.02em]">GST Billing</div>
-          <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
+          <div className="mt-1 text-xs text-white/60 break-all">
+            Company: {session.company?.name ?? companyId}
+          </div>
           <CompanyNav companyId={companyId} variant="sheet" onNavigate={() => setNavOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      <div className="md:grid md:grid-cols-[312px_1fr]">
-        <aside className="hidden border-r border-[var(--border)] bg-[rgba(255,253,248,0.76)] backdrop-blur md:block">
-          <div className="sticky top-0 p-5">
-            <div className="rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Workspace</div>
-              <div className="mt-2 text-xl font-semibold tracking-[-0.03em]">GST Billing</div>
-              <div className="mt-1 text-xs text-[var(--muted)] break-all">Company: {session.company?.name ?? companyId}</div>
-            </div>
-            <div className="mt-6">
-              <CompanyNav companyId={companyId} variant="sidebar" />
-            </div>
+      <div className="md:grid md:grid-cols-[108px_1fr]">
+        <aside className="hidden bg-[#0f1723] md:block">
+          <div className="sticky top-0 h-screen">
+            <CompanyNav companyId={companyId} variant="sidebar" />
           </div>
         </aside>
 
         <div className="min-w-0">
           <CompanyHeader companyId={companyId} onOpenNav={() => setNavOpen(true)} />
-          <main className="px-4 py-5 md:px-8 md:py-8">
-            <div className="mx-auto w-full max-w-[1280px]">{children}</div>
+          <main className="px-4 py-5 md:px-7 md:py-7">
+            <div className="mx-auto w-full max-w-[1440px]">{children}</div>
           </main>
         </div>
       </div>

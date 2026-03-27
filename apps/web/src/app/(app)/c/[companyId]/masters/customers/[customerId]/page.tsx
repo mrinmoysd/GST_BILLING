@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { AddressValue, Customer } from "@/lib/masters/types";
 import { useCustomer, useDeleteCustomer, useUpdateCustomer } from "@/lib/masters/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
+import { EmptyState, InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -269,6 +270,44 @@ export default function CustomerDetailPage({ params }: Props) {
   const summary = customer?.summary;
   const recentInvoices = summary?.activity?.recent_invoices ?? [];
   const recentPayments = summary?.activity?.recent_payments ?? [];
+  const customerDetailRail = customer ? (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Customer workspace"
+        subtitle="Jump into the related financial and recovery flows without losing context."
+      >
+        <div className="flex flex-col gap-2">
+          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/masters/customers`}>
+            Back to customers
+          </Link>
+          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
+            Open ledger
+          </Link>
+          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/payments/collections`}>
+            Open collections
+          </Link>
+          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/payments`}>
+            Open payments
+          </Link>
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Current posture"
+        subtitle="Commercial and field context that should stay visible while switching tabs."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Exposure", value: formatMoney(summary?.credit?.current_exposure) },
+            { label: "Overdue", value: formatMoney(summary?.credit?.overdue_amount) },
+            { label: "Collections owner", value: summary?.collections?.owner?.name ?? summary?.collections?.owner?.email ?? "Not assigned" },
+            { label: "Active beat", value: summary?.coverage?.active_assignment?.beat?.name ?? "Not assigned" },
+          ]}
+        />
+      </DetailRail>
+    </>
+  ) : null;
 
   return (
     <div className="space-y-7">
@@ -276,6 +315,10 @@ export default function CustomerDetailPage({ params }: Props) {
         eyebrow="Masters"
         title={customer?.name ?? "Customer"}
         subtitle="Review profile, credit posture, field coverage, and recent commercial activity from one customer workspace."
+        badges={[
+          <Badge key="salesperson" variant="secondary">{customer?.salesperson?.name ?? customer?.salesperson?.email ?? "Unassigned"}</Badge>,
+          <Badge key="tier" variant="outline">{pricingTierValue || "No pricing tier"}</Badge>,
+        ]}
         actions={
           <div className="flex flex-wrap gap-3">
             <Link className="text-sm underline" href={`/c/${companyId}/masters/customers`}>
@@ -295,6 +338,38 @@ export default function CustomerDetailPage({ params }: Props) {
             </Link>
           </div>
         }
+        context={
+          customer ? (
+            <PageContextStrip>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  label="Current exposure"
+                  value={formatMoney(summary?.credit?.current_exposure)}
+                  hint={`${summary?.credit?.open_invoices_count ?? 0} open invoices`}
+                />
+                <StatCard
+                  label="Overdue amount"
+                  value={formatMoney(summary?.credit?.overdue_amount)}
+                  hint={`${summary?.credit?.overdue_invoices_count ?? 0} overdue invoices`}
+                />
+                <StatCard
+                  label="Open collection tasks"
+                  value={String(summary?.collections?.open_tasks_count ?? 0)}
+                  hint={`${summary?.collections?.overdue_tasks_count ?? 0} overdue follow-ups`}
+                />
+                <StatCard
+                  label="Last payment"
+                  value={summary?.credit?.last_payment ? formatMoney(summary.credit.last_payment.amount) : "Not set"}
+                  hint={
+                    summary?.credit?.last_payment
+                      ? `${formatDateTime(summary.credit.last_payment.payment_date)} · ${summary.credit.last_payment.method ?? "payment"}`
+                      : "No receipts recorded yet"
+                  }
+                />
+              </div>
+            </PageContextStrip>
+          ) : null
+        }
       />
 
       {query.isLoading ? <LoadingBlock label="Loading customer…" /> : null}
@@ -304,35 +379,17 @@ export default function CustomerDetailPage({ params }: Props) {
 
       {customer ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Current exposure"
-              value={formatMoney(summary?.credit?.current_exposure)}
-              hint={`${summary?.credit?.open_invoices_count ?? 0} open invoices`}
-            />
-            <StatCard
-              label="Overdue amount"
-              value={formatMoney(summary?.credit?.overdue_amount)}
-              hint={`${summary?.credit?.overdue_invoices_count ?? 0} overdue invoices`}
-            />
-            <StatCard
-              label="Open collection tasks"
-              value={String(summary?.collections?.open_tasks_count ?? 0)}
-              hint={`${summary?.collections?.overdue_tasks_count ?? 0} overdue follow-ups`}
-            />
-            <StatCard
-              label="Last payment"
-              value={summary?.credit?.last_payment ? formatMoney(summary.credit.last_payment.amount) : "Not set"}
-              hint={
-                summary?.credit?.last_payment
-                  ? `${formatDateTime(summary.credit.last_payment.payment_date)} · ${summary.credit.last_payment.method ?? "payment"}`
-                  : "No receipts recorded yet"
-              }
-            />
-          </div>
-
-          <div className="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
-            <div className="space-y-6">
+          <DetailTabs
+            defaultValue="overview"
+            items={[
+              { id: "overview", label: "Overview" },
+              { id: "financials", label: "Financials", badge: summary?.collections?.open_tasks_count ?? 0 },
+              { id: "coverage", label: "Coverage" },
+              { id: "activity", label: "Activity", badge: recentInvoices.length + recentPayments.length },
+              { id: "edit", label: "Edit" },
+            ]}
+          >
+            <DetailTabPanel value="overview" rail={customerDetailRail}>
               <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
                 <CardHeader>
                   <Badge variant="secondary" className="w-fit">
@@ -366,7 +423,9 @@ export default function CustomerDetailPage({ params }: Props) {
                   />
                 </CardContent>
               </Card>
+            </DetailTabPanel>
 
+            <DetailTabPanel value="financials" rail={customerDetailRail}>
               <Card>
                 <CardHeader>
                   <CardTitle>Credit and collections</CardTitle>
@@ -418,7 +477,9 @@ export default function CustomerDetailPage({ params }: Props) {
                   />
                 </CardContent>
               </Card>
+            </DetailTabPanel>
 
+            <DetailTabPanel value="coverage" rail={customerDetailRail}>
               <Card>
                 <CardHeader>
                   <CardTitle>Route and coverage</CardTitle>
@@ -491,9 +552,9 @@ export default function CustomerDetailPage({ params }: Props) {
                   />
                 </CardContent>
               </Card>
-            </div>
+            </DetailTabPanel>
 
-            <div className="space-y-6">
+            <DetailTabPanel value="activity" rail={customerDetailRail}>
               <Card>
                 <CardHeader>
                   <CardTitle>Recent activity</CardTitle>
@@ -594,7 +655,9 @@ export default function CustomerDetailPage({ params }: Props) {
                   </div>
                 </CardContent>
               </Card>
+            </DetailTabPanel>
 
+            <DetailTabPanel value="edit" rail={customerDetailRail}>
               <Card>
                 <CardHeader>
                   <CardTitle>Edit customer</CardTitle>
@@ -633,37 +696,13 @@ export default function CustomerDetailPage({ params }: Props) {
                     }}
                   >
                     <div className="grid gap-4 md:grid-cols-2">
-                      <TextField
-                        key={`name-${customer.updatedAt ?? "unknown"}`}
-                        label="Name"
-                        value={nameValue}
-                        onChange={(v) => setName(v)}
-                        required
-                      />
-                      <TextField
-                        key={`email-${customer.updatedAt ?? "unknown"}`}
-                        label="Email"
-                        value={emailValue}
-                        onChange={(v) => setEmail(v)}
-                        type="email"
-                      />
+                      <TextField key={`name-${customer.updatedAt ?? "unknown"}`} label="Name" value={nameValue} onChange={(v) => setName(v)} required />
+                      <TextField key={`email-${customer.updatedAt ?? "unknown"}`} label="Email" value={emailValue} onChange={(v) => setEmail(v)} type="email" />
                       <TextField label="Phone" value={phoneValue} onChange={(v) => setPhone(v)} />
                       <TextField label="GSTIN" value={gstinValue} onChange={(v) => setGstin(v)} />
-                      <TextField
-                        label="State code"
-                        value={stateCodeValue}
-                        onChange={(v) => setStateCode(v)}
-                      />
-                      <TextField
-                        label="Pricing tier"
-                        value={pricingTierValue}
-                        onChange={(v) => setPricingTier(v)}
-                      />
-                      <SelectField
-                        label="Primary salesperson"
-                        value={salespersonValue}
-                        onChange={(v) => setSalespersonUserId(v)}
-                      >
+                      <TextField label="State code" value={stateCodeValue} onChange={(v) => setStateCode(v)} />
+                      <TextField label="Pricing tier" value={pricingTierValue} onChange={(v) => setPricingTier(v)} />
+                      <SelectField label="Primary salesperson" value={salespersonValue} onChange={(v) => setSalespersonUserId(v)}>
                         <option value="">Unassigned</option>
                         {salespersonOptions.map((person) => (
                           <option key={person.id} value={person.id}>
@@ -671,70 +710,25 @@ export default function CustomerDetailPage({ params }: Props) {
                           </option>
                         ))}
                       </SelectField>
-                      <TextField
-                        label="Credit limit"
-                        value={creditLimitValue}
-                        onChange={(v) => setCreditLimit(v)}
-                        type="number"
-                      />
-                      <TextField
-                        label="Credit days"
-                        value={creditDaysValue}
-                        onChange={(v) => setCreditDays(v)}
-                        type="number"
-                      />
-                      <SelectField
-                        label="Credit control mode"
-                        value={creditControlModeValue}
-                        onChange={(v) => setCreditControlMode(v)}
-                      >
+                      <TextField label="Credit limit" value={creditLimitValue} onChange={(v) => setCreditLimit(v)} type="number" />
+                      <TextField label="Credit days" value={creditDaysValue} onChange={(v) => setCreditDays(v)} type="number" />
+                      <SelectField label="Credit control mode" value={creditControlModeValue} onChange={(v) => setCreditControlMode(v)}>
                         <option value="warn">Warn</option>
                         <option value="block">Block</option>
                       </SelectField>
-                      <TextField
-                        label="Warning threshold %"
-                        value={creditWarningPercentValue}
-                        onChange={(v) => setCreditWarningPercent(v)}
-                        type="number"
-                      />
-                      <TextField
-                        label="Block threshold %"
-                        value={creditBlockPercentValue}
-                        onChange={(v) => setCreditBlockPercent(v)}
-                        type="number"
-                      />
+                      <TextField label="Warning threshold %" value={creditWarningPercentValue} onChange={(v) => setCreditWarningPercent(v)} type="number" />
+                      <TextField label="Block threshold %" value={creditBlockPercentValue} onChange={(v) => setCreditBlockPercent(v)} type="number" />
                       <SelectField label="Credit hold" value={creditHoldValue} onChange={(v) => setCreditHold(v)}>
                         <option value="false">No</option>
                         <option value="true">Yes</option>
                       </SelectField>
-                      <TextField
-                        label="Credit hold reason"
-                        value={creditHoldReasonValue}
-                        onChange={(v) => setCreditHoldReason(v)}
-                      />
-                      <TextField
-                        label="Override until"
-                        value={creditOverrideUntilValue}
-                        onChange={(v) => setCreditOverrideUntil(v)}
-                        type="date"
-                      />
-                      <TextField
-                        label="Override reason"
-                        value={creditOverrideReasonValue}
-                        onChange={(v) => setCreditOverrideReason(v)}
-                      />
+                      <TextField label="Credit hold reason" value={creditHoldReasonValue} onChange={(v) => setCreditHoldReason(v)} />
+                      <TextField label="Override until" value={creditOverrideUntilValue} onChange={(v) => setCreditOverrideUntil(v)} type="date" />
+                      <TextField label="Override reason" value={creditOverrideReasonValue} onChange={(v) => setCreditOverrideReason(v)} />
                     </div>
 
-                    <AddressFields
-                      prefix="Billing address"
-                      value={billingAddressValue}
-                      onChange={setBillingAddress}
-                    />
-                    <AddressFields
-                      prefix="Shipping address"
-                      value={shippingAddressValue}
-                      onChange={setShippingAddress}
-                    />
+                    <AddressFields prefix="Billing address" value={billingAddressValue} onChange={setBillingAddress} />
+                    <AddressFields prefix="Shipping address" value={shippingAddressValue} onChange={setShippingAddress} />
 
                     {formError ? <InlineError message={formError} /> : null}
 
@@ -763,8 +757,8 @@ export default function CustomerDetailPage({ params }: Props) {
                   </form>
                 </CardContent>
               </Card>
-            </div>
-          </div>
+            </DetailTabPanel>
+          </DetailTabs>
         </>
       ) : null}
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageHeader } from "@/lib/ui/state";
+import { PageActionGroup, PageContextStrip, PageHeader } from "@/lib/ui/state";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -50,32 +50,38 @@ export default function ReportsPage({ params }: Props) {
         eyebrow="Insights"
         title="Reports"
         subtitle="Navigate the business and compliance reports from a clearer, finance-oriented hub."
+        badges={[
+          <Badge key="routes" variant="secondary">11 live report routes</Badge>,
+          <Badge key="scope" variant="outline">Business + GST + distributor</Badge>,
+        ]}
+        actions={
+          <PageActionGroup
+            primary={
+              <Link className="inline-flex items-center text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/accounting`}>
+                Open accounting hub
+              </Link>
+            }
+          />
+        }
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Business control</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Revenue, purchases, dues, product performance, and credit pressure.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Compliance</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">GST filing views and invoice compliance follow-up stay together.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Distributor ops</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Commercial control, routes, dispatch discipline, and sales team visibility.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-          <CardHeader>
-            <CardTitle>Reporting workspace</CardTitle>
-            <CardDescription>Use business summaries for day-to-day control, GST filing review, and route formal books to the accounting area.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="secondary">11 live report routes</Badge>
-            <Badge variant="outline">Business + GST filing</Badge>
-            <Badge variant="outline">Distributor baseline</Badge>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Accounting books</CardTitle>
-            <CardDescription>Trial balance, P&amp;L, balance sheet, cash book, and bank book stay grouped under accounting.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/accounting`}>
-              Open accounting hub
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {reportGroups.map((group) => (

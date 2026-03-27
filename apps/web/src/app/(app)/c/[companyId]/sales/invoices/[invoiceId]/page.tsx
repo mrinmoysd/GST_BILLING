@@ -19,6 +19,7 @@ import {
   useRegenerateInvoicePdf,
   useShareInvoice,
 } from "@/lib/billing/hooks";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
@@ -136,6 +137,86 @@ export default function InvoiceDetailPage({ params }: Props) {
     () => creditNotes.reduce((sum, note) => sum + Number((note as { total?: string | number | null }).total ?? 0), 0),
     [creditNotes],
   );
+  const invoiceDetailRail = invoice ? (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Document workspace"
+        subtitle="Keep the core PDF, receipt, and cancellation actions nearby while moving between tabs."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/sales/invoices`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to invoices</SecondaryButton>
+          </Link>
+          <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
+            <SecondaryButton type="button" className="w-full justify-start">Receipt view</SecondaryButton>
+          </Link>
+          <SecondaryButton type="button" className="w-full justify-start" onClick={() => window.open(invoicePdfUrl(companyId, invoiceId), "_blank", "noopener,noreferrer")}>
+            Open PDF
+          </SecondaryButton>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            disabled={regen.isPending}
+            onClick={async () => {
+              setError(null);
+              try {
+                const res = await regen.mutateAsync();
+                const job = res.data as { data?: { jobId?: string } } | undefined;
+                if (job?.data?.jobId) setPdfJobId(String(job.data.jobId));
+              } catch (e: unknown) {
+                const message = getErrorMessage(e, "Failed to enqueue PDF regeneration");
+                setError(message);
+                toast.error(message);
+                return;
+              }
+              toast.success("PDF regeneration queued");
+            }}
+          >
+            {regen.isPending ? "Queueing PDF…" : "Regenerate PDF"}
+          </SecondaryButton>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            disabled={cancel.isPending}
+            onClick={async () => {
+              setError(null);
+              setOk(null);
+              if (!window.confirm("Cancel this invoice?")) return;
+              try {
+                await cancel.mutateAsync();
+                setOk("Invoice cancelled.");
+              } catch (e: unknown) {
+                const message = getErrorMessage(e, "Failed to cancel invoice");
+                setError(message);
+                toast.error(message);
+                return;
+              }
+              toast.success("Invoice cancelled");
+            }}
+          >
+            {cancel.isPending ? "Cancelling…" : "Cancel invoice"}
+          </SecondaryButton>
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Invoice posture"
+        subtitle="Core status and totals that should stay visible across compliance, payments, and post-issue actions."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Status", value: invoice.status ?? "—" },
+            { label: "Issue date", value: invoice.issue_date ?? "—" },
+            { label: "Due date", value: invoice.due_date ?? "—" },
+            { label: "Total", value: Number(invoice.total ?? 0).toFixed(2) },
+            { label: "Credited", value: totalCredited.toFixed(2) },
+            { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
+          ]}
+        />
+      </DetailRail>
+    </>
+  ) : null;
 
   return (
     <div className="space-y-7">
@@ -168,9 +249,18 @@ export default function InvoiceDetailPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load invoice")} /> : null}
 
       {invoice ? (
-        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-          <div className="space-y-6">
-            <WorkspacePanel title="Invoice actions" subtitle="Issue, cancel, share, or credit the document while keeping a visible lifecycle trail.">
+        <DetailTabs
+          defaultValue="summary"
+          items={[
+            { id: "summary", label: "Summary" },
+            { id: "compliance", label: "Compliance", badge: shares.length },
+            { id: "post-issue", label: "Post-issue", badge: creditNotes.length },
+            { id: "payments", label: "Payments", badge: paymentsForInvoice.length },
+            { id: "activity", label: "Activity", badge: lifecycleEvents.length },
+          ]}
+        >
+          <DetailTabPanel value="summary" rail={invoiceDetailRail}>
+            <WorkspacePanel title="Invoice actions" subtitle="Issue the document and keep the series-controlled transition explicit.">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Issue date</div>
@@ -219,60 +309,33 @@ export default function InvoiceDetailPage({ params }: Props) {
               </div>
             </WorkspacePanel>
 
-            <WorkspacePanel title="Document actions" subtitle="PDF and lifecycle actions for the current invoice." tone="muted">
-              <div className="flex flex-wrap gap-3">
-                <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
-                  <SecondaryButton type="button">Receipt view</SecondaryButton>
-                </Link>
-                <SecondaryButton
-                  type="button"
-                  disabled={cancel.isPending}
-                  onClick={async () => {
-                    setError(null);
-                    setOk(null);
-                    if (!window.confirm("Cancel this invoice?")) return;
-                    try {
-                      await cancel.mutateAsync();
-                      setOk("Invoice cancelled.");
-                    } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to cancel invoice");
-                      setError(message);
-                      toast.error(message);
-                      return;
-                    }
-                    toast.success("Invoice cancelled");
-                  }}
-                >
-                  {cancel.isPending ? "Cancelling…" : "Cancel"}
-                </SecondaryButton>
-                <SecondaryButton type="button" onClick={() => window.open(invoicePdfUrl(companyId, invoiceId), "_blank", "noopener,noreferrer")}>
-                  Open PDF
-                </SecondaryButton>
-                <SecondaryButton
-                  type="button"
-                  disabled={regen.isPending}
-                  onClick={async () => {
-                    setError(null);
-                    try {
-                      const res = await regen.mutateAsync();
-                      const job = res.data as { data?: { jobId?: string } } | undefined;
-                      if (job?.data?.jobId) setPdfJobId(String(job.data.jobId));
-                    } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to enqueue PDF regeneration");
-                      setError(message);
-                      toast.error(message);
-                      return;
-                    }
-                    toast.success("PDF regeneration queued");
-                  }}
-                >
-                  {regen.isPending ? "Enqueueing…" : "Regenerate PDF"}
-                </SecondaryButton>
-              </div>
-            </WorkspacePanel>
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax summary</CardTitle>
+                <CardDescription>Current GST estimate based on the invoice line items returned by the API.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {invoiceTaxBreakdown.length > 0 ? (
+                  invoiceTaxBreakdown.map((row) => (
+                    <div key={row.rate} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm">
+                      <div>
+                        <div className="font-medium text-[var(--foreground)]">{row.rate}% GST</div>
+                        <div className="text-[var(--muted)]">Taxable value {row.taxable.toFixed(2)}</div>
+                      </div>
+                      <div className="font-semibold text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                    Tax details will appear here once line-level GST data is available on the invoice payload.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="compliance" rail={invoiceDetailRail}>
             <InvoiceCompliancePanel companyId={companyId} invoiceId={invoiceId} />
-
             <Card>
               <CardHeader>
                 <CardTitle>Share invoice</CardTitle>
@@ -365,12 +428,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                 )}
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
-            {error ? <InlineError message={error} /> : null}
-            {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
-          </div>
-
-          <div className="space-y-6">
+          <DetailTabPanel value="post-issue" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Credit notes and sales returns</CardTitle>
@@ -487,31 +547,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                 </div>
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Tax summary</CardTitle>
-                <CardDescription>Current GST estimate based on the invoice line items returned by the API.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {invoiceTaxBreakdown.length > 0 ? (
-                  invoiceTaxBreakdown.map((row) => (
-                    <div key={row.rate} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm">
-                      <div>
-                        <div className="font-medium text-[var(--foreground)]">{row.rate}% GST</div>
-                        <div className="text-[var(--muted)]">Taxable value {row.taxable.toFixed(2)}</div>
-                      </div>
-                      <div className="font-semibold text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
-                    Tax details will appear here once line-level GST data is available on the invoice payload.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
+          <DetailTabPanel value="payments" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Payments</CardTitle>
@@ -601,7 +639,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                 ) : null}
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="activity" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Lifecycle history</CardTitle>
@@ -622,8 +662,10 @@ export default function InvoiceDetailPage({ params }: Props) {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </div>
+            {error ? <InlineError message={error} /> : null}
+            {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+          </DetailTabPanel>
+        </DetailTabs>
       ) : null}
     </div>
   );

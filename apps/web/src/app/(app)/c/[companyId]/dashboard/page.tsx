@@ -157,6 +157,36 @@ export default function CompanyDashboardPage({ params }: Props) {
     },
   ];
 
+  const priorityBlocks = [
+    {
+      label: "Collections pressure",
+      value: formatCurrency(outstandingValue),
+      hint:
+        (distributorDashboard?.top_due_customers?.length ?? 0) > 0
+          ? `${distributorDashboard?.top_due_customers?.[0]?.customer_name ?? "Customer"} is currently the largest due account.`
+          : "No major due concentration is visible right now.",
+      href: `/c/${companyId}/payments/collections`,
+      action: "Open collections",
+    },
+    {
+      label: "Stock attention",
+      value: `${lowStockItems.length}`,
+      hint:
+        lowStockItems.length > 0
+          ? `${String(lowStockItems[0]?.name ?? "Product")} is already at or below threshold.`
+          : "No low-stock items are currently visible in the dashboard view.",
+      href: `/c/${companyId}/inventory/batches`,
+      action: "Review stock",
+    },
+    {
+      label: "Dispatch backlog",
+      value: `${(distributorDashboard?.top_due_customers?.length ?? 0) + (distributorDashboard?.top_salespeople?.length ?? 0)}`,
+      hint: "Use dispatch and challan workspaces to convert order pressure into planned movement.",
+      href: `/c/${companyId}/sales/dispatch`,
+      action: "Open dispatch",
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <WorkspaceHero
@@ -203,9 +233,35 @@ export default function CompanyDashboardPage({ params }: Props) {
       {hasLoadingState ? <LoadingBlock label="Refreshing dashboard metrics…" /> : null}
 
       <WorkspaceSection
+        eyebrow="Today"
+        title="Needs attention first"
+        subtitle="Start from pressure, not broad summary. These are the fastest ways to decide what the team should touch next."
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          {priorityBlocks.map((block) => (
+            <Link
+              key={block.label}
+              href={block.href}
+              className="group rounded-[28px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.92)] p-5 shadow-[var(--shadow-soft)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)]"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{block.label}</div>
+                  <div className="text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">{block.value}</div>
+                  <div className="text-sm leading-6 text-[var(--muted)]">{block.hint}</div>
+                </div>
+                <ArrowRight className="mt-1 h-4 w-4 text-[var(--muted)] transition-transform group-hover:translate-x-0.5" />
+              </div>
+              <div className="mt-5 text-sm font-medium text-[var(--accent)]">{block.action}</div>
+            </Link>
+          ))}
+        </div>
+      </WorkspaceSection>
+
+      <WorkspaceSection
         eyebrow="Overview"
         title="Today’s operating picture"
-        subtitle="Use these signals first, then move into collections, product setup, purchasing, or payment workflows."
+        subtitle="Use this layer to measure throughput, receivable pressure, and replenishment posture at a glance."
       >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Today's sales" value={formatCurrency(todaysSalesValue)} hint={`${Number(salesToday.count ?? 0)} invoice(s) today.`} />
@@ -216,9 +272,9 @@ export default function CompanyDashboardPage({ params }: Props) {
       </WorkspaceSection>
 
       <WorkspaceSection
-        eyebrow="Distributor view"
+        eyebrow="Management"
         title="Owner operating view"
-        subtitle="Use this layer to understand rep contribution, due concentration, warehouse stock posture, and product movement."
+        subtitle="Use this layer to understand rep contribution, due concentration, warehouse posture, and product movement without opening reports first."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Gross sales" value={formatCurrency(distributorDashboard?.totals.gross_sales ?? 0)} hint="Selected distributor period." />

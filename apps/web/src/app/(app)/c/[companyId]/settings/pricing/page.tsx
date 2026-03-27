@@ -15,7 +15,7 @@ import {
   usePriceLists,
 } from "@/lib/pricing/hooks";
 import { useCompany, useUpdateCompany } from "@/lib/settings/companyHooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -105,6 +105,29 @@ export default function PricingSettingsPage({ params }: Props) {
         eyebrow="Configuration"
         title="Pricing"
         subtitle="Create reusable price lists and customer-specific product rates so sales forms can auto-resolve commercial values."
+        badges={[
+          <Badge key="lists" variant="secondary">{priceListRows.length} price lists</Badge>,
+          <Badge key="schemes" variant="outline">{schemeRows.length} commercial schemes</Badge>,
+          <Badge key="audit" variant="outline">{auditRows.length} recent audit events</Badge>,
+        ]}
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Resolution order</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Customer special rates beat price lists, then schemes layer on top of the resolved base.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Guardrails</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Discount and margin policies force operators to explain manual commercial overrides.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Operational target</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Keep the pricing setup compact here so quote, order, and invoice forms stay fast later.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
 
       {(priceLists.isLoading || customerRates.isLoading || schemes.isLoading || auditLogs.isLoading) ? <LoadingBlock label="Loading pricing workspace…" /> : null}
