@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; supplierId: string }> };
 
@@ -30,13 +31,6 @@ type LedgerResp = {
   };
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function SupplierLedgerPage({ params }: Props) {
   const { companyId, supplierId } = React.use(params);
@@ -92,7 +86,7 @@ export default function SupplierLedgerPage({ params }: Props) {
           <span>
             <code>{supplierId}</code>
             {data ? (
-              <span className="ml-3 text-sm text-neutral-500">
+              <span className="ml-3 text-sm text-[var(--muted)]">
                 Opening: {data.opening_balance} · Closing: {data.closing_balance}
               </span>
             ) : null}
@@ -100,17 +94,14 @@ export default function SupplierLedgerPage({ params }: Props) {
         }
         actions={
           <div className="flex gap-3">
-            <Link
-              className="text-sm underline"
-              href={`/c/${companyId}/masters/suppliers/${supplierId}`}
-            >
-              Back
+            <Link href={`/c/${companyId}/masters/suppliers/${supplierId}`}>
+              <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
           </div>
         }
       />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
+      <div className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)]">
         <div className="grid gap-4 md:grid-cols-3">
           <TextField label="From" type="date" value={from} onChange={setFrom} />
           <TextField label="To" type="date" value={to} onChange={setTo} />
@@ -141,9 +132,9 @@ export default function SupplierLedgerPage({ params }: Props) {
       ) : null}
 
       {!loading && !error && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+            <thead className="[background-image:var(--table-header-highlight)] text-[var(--muted-strong)]">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Date</th>
                 <th className="text-left px-4 py-3 font-medium">Description</th>
@@ -158,7 +149,7 @@ export default function SupplierLedgerPage({ params }: Props) {
                   <td className="px-4 py-3 whitespace-nowrap">{r.date || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="font-medium">{r.description}</div>
-                    <div className="text-xs text-neutral-500">{r.type}</div>
+                    <div className="text-xs text-[var(--muted)]">{r.type}</div>
                   </td>
                   <td className="px-4 py-3 text-right">{r.debit ? r.debit : "—"}</td>
                   <td className="px-4 py-3 text-right">{r.credit ? r.credit : "—"}</td>
@@ -171,7 +162,7 @@ export default function SupplierLedgerPage({ params }: Props) {
       ) : null}
 
       {data ? (
-        <div className="flex items-center justify-between text-sm text-neutral-600">
+        <div className="flex items-center justify-between text-sm text-[var(--muted)]">
           <div>
             Page {page} of {totalPages} · {total} entries
           </div>
@@ -190,7 +181,7 @@ export default function SupplierLedgerPage({ params }: Props) {
         </div>
       ) : null}
 
-      <div className="text-xs text-neutral-500">
+      <div className="text-xs text-[var(--muted)]">
         Note: supplier payments aren’t implemented yet, so this ledger currently shows purchase postings only.
       </div>
     </div>

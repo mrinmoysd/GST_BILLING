@@ -6,16 +6,10 @@ import { useDeliveryChallan } from "@/lib/billing/hooks";
 import { usePrintTemplates } from "@/lib/migration/hooks";
 import { SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; challanId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function DeliveryChallanPrintPage({ params }: Props) {
   const { companyId, challanId } = React.use(params);

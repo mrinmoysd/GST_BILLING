@@ -27,7 +27,7 @@ async function login(page: import("@playwright/test").Page) {
 }
 
 test("dashboard: loads", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
   await login(page);
 
   await page.goto(`/c/${companyId}/dashboard`, { waitUntil: "domcontentloaded" });
@@ -36,7 +36,7 @@ test("dashboard: loads", async ({ page }) => {
 });
 
 test("customers: create → read → delete", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
   const stamp = Date.now();
   const originalName = `E2E Customer ${stamp}`;
   const email = `e2e+${stamp}@example.com`;

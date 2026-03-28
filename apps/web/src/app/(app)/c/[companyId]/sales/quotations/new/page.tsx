@@ -21,16 +21,10 @@ import {
 } from "@/lib/ui/composer";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, PageHeader } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatPricingSource(source?: string | null) {
   switch (source) {

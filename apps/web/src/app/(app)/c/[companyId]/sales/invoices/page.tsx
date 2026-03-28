@@ -12,6 +12,7 @@ import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -23,13 +24,6 @@ function readInvoiceDate(invoice: Invoice) {
   return invoice.issueDate ?? invoice.issue_date ?? "—";
 }
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InvoicesPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -213,11 +207,11 @@ export default function InvoicesPage({ params }: Props) {
                 {filteredRows.map((inv) => (
                   <DataTr
                     key={inv.id}
-                    className={selectedInvoice?.id === inv.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedInvoice?.id === inv.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedInvoiceId(inv.id)}
                   >
                     <DataTd>
-                      <Link className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
+                      <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-strong)]" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
                         {readInvoiceNumber(inv)}
                       </Link>
                     </DataTd>

@@ -64,10 +64,10 @@ export function WorkspacePanel(props: {
       className={cn(
         "rounded-[28px] border p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.tone === "strong"
-          ? "border-[rgba(23,32,51,0.08)] bg-[rgba(23,32,51,0.96)] text-white"
+          ? "border-[var(--border)] bg-[var(--surface-panel-strong)] text-white"
           : props.tone === "muted"
-            ? "border-[rgba(23,32,51,0.08)] bg-[rgba(248,246,242,0.92)]"
-            : "border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)]",
+            ? "border-[var(--border)] bg-[var(--surface-panel-muted)] [background-image:var(--inspector-highlight)]"
+            : "border-[var(--border)] bg-[var(--surface-panel)] [background-image:var(--panel-highlight)]",
         props.className,
       )}
     >
@@ -106,7 +106,7 @@ export function WorkspaceFilterBar(props: {
   return (
     <section
       className={cn(
-        "grid gap-4 rounded-[28px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)] p-5 shadow-[var(--shadow-soft)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
+        "grid gap-4 rounded-[28px] border border-[var(--border)] bg-[var(--surface-panel)] p-5 shadow-[var(--shadow-soft)] [background-image:var(--panel-highlight)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
         props.className,
       )}
     >

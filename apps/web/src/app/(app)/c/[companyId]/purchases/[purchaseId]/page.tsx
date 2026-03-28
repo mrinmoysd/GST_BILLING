@@ -15,9 +15,10 @@ import {
   useRecordPayment,
   useUploadPurchaseBill,
 } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
-import { DateField, PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; purchaseId: string }> };
@@ -32,13 +33,6 @@ type PurchaseItemLike = {
   unit_cost?: string | number | null;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function PurchaseDetailPage({ params }: Props) {
   const { companyId, purchaseId } = React.use(params);
@@ -405,17 +399,12 @@ export default function PurchaseDetailPage({ params }: Props) {
                 >
                   <TextField label="Amount" value={payAmount} onChange={setPayAmount} type="number" />
                   <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={payMethod}
-                      onChange={(e) => setPayMethod(e.target.value)}
-                    >
+                    <SelectField label="Method" value={payMethod} onChange={setPayMethod}>
                       <option value="cash">Cash</option>
                       <option value="upi">UPI</option>
                       <option value="bank">Bank</option>
                       <option value="card">Card</option>
-                    </select>
+                    </SelectField>
                   </div>
                   <TextField label="Reference" value={payReference} onChange={setPayReference} placeholder="Optional" />
                   <div className="flex gap-3">

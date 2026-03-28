@@ -21,16 +21,10 @@ import {
   QueueToolbar,
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function QuotationsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -217,12 +211,12 @@ export default function QuotationsPage({ params }: Props) {
                 {filteredRows.map((quote) => (
                   <DataTr
                     key={quote.id}
-                    className={selectedQuotation?.id === quote.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedQuotation?.id === quote.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedQuotationId(quote.id)}
                   >
                     <DataTd>
                       <Link
-                        className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
+                        className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]"
                         href={`/c/${companyId}/sales/quotations/${quote.id}`}
                       >
                         {quote.quoteNumber ?? quote.quote_number ?? quote.id}

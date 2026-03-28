@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import { DEFAULT_SEED_COMPANY_ID } from '../seed/seed.constants';
 
 async function main() {
   const prisma = new PrismaClient();
   try {
-    const companyId = '00000000-0000-0000-0000-000000000001';
+    const companyId = process.env.SEED_COMPANY_ID ?? DEFAULT_SEED_COMPANY_ID;
 
     await prisma.invoiceSeries.upsert({
       where: {

@@ -10,16 +10,10 @@ import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/stat
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; supplierId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function SupplierDetailPage({ params }: Props) {
   const resolved = React.use(params);
@@ -48,14 +42,11 @@ export default function SupplierDetailPage({ params }: Props) {
         subtitle="Maintain supplier contact details and jump into the payable ledger from a cleaner detail page."
         actions={
           <div className="flex gap-3">
-            <Link className="text-sm underline" href={`/c/${resolved.companyId}/masters/suppliers`}>
-              Back
+            <Link href={`/c/${resolved.companyId}/masters/suppliers`}>
+              <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
-            <Link
-              className="text-sm underline"
-              href={`/c/${resolved.companyId}/masters/suppliers/${resolved.supplierId}/ledger`}
-            >
-              Ledger
+            <Link href={`/c/${resolved.companyId}/masters/suppliers/${resolved.supplierId}/ledger`}>
+              <SecondaryButton type="button">Ledger</SecondaryButton>
             </Link>
           </div>
         }

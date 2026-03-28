@@ -11,16 +11,10 @@ import { SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function DispatchQueuePage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -211,7 +205,7 @@ export default function DispatchQueuePage({ params }: Props) {
                 {filteredRows.map((row) => (
                   <DataTr
                     key={String(row.sales_order_id)}
-                    className={selectedRow?.sales_order_id === row.sales_order_id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedRow?.sales_order_id === row.sales_order_id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedOrderId(String(row.sales_order_id))}
                   >
                     <DataTd>{String(row.order_number ?? row.sales_order_id)}</DataTd>
@@ -221,7 +215,7 @@ export default function DispatchQueuePage({ params }: Props) {
                     <DataTd className="text-right">{Number(row.pending_dispatch_quantity ?? 0).toFixed(2)}</DataTd>
                     <DataTd>
                       <Link
-                        className="font-medium text-[var(--accent)] hover:underline"
+                        className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-panel)] px-3 py-1.5 text-sm font-medium text-[var(--secondary)] transition hover:border-[var(--secondary)]/30 hover:bg-[var(--surface-secondary)]"
                         href={`/c/${companyId}/sales/orders/${row.sales_order_id}`}
                       >
                         Create challan
@@ -239,5 +233,5 @@ export default function DispatchQueuePage({ params }: Props) {
 }
 
 function QueueRowActionButton(props: { label: string }) {
-  return <div className="inline-flex h-9 items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-medium text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)]">{props.label}</div>;
+  return <div className="inline-flex h-9 items-center rounded-full border border-[var(--border)] bg-[var(--surface-panel)] px-3 text-sm font-medium text-[var(--foreground)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-secondary)]">{props.label}</div>;
 }

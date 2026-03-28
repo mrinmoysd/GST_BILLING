@@ -19,7 +19,7 @@ export function DetailTabs(props: {
   return (
     <Tabs defaultValue={props.defaultValue} className={cn("space-y-5", props.className)}>
       <div className="sticky top-[5.75rem] z-20">
-        <div className="rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)] p-2 shadow-[var(--shadow-soft)] backdrop-blur-sm">
+        <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-panel-glass)] p-2 shadow-[var(--shadow-soft)] backdrop-blur-sm">
           <TabsList
             className={cn(
               "flex h-auto w-full flex-wrap justify-start gap-2 rounded-[18px] bg-transparent p-0 text-[var(--muted-strong)]",
@@ -30,10 +30,10 @@ export function DetailTabs(props: {
               <TabsTrigger
                 key={item.id}
                 value={item.id}
-                className="inline-flex h-auto items-center gap-2 rounded-2xl border border-transparent px-3 py-2.5 text-sm font-medium data-[state=active]:border-[var(--accent-soft)] data-[state=active]:bg-[rgba(180,104,44,0.1)] data-[state=active]:text-[var(--foreground)] data-[state=active]:shadow-none"
+                className="inline-flex h-auto items-center gap-2 rounded-2xl border border-transparent px-3 py-2.5 text-sm font-medium data-[state=active]:border-[var(--row-selected-border)] data-[state=active]:bg-[var(--surface-accent)] data-[state=active]:text-[var(--foreground)] data-[state=active]:shadow-none"
               >
                 <span>{item.label}</span>
-                {item.badge ? <span className="rounded-full bg-[rgba(23,32,51,0.08)] px-2 py-0.5 text-[11px] font-semibold text-[var(--muted)]">{item.badge}</span> : null}
+                {item.badge ? <span className="rounded-full bg-[var(--surface-secondary)] px-2 py-0.5 text-[11px] font-semibold text-[var(--secondary-foreground)]">{item.badge}</span> : null}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -71,7 +71,7 @@ export function DetailRail(props: {
   return (
     <aside
       className={cn(
-        "rounded-[28px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.92)] p-5 shadow-[var(--shadow-soft)] md:p-6",
+        "rounded-[28px] border border-[var(--border)] bg-[var(--surface-panel)] p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.className,
       )}
     >
@@ -95,7 +95,7 @@ export function DetailInfoList(props: {
   return (
     <div className={cn("grid gap-3", props.className)}>
       {props.items.map((item) => (
-        <div key={item.label} className="grid gap-1 rounded-2xl bg-[var(--surface-muted)] px-4 py-3">
+        <div key={item.label} className="grid gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{item.label}</div>
           <div className="text-sm font-medium text-[var(--foreground)]">{item.value}</div>
         </div>

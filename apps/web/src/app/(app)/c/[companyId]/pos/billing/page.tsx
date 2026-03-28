@@ -9,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
 import { createIdempotencyKey, idempotencyHeaders } from "@/lib/api/idempotency";
+import { getErrorMessage } from "@/lib/errors";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
 import type { Customer, Product } from "@/lib/masters/types";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -27,13 +28,6 @@ type CartLine = {
   stock: number | null;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
@@ -198,19 +192,14 @@ export default function PosBillingPage({ params }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Customer</label>
-                  <select
-                    className="mt-2 h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm shadow-sm"
-                    value={customerId}
-                    onChange={(e) => setCustomerId(e.target.value)}
-                  >
+                  <SelectField label="Customer" value={customerId} onChange={setCustomerId} className="h-12 rounded-2xl px-4">
                     <option value="">Select customer</option>
                     {customers.map((customer) => (
                       <option key={customer.id} value={customer.id}>
                         {customer.name}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </div>
               </div>
 
@@ -385,17 +374,12 @@ export default function PosBillingPage({ params }: Props) {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Payment method</label>
-                  <select
-                    className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  >
+                  <SelectField label="Payment method" value={paymentMethod} onChange={setPaymentMethod}>
                     <option value="cash">Cash</option>
                     <option value="upi">UPI</option>
                     <option value="card">Card</option>
                     <option value="bank">Bank</option>
-                  </select>
+                  </SelectField>
                 </div>
                 <TextField
                   label="Amount received"

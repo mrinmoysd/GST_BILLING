@@ -8,16 +8,10 @@ import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function LedgersPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -155,7 +149,7 @@ export default function LedgersPage({ params }: Props) {
                 {filteredRows.map((ledger) => (
                   <DataTr
                     key={ledger.id}
-                    className={selectedLedger?.id === ledger.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedLedger?.id === ledger.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedLedgerId(ledger.id)}
                   >
                     <DataTd>{ledger.name}</DataTd>

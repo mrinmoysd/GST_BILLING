@@ -20,7 +20,7 @@ async function login(page: import("@playwright/test").Page) {
 }
 
 test("pos: landing and billing workspace load", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
 
   await login(page);
 
@@ -35,7 +35,7 @@ test("pos: landing and billing workspace load", async ({ page }) => {
 });
 
 test("receipt: direct receipt page renders when invoice id is provided", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
   const invoiceId = process.env.E2E_POS_INVOICE_ID;
 
   test.skip(!invoiceId, "Set E2E_POS_INVOICE_ID to validate the receipt page.");

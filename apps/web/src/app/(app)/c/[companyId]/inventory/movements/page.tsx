@@ -16,16 +16,10 @@ import {
   QueueToolbar,
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InventoryMovementsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -166,12 +160,12 @@ export default function InventoryMovementsPage({ params }: Props) {
                 {filteredRows.map((row) => (
                   <DataTr
                     key={row.id}
-                    className={selectedRow?.id === row.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedRow?.id === row.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedMovementId(row.id)}
                   >
                     <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
                     <DataTd>
-                      <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
+                      <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
                         {row.product?.name ?? row.productId.slice(0, 8)}
                       </Link>
                     </DataTd>

@@ -7,10 +7,10 @@ export function StatCard(props: { label: string; value: React.ReactNode; hint?: 
     <Card
       className={cn(
         props.tone === "strong"
-          ? "border-[rgba(23,32,51,0.08)] bg-[rgba(23,32,51,0.96)] text-white"
+          ? "border-[var(--border)] bg-[var(--surface-panel-strong)] text-white"
           : props.tone === "quiet"
-            ? "bg-[rgba(248,246,242,0.92)]"
-            : "bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,248,251,0.96))]",
+            ? "bg-[var(--surface-panel-muted)]"
+            : "bg-[var(--surface-panel)]",
       )}
     >
       <CardContent className="p-5">

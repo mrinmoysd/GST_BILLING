@@ -13,14 +13,8 @@ import { useCompanySalespeople } from "@/lib/settings/usersHooks";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { EmptyState, InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type AddressDraft = {
   line1: string;
@@ -116,7 +110,7 @@ function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
         {label}
       </div>
@@ -156,7 +150,7 @@ function TextareaField({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="flex min-h-[96px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
+        className="flex min-h-[96px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
       />
     </label>
   );
@@ -175,7 +169,7 @@ function AddressFields({
     onChange({ ...value, [key]: nextValue });
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
       <div className="mb-4 text-sm font-semibold text-[var(--foreground)]">{prefix}</div>
       <div className="grid gap-4 md:grid-cols-2">
         <TextField label="Line 1" value={value.line1} onChange={(v) => setField("line1", v)} />
@@ -278,17 +272,17 @@ export default function CustomerDetailPage({ params }: Props) {
         subtitle="Jump into the related financial and recovery flows without losing context."
       >
         <div className="flex flex-col gap-2">
-          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/masters/customers`}>
-            Back to customers
+          <Link href={`/c/${companyId}/masters/customers`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to customers</SecondaryButton>
           </Link>
-          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
-            Open ledger
+          <Link href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
+            <SecondaryButton type="button" className="w-full justify-start">Open ledger</SecondaryButton>
           </Link>
-          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/payments/collections`}>
-            Open collections
+          <Link href={`/c/${companyId}/payments/collections`}>
+            <SecondaryButton type="button" className="w-full justify-start">Open collections</SecondaryButton>
           </Link>
-          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/payments`}>
-            Open payments
+          <Link href={`/c/${companyId}/payments`}>
+            <SecondaryButton type="button" className="w-full justify-start">Open payments</SecondaryButton>
           </Link>
         </div>
       </DetailRail>
@@ -321,20 +315,17 @@ export default function CustomerDetailPage({ params }: Props) {
         ]}
         actions={
           <div className="flex flex-wrap gap-3">
-            <Link className="text-sm underline" href={`/c/${companyId}/masters/customers`}>
-              Back
+            <Link href={`/c/${companyId}/masters/customers`}>
+              <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
-            <Link
-              className="text-sm underline"
-              href={`/c/${companyId}/masters/customers/${customerId}/ledger`}
-            >
-              Ledger
+            <Link href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
+              <SecondaryButton type="button">Ledger</SecondaryButton>
             </Link>
-            <Link className="text-sm underline" href={`/c/${companyId}/payments/collections`}>
-              Collections
+            <Link href={`/c/${companyId}/payments/collections`}>
+              <SecondaryButton type="button">Collections</SecondaryButton>
             </Link>
-            <Link className="text-sm underline" href={`/c/${companyId}/payments`}>
-              Payments
+            <Link href={`/c/${companyId}/payments`}>
+              <SecondaryButton type="button">Payments</SecondaryButton>
             </Link>
           </div>
         }
@@ -390,7 +381,7 @@ export default function CustomerDetailPage({ params }: Props) {
             ]}
           >
             <DetailTabPanel value="overview" rail={customerDetailRail}>
-              <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+              <Card className="[background-image:var(--surface-highlight)]">
                 <CardHeader>
                   <Badge variant="secondary" className="w-fit">
                     Customer profile
@@ -564,8 +555,8 @@ export default function CustomerDetailPage({ params }: Props) {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-semibold text-[var(--foreground)]">Recent invoices</div>
-                      <Link className="text-sm underline" href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
-                        Open ledger
+                      <Link href={`/c/${companyId}/masters/customers/${customerId}/ledger`}>
+                        <SecondaryButton type="button" size="sm">Open ledger</SecondaryButton>
                       </Link>
                     </div>
                     {recentInvoices.length ? (
@@ -573,12 +564,12 @@ export default function CustomerDetailPage({ params }: Props) {
                         {recentInvoices.map((invoice) => (
                           <div
                             key={invoice.id}
-                            className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4"
+                            className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div>
                                 <Link
-                                  className="font-medium underline"
+                                  className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-strong)]"
                                   href={`/c/${companyId}/sales/invoices/${invoice.id}`}
                                 >
                                   {invoice.invoice_number ?? invoice.id}
@@ -607,8 +598,8 @@ export default function CustomerDetailPage({ params }: Props) {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-semibold text-[var(--foreground)]">Recent payments</div>
-                      <Link className="text-sm underline" href={`/c/${companyId}/payments`}>
-                        Open payments
+                      <Link href={`/c/${companyId}/payments`}>
+                        <SecondaryButton type="button" size="sm">Open payments</SecondaryButton>
                       </Link>
                     </div>
                     {recentPayments.length ? (
@@ -616,7 +607,7 @@ export default function CustomerDetailPage({ params }: Props) {
                         {recentPayments.map((payment) => (
                           <div
                             key={payment.id}
-                            className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4"
+                            className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div>
@@ -630,7 +621,7 @@ export default function CustomerDetailPage({ params }: Props) {
                                 <div className="mt-2 text-sm">
                                   {payment.invoice_id ? (
                                     <Link
-                                      className="underline"
+                                      className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-strong)]"
                                       href={`/c/${companyId}/sales/invoices/${payment.invoice_id}`}
                                     >
                                       Applied to {payment.invoice_number ?? payment.invoice_id}

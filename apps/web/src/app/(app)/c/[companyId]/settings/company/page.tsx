@@ -8,16 +8,10 @@ import { useCompany, useUpdateCompany, useUploadCompanyLogo, useVerifyCompanyGst
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function CompanySettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -104,15 +98,15 @@ export default function CompanySettingsPage({ params }: Props) {
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <WorkspacePanel title="Current profile" subtitle="Use the form to the right to update the current company record." tone="muted">
             <div className="space-y-4 text-sm">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Company name</div>
                 <div className="mt-2 font-semibold text-[var(--foreground)]">{name || "—"}</div>
               </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Logo</div>
                 <div className="mt-3 flex items-center gap-4">
                   {logoUrl ? (
-                    <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
+                    <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)]">
                       <Image
                         alt={`${name || "Company"} logo`}
                         className="object-contain p-2"
@@ -132,25 +126,25 @@ export default function CompanySettingsPage({ params }: Props) {
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">GSTIN</div>
                   <div className="mt-2 font-medium text-[var(--foreground)]">{gstin || "Not set"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">PAN</div>
                   <div className="mt-2 font-medium text-[var(--foreground)]">{pan || "Not set"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">State</div>
                   <div className="mt-2 font-medium text-[var(--foreground)]">{state || "Not set"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Negative stock</div>
                   <div className="mt-2 font-medium text-[var(--foreground)]">{allowNegStock ? "Allowed" : "Blocked"}</div>
                 </div>
               </div>
               {gstVerifyMessage ? (
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--muted-strong)]">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--muted-strong)] [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   {gstVerifyMessage}
                 </div>
               ) : null}
@@ -169,7 +163,7 @@ export default function CompanySettingsPage({ params }: Props) {
             <TextField label="Logo URL fallback (optional)" value={logoUrl} onChange={setLogoUrl} />
               </div>
 
-              <div className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+              <div className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Upload logo</label>
                 <input
                   accept="image/*"
@@ -185,7 +179,7 @@ export default function CompanySettingsPage({ params }: Props) {
                 Allow negative stock
               </label>
 
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="text-sm font-semibold text-[var(--foreground)]">Compliance settings</div>
                 <div className="mt-1 text-sm text-[var(--muted)]">Configure the local provider mode for D11 e-invoice and e-way bill workflows.</div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -237,7 +231,7 @@ export default function CompanySettingsPage({ params }: Props) {
               </div>
 
               {error ? <InlineError message={error} /> : null}
-              {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+              {ok ? <div className="text-sm text-[var(--success)]">{ok}</div> : null}
 
               <div className="flex flex-wrap gap-3">
                 <PrimaryButton

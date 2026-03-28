@@ -25,7 +25,7 @@ export function CompanyNav(props: {
 
   if (props.variant === "sheet") {
     return (
-      <nav className="mt-6 space-y-6">
+      <nav className="mt-6 max-h-[calc(100dvh-7rem)] space-y-6 overflow-y-auto pr-1">
         <div className="space-y-2">
           <div className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
             Workflows
@@ -105,11 +105,16 @@ export function CompanyNav(props: {
   }
 
   return (
-    <nav className="flex h-full flex-col items-center gap-3 px-3 py-5">
-      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.06)] text-sm font-semibold tracking-[-0.03em] text-white/95">
-        GB
+    <nav className="flex h-full min-h-0 flex-col items-center gap-3 overflow-hidden px-3 py-5">
+      <div className="mb-3 flex w-full flex-col items-center gap-2">
+        <div className="flex h-14 w-14 items-center justify-center rounded-[22px] border border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-rail-card-strong),var(--shell-sidebar-hover))] text-sm font-semibold tracking-[-0.03em] text-[var(--shell-sidebar-fg)] shadow-[0_14px_36px_rgba(5,10,18,0.18)]">
+          GB
+        </div>
+        <div className="rounded-full border border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--shell-sidebar-fg-muted)]">
+          Ops
+        </div>
       </div>
-      <div className="w-full space-y-2">
+      <div className="min-h-0 w-full flex-1 space-y-2 overflow-y-auto pr-1">
         {workflows.map((workflow) => {
           const Icon = workflow.icon;
           const active = workflow.key === activeWorkflow?.key;
@@ -118,10 +123,10 @@ export function CompanyNav(props: {
               key={workflow.key}
               href={toCompanyHref(props.companyId, workflow.defaultHref)}
               className={cn(
-                "group flex flex-col items-center gap-2 rounded-[22px] px-2 py-3 text-center text-[11px] font-medium tracking-[0.01em]",
+                "group flex flex-col items-center gap-2 rounded-[22px] border px-2 py-3 text-center text-[11px] font-medium tracking-[0.01em] transition-all",
                 active
-                  ? "bg-[rgba(255,255,255,0.12)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "text-white/62 hover:bg-[rgba(255,255,255,0.08)] hover:text-white/90",
+                  ? "border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-sidebar-active),var(--shell-sidebar-active-strong))] text-[var(--shell-sidebar-fg)] shadow-[inset_0_1px_0_var(--shell-sidebar-border),0_12px_28px_rgba(5,10,18,0.16)]"
+                  : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] text-[var(--shell-sidebar-fg-muted)] hover:border-[var(--shell-sidebar-border)] hover:bg-[var(--shell-sidebar-hover)] hover:text-[var(--shell-sidebar-fg)]",
               )}
               title={workflow.label}
             >
@@ -129,8 +134,8 @@ export function CompanyNav(props: {
                 className={cn(
                   "flex h-11 w-11 items-center justify-center rounded-[18px] border transition-colors",
                   active
-                    ? "border-white/12 bg-white/10 text-white"
-                    : "border-transparent bg-white/[0.03] text-white/70 group-hover:bg-white/[0.08]",
+                    ? "border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card)] text-[var(--shell-sidebar-fg)]"
+                    : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--shell-rail-card)_84%,transparent)] text-[var(--shell-sidebar-fg-muted)] group-hover:bg-[var(--shell-sidebar-hover)] group-hover:text-[var(--shell-sidebar-fg)]",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -139,9 +144,6 @@ export function CompanyNav(props: {
             </Link>
           );
         })}
-      </div>
-      <div className="mt-auto w-full rounded-[22px] border border-white/10 bg-white/[0.04] p-3 text-[11px] leading-5 text-white/60">
-        Workflow-led shell for distribution operations.
       </div>
     </nav>
   );

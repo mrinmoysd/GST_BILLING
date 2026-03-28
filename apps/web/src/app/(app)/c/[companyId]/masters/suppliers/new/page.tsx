@@ -37,8 +37,8 @@ export default function NewSupplierPage({ params }: Props) {
         title="New supplier"
         subtitle="Create a supplier profile with a calmer structure, so purchasing teams can capture only the details they need and move on."
         actions={
-          <Link className="text-sm underline" href={`/c/${companyId}/masters/suppliers`}>
-            Back
+          <Link href={`/c/${companyId}/masters/suppliers`}>
+            <SecondaryButton type="button">Back</SecondaryButton>
           </Link>
         }
       />

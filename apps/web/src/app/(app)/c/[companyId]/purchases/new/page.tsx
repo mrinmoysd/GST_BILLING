@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { useCreatePurchase } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import { useProducts, useSuppliers, useWarehouses } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import {
   ComposerBody,
   ComposerMetricCard,
@@ -21,14 +22,6 @@ import { InlineError, PageHeader } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function NewPurchasePage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -211,12 +204,17 @@ export default function NewPurchasePage({ params }: Props) {
               notes: notes || undefined,
               items: clean,
             });
-            toast.success("Purchase draft created");
+            toastSuccess("Purchase draft created.");
             router.replace(`/c/${companyId}/purchases/${res.data.id}`);
           } catch (e: unknown) {
-            const message = getErrorMessage(e, "Failed to create purchase");
+            const message = getErrorMessage(e, "Failed to create purchase.");
             setError(message);
-            toast.error(message);
+            toastError(e, {
+              fallback: "Failed to create purchase.",
+              title: message,
+              context: "purchase-create",
+              metadata: { companyId, supplierId, warehouseId },
+            });
           }
         }}
       >

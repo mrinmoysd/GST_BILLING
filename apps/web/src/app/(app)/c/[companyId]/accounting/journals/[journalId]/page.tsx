@@ -7,16 +7,10 @@ import { useJournal } from "@/lib/billing/hooks";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; journalId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function JournalDetailPage({ params }: Props) {
   const { companyId, journalId } = React.use(params);

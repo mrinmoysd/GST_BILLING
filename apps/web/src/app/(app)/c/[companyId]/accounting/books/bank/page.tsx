@@ -9,16 +9,10 @@ import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function BankBookPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -160,7 +154,7 @@ export default function BankBookPage({ params }: Props) {
                     return (
                       <DataTr
                         key={key}
-                        className={selectedRowKey === key ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                        className={selectedRowKey === key ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                         onClick={() => setSelectedRowKey(key)}
                       >
                         <DataTd>{item.date}</DataTd>

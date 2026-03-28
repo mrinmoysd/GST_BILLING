@@ -20,7 +20,7 @@ export function QueueSegmentBar(props: {
   return (
     <section
       className={cn(
-        "flex flex-col gap-3 rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)] p-3 shadow-[var(--shadow-soft)] md:flex-row md:items-center md:justify-between",
+        "flex flex-col gap-3 rounded-[24px] border border-[var(--border)] bg-[var(--surface-panel-glass)] p-3 shadow-[var(--shadow-soft)] backdrop-blur-sm md:flex-row md:items-center md:justify-between",
         props.className,
       )}
     >
@@ -35,8 +35,8 @@ export function QueueSegmentBar(props: {
               className={cn(
                 "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium transition",
                 active
-                  ? "border-[var(--accent)] bg-[rgba(180,104,44,0.12)] text-[var(--foreground)] shadow-sm"
-                  : "border-transparent bg-[var(--surface-muted)] text-[var(--muted-strong)] hover:border-[var(--border)] hover:bg-[var(--surface)]",
+                  ? "border-[var(--row-selected-border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-[var(--shadow-soft)]"
+                  : "border-transparent bg-[var(--surface-muted)] text-[var(--muted-strong)] hover:border-[var(--border)] hover:bg-[var(--surface-elevated)]",
               )}
             >
               <span>{item.label}</span>
@@ -44,7 +44,7 @@ export function QueueSegmentBar(props: {
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                    active ? "bg-[rgba(180,104,44,0.18)] text-[var(--foreground)]" : "bg-[rgba(23,32,51,0.08)] text-[var(--muted)]",
+                    active ? "bg-[var(--surface-secondary)] text-[var(--secondary-foreground)]" : "bg-[var(--surface-shell)] text-[var(--muted)]",
                   )}
                 >
                   {item.count}
@@ -80,8 +80,8 @@ export function QueueSavedViews(props: {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-medium transition",
               active
-                ? "border-[var(--accent)] bg-[rgba(180,104,44,0.12)] text-[var(--foreground)]"
-                : "border-[var(--border)] bg-[var(--surface)] text-[var(--muted-strong)] hover:bg-[var(--surface-muted)]",
+                ? "border-[var(--secondary-soft)] bg-[var(--surface-secondary)] text-[var(--secondary-foreground)]"
+                : "border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--muted-strong)] hover:bg-[var(--surface-muted)]",
             )}
           >
             {item.label}
@@ -100,7 +100,7 @@ export function QueueToolbar(props: {
   return (
     <section
       className={cn(
-        "grid gap-4 rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[var(--shadow-soft)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
+        "grid gap-4 rounded-[24px] border border-[var(--border)] [background-image:var(--panel-highlight)] p-4 shadow-[var(--shadow-soft)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
         props.className,
       )}
     >
@@ -134,7 +134,7 @@ export function QueueInspector(props: {
   return (
     <aside
       className={cn(
-        "rounded-[28px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.92)] p-5 shadow-[var(--shadow-soft)] md:p-6",
+        "rounded-[28px] border border-[var(--border)] [background-image:var(--inspector-highlight)] p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.className,
       )}
     >
@@ -156,7 +156,7 @@ export function QueueMetaList(props: {
   return (
     <div className={cn("grid gap-3", props.className)}>
       {props.items.map((item) => (
-        <div key={item.label} className="grid gap-1 rounded-2xl bg-[var(--surface-muted)] px-4 py-3">
+        <div key={item.label} className="grid gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-sm">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{item.label}</div>
           <div className="text-sm font-medium text-[var(--foreground)]">{item.value}</div>
         </div>

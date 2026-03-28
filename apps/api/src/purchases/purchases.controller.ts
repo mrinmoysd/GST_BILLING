@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -113,8 +115,7 @@ export class PurchasesController {
     @UploadedFile() file?: any,
   ) {
     if (!file) {
-      // FileInterceptor with no storage still provides a buffer.
-      throw new Error('file is required');
+      throw new BadRequestException('Bill file is required.');
     }
 
     const storageDir = path.join(process.cwd(), 'storage', 'purchases');
@@ -157,8 +158,7 @@ export class PurchasesController {
       );
 
     if (!candidates.length) {
-      res.status(404);
-      return res.json({ message: 'Bill not found' });
+      throw new NotFoundException('Bill not found.');
     }
 
     const filepath = path.join(storageDir, candidates[0]);

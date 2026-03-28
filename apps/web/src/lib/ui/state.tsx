@@ -10,9 +10,9 @@ export { PageActionGroup, PageContextStrip, PageHeader };
 
 export function InlineError({ title, message }: { title?: string; message: string }) {
   return (
-    <div className="rounded-2xl border border-red-200 bg-[#fff6f3] p-4 text-sm text-[#7e3128] shadow-sm">
+    <div className="rounded-2xl border border-[color:color-mix(in_oklab,var(--danger)_36%,var(--border))] bg-[color:color-mix(in_oklab,var(--danger)_12%,var(--surface))] p-4 text-sm text-[var(--foreground)] shadow-sm">
       <div className="font-semibold">{title ?? "Something went wrong"}</div>
-      <div className="mt-1 leading-6 opacity-90">{message}</div>
+      <div className="mt-1 leading-6 text-[var(--muted-strong)]">{message}</div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -132,10 +132,10 @@ export class SuppliersService {
     const fromDate = args.from ? new Date(args.from) : null;
     const toDate = args.to ? new Date(args.to) : null;
     if (fromDate && Number.isNaN(fromDate.valueOf())) {
-      throw new Error('Invalid from');
+      throw new BadRequestException('Invalid from date.');
     }
     if (toDate && Number.isNaN(toDate.valueOf())) {
-      throw new Error('Invalid to');
+      throw new BadRequestException('Invalid to date.');
     }
 
     // Supplier ledger as AP view:

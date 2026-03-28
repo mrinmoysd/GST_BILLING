@@ -63,7 +63,7 @@ export default function AccountingPage({ params }: Props) {
 
       <div className="grid gap-5 xl:grid-cols-2">
         {sections.map((section) => (
-          <Card key={section.title}>
+          <Card key={section.title} className="[background-image:var(--panel-highlight)]">
             <CardHeader>
               <CardTitle>{section.title}</CardTitle>
               <CardDescription>{section.description}</CardDescription>
@@ -72,7 +72,7 @@ export default function AccountingPage({ params }: Props) {
               {section.items.map((item) => (
                 <Link
                   key={item.href}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface)]"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 transition [background-image:var(--surface-highlight)] hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-panel)]"
                   href={item.href}
                 >
                   <div className="font-semibold text-[var(--foreground)]">{item.title}</div>

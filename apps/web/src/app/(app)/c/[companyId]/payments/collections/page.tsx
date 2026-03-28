@@ -1,26 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
 
 import { useInvoices } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/errors";
 import { CollectionTask, useCollectionTasks, useCreateCollectionTask, useUpdateCollectionTask } from "@/lib/finance/hooks";
 import { useCustomers } from "@/lib/masters/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField, PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { WorkspaceHero } from "@/lib/ui/workspace";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function CollectionTaskRow(props: {
   companyId: string;
@@ -30,7 +23,7 @@ function CollectionTaskRow(props: {
 }) {
   const update = useUpdateCollectionTask(props.companyId, String(props.task.id));
   return (
-    <DataTr className={props.selected ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"} onClick={props.onSelect}>
+    <DataTr className={props.selected ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"} onClick={props.onSelect}>
       <DataTd>{String(props.task.customer?.name ?? "—")}</DataTd>
       <DataTd>{String(props.task.invoice?.invoiceNumber ?? props.task.invoice?.invoice_number ?? "—")}</DataTd>
       <DataTd><QueueRowStateBadge label={String(props.task.priority ?? "—")} variant="outline" /></DataTd>
@@ -46,9 +39,13 @@ function CollectionTaskRow(props: {
               event.stopPropagation();
               try {
                 await update.mutateAsync({ status: "in_progress" });
-                toast.success("Task moved to in progress");
+                toastSuccess("Task moved to in progress.");
               } catch (err: unknown) {
-                toast.error(getErrorMessage(err, "Failed to update task"));
+                toastError(err, {
+                  fallback: "Failed to update task.",
+                  context: "collections-task-start",
+                  metadata: { companyId: props.companyId, taskId: props.task.id },
+                });
               }
             }}
           >
@@ -62,9 +59,13 @@ function CollectionTaskRow(props: {
               event.stopPropagation();
               try {
                 await update.mutateAsync({ status: "done" });
-                toast.success("Task completed");
+                toastSuccess("Task completed.");
               } catch (err: unknown) {
-                toast.error(getErrorMessage(err, "Failed to update task"));
+                toastError(err, {
+                  fallback: "Failed to update task.",
+                  context: "collections-task-close",
+                  metadata: { companyId: props.companyId, taskId: props.task.id },
+                });
               }
             }}
           >
@@ -261,7 +262,7 @@ export default function CollectionsPage({ params }: Props) {
                         { label: "Assignee", value: selectedTask.assignee?.name ?? selectedTask.assignee?.email ?? "—" },
                       ]}
                     />
-                    {selectedTask.notes ? <div className="rounded-2xl bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--muted-strong)]">{selectedTask.notes}</div> : null}
+                    {selectedTask.notes ? <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm leading-6 text-[var(--muted-strong)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">{selectedTask.notes}</div> : null}
                   </>
                 ) : (
                   <div className="text-sm text-[var(--muted)]">Pick a task to inspect the collection context and decide the next follow-up.</div>
@@ -294,9 +295,13 @@ export default function CollectionsPage({ params }: Props) {
                       setPromiseToPayDate("");
                       setDueDate("");
                       setNotes("");
-                      toast.success("Collection task created");
+                      toastSuccess("Collection task created.");
                     } catch (err: unknown) {
-                      toast.error(getErrorMessage(err, "Failed to create task"));
+                      toastError(err, {
+                        fallback: "Failed to create task.",
+                        context: "collections-task-create",
+                        metadata: { companyId, customerId, invoiceId },
+                      });
                     }
                   }}
                 >

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { useAccountingPeriodLock, useCreateJournal, useJournals, useLedgers, useUpdateAccountingPeriodLock } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
@@ -13,14 +14,6 @@ import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type LineDraft = { side: "debit" | "credit"; ledgerId: string; amount: string };
 
@@ -104,11 +97,16 @@ export default function JournalsPage({ params }: Props) {
                     lock_until: lockUntil.trim() || null,
                     reason: lockReason.trim() || null,
                   });
-                  toast.success("Period lock updated");
+                  toastSuccess("Period lock updated.");
                 } catch (e: unknown) {
-                  const message = getErrorMessage(e, "Failed to update period lock");
+                  const message = getErrorMessage(e, "Failed to update period lock.");
                   setError(message);
-                  toast.error(message);
+                  toastError(e, {
+                    fallback: "Failed to update period lock.",
+                    title: message,
+                    context: "journals-period-lock-update",
+                    metadata: { companyId, lockUntil },
+                  });
                 }
               }}
             >
@@ -121,11 +119,16 @@ export default function JournalsPage({ params }: Props) {
                 setError(null);
                 try {
                   await updatePeriodLock.mutateAsync({ lock_until: null, reason: null });
-                  toast.success("Period lock cleared");
+                  toastSuccess("Period lock cleared.");
                 } catch (e: unknown) {
-                  const message = getErrorMessage(e, "Failed to clear period lock");
+                  const message = getErrorMessage(e, "Failed to clear period lock.");
                   setError(message);
-                  toast.error(message);
+                  toastError(e, {
+                    fallback: "Failed to clear period lock.",
+                    title: message,
+                    context: "journals-period-lock-clear",
+                    metadata: { companyId },
+                  });
                 }
               }}
             >
@@ -148,7 +151,7 @@ export default function JournalsPage({ params }: Props) {
           <div className="space-y-3">
             <div className="text-sm font-semibold text-[var(--muted-strong)]">Lines</div>
           {lines.map((l, idx) => (
-            <div key={idx} className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 md:grid-cols-[120px_1fr_160px_auto] md:items-end">
+            <div key={idx} className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 shadow-[var(--shadow-soft)] md:grid-cols-[120px_1fr_160px_auto] md:items-end">
               <div>
                 <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Side</label>
                 <SelectField
@@ -197,7 +200,7 @@ export default function JournalsPage({ params }: Props) {
           </SecondaryButton>
         </div>
 
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--muted)]">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
             Totals. Debit: <span className="font-semibold text-[var(--foreground)]">{totals.debit}</span> | Credit:{" "}
             <span className="font-semibold text-[var(--foreground)]">{totals.credit}</span>
           </div>
@@ -228,11 +231,16 @@ export default function JournalsPage({ params }: Props) {
                   { side: "debit", ledgerId: "", amount: "" },
                   { side: "credit", ledgerId: "", amount: "" },
                 ]);
-                toast.success("Journal posted");
+                toastSuccess("Journal posted.");
               } catch (e: unknown) {
-                const message = getErrorMessage(e, "Failed to create journal");
+                const message = getErrorMessage(e, "Failed to create journal.");
                 setError(message);
-                toast.error(message);
+                toastError(e, {
+                  fallback: "Failed to create journal.",
+                  title: message,
+                  context: "journals-create",
+                  metadata: { companyId, date: date.trim() },
+                });
               }
             }}
           >
@@ -276,7 +284,7 @@ export default function JournalsPage({ params }: Props) {
                   {journals.map((j) => (
                     <DataTr key={j.id}>
                       <DataTd>
-                        <Link className="font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/accounting/journals/${j.id}`}>
+                        <Link className="font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]" href={`/c/${companyId}/accounting/journals/${j.id}`}>
                           {j.id}
                         </Link>
                       </DataTd>

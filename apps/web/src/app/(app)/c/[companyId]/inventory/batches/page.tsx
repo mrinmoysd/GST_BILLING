@@ -17,16 +17,10 @@ import {
   QueueToolbar,
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InventoryBatchesPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -205,7 +199,7 @@ export default function InventoryBatchesPage({ params }: Props) {
                   return (
                     <DataTr
                       key={key}
-                      className={selectedKey === key ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                      className={selectedKey === key ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
                       onClick={() => setSelectedKey(key)}
                     >
                       <DataTd>

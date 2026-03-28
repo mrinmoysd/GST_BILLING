@@ -15,20 +15,14 @@ import {
   useSendQuotation,
 } from "@/lib/billing/hooks";
 import type { Quotation } from "@/lib/billing/types";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; quotationId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function QuotationDetailPage({ params }: Props) {
   const { companyId, quotationId } = React.use(params);
@@ -47,11 +41,19 @@ export default function QuotationDetailPage({ params }: Props) {
   const canEditState = status === "draft" || status === "sent";
   const canConvert = !["cancelled", "expired", "converted"].includes(status);
 
-  async function runAction(action: () => Promise<unknown>, fallback: string) {
+  async function runAction(
+    action: () => Promise<unknown>,
+    messages: { success: string; failure: string },
+  ) {
     try {
       await action();
+      toastSuccess(messages.success);
     } catch (err) {
-      window.alert(getErrorMessage(err, fallback));
+      toastError(err, {
+        fallback: messages.failure,
+        context: "quotation-action",
+        metadata: { companyId, quotationId },
+      });
     }
   }
 
@@ -83,7 +85,10 @@ export default function QuotationDetailPage({ params }: Props) {
                     const res = await convert.mutateAsync({});
                     router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
                   },
-                  "Failed to convert quotation",
+                  {
+                    success: "Quotation converted to invoice.",
+                    failure: "Failed to convert quotation.",
+                  },
                 )
               }
             >
@@ -140,7 +145,10 @@ export default function QuotationDetailPage({ params }: Props) {
                       const res = await convertToSalesOrder.mutateAsync();
                       router.push(`/c/${companyId}/sales/orders/${res.data.id}`);
                     },
-                    "Failed to convert quotation",
+                    {
+                      success: "Quotation converted to sales order.",
+                      failure: "Failed to convert quotation.",
+                    },
                   )
                 }
               >
@@ -157,7 +165,10 @@ export default function QuotationDetailPage({ params }: Props) {
                       const res = await convert.mutateAsync({});
                       router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
                     },
-                    "Failed to convert quotation",
+                    {
+                      success: "Quotation converted to invoice.",
+                      failure: "Failed to convert quotation.",
+                    },
                   )
                 }
               >
@@ -225,16 +236,52 @@ export default function QuotationDetailPage({ params }: Props) {
         <DetailTabPanel value="actions" rail={detailRail}>
           <WorkspacePanel title="Commercial actions" subtitle="Move the quotation through the sales posture before converting it.">
             <div className="flex flex-wrap gap-2">
-              <SecondaryButton type="button" disabled={send.isPending || !canEditState} onClick={() => runAction(() => send.mutateAsync(undefined), "Failed to mark quotation as sent")}>
+              <SecondaryButton
+                type="button"
+                disabled={send.isPending || !canEditState}
+                onClick={() =>
+                  runAction(() => send.mutateAsync(undefined), {
+                    success: "Quotation marked as sent.",
+                    failure: "Failed to mark quotation as sent.",
+                  })
+                }
+              >
                 Mark sent
               </SecondaryButton>
-              <SecondaryButton type="button" disabled={approve.isPending || !canConvert} onClick={() => runAction(() => approve.mutateAsync(undefined), "Failed to approve quotation")}>
+              <SecondaryButton
+                type="button"
+                disabled={approve.isPending || !canConvert}
+                onClick={() =>
+                  runAction(() => approve.mutateAsync(undefined), {
+                    success: "Quotation approved.",
+                    failure: "Failed to approve quotation.",
+                  })
+                }
+              >
                 Approve
               </SecondaryButton>
-              <SecondaryButton type="button" disabled={expire.isPending || !canConvert} onClick={() => runAction(() => expire.mutateAsync(undefined), "Failed to expire quotation")}>
+              <SecondaryButton
+                type="button"
+                disabled={expire.isPending || !canConvert}
+                onClick={() =>
+                  runAction(() => expire.mutateAsync(undefined), {
+                    success: "Quotation expired.",
+                    failure: "Failed to expire quotation.",
+                  })
+                }
+              >
                 Expire
               </SecondaryButton>
-              <SecondaryButton type="button" disabled={cancel.isPending || status === "converted"} onClick={() => runAction(() => cancel.mutateAsync(undefined), "Failed to cancel quotation")}>
+              <SecondaryButton
+                type="button"
+                disabled={cancel.isPending || status === "converted"}
+                onClick={() =>
+                  runAction(() => cancel.mutateAsync(undefined), {
+                    success: "Quotation cancelled.",
+                    failure: "Failed to cancel quotation.",
+                  })
+                }
+              >
                 Cancel
               </SecondaryButton>
             </div>

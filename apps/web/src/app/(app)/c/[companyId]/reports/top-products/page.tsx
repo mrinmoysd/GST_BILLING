@@ -3,20 +3,13 @@
 import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import { useTopProducts } from "@/lib/reports/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function TopProductsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -53,15 +46,14 @@ export default function TopProductsPage({ params }: Props) {
           <TextField label="To" value={to} onChange={setTo} />
           <TextField label="Limit" value={limit} onChange={setLimit} type="number" />
           <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Sort by</label>
-            <select
-              className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+            <SelectField
+              label="Sort by"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value === "quantity" ? "quantity" : "amount")}
+              onChange={(value) => setSortBy(value === "quantity" ? "quantity" : "amount")}
             >
               <option value="amount">Amount</option>
               <option value="quantity">Quantity</option>
-            </select>
+            </SelectField>
           </div>
         </CardContent>
       </Card>

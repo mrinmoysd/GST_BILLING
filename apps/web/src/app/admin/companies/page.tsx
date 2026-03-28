@@ -10,14 +10,8 @@ import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar, QueueRowStateBadge } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminCompaniesPage() {
   const [q, setQ] = React.useState("");
@@ -149,7 +143,7 @@ export default function AdminCompaniesPage() {
                 {filteredRows.map((row, index) => (
                   <DataTr
                     key={String(row.id ?? index)}
-                    className={selectedRow?.id === row.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedRow?.id === row.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
                     onClick={() => setSelectedCompanyId(String(row.id))}
                   >
                     <DataTd className="font-semibold">

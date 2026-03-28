@@ -10,14 +10,8 @@ import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SelectField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminSubscriptionsPage() {
   const [status, setStatus] = React.useState("");

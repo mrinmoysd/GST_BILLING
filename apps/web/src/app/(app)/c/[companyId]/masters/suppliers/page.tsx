@@ -19,14 +19,8 @@ import {
   QueueToolbar,
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -187,7 +181,7 @@ export default function SuppliersPage({ params }: Props) {
                 {filteredSuppliers.map((s) => (
                   <DataTr
                     key={s.id}
-                    className={selectedSupplier?.id === s.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedSupplier?.id === s.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
                     onClick={() => setSelectedSupplierId(s.id)}
                   >
                     <DataTd>

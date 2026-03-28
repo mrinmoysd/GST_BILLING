@@ -9,6 +9,7 @@ import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, Dat
 import { DateField, PrimaryButton, SelectField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 type ViewKey = "gstr1" | "gstr3b" | "hsn-summary" | "itc";
@@ -126,13 +127,6 @@ function formatMoney(value: number | string | undefined) {
   return asNumber(value).toFixed(2);
 }
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function MetricCard(props: { label: string; value: string | number; hint?: string }) {
   return (

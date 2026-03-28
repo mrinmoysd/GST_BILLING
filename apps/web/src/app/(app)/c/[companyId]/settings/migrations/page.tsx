@@ -17,7 +17,7 @@ import {
   useTemplateDownload,
   useUploadImportJob,
 } from "@/lib/migration/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -71,6 +71,24 @@ export default function MigrationSettingsPage({ params }: Props) {
         eyebrow="Configuration"
         title="Migrations"
         subtitle="Run D13 migration projects with templates, saved mappings, dry-run checks, and commit-stage import control."
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Structured onboarding</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Projects, templates, and profiles keep migration work grouped by go-live wave.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Safe imports</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Dry-run and commit stay separated so operators can catch mapping problems before data lands.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Job traceability</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Import rows and warnings remain visible in the same workspace for cutover review.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
 
       {(projects.isLoading || templates.isLoading || profiles.isLoading || jobs.isLoading) ? (
@@ -111,7 +129,7 @@ export default function MigrationSettingsPage({ params }: Props) {
             </form>
             <div className="mt-5 grid gap-3">
               {projectRows.map((project) => (
-                <div key={project.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={project.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="font-semibold text-[var(--foreground)]">{project.name}</div>
@@ -158,7 +176,7 @@ export default function MigrationSettingsPage({ params }: Props) {
               <label className="grid gap-2">
                 <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Column mappings JSON</span>
                 <textarea
-                  className="min-h-28 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] shadow-sm outline-none"
+                  className="min-h-28 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3 py-2 text-sm text-[var(--foreground)] shadow-sm outline-none"
                   value={profileMappings}
                   onChange={(event) => setProfileMappings(event.target.value)}
                 />
@@ -169,7 +187,7 @@ export default function MigrationSettingsPage({ params }: Props) {
             </form>
             <div className="mt-5 grid gap-3">
               {profileRows.map((profile) => (
-                <div key={profile.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={profile.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="font-semibold text-[var(--foreground)]">{profile.name}</div>
                   <div className="text-sm text-[var(--muted)]">
                     {(profile.entityType ?? profile.entity_type) || "Unknown entity"} · {(profile.sourceFormat ?? profile.source_format) || "csv"}
@@ -238,7 +256,7 @@ export default function MigrationSettingsPage({ params }: Props) {
               <label className="grid gap-2">
                 <span className="text-[13px] font-semibold text-[var(--muted-strong)]">CSV content</span>
                 <textarea
-                  className="min-h-56 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] shadow-sm outline-none"
+                  className="min-h-56 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3 py-2 text-sm text-[var(--foreground)] shadow-sm outline-none"
                   value={fileContentText}
                   onChange={(event) => setFileContentText(event.target.value)}
                   placeholder="Paste the import file here or load it from disk below."
@@ -247,7 +265,7 @@ export default function MigrationSettingsPage({ params }: Props) {
               <label className="grid gap-2">
                 <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Load from file</span>
                 <input
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3 py-2 text-sm"
                   type="file"
                   accept=".csv,.txt,.xlsx,.xls"
                   onChange={async (event) => {
@@ -346,7 +364,7 @@ export default function MigrationSettingsPage({ params }: Props) {
                     </pre>
                   ) : null}
                   {Array.isArray(job.top_errors) && job.top_errors.length ? (
-                    <div className="mt-3 text-sm text-amber-700">
+                    <div className="mt-3 text-sm text-[var(--secondary-foreground)]">
                       Top errors: {job.top_errors.map((error) => `${error.code} (${error.count})`).join(", ")}
                     </div>
                   ) : null}

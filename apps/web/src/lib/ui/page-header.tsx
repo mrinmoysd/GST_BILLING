@@ -7,10 +7,10 @@ type PageHeaderSize = "compact" | "hero";
 
 function getHeaderToneClasses(tone: PageHeaderTone) {
   if (tone === "admin") {
-    return "border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))]";
+    return "border-[var(--border)] [background-image:var(--surface-header-admin)]";
   }
 
-  return "border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,244,238,0.94))]";
+  return "border-[var(--border)] [background-image:var(--surface-header-tenant)]";
 }
 
 export function PageActionGroup(props: {
@@ -50,7 +50,7 @@ export function PageContextStrip(props: {
   return (
     <div
       className={cn(
-        "grid gap-4 rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.78)] p-4 shadow-[var(--shadow-soft)] backdrop-blur-sm md:p-5",
+        "grid gap-4 rounded-[24px] border border-[var(--border)] bg-[var(--surface-panel-glass)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--panel-highlight)] backdrop-blur-sm md:p-5",
         props.inset ? "mt-1" : "",
         props.className,
       )}
@@ -115,7 +115,7 @@ export function PageHeader(props: {
       {props.metrics?.length ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {props.metrics.map((metric) => (
-            <div key={String(metric.label)} className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.72)] px-4 py-4">
+            <div key={String(metric.label)} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{metric.label}</div>
               <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{metric.value}</div>
             </div>

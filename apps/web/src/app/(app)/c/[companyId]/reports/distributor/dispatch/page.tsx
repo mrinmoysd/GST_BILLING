@@ -10,16 +10,10 @@ import { SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatQty(value: number) {
   return value.toFixed(2);

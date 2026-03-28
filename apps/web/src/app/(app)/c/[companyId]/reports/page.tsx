@@ -57,7 +57,7 @@ export default function ReportsPage({ params }: Props) {
         actions={
           <PageActionGroup
             primary={
-              <Link className="inline-flex items-center text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/accounting`}>
+              <Link className="inline-flex items-center text-sm font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]" href={`/c/${companyId}/accounting`}>
                 Open accounting hub
               </Link>
             }
@@ -94,7 +94,7 @@ export default function ReportsPage({ params }: Props) {
               {group.items.map((item) => (
                 <Link
                   key={item.href}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface)]"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:-translate-y-0.5 hover:border-[var(--border-strong)]"
                   href={item.href}
                 >
                   <div className="font-semibold text-[var(--foreground)]">{item.title}</div>

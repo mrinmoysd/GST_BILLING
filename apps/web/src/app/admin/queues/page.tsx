@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useAdminQueueMetrics } from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
 type QueueMetricsPayload = {
   data?: {
@@ -20,13 +21,6 @@ type QueueMetricsPayload = {
   };
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminQueuesPage() {
   const query = useAdminQueueMetrics();

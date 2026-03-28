@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
 
 import { useLedgers } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useBankAccounts,
   useBankStatementImports,
@@ -13,19 +13,12 @@ import {
   useMatchBankStatementLine,
   useUnmatchBankStatementLine,
 } from "@/lib/finance/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueShell, QueueToolbar } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -106,9 +99,13 @@ export default function BankingPage({ params }: Props) {
                 setBankName("");
                 setAccountNumber("");
                 setIfscCode("");
-                toast.success("Bank account added");
+                toastSuccess("Bank account added.");
               } catch (err: unknown) {
-                toast.error(getErrorMessage(err, "Failed to create bank account"));
+                toastError(err, {
+                  fallback: "Failed to create bank account.",
+                  context: "banking-create-account",
+                  metadata: { companyId, nickname },
+                });
               }
             }}
           >
@@ -137,7 +134,7 @@ export default function BankingPage({ params }: Props) {
 
           <div className="mt-5 space-y-2 text-sm">
             {bankAccounts.map((account) => (
-              <div key={account.id} className="rounded-xl border bg-[var(--surface-muted)] px-4 py-3">
+              <div key={account.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="font-medium">{account.nickname}</div>
                 <div className="text-[var(--muted)]">
                   {account.bankName} {account.accountNumberLast4 ? `• ${account.accountNumberLast4}` : ""}
@@ -165,7 +162,7 @@ export default function BankingPage({ params }: Props) {
             <label className="block space-y-2 md:col-span-2">
               <span className="text-[13px] font-semibold text-[var(--muted-strong)]">CSV content</span>
               <textarea
-                className="min-h-48 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 text-sm shadow-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
+                className="min-h-48 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-3 text-sm shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                 value={statementContent}
                 onChange={(e) => setStatementContent(e.target.value)}
                 placeholder={"date,description,reference,debit,credit,balance\n2026-03-01,NEFT RECEIPT,UTR123,0,1250,45000"}
@@ -183,9 +180,13 @@ export default function BankingPage({ params }: Props) {
                       csv_content: statementContent,
                     });
                     setStatementContent("");
-                    toast.success("Statement imported");
+                    toastSuccess("Statement imported.");
                   } catch (err: unknown) {
-                    toast.error(getErrorMessage(err, "Failed to import statement"));
+                    toastError(err, {
+                      fallback: "Failed to import statement.",
+                      context: "banking-import-statement",
+                      metadata: { companyId, bankAccountId: statementBankAccountId },
+                    });
                   }
                 }}
               >
@@ -205,7 +206,7 @@ export default function BankingPage({ params }: Props) {
         {imports.length > 0 ? (
           <div className="space-y-2 text-sm">
             {imports.map((entry) => (
-              <div key={entry.id} className="rounded-xl border bg-[var(--surface-muted)] px-4 py-3">
+              <div key={entry.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="font-medium">{entry.sourceFilename ?? entry.source_filename ?? "Manual import"}</div>
                 <div className="text-[var(--muted)]">
                   {String(entry.lineCount ?? entry.line_count ?? 0)} lines
@@ -280,7 +281,7 @@ export default function BankingPage({ params }: Props) {
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Candidate matches</div>
                     {selectedCandidates.length > 0 ? (
                       selectedCandidates.map((candidate) => (
-                        <div key={candidate.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                        <div key={candidate.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="font-medium text-[var(--foreground)]">
@@ -302,9 +303,13 @@ export default function BankingPage({ params }: Props) {
                                         statement_line_id: selectedLine.id,
                                         payment_id: candidate.id,
                                       });
-                                      toast.success("Statement line matched");
+                                      toastSuccess("Statement line matched.");
                                     } catch (err: unknown) {
-                                      toast.error(getErrorMessage(err, "Failed to match statement line"));
+                                      toastError(err, {
+                                        fallback: "Failed to match statement line.",
+                                        context: "banking-match-line",
+                                        metadata: { companyId, lineId: selectedLine.id },
+                                      });
                                     }
                                   }}
                                 >
@@ -316,7 +321,7 @@ export default function BankingPage({ params }: Props) {
                         </div>
                       ))
                     ) : (
-                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                         No matching payment candidates were suggested for this statement line yet.
                       </div>
                     )}
@@ -328,9 +333,13 @@ export default function BankingPage({ params }: Props) {
                       onClick={async () => {
                         try {
                           await unmatchLine.mutateAsync({ statement_line_id: selectedLine.id });
-                          toast.success("Statement line unmatched");
+                          toastSuccess("Statement line unmatched.");
                         } catch (err: unknown) {
-                          toast.error(getErrorMessage(err, "Failed to unmatch statement line"));
+                          toastError(err, {
+                            fallback: "Failed to unmatch statement line.",
+                            context: "banking-unmatch-line",
+                            metadata: { companyId, lineId: selectedLine.id },
+                          });
                         }
                       }}
                     >
@@ -361,7 +370,7 @@ export default function BankingPage({ params }: Props) {
                   return (
                     <DataTr
                       key={line.id}
-                      className={selectedLine?.id === line.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                      className={selectedLine?.id === line.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                       onClick={() => setSelectedLineId(line.id)}
                     >
                       <DataTd>{String(line.txnDate ?? line.txn_date ?? "—")}</DataTd>

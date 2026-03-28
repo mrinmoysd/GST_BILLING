@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
+import { getErrorMessage } from "@/lib/errors";
 import { useCategories, useCreateProduct } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import {
   ComposerBody,
   ComposerMiniList,
@@ -92,15 +93,17 @@ export default function NewProductPage({ params }: Props) {
                   ? Number(nearExpiryDays)
                   : undefined,
             });
-            toast.success("Product created");
+            toastSuccess("Product created.");
             router.replace(`/c/${companyId}/masters/products/${res.data.id}`);
           } catch (e: unknown) {
-            const message =
-              e && typeof e === "object" && "message" in e && typeof (e as { message?: unknown }).message === "string"
-                ? ((e as { message?: unknown }).message as string)
-                : "Failed to create product";
+            const message = getErrorMessage(e, "Failed to create product.");
             setError(message);
-            toast.error(message);
+            toastError(e, {
+              fallback: "Failed to create product.",
+              title: message,
+              context: "product-create",
+              metadata: { companyId, name, sku },
+            });
           }
         }}
       >

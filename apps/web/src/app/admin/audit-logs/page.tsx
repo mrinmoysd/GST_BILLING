@@ -5,17 +5,10 @@ import * as React from "react";
 import { useAdminAuditLogs } from "@/lib/admin/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { TextField } from "@/lib/ui/form";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
+import { SelectField, TextField } from "@/lib/ui/form";
 
 type AuditRow = {
   id: string;
@@ -62,19 +55,14 @@ export default function AdminAuditLogsPage() {
         <CardContent className="grid gap-4 md:grid-cols-[1fr_280px]">
           <TextField label="Search" value={q} onChange={setQ} placeholder="summary, email, target id" />
           <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Action</label>
-            <select
-              className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-            >
+            <SelectField label="Action" value={action} onChange={setAction}>
               <option value="">All actions</option>
               {uniqueActions.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
         </CardContent>
       </Card>

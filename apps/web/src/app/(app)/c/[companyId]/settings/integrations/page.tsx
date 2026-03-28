@@ -15,7 +15,7 @@ import {
   useWebhookDeliveries,
   useWebhookEndpoints,
 } from "@/lib/migration/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -64,6 +64,24 @@ export default function IntegrationsPage({ params }: Props) {
         eyebrow="Configuration"
         title="Integrations"
         subtitle="Manage D13 webhook endpoints, test deliveries, and create partner API keys without leaving the tenant workspace."
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Outbound delivery</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Endpoints stay visible with event subscriptions and retry posture in one place.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Partner access</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">API keys are created once, revealed once, and then managed as integration inventory.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Safe operations</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Manual tests and retries reduce the need to leave the workspace when diagnosing delivery issues.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
 
       {(webhooks.isLoading || apiKeys.isLoading || webhookEvents.isLoading) ? <LoadingBlock label="Loading integrations…" /> : null}
@@ -99,7 +117,7 @@ export default function IntegrationsPage({ params }: Props) {
               <TextField label="Secret" value={secret} onChange={setSecret} required />
               <div className="grid gap-2">
                 <div className="text-[13px] font-semibold text-[var(--muted-strong)]">Subscribed events</div>
-                <div className="grid gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+                <div className="grid gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 shadow-[var(--shadow-soft)]">
                   {eventRows.map((eventRow) => {
                     const checked = subscribedEvents.includes(eventRow.code);
                     return (
@@ -156,7 +174,7 @@ export default function IntegrationsPage({ params }: Props) {
               </PrimaryButton>
             </form>
             {revealedSecret ? (
-              <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--foreground)]">
+              <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--foreground)] [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 New secret: <code>{revealedSecret}</code>
               </div>
             ) : null}
@@ -172,7 +190,7 @@ export default function IntegrationsPage({ params }: Props) {
           <CardContent className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
             <div className="grid gap-3">
               {webhookRows.map((endpoint) => (
-                <div key={endpoint.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={endpoint.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="font-semibold text-[var(--foreground)]">{endpoint.name}</div>
@@ -201,13 +219,13 @@ export default function IntegrationsPage({ params }: Props) {
               ))}
             </div>
 
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-muted)] p-5">
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-panel)] p-5 [background-image:var(--panel-highlight)] shadow-[var(--shadow-soft)]">
               <div className="text-sm font-semibold text-[var(--foreground)]">Selected endpoint deliveries</div>
               {deliveries.isLoading ? <LoadingBlock label="Loading deliveries…" /> : null}
               {deliveries.isError ? <InlineError message={getMessage(deliveries.error, "Failed to load deliveries")} /> : null}
               <div className="mt-4 grid gap-3">
                 {deliveryRows.map((delivery) => (
-                  <div key={delivery.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div key={delivery.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                     <div className="flex items-center justify-between gap-3">
                       <div className="font-medium text-[var(--foreground)]">{delivery.eventType ?? delivery.event_type}</div>
                       <Badge variant={delivery.status === "failed" ? "destructive" : "outline"}>{delivery.status}</Badge>
@@ -252,7 +270,7 @@ export default function IntegrationsPage({ params }: Props) {
           </CardHeader>
           <CardContent className="grid gap-3">
             {apiKeyRows.map((key) => (
-              <div key={key.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+              <div key={key.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-[var(--foreground)]">{key.name}</div>

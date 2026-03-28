@@ -51,25 +51,25 @@ export default function CompanyLayout({ params, children }: Props) {
   if (!session.user) return null;
 
   return (
-    <div className="min-h-dvh bg-[#f3f5f8] text-[var(--foreground)]">
+    <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
-        <SheetContent side="left" className="border-[var(--border)] bg-[#0f1723] text-white md:hidden">
+        <SheetContent side="left" className="border-[var(--shell-sidebar-border)] [background:var(--shell-sidebar-bg)] text-[var(--shell-sidebar-fg)] md:hidden">
           <div className="font-semibold text-lg tracking-[-0.02em]">GST Billing</div>
-          <div className="mt-1 text-xs text-white/60 break-all">
+          <div className="mt-1 break-all text-xs text-[var(--shell-sidebar-fg-muted)]">
             Company: {session.company?.name ?? companyId}
           </div>
           <CompanyNav companyId={companyId} variant="sheet" onNavigate={() => setNavOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      <div className="md:grid md:grid-cols-[108px_1fr]">
-        <aside className="hidden bg-[#0f1723] md:block">
-          <div className="sticky top-0 h-screen">
+      <div className="md:grid md:grid-cols-[116px_1fr]">
+        <aside className="hidden border-r border-[var(--shell-sidebar-border)] [background:var(--shell-sidebar-bg)] md:block">
+          <div className="sticky top-0 h-screen overflow-hidden">
             <CompanyNav companyId={companyId} variant="sidebar" />
           </div>
         </aside>
 
-        <div className="min-w-0">
+        <div className="min-w-0 [background-image:linear-gradient(180deg,transparent,rgba(255,255,255,0.02))]">
           <CompanyHeader companyId={companyId} onOpenNav={() => setNavOpen(true)} />
           <main className="px-4 py-5 md:px-7 md:py-7">
             <div className="mx-auto w-full max-w-[1440px]">{children}</div>

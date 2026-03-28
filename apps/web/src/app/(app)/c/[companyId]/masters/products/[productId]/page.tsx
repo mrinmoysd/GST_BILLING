@@ -3,24 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import { useCategories, useDeleteProduct, useProduct, useStockAdjustment, useUpdateProduct } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { EmptyState, InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string; productId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function ProductDetailPage({ params }: Props) {
   const resolved = React.use(params);
@@ -83,14 +76,11 @@ export default function ProductDetailPage({ params }: Props) {
         subtitle="Move into stock history or the broader catalog without losing the current item context."
       >
         <div className="flex flex-col gap-2">
-          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${resolved.companyId}/masters/products`}>
-            Back to products
+          <Link href={`/c/${resolved.companyId}/masters/products`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to products</SecondaryButton>
           </Link>
-          <Link
-            className="text-sm font-medium text-[var(--accent)] hover:underline"
-            href={`/c/${resolved.companyId}/masters/products/${resolved.productId}/stock-movements`}
-          >
-            Open stock movements
+          <Link href={`/c/${resolved.companyId}/masters/products/${resolved.productId}/stock-movements`}>
+            <SecondaryButton type="button" className="w-full justify-start">Open stock movements</SecondaryButton>
           </Link>
         </div>
       </DetailRail>
@@ -133,14 +123,11 @@ export default function ProductDetailPage({ params }: Props) {
         ]}
         actions={
           <div className="flex gap-3">
-            <Link className="text-sm underline" href={`/c/${resolved.companyId}/masters/products`}>
-              Back
+            <Link href={`/c/${resolved.companyId}/masters/products`}>
+              <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
-            <Link
-              className="text-sm underline"
-              href={`/c/${resolved.companyId}/masters/products/${resolved.productId}/stock-movements`}
-            >
-              Stock movements
+            <Link href={`/c/${resolved.companyId}/masters/products/${resolved.productId}/stock-movements`}>
+              <SecondaryButton type="button">Stock movements</SecondaryButton>
             </Link>
           </div>
         }
@@ -148,19 +135,19 @@ export default function ProductDetailPage({ params }: Props) {
           product ? (
             <PageContextStrip>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Current stock</div>
                   <div className="mt-2 text-xl font-semibold">{product.stock ?? "—"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Price</div>
                   <div className="mt-2 text-xl font-semibold">{product.price ?? "—"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Cost price</div>
                   <div className="mt-2 text-xl font-semibold">{product.costPrice ?? "—"}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax rate</div>
                   <div className="mt-2 text-xl font-semibold">{product.taxRate ?? "—"}%</div>
                 </div>
@@ -184,7 +171,7 @@ export default function ProductDetailPage({ params }: Props) {
           ]}
         >
           <DetailTabPanel value="overview" rail={productDetailRail}>
-            <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+            <Card className="[background-image:var(--surface-highlight)]">
               <CardHeader>
                 <Badge variant="secondary" className="w-fit">Catalog profile</Badge>
                 <CardTitle>{product.name}</CardTitle>
@@ -192,23 +179,23 @@ export default function ProductDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">SKU</div>
                     <div className="mt-2 text-sm font-medium">{product.sku ?? "Not set"}</div>
                   </div>
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">HSN</div>
                     <div className="mt-2 text-sm font-medium">{product.hsn ?? "Not set"}</div>
                   </div>
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Current stock</div>
                     <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{product.stock ?? "—"}</div>
                   </div>
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax rate</div>
                     <div className="mt-2 text-sm font-medium">{product.taxRate ?? "—"}%</div>
                   </div>
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Batch mode</div>
                     <div className="mt-2 text-sm font-medium">
                       {product.batchTrackingEnabled || product.batch_tracking_enabled
@@ -242,11 +229,16 @@ export default function ProductDetailPage({ params }: Props) {
                       await adjust.mutateAsync({ changeQty: qty, note: note || undefined });
                       setChangeQty("");
                       setNote("");
-                      toast.success("Stock adjusted");
+                      toastSuccess("Stock adjusted.");
                     } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Stock adjustment failed");
+                      const message = getErrorMessage(e, "Stock adjustment failed.");
                       setFormError(message);
-                      toast.error(message);
+                      toastError(e, {
+                        fallback: "Stock adjustment failed.",
+                        title: message,
+                        context: "product-stock-adjust",
+                        metadata: { companyId: resolved.companyId, productId: resolved.productId },
+                      });
                     }
                   }}
                 >
@@ -292,11 +284,16 @@ export default function ProductDetailPage({ params }: Props) {
                             ? Number(nearExpiryDays)
                             : null,
                       });
-                      toast.success("Product updated");
+                      toastSuccess("Product updated.");
                     } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to update product");
+                      const message = getErrorMessage(e, "Failed to update product.");
                       setFormError(message);
-                      toast.error(message);
+                      toastError(e, {
+                        fallback: "Failed to update product.",
+                        title: message,
+                        context: "product-update",
+                        metadata: { companyId: resolved.companyId, productId: resolved.productId },
+                      });
                     }
                   }}
                 >
@@ -363,12 +360,17 @@ export default function ProductDetailPage({ params }: Props) {
                         if (!ok) return;
                         try {
                           await del.mutateAsync();
-                          toast.success("Product deleted");
+                          toastSuccess("Product deleted.");
                           router.replace(`/c/${resolved.companyId}/masters/products`);
                         } catch (e: unknown) {
-                          const message = getErrorMessage(e, "Failed to delete product");
+                          const message = getErrorMessage(e, "Failed to delete product.");
                           setFormError(message);
-                          toast.error(message);
+                          toastError(e, {
+                            fallback: "Failed to delete product.",
+                            title: message,
+                            context: "product-delete",
+                            metadata: { companyId: resolved.companyId, productId: resolved.productId },
+                          });
                         }
                       }}
                     >

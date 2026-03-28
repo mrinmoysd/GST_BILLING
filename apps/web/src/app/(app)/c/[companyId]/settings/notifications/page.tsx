@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useCreateNotificationTemplate,
   useNotificationOutbox,
@@ -14,20 +14,13 @@ import {
   useTestNotification,
   useUpdateNotificationTemplate,
 } from "@/lib/settings/notificationsHooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function NotificationsSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -114,11 +107,16 @@ export default function NotificationsSettingsPage({ params }: Props) {
                 await create.mutateAsync({ code: code.trim(), channel, subject: subject.trim() || undefined, body });
                 setCode("");
                 setSubject("");
-                toast.success("Template created");
+                toastSuccess("Template created.");
               } catch (e: unknown) {
-                const message = getErrorMessage(e, "Failed to create template");
+                const message = getErrorMessage(e, "Failed to create template.");
                 setError(message);
-                toast.error(message);
+                toastError(e, {
+                  fallback: "Failed to create template.",
+                  title: message,
+                  context: "notifications-template-create",
+                  metadata: { companyId, code: code.trim(), channel },
+                });
               }
             }}
           >
@@ -179,12 +177,17 @@ export default function NotificationsSettingsPage({ params }: Props) {
                     sample_payload: payload,
                   });
                   setTestOk("Queued test notification.");
-                  toast.success("Test notification queued");
+                  toastSuccess("Test notification queued.");
                   void outbox.refetch();
                 } catch (e: unknown) {
-                  const message = getErrorMessage(e, "Failed to queue test");
+                  const message = getErrorMessage(e, "Failed to queue test.");
                   setTestError(message);
-                  toast.error(message);
+                  toastError(e, {
+                    fallback: "Failed to queue test.",
+                    title: message,
+                    context: "notifications-test",
+                    metadata: { companyId, channel, templateCode: testTemplateCode },
+                  });
                 }
               }}
             >
@@ -199,12 +202,17 @@ export default function NotificationsSettingsPage({ params }: Props) {
                 try {
                   await processOutbox.mutateAsync();
                   setTestOk("Processed pending notifications.");
-                  toast.success("Processed pending notifications");
+                  toastSuccess("Processed pending notifications.");
                   void outbox.refetch();
                 } catch (e: unknown) {
-                  const message = getErrorMessage(e, "Failed to process outbox");
+                  const message = getErrorMessage(e, "Failed to process outbox.");
                   setTestError(message);
-                  toast.error(message);
+                  toastError(e, {
+                    fallback: "Failed to process outbox.",
+                    title: message,
+                    context: "notifications-process-outbox",
+                    metadata: { companyId },
+                  });
                 }
               }}
             >
@@ -250,9 +258,13 @@ export default function NotificationsSettingsPage({ params }: Props) {
                           if (!newName || !newName.trim()) return;
                           try {
                             await update.mutateAsync({ templateId: t.id, patch: { subject: newName.trim() } });
-                            toast.success("Template updated");
+                            toastSuccess("Template updated.");
                           } catch (e: unknown) {
-                            toast.error(getErrorMessage(e, "Failed to update template"));
+                            toastError(e, {
+                              fallback: "Failed to update template.",
+                              context: "notifications-template-update",
+                              metadata: { companyId, templateId: t.id },
+                            });
                           }
                         }}
                       >
@@ -311,9 +323,13 @@ export default function NotificationsSettingsPage({ params }: Props) {
                             onClick={async () => {
                               try {
                                 await retryNotification.mutateAsync(row.id);
-                                toast.success("Notification retry queued");
+                                toastSuccess("Notification retry queued.");
                               } catch (e: unknown) {
-                                toast.error(getErrorMessage(e, "Retry failed"));
+                                toastError(e, {
+                                  fallback: "Retry failed.",
+                                  context: "notifications-retry",
+                                  metadata: { companyId, notificationId: row.id },
+                                });
                               }
                             }}
                           >

@@ -19,17 +19,11 @@ import {
   ComposerWarningStack,
 } from "@/lib/ui/composer";
 import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectControl, SelectField, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatPricingSource(source?: string | null) {
   switch (source) {
@@ -574,11 +568,11 @@ export default function NewInvoicePage({ params }: Props) {
                   <React.Fragment key={l.id}>
                   <tr className="border-t border-[var(--border)]">
                     <td className="px-3 py-2">
-                      <select
-                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                      <SelectControl
+                        ariaLabel={`Line ${idx + 1} product`}
+                        className="w-full px-3 py-2"
                         value={l.productId}
-                        onChange={(e) => {
-                          const next = e.target.value;
+                        onChange={(next) => {
                           setLines((prev) =>
                             prev.map((x) =>
                               x.id === l.id
@@ -606,7 +600,7 @@ export default function NewInvoicePage({ params }: Props) {
                             {p.name}
                           </option>
                         ))}
-                      </select>
+                      </SelectControl>
                       <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
                       {l.productId ? (
                         <div className="mt-1 text-xs text-[var(--muted)]">
@@ -735,10 +729,11 @@ export default function NewInvoicePage({ params }: Props) {
                           <div className="space-y-2">
                             {l.batchAllocations.map((allocation) => (
                               <div key={allocation.id} className="grid gap-2 lg:grid-cols-[1.4fr_0.8fr_auto]">
-                                <select
-                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                <SelectControl
+                                  ariaLabel={`Preferred batch for line ${idx + 1}`}
+                                  className="px-3 py-2"
                                   value={allocation.productBatchId}
-                                  onChange={(e) =>
+                                  onChange={(value) =>
                                     setLines((prev) =>
                                       prev.map((line) =>
                                         line.id === l.id
@@ -746,7 +741,7 @@ export default function NewInvoicePage({ params }: Props) {
                                               ...line,
                                               batchAllocations: line.batchAllocations.map((entry) =>
                                                 entry.id === allocation.id
-                                                  ? { ...entry, productBatchId: e.target.value }
+                                                  ? { ...entry, productBatchId: value }
                                                   : entry,
                                               ),
                                             }
@@ -765,7 +760,7 @@ export default function NewInvoicePage({ params }: Props) {
                                           : "")}
                                     </option>
                                   ))}
-                                </select>
+                                </SelectControl>
                                 <input
                                   className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
                                   value={allocation.quantity}

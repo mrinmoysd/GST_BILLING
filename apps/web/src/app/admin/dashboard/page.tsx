@@ -7,14 +7,8 @@ import { useAdminDashboard } from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminDashboardPage() {
   const query = useAdminDashboard();
@@ -141,9 +135,9 @@ export default function AdminDashboardPage() {
                   </div>
                 ))}
                 {(data.recent_webhook_failures ?? []).map((event) => (
-                  <div key={`webhook-${event.id}`} className="rounded-2xl border border-red-200 bg-[#fff6f3] p-4">
+                  <div key={`webhook-${event.id}`} className="rounded-2xl border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-4">
                     <div className="font-semibold">{event.provider}: {event.event_type}</div>
-                    <div className="mt-1 text-xs text-[#7e3128]">{event.error || "Webhook failure"}</div>
+                    <div className="mt-1 text-xs text-[var(--foreground)]">{event.error || "Webhook failure"}</div>
                   </div>
                 ))}
               </div>
@@ -161,7 +155,7 @@ export default function AdminDashboardPage() {
           {cards.map((card) => (
             <Link
               key={card.href}
-              className="rounded-[28px] border border-[var(--border)] bg-[rgba(255,255,255,0.9)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-muted)]"
+              className="rounded-[28px] border border-[var(--border)] bg-[var(--surface-elevated)] p-5 shadow-[var(--shadow-soft)] transition [background-image:var(--surface-highlight)] hover:-translate-y-0.5 hover:border-[var(--secondary-soft)]"
               href={card.href}
             >
               <div className="font-semibold text-[var(--foreground)]">{card.title}</div>

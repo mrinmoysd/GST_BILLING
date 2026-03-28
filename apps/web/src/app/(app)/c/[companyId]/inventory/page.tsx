@@ -17,16 +17,10 @@ import {
   QueueShell,
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InventoryPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -150,7 +144,7 @@ export default function InventoryPage({ params }: Props) {
                       { label: "Gap", value: Math.max(0, Number(selectedItem.reorderLevel ?? 0) - Number(selectedItem.stock ?? 0)) },
                     ]}
                   />
-                  <div className="rounded-2xl bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--muted)]">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm leading-6 text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     Work warehouse transfers, batch availability, and replenishment decisions from the linked inventory pages.
                   </div>
                 </>
@@ -173,11 +167,11 @@ export default function InventoryPage({ params }: Props) {
                 {filteredItems.map((p) => (
                   <DataTr
                     key={p.id}
-                    className={selectedItem?.id === p.id ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    className={selectedItem?.id === p.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
                     onClick={() => setSelectedProductId(p.id)}
                   >
                     <DataTd>
-                      <Link className="font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/masters/products/${p.id}`}>
+                      <Link className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]" href={`/c/${companyId}/masters/products/${p.id}`}>
                         {p.name}
                       </Link>
                     </DataTd>

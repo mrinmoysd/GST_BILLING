@@ -6,21 +6,14 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { getErrorMessage } from "@/lib/errors";
 import { useAdminSubscription, useUpdateAdminSubscription } from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = {
   params: Promise<{ subscriptionId: string }>;
 };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminSubscriptionDetailPage({ params }: Props) {
   const { subscriptionId } = React.use(params);
@@ -146,18 +139,13 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <label className="block">
-                  <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Plan</div>
-                  <select
-                    className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                    value={selectedPlan}
-                    onChange={(e) => setSelectedPlan(e.target.value)}
-                  >
+                  <SelectField label="Plan" value={selectedPlan} onChange={setSelectedPlan}>
                     {(subscription.available_plans ?? []).map((plan) => (
                       <option key={plan.code} value={plan.code}>
                         {plan.name} ({plan.code}) · INR {plan.price_inr}/{plan.billing_interval}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
                 <TextField label="Operator note" value={note} onChange={setNote} placeholder="Optional action note" />
                 <div className="flex flex-wrap gap-3">

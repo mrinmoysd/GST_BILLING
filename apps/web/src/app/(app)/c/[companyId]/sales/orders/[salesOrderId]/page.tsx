@@ -14,21 +14,15 @@ import {
   useSalesOrder,
 } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
+import { getErrorMessage } from "@/lib/errors";
 import { useWarehouses } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
-import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; salesOrderId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function SalesOrderDetailPage({ params }: Props) {
   const { companyId, salesOrderId } = React.use(params);
@@ -65,11 +59,19 @@ export default function SalesOrderDetailPage({ params }: Props) {
   const canConfirm = status === "draft";
   const canConvert = status === "confirmed" || status === "partially_fulfilled";
 
-  async function runAction(action: () => Promise<unknown>, fallback: string) {
+  async function runAction(
+    action: () => Promise<unknown>,
+    messages: { success: string; failure: string },
+  ) {
     try {
       await action();
+      toastSuccess(messages.success);
     } catch (err) {
-      window.alert(getErrorMessage(err, fallback));
+      toastError(err, {
+        fallback: messages.failure,
+        context: "sales-order-action",
+        metadata: { companyId, salesOrderId },
+      });
     }
   }
 
@@ -102,12 +104,32 @@ export default function SalesOrderDetailPage({ params }: Props) {
             <SecondaryButton type="button" className="w-full justify-start">Dispatch queue</SecondaryButton>
           </Link>
           {canConfirm ? (
-            <SecondaryButton type="button" className="w-full justify-start" disabled={confirm.isPending} onClick={() => runAction(() => confirm.mutateAsync(), "Failed to confirm sales order")}>
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={confirm.isPending}
+              onClick={() =>
+                runAction(() => confirm.mutateAsync(), {
+                  success: "Sales order confirmed.",
+                  failure: "Failed to confirm sales order.",
+                })
+              }
+            >
               {confirm.isPending ? "Confirming…" : "Confirm order"}
             </SecondaryButton>
           ) : null}
           {status !== "fulfilled" && status !== "cancelled" ? (
-            <SecondaryButton type="button" className="w-full justify-start" disabled={cancel.isPending || status === "partially_fulfilled"} onClick={() => runAction(() => cancel.mutateAsync(), "Failed to cancel sales order")}>
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={cancel.isPending || status === "partially_fulfilled"}
+              onClick={() =>
+                runAction(() => cancel.mutateAsync(), {
+                  success: "Sales order cancelled.",
+                  failure: "Failed to cancel sales order.",
+                })
+              }
+            >
               {cancel.isPending ? "Cancelling…" : "Cancel order"}
             </SecondaryButton>
           ) : null}
@@ -150,12 +172,30 @@ export default function SalesOrderDetailPage({ params }: Props) {
               <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
             {canConfirm ? (
-              <SecondaryButton type="button" disabled={confirm.isPending} onClick={() => runAction(() => confirm.mutateAsync(), "Failed to confirm sales order")}>
+              <SecondaryButton
+                type="button"
+                disabled={confirm.isPending}
+                onClick={() =>
+                  runAction(() => confirm.mutateAsync(), {
+                    success: "Sales order confirmed.",
+                    failure: "Failed to confirm sales order.",
+                  })
+                }
+              >
                 Confirm
               </SecondaryButton>
             ) : null}
             {status !== "fulfilled" && status !== "cancelled" ? (
-              <SecondaryButton type="button" disabled={cancel.isPending || status === "partially_fulfilled"} onClick={() => runAction(() => cancel.mutateAsync(), "Failed to cancel sales order")}>
+              <SecondaryButton
+                type="button"
+                disabled={cancel.isPending || status === "partially_fulfilled"}
+                onClick={() =>
+                  runAction(() => cancel.mutateAsync(), {
+                    success: "Sales order cancelled.",
+                    failure: "Failed to cancel sales order.",
+                  })
+                }
+              >
                 Cancel
               </SecondaryButton>
             ) : null}
@@ -225,21 +265,16 @@ export default function SalesOrderDetailPage({ params }: Props) {
             {challanError ? <InlineError message={challanError} /> : null}
             <div className="space-y-4">
               <div className="grid gap-3">
-                <label className="block space-y-2">
-                  <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Warehouse</span>
-                  <select
-                    className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm text-[var(--foreground)] shadow-sm outline-none"
-                    value={warehouseId}
-                    onChange={(e) => setWarehouseId(e.target.value)}
-                  >
+                <div>
+                  <SelectField label="Warehouse" value={warehouseId} onChange={setWarehouseId}>
                     <option value="">Select warehouse</option>
                     {warehouseRows.map((warehouse) => (
                       <option key={warehouse.id} value={warehouse.id}>
                         {warehouse.name ?? warehouse.id}{warehouse.code ? ` • ${warehouse.code}` : ""}
                       </option>
                     ))}
-                  </select>
-                </label>
+                  </SelectField>
+                </div>
                 <label className="block space-y-2">
                   <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Transporter</span>
                   <input
@@ -313,9 +348,17 @@ export default function SalesOrderDetailPage({ params }: Props) {
                       dispatch_notes: dispatchNotes || undefined,
                       items: challanItems,
                     });
+                    toastSuccess("Delivery challan created.");
                     router.push(`/c/${companyId}/sales/challans/${res.data.id}`);
                   } catch (err) {
-                    setChallanError(getErrorMessage(err, "Failed to create delivery challan"));
+                    const message = getErrorMessage(err, "Failed to create delivery challan.");
+                    setChallanError(message);
+                    toastError(err, {
+                      fallback: "Failed to create delivery challan.",
+                      title: message,
+                      context: "sales-order-create-challan",
+                      metadata: { companyId, salesOrderId },
+                    });
                   }
                 }}
               >
@@ -365,9 +408,17 @@ export default function SalesOrderDetailPage({ params }: Props) {
                       }))
                       .filter((entry) => entry.sales_order_item_id && Number(entry.quantity) > 0);
                     const res = await convert.mutateAsync({ items: itemsToConvert });
+                    toastSuccess("Sales order converted to invoice.");
                     router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
                   } catch (err) {
-                    setConvertError(getErrorMessage(err, "Failed to convert sales order"));
+                    const message = getErrorMessage(err, "Failed to convert sales order.");
+                    setConvertError(message);
+                    toastError(err, {
+                      fallback: "Failed to convert sales order.",
+                      title: message,
+                      context: "sales-order-convert",
+                      metadata: { companyId, salesOrderId },
+                    });
                   }
                 }}
               >

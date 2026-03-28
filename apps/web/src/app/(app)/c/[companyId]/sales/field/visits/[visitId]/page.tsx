@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 
 import { useInvoices } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useCheckInVisit,
   useCheckOutVisit,
@@ -16,6 +16,7 @@ import {
   useVisit,
 } from "@/lib/field-sales/hooks";
 import { useProducts } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
@@ -28,14 +29,6 @@ type DraftLine = {
   unit_price: string;
   discount: string;
 };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function FieldVisitDetailPage({ params }: Props) {
   const { companyId, visitId } = React.use(params);
@@ -100,9 +93,13 @@ export default function FieldVisitDetailPage({ params }: Props) {
               onClick={async () => {
                 try {
                   await checkIn.mutateAsync({});
-                  toast.success("Visit started");
+                  toastSuccess("Visit started.");
                 } catch (err) {
-                  toast.error(getErrorMessage(err, "Failed to start visit"));
+                  toastError(err, {
+                    fallback: "Failed to start visit.",
+                    context: "field-visit-check-in",
+                    metadata: { companyId, visitId },
+                  });
                 }
               }}
             >
@@ -114,9 +111,13 @@ export default function FieldVisitDetailPage({ params }: Props) {
               onClick={async () => {
                 try {
                   await checkOut.mutateAsync({});
-                  toast.success("Check-out captured");
+                  toastSuccess("Check-out captured.");
                 } catch (err) {
-                  toast.error(getErrorMessage(err, "Failed to check out"));
+                  toastError(err, {
+                    fallback: "Failed to check out.",
+                    context: "field-visit-check-out",
+                    metadata: { companyId, visitId },
+                  });
                 }
               }}
             >
@@ -144,9 +145,13 @@ export default function FieldVisitDetailPage({ params }: Props) {
                       notes: completionNotes || undefined,
                       next_follow_up_date: nextFollowUpDate || undefined,
                     });
-                    toast.success("Visit completed");
+                    toastSuccess("Visit completed.");
                   } catch (err) {
-                    toast.error(getErrorMessage(err, "Failed to complete visit"));
+                    toastError(err, {
+                      fallback: "Failed to complete visit.",
+                      context: "field-visit-complete",
+                      metadata: { companyId, visitId, outcome: completionOutcome },
+                    });
                   }
                 }}
               >
@@ -172,7 +177,7 @@ export default function FieldVisitDetailPage({ params }: Props) {
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">Notes</label>
                   <textarea
-                    className="min-h-24 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm outline-none transition focus:border-[var(--accent-soft)]"
+                    className="min-h-24 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 py-3 text-sm outline-none transition focus:border-[var(--accent-soft)]"
                     value={completionNotes}
                     onChange={(event) => setCompletionNotes(event.target.value)}
                     placeholder="What happened at the outlet?"
@@ -193,9 +198,13 @@ export default function FieldVisitDetailPage({ params }: Props) {
                     onClick={async () => {
                       try {
                         await markMissed.mutateAsync({ remarks: missedReason || "Missed visit" });
-                        toast.success("Visit marked as missed");
+                        toastSuccess("Visit marked as missed.");
                       } catch (err) {
-                        toast.error(getErrorMessage(err, "Failed to mark visit as missed"));
+                        toastError(err, {
+                          fallback: "Failed to mark visit as missed.",
+                          context: "field-visit-mark-missed",
+                          metadata: { companyId, visitId },
+                        });
                       }
                     }}
                   >
@@ -222,9 +231,13 @@ export default function FieldVisitDetailPage({ params }: Props) {
                     setCollectionPromisedAmount("");
                     setCollectionPromisedDate("");
                     setCollectionRemarks("");
-                    toast.success("Collection update captured");
+                    toastSuccess("Collection update captured.");
                   } catch (err) {
-                    toast.error(getErrorMessage(err, "Failed to capture collection update"));
+                    toastError(err, {
+                      fallback: "Failed to capture collection update.",
+                      context: "field-visit-collection-update",
+                      metadata: { companyId, visitId, invoiceId: collectionInvoiceId },
+                    });
                   }
                 }}
               >
@@ -249,7 +262,7 @@ export default function FieldVisitDetailPage({ params }: Props) {
           <WorkspacePanel title="Quick commercial capture" subtitle="Create a real sales order or quotation from the visit without switching to the office workflow.">
             <div className="grid gap-4">
               {lines.map((line, index) => (
-                <div key={`line-${index}`} className="grid gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 md:grid-cols-4">
+                <div key={`line-${index}`} className="grid gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 shadow-[var(--shadow-soft)] md:grid-cols-4">
                   <SelectField
                     label={`Product ${index + 1}`}
                     value={line.product_id}
@@ -326,10 +339,14 @@ export default function FieldVisitDetailPage({ params }: Props) {
                         })),
                       });
                       const orderId = ((res as unknown as { data?: { id?: string } }).data?.id);
-                      toast.success("Field sales order created");
+                      toastSuccess("Field sales order created.");
                       if (orderId) window.location.href = `/c/${companyId}/sales/orders/${orderId}`;
                     } catch (err) {
-                      toast.error(getErrorMessage(err, "Failed to create sales order"));
+                      toastError(err, {
+                        fallback: "Failed to create sales order.",
+                        context: "field-visit-create-sales-order",
+                        metadata: { companyId, visitId },
+                      });
                     }
                   }}
                 >
@@ -351,10 +368,14 @@ export default function FieldVisitDetailPage({ params }: Props) {
                         })),
                       });
                       const quotationId = ((res as unknown as { data?: { id?: string } }).data?.id);
-                      toast.success("Field quotation created");
+                      toastSuccess("Field quotation created.");
                       if (quotationId) window.location.href = `/c/${companyId}/sales/quotations/${quotationId}`;
                     } catch (err) {
-                      toast.error(getErrorMessage(err, "Failed to create quotation"));
+                      toastError(err, {
+                        fallback: "Failed to create quotation.",
+                        context: "field-visit-create-quotation",
+                        metadata: { companyId, visitId },
+                      });
                     }
                   }}
                 >

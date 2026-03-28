@@ -8,6 +8,7 @@ import { ArrowRight, LogOut, Menu, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { ThemeMenuItems } from "@/components/ui/theme-menu-items";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAdminLogout } from "@/lib/admin/auth-hooks";
 import { useAdminAuth } from "@/lib/admin/session";
+import { toastError, toastInfo } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 function makeBreadcrumbs(pathname: string | null) {
@@ -53,8 +55,8 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
   const breadcrumbItems = React.useMemo(() => makeBreadcrumbs(pathname), [pathname]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[rgba(255,253,248,0.88)] backdrop-blur supports-[backdrop-filter]:bg-[rgba(255,253,248,0.72)]">
-      <div className="flex min-h-16 items-center gap-3 px-4 md:px-6">
+    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--shell-header-bg)] backdrop-blur supports-[backdrop-filter]:bg-[var(--shell-header-bg)]">
+      <div className="flex min-h-16 items-center gap-3 [background-image:var(--shell-header-highlight)] px-4 md:px-6">
         <Button
           type="button"
           variant="ghost"
@@ -83,7 +85,7 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/dashboard"
-            className="hidden items-center gap-1 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] md:inline-flex"
+            className="hidden items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] md:inline-flex"
           >
             Tenant app
             <ArrowRight className="h-3.5 w-3.5" />
@@ -92,8 +94,8 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
           {mounted ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
-                  <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
+                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                  <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
                   <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -105,11 +107,20 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
                     Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
                   </div>
                 </div>
+                <ThemeMenuItems />
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={async (e) => {
                     e.preventDefault();
-                    await logout.mutateAsync();
+                    try {
+                      await logout.mutateAsync();
+                      toastInfo("Signed out.");
+                    } catch (error) {
+                      toastError(error, {
+                        fallback: "We signed you out locally, but could not confirm it with the server.",
+                        context: "admin-logout",
+                      });
+                    }
                     router.replace("/admin/login");
                   }}
                   className={cn(logout.isPending && "pointer-events-none opacity-60")}
@@ -120,15 +131,15 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]" disabled>
-              <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
+            <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]" disabled>
+              <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
               <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
             </Button>
           )}
         </div>
       </div>
 
-      <div className="px-4 pb-3 md:hidden">
+      <div className="border-t border-[var(--border)]/80 px-4 pb-3 pt-3 md:hidden">
         <Breadcrumbs items={breadcrumbItems} />
       </div>
     </header>

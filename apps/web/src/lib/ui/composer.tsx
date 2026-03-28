@@ -29,7 +29,7 @@ export function ComposerStepBar(props: {
   return (
     <section
       className={cn(
-        "rounded-[30px] border border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,244,238,0.94))] p-4 shadow-[var(--shadow-soft)] md:p-5",
+        "rounded-[30px] border border-[var(--border)] [background-image:var(--surface-header-tenant)] p-4 shadow-[var(--shadow-soft)] md:p-5",
         props.className,
       )}
     >
@@ -42,10 +42,10 @@ export function ComposerStepBar(props: {
               className={cn(
                 "rounded-[24px] border px-4 py-4 transition",
                 state === "current"
-                  ? "border-[rgba(180,104,44,0.28)] bg-[rgba(180,104,44,0.12)]"
+                  ? "border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
                   : state === "complete"
-                    ? "border-[rgba(32,88,62,0.14)] bg-[rgba(32,88,62,0.08)]"
-                    : "border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.78)]",
+                    ? "border-[var(--border)] bg-[var(--accent-soft)]"
+                    : "border-[var(--border)] bg-[var(--surface-panel-glass)]",
               )}
             >
               <div className="flex items-start gap-3">
@@ -55,8 +55,8 @@ export function ComposerStepBar(props: {
                     state === "current"
                       ? "bg-[var(--accent)] text-white"
                       : state === "complete"
-                        ? "bg-[rgba(32,88,62,0.12)] text-[#20583e]"
-                        : "bg-[rgba(23,32,51,0.08)] text-[var(--muted-strong)]",
+                        ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                        : "bg-[var(--surface-shell)] text-[var(--muted-strong)]",
                   )}
                 >
                   {index + 1}
@@ -68,10 +68,10 @@ export function ComposerStepBar(props: {
                       className={cn(
                         "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
                         state === "current"
-                          ? "bg-[rgba(180,104,44,0.16)] text-[var(--accent)]"
+                          ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                           : state === "complete"
-                            ? "bg-[rgba(32,88,62,0.12)] text-[#20583e]"
-                            : "bg-[rgba(23,32,51,0.08)] text-[var(--muted)]",
+                            ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                            : "bg-[var(--surface-shell)] text-[var(--muted)]",
                       )}
                     >
                       {state === "current" ? "In focus" : state === "complete" ? "Ready" : "Upcoming"}
@@ -116,8 +116,8 @@ export function ComposerSection(props: {
       className={cn(
         "rounded-[30px] border p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.tone === "muted"
-          ? "border-[rgba(23,32,51,0.08)] bg-[rgba(248,246,242,0.92)]"
-          : "border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.92)]",
+          ? "border-[var(--border)] bg-[var(--surface-panel-muted)]"
+          : "border-[var(--border)] bg-[var(--surface-panel)]",
         props.className,
       )}
     >
@@ -144,7 +144,7 @@ export function ComposerSummaryRail(props: {
   return (
     <aside
       className={cn(
-        "rounded-[30px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.96)] p-5 shadow-[var(--shadow-soft)] md:p-6",
+        "rounded-[30px] border border-[var(--border)] bg-[var(--surface-panel)] p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.className,
       )}
     >
@@ -170,7 +170,7 @@ export function ComposerMetricCard(props: {
       className={cn(
         "rounded-[24px] border px-4 py-4",
         props.strong
-          ? "border-[rgba(180,104,44,0.18)] bg-[rgba(180,104,44,0.08)]"
+          ? "border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
           : "border-[var(--border)] bg-[var(--surface-muted)]",
         props.className,
       )}
@@ -217,7 +217,7 @@ export function ComposerStickyActions(props: {
   return (
     <div
       className={cn(
-        "sticky bottom-4 rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.96)] p-4 shadow-[var(--shadow-soft)] backdrop-blur-sm",
+        "sticky bottom-4 rounded-[24px] border border-[var(--border)] bg-[var(--surface-panel)] p-4 shadow-[var(--shadow-soft)] backdrop-blur-sm",
         props.className,
       )}
     >

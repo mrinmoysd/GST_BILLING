@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ThemeMenuItems } from "@/components/ui/theme-menu-items";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth/session";
 import { useLogout } from "@/lib/auth/hooks";
+import { logError } from "@/lib/errors";
+import { toastError, toastInfo } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   flattenCommandLinks,
@@ -101,7 +104,11 @@ export function CompanyHeader(props: {
       const next = [nextItem, ...current.filter((item) => item.href !== pathname)].slice(0, 8);
       window.localStorage.setItem(storageKey, JSON.stringify(next));
       setRecentItems(next);
-    } catch {
+    } catch (error) {
+      logError(error, "company-header-store-recents", {
+        companyId: props.companyId,
+        pathname,
+      });
       setRecentItems([nextItem]);
     }
   }, [pathname, props.companyId, workflows]);
@@ -111,7 +118,10 @@ export function CompanyHeader(props: {
     try {
       const current = JSON.parse(window.localStorage.getItem(storageKey) ?? "[]") as RecentItem[];
       setRecentItems(current);
-    } catch {
+    } catch (error) {
+      logError(error, "company-header-load-recents", {
+        companyId: props.companyId,
+      });
       setRecentItems([]);
     }
   }, [props.companyId]);
@@ -130,8 +140,8 @@ export function CompanyHeader(props: {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[rgba(247,248,250,0.92)] backdrop-blur supports-[backdrop-filter]:bg-[rgba(247,248,250,0.82)]">
-        <div className="border-b border-[var(--border)]/80 px-4 py-3 md:px-6">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--shell-header-bg)] backdrop-blur supports-[backdrop-filter]:bg-[var(--shell-header-bg)]">
+        <div className="border-b border-[var(--border)]/80 [background-image:var(--shell-header-highlight)] px-4 py-3 md:px-6">
           <div className="flex items-center gap-3">
             <Button
               type="button"
@@ -146,14 +156,18 @@ export function CompanyHeader(props: {
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="hidden md:inline-flex">
+                <Badge variant="outline" className="hidden bg-[var(--shell-subnav-chip)] md:inline-flex">
                   {activeWorkflow?.label ?? "Workspace"}
+                </Badge>
+                <Badge variant="secondary" className="hidden lg:inline-flex">
+                  {session.user?.assigned_roles?.[0] ?? session.user?.role ?? "operator"}
                 </Badge>
                 <div className="text-sm font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                   {label}
                 </div>
               </div>
-              <div className="mt-1 text-xs text-[var(--muted)]">
+              <div className="mt-1 flex items-center gap-2 text-xs text-[var(--muted)]">
+                <span className="hidden h-1.5 w-1.5 rounded-full bg-[var(--success)] md:inline-block" />
                 {activeWorkflow?.description ?? "Workflow-centered workspace"}
               </div>
             </div>
@@ -161,7 +175,7 @@ export function CompanyHeader(props: {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="ml-auto hidden min-w-[280px] items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:flex"
+              className="ml-auto hidden min-w-[280px] items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:flex"
             >
               <Search className="h-4 w-4" />
               <span>Search workflows, pages, and tools</span>
@@ -173,7 +187,7 @@ export function CompanyHeader(props: {
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
+                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
                     <Plus className="h-4 w-4" />
                     <span className="hidden md:inline">Quick create</span>
                   </Button>
@@ -196,7 +210,7 @@ export function CompanyHeader(props: {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
+                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
                     <Clock3 className="h-4 w-4" />
                     <span className="hidden md:inline">Recent</span>
                   </Button>
@@ -224,7 +238,8 @@ export function CompanyHeader(props: {
               {mounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]">
+                    <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                      <span className="hidden h-2 w-2 rounded-full bg-[var(--success)] md:inline-block" />
                       <span className="hidden max-w-[18ch] truncate md:inline">{label}</span>
                       <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
                     </Button>
@@ -233,18 +248,28 @@ export function CompanyHeader(props: {
                     <div className="px-2 py-1.5">
                       <div className="text-xs text-[var(--muted)]">Signed in as</div>
                       <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
-                      <div className="mt-1 text-xs text-[var(--muted)]">
-                        Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
-                      </div>
+                    <div className="mt-1 text-xs text-[var(--muted)]">
+                      Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => router.push("/dashboard")}>
-                      Switch workspace
+                  </div>
+                  <ThemeMenuItems />
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => router.push("/dashboard")}>
+                    Switch workspace
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={async (event) => {
                         event.preventDefault();
-                        await logout.mutateAsync();
+                        try {
+                          await logout.mutateAsync();
+                          toastInfo("Signed out.");
+                        } catch (error) {
+                          toastError(error, {
+                            fallback: "We signed you out locally, but could not confirm it with the server.",
+                            context: "tenant-logout",
+                            metadata: { companyId: props.companyId },
+                          });
+                        }
                         router.replace("/login");
                       }}
                       className={cn(logout.isPending && "pointer-events-none opacity-60")}
@@ -255,7 +280,7 @@ export function CompanyHeader(props: {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface)]" disabled>
+                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]" disabled>
                   <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
                 </Button>
               )}
@@ -265,7 +290,7 @@ export function CompanyHeader(props: {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="mt-3 flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:hidden"
+            className="mt-3 flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:hidden"
           >
             <Search className="h-4 w-4" />
             <span>Search workflows and pages</span>
@@ -274,26 +299,34 @@ export function CompanyHeader(props: {
         </div>
 
         {activeWorkflow?.links?.length ? (
-          <div className="flex items-center gap-3 overflow-x-auto px-4 py-3 md:px-6">
-            {activeWorkflow.links.map((link) => {
-              const href = toCompanyHref(props.companyId, link.href);
-              const active =
-                pathname === href || pathname?.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={link.href}
-                  href={href}
-                  className={cn(
-                    "group rounded-full border px-3 py-2 text-sm whitespace-nowrap",
-                    active
-                      ? "border-[var(--border-strong)] bg-[var(--surface)] font-semibold text-[var(--foreground)] shadow-sm"
-                      : "border-transparent text-[var(--muted-strong)] hover:border-[var(--border)] hover:bg-[var(--surface)]",
-                  )}
-                >
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
+          <div className="border-t border-[var(--border)]/80 px-4 py-3 md:px-6">
+            <div className="flex items-center gap-3 overflow-x-auto">
+              <div className="hidden shrink-0 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--shell-subnav-chip)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-strong)] lg:flex">
+                Active lane
+              </div>
+              <div className="flex items-center gap-2 rounded-[22px] border border-[var(--border)] bg-[var(--shell-subnav-bg)] p-1.5 shadow-[var(--shadow-soft)]">
+                {activeWorkflow.links.map((link) => {
+                  const href = toCompanyHref(props.companyId, link.href);
+                  const active =
+                    pathname === href || pathname?.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={href}
+                      title={link.hint}
+                      className={cn(
+                        "group rounded-full border px-3 py-2 text-sm whitespace-nowrap transition-colors",
+                        active
+                          ? "border-[var(--row-selected-border)] bg-[var(--surface-elevated)] font-semibold text-[var(--foreground)] shadow-sm"
+                          : "border-transparent text-[var(--muted-strong)] hover:border-[var(--border)] hover:bg-[var(--surface)]",
+                      )}
+                    >
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : null}
       </header>

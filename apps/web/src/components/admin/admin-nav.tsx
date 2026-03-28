@@ -120,15 +120,17 @@ export function AdminNav(props: {
                     href={item.href}
                     onClick={props.onNavigate}
                     className={cn(
-                      "group flex items-start gap-3 rounded-2xl px-3 py-3 text-sm text-[var(--muted-strong)] transition hover:bg-[var(--surface-muted)]",
-                      active && "bg-[var(--surface-muted)] font-semibold text-[var(--foreground)] shadow-sm",
+                      "group flex items-start gap-3 rounded-2xl border px-3 py-3 text-sm text-[var(--muted-strong)] transition",
+                      active
+                        ? "border-[var(--row-selected-border)] bg-[var(--surface-secondary)] font-semibold text-[var(--foreground)] shadow-sm"
+                        : "border-transparent hover:border-[var(--border)] hover:bg-[var(--surface-muted)]",
                     )}
                   >
                     <span
                       className={cn(
                         "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent transition-colors",
                         active
-                          ? "border-[var(--border)] bg-[var(--surface)] text-[var(--accent)]"
+                          ? "border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--secondary)]"
                           : "text-[var(--muted)] group-hover:bg-[var(--surface)] group-hover:text-[var(--foreground)]",
                       )}
                     >
@@ -146,9 +148,9 @@ export function AdminNav(props: {
         );
       })}
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+      <div className="rounded-[24px] border border-[var(--border)] [background-image:var(--surface-header-admin)] p-4 shadow-[var(--shadow-soft)]">
         <div className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
-          <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
+          <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
           Admin workspace
         </div>
         <div className="mt-2 text-xs leading-5 text-[var(--muted)]">

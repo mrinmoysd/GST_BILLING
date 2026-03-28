@@ -17,7 +17,7 @@ async function login(page: import("@playwright/test").Page) {
 
 test("d13 settings surfaces render for migrations, print templates, and integrations", async ({ page }) => {
   const companyId =
-    process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+    process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
 
   await login(page);
 

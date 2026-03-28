@@ -8,17 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useInventoryAdjustment, useLowStock, useProducts, useStockMovements, useWarehouses } from "@/lib/masters/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InventoryAdjustmentsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -44,7 +38,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
         eyebrow="Inventory"
         title="Stock adjustments"
         subtitle="Apply manual stock corrections from a dedicated adjustment workspace and review the latest inventory activity."
-        actions={<Link href={`/c/${companyId}/inventory`} className="text-sm underline">Back</Link>}
+        actions={<Link href={`/c/${companyId}/inventory`}><SecondaryButton type="button">Back</SecondaryButton></Link>}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
@@ -112,7 +106,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
         </Card>
 
         <div className="space-y-6">
-          <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+          <Card className="[background-image:var(--surface-highlight)]">
             <CardHeader>
               <CardTitle>Low stock watch</CardTitle>
               <CardDescription>Products currently at or below reorder level.</CardDescription>
@@ -123,7 +117,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                   <Link
                     key={product.id}
                     href={`/c/${companyId}/masters/products/${product.id}`}
-                    className="block rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 hover:bg-[var(--surface-muted)]"
+                    className="block rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:border-[var(--border-strong)]"
                   >
                     <div className="font-medium text-[var(--foreground)]">{product.name}</div>
                     <div className="mt-1 text-sm text-[var(--muted)]">Stock {product.stock ?? "—"} | Reorder {product.reorderLevel ?? "—"}</div>
@@ -165,7 +159,7 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                     <DataTr key={row.id}>
                       <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
                       <DataTd>
-                        <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--accent)] hover:underline">
+                        <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
                           {row.product?.name ?? row.productId.slice(0, 8)}
                         </Link>
                       </DataTd>

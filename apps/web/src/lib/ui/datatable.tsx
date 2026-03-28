@@ -9,7 +9,7 @@ export function DataTableShell(props: {
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-soft)]",
+        "overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--surface-panel)] shadow-[var(--shadow-soft)]",
         props.className,
       )}
     >
@@ -25,7 +25,7 @@ export function DataTable(props: React.TableHTMLAttributes<HTMLTableElement>) {
 }
 
 export function DataThead(props: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead {...props} className={cn("bg-[var(--surface-muted)] text-[var(--muted-strong)]", props.className)} />;
+  return <thead {...props} className={cn("[background-image:var(--table-header-highlight)] text-[var(--muted-strong)]", props.className)} />;
 }
 
 export function DataTh(props: React.ThHTMLAttributes<HTMLTableCellElement>) {
@@ -33,11 +33,11 @@ export function DataTh(props: React.ThHTMLAttributes<HTMLTableCellElement>) {
 }
 
 export function DataTd(props: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td {...props} className={cn("px-4 py-3.5 align-top", props.className)} />;
+  return <td {...props} className={cn("px-4 py-3.5 align-top first:pl-5 last:pr-5", props.className)} />;
 }
 
 export function DataTr(props: React.HTMLAttributes<HTMLTableRowElement>) {
-  return <tr {...props} className={cn("border-t border-[var(--border)]", props.className)} />;
+  return <tr {...props} className={cn("border-t border-[var(--border)] transition-colors", props.className)} />;
 }
 
 export function DataEmptyRow(props: { colSpan: number; title: string; hint?: string }) {

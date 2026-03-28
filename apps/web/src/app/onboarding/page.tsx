@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
-import type { NormalizedApiError } from "@/lib/api/types";
+import { getErrorMessage, logError } from "@/lib/errors";
 import { useBootstrapOnboarding } from "@/lib/onboarding/hooks";
 import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -119,8 +119,11 @@ export default function OnboardingPage() {
                     });
                     window.location.assign(nextPath);
                   } catch (err: unknown) {
-                    const apiError = err as NormalizedApiError;
-                    setError(apiError.message ?? "Failed to create company");
+                    logError(err, "onboarding-submit", {
+                      companyName: companyName.trim(),
+                      email: email.trim(),
+                    });
+                    setError(getErrorMessage(err, "Failed to create company."));
                   } finally {
                     setIsSubmitting(false);
                   }
@@ -133,18 +136,11 @@ export default function OnboardingPage() {
                   <TextField label="Password" value={password} onChange={setPassword} type="password" required />
                   <TextField label="GSTIN" value={gstin} onChange={setGstin} placeholder="Optional" />
                   <TextField label="PAN" value={pan} onChange={setPan} placeholder="Optional" />
-                  <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Business type</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={businessType}
-                      onChange={(e) => setBusinessType(e.target.value)}
-                    >
-                      <option value="trader">Trader</option>
-                      <option value="service">Service</option>
-                      <option value="manufacturer">Manufacturer</option>
-                    </select>
-                  </div>
+                  <SelectField label="Business type" value={businessType} onChange={setBusinessType}>
+                    <option value="trader">Trader</option>
+                    <option value="service">Service</option>
+                    <option value="manufacturer">Manufacturer</option>
+                  </SelectField>
                   <TextField label="Timezone" value={timezone} onChange={setTimezone} />
                   <TextField label="State" value={state} onChange={setState} placeholder="Optional" />
                   <TextField label="State code" value={stateCode} onChange={setStateCode} placeholder="Optional" />

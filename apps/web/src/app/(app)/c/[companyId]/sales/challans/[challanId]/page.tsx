@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
+import { getErrorMessage } from "@/lib/errors";
 import {
   useConvertDeliveryChallanToInvoice,
   useDeliveryChallan,
@@ -12,19 +12,12 @@ import {
   useTransitionDeliveryChallan,
 } from "@/lib/billing/hooks";
 import type { DeliveryChallan } from "@/lib/billing/types";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel, WorkspaceSection } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; challanId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type ItemDraft = {
   requested: string;
@@ -130,11 +123,16 @@ export default function DeliveryChallanDetailPage({ params }: Props) {
         delivery_notes: deliveryValue || undefined,
         items: buildPatchItems(),
       });
-      toast.success("Challan updated");
+      toastSuccess("Challan updated.");
     } catch (err: unknown) {
-      const message = getErrorMessage(err, "Failed to update challan");
+      const message = getErrorMessage(err, "Failed to update challan.");
       setError(message);
-      toast.error(message);
+      toastError(err, {
+        fallback: "Failed to update challan.",
+        title: message,
+        context: "challan-update",
+        metadata: { companyId, challanId },
+      });
       throw err;
     }
   }
@@ -150,11 +148,16 @@ export default function DeliveryChallanDetailPage({ params }: Props) {
         dispatch_notes: dispatchValue || undefined,
         delivery_notes: deliveryValue || undefined,
       });
-      toast.success(`Challan moved to ${nextStatus}`);
+      toastSuccess(`Challan moved to ${nextStatus}.`);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, "Failed to update challan status");
+      const message = getErrorMessage(err, "Failed to update challan status.");
       setError(message);
-      toast.error(message);
+      toastError(err, {
+        fallback: "Failed to update challan status.",
+        title: message,
+        context: "challan-transition",
+        metadata: { companyId, challanId, nextStatus },
+      });
     }
   }
 
@@ -314,11 +317,17 @@ export default function DeliveryChallanDetailPage({ params }: Props) {
                   setError(null);
                   try {
                     const res = await convert.mutateAsync({});
+                    toastSuccess("Challan converted to invoice.");
                     router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
                   } catch (err: unknown) {
-                    const message = getErrorMessage(err, "Failed to convert challan to invoice");
+                    const message = getErrorMessage(err, "Failed to convert challan to invoice.");
                     setError(message);
-                    toast.error(message);
+                    toastError(err, {
+                      fallback: "Failed to convert challan to invoice.",
+                      title: message,
+                      context: "challan-convert",
+                      metadata: { companyId, challanId },
+                    });
                   }
                 }}
               >

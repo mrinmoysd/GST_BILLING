@@ -5,6 +5,7 @@ import * as React from "react";
 import { config } from "@/lib/config";
 import type { ApiEnvelope } from "@/lib/api/types";
 import { adminApiClient } from "@/lib/admin/api-client";
+import { logError } from "@/lib/errors";
 import type { AdminSessionState, AdminSessionUser } from "@/lib/admin/types";
 
 type AdminAuthContextValue = {
@@ -98,8 +99,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         setAdminSessionHint(true);
         setAccessToken(json.data.access_token);
         await refreshMe();
-      } catch {
-        // ignore
+      } catch (error) {
+        setAdminSessionHint(false);
+        logError(error, "admin-auth-bootstrap-refresh");
       } finally {
         if (!cancelled) setBootstrapped(true);
       }

@@ -2,29 +2,22 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useCreateWarehouse,
   useUpdateWarehouse,
   useWarehouseStock,
   useWarehouses,
 } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function WarehousesPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -65,8 +58,8 @@ export default function WarehousesPage({ params }: Props) {
         title="Warehouses"
         subtitle="Define godowns, assign a default operating location, and inspect stock by warehouse without losing company-level stock visibility."
         actions={
-          <Link href={`/c/${companyId}/inventory`} className="text-sm underline">
-            Back
+          <Link href={`/c/${companyId}/inventory`}>
+            <SecondaryButton type="button">Back</SecondaryButton>
           </Link>
         }
       />
@@ -115,15 +108,20 @@ export default function WarehousesPage({ params }: Props) {
                     location_label: locationLabel || undefined,
                     is_default: isDefault,
                   });
-                  toast.success("Warehouse created");
+                  toastSuccess("Warehouse created.");
                   setName("");
                   setCode("");
                   setLocationLabel("");
                   setIsDefault(false);
                 } catch (err: unknown) {
-                  const message = getErrorMessage(err, "Failed to create warehouse");
+                  const message = getErrorMessage(err, "Failed to create warehouse.");
                   setError(message);
-                  toast.error(message);
+                  toastError(err, {
+                    fallback: "Failed to create warehouse.",
+                    title: message,
+                    context: "warehouse-create",
+                    metadata: { companyId, name, code },
+                  });
                 }
               }}
             >
@@ -259,7 +257,7 @@ function WarehouseRow(props: {
 
   return (
     <DataTr
-      className={props.selected ? "bg-[var(--surface-muted)]" : undefined}
+      className={props.selected ? "bg-[var(--surface-secondary)]" : undefined}
       onClick={props.onSelect}
     >
       <DataTd className="font-medium">{props.warehouse.name}</DataTd>
@@ -276,7 +274,7 @@ function WarehouseRow(props: {
               onClick={async (event) => {
                 event.stopPropagation();
                 await update.mutateAsync({ is_default: true });
-                toast.success("Default warehouse updated");
+                toastSuccess("Default warehouse updated.");
               }}
             >
               Make default

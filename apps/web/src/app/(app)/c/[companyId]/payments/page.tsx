@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { useInvoices, usePayments, usePurchases, useRecordPayment, useUpdatePaymentInstrument } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import { useBankAccounts } from "@/lib/finance/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
@@ -13,14 +14,6 @@ import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, Q
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function PaymentsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -373,11 +366,16 @@ export default function PaymentsPage({ params }: Props) {
                       setReference("");
                       setNotes("");
                       setPaymentDate("");
-                      toast.success("Payment recorded");
+                      toastSuccess("Payment recorded.");
                     } catch (err: unknown) {
-                      const message = getErrorMessage(err, "Failed to record payment");
+                      const message = getErrorMessage(err, "Failed to record payment.");
                       setError(message);
-                      toast.error(message);
+                      toastError(err, {
+                        fallback: "Failed to record payment.",
+                        title: message,
+                        context: "payments-record",
+                        metadata: { companyId, targetType, targetId },
+                      });
                     }
                   }}
                 >
@@ -440,9 +438,13 @@ export default function PaymentsPage({ params }: Props) {
                         instrument_status: nextInstrumentStatus,
                         bank_account_id: nextBankAccountId || undefined,
                       });
-                      toast.success("Instrument updated");
+                      toastSuccess("Instrument updated.");
                     } catch (err: unknown) {
-                      toast.error(getErrorMessage(err, "Failed to update instrument"));
+                      toastError(err, {
+                        fallback: "Failed to update instrument.",
+                        context: "payments-update-instrument",
+                        metadata: { companyId, paymentId: selectedPaymentId },
+                      });
                     }
                   }}
                 >
@@ -511,7 +513,7 @@ export default function PaymentsPage({ params }: Props) {
                     return (
                       <DataTr
                         key={String(row.id)}
-                        className={selectedPaymentId === String(row.id) ? "border-t border-[var(--accent-soft)] bg-[rgba(180,104,44,0.08)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                        className={selectedPaymentId === String(row.id) ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
                         onClick={() => setSelectedPaymentId(String(row.id))}
                       >
                         <DataTd>{String(row.paymentDate ?? row.payment_date ?? "—")}</DataTd>

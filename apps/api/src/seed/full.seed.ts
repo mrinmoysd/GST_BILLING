@@ -1,4 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import {
+  DEFAULT_SEED_COMPANY_ID,
+  DEFAULT_SEED_OWNER_USER_ID,
+} from './seed.constants';
 
 /**
  * Full demo seed (option B): create master data, then create invoices/purchases and record payments/receive
@@ -11,8 +15,8 @@ import { PrismaClient } from '@prisma/client';
 type Json = any;
 
 const API_BASE_URL = process.env.SEED_API_BASE_URL ?? 'http://localhost:4000/api';
-const COMPANY_ID = process.env.SEED_COMPANY_ID ?? '00000000-0000-0000-0000-000000000001';
-const USER_ID = process.env.SEED_USER_ID ?? '00000000-0000-0000-0000-000000000002';
+const COMPANY_ID = process.env.SEED_COMPANY_ID ?? DEFAULT_SEED_COMPANY_ID;
+const USER_ID = process.env.SEED_USER_ID ?? DEFAULT_SEED_OWNER_USER_ID;
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'owner@example.com';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'password123';

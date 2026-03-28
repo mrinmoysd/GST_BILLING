@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("smoke: login → dashboard loads", async ({ page }) => {
   const email = process.env.E2E_EMAIL;
   const password = process.env.E2E_PASSWORD;
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
 
   test.skip(!email || !password, "Set E2E_EMAIL and E2E_PASSWORD to run this smoke test.");
 
