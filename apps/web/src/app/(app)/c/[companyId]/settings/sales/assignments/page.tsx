@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
 
+import { getErrorMessage } from "@/lib/errors";
 import {
   useAssignCustomerCoverage,
   useCreateSalesBeat,
@@ -17,20 +17,13 @@ import {
 } from "@/lib/field-sales/hooks";
 import { useCustomers, useWarehouses } from "@/lib/masters/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function FieldSalesAssignmentsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -133,9 +126,13 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
                 setTerritoryCode("");
                 setTerritoryName("");
                 setTerritoryManagerUserId("");
-                toast.success("Territory created");
+                toastSuccess("Territory created.");
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to create territory"));
+                toastError(err, {
+                  fallback: "Failed to create territory.",
+                  context: "field-sales-territory-create",
+                  metadata: { companyId, code: territoryCode },
+                });
               }
             }}
           >
@@ -171,9 +168,13 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
                 setRouteName("");
                 setRouteTerritoryId("");
                 setRouteWarehouseId("");
-                toast.success("Route created");
+                toastSuccess("Route created.");
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to create route"));
+                toastError(err, {
+                  fallback: "Failed to create route.",
+                  context: "field-sales-route-create",
+                  metadata: { companyId, code: routeCode },
+                });
               }
             }}
           >
@@ -221,9 +222,13 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
                 setBeatTerritoryId("");
                 setBeatDayOfWeek("monday");
                 setBeatSequenceNo("1");
-                toast.success("Beat created");
+                toastSuccess("Beat created.");
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to create beat"));
+                toastError(err, {
+                  fallback: "Failed to create beat.",
+                  context: "field-sales-beat-create",
+                  metadata: { companyId, code: beatCode },
+                });
               }
             }}
           >
@@ -260,6 +265,102 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
         </WorkspacePanel>
       </div>
 
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <WorkspacePanel title="Current coverage map" subtitle="Use the live assignment list to confirm which outlet belongs to which lane before plan generation.">
+          <DataTableShell>
+            <DataTable>
+              <DataThead>
+                <tr>
+                  <DataTh>Customer</DataTh>
+                  <DataTh>Salesperson</DataTh>
+                  <DataTh>Route</DataTh>
+                  <DataTh>Beat</DataTh>
+                  <DataTh>Priority</DataTh>
+                </tr>
+              </DataThead>
+              <tbody>
+                {coverageRows.slice(0, 12).map((row) => (
+                  <DataTr key={row.id} className="hover:bg-[var(--surface-secondary)]">
+                    <DataTd>{row.customer?.name ?? "—"}</DataTd>
+                    <DataTd>{row.salesperson?.name ?? row.salesperson?.email ?? "—"}</DataTd>
+                    <DataTd>{row.route?.name ?? "—"}</DataTd>
+                    <DataTd>{row.beat?.name ?? "—"}</DataTd>
+                    <DataTd>{row.priority ?? "normal"}</DataTd>
+                  </DataTr>
+                ))}
+              </tbody>
+            </DataTable>
+          </DataTableShell>
+        </WorkspacePanel>
+
+        <WorkspacePanel title="Rep route assignment" subtitle="Tie a salesperson to a route or beat so D12 planning can generate a cleaner worklist.">
+          <form
+            className="grid gap-4"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              try {
+                await assignmentMutation.mutateAsync({
+                  route_id: assignmentRouteId || undefined,
+                  beat_id: assignmentBeatId || undefined,
+                });
+                toastSuccess("Salesperson assignment updated.");
+              } catch (err) {
+                toastError(err, {
+                  fallback: "Failed to update assignment.",
+                  context: "field-sales-assignment-update",
+                  metadata: { companyId, salespersonUserId: assignmentSalespersonUserId },
+                });
+              }
+            }}
+          >
+            <SelectField label="Salesperson" value={assignmentSalespersonUserId} onChange={setAssignmentSalespersonUserId}>
+              <option value="">Select salesperson</option>
+              {salespersonRows.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name || person.email}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField label="Route" value={assignmentRouteId} onChange={setAssignmentRouteId}>
+              <option value="">Optional route</option>
+              {routeRows.map((route) => (
+                <option key={route.id} value={route.id}>
+                  {route.code} · {route.name}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField label="Beat" value={assignmentBeatId} onChange={setAssignmentBeatId}>
+              <option value="">Optional beat</option>
+              {beatRows.map((beat) => (
+                <option key={beat.id} value={beat.id}>
+                  {beat.code} · {beat.name}
+                </option>
+              ))}
+            </SelectField>
+            <PrimaryButton type="submit" disabled={assignmentMutation.isPending || !assignmentSalespersonUserId}>
+              {assignmentMutation.isPending ? "Saving…" : "Save assignment"}
+            </PrimaryButton>
+          </form>
+
+          <div className="mt-5 space-y-3">
+            {(assignmentRows.data?.data?.data ?? []).length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-panel)] p-4 text-sm text-[var(--muted)]">
+                Select a salesperson to inspect or update current route ownership.
+              </div>
+            ) : (
+              (assignmentRows.data?.data?.data ?? []).map((assignment) => (
+                <div key={assignment.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
+                  <div className="font-medium text-[var(--foreground)]">{assignment.salesperson?.name ?? assignment.salesperson?.email ?? "Salesperson"}</div>
+                  <div className="mt-1 text-sm text-[var(--muted)]">
+                    {assignment.route?.name ?? "No route"} · {assignment.beat?.name ?? "No beat"}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </WorkspacePanel>
+      </div>
+
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <WorkspacePanel title="Assign customer coverage" subtitle="This is the main D12 ownership layer that drives plan generation and field routing.">
           <form
@@ -287,9 +388,13 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
                 setCoveragePreferredDay("monday");
                 setCoveragePriority("normal");
                 setCoverageNotes("");
-                toast.success("Coverage assigned");
+                toastSuccess("Coverage assigned.");
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to assign coverage"));
+                toastError(err, {
+                  fallback: "Failed to assign coverage.",
+                  context: "field-sales-coverage-assign",
+                  metadata: { companyId, customerId: coverageCustomerId },
+                });
               }
             }}
           >
@@ -381,9 +486,13 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
                 });
                 setAssignmentRouteId("");
                 setAssignmentBeatId("");
-                toast.success("Route assignment created");
+                toastSuccess("Route assignment created.");
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to create assignment"));
+                toastError(err, {
+                  fallback: "Failed to create assignment.",
+                  context: "field-sales-route-assignment-create",
+                  metadata: { companyId, salespersonUserId: assignmentSalespersonUserId },
+                });
               }
             }}
           >

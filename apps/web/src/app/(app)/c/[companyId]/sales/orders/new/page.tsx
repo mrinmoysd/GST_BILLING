@@ -4,24 +4,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateSalesOrder } from "@/lib/billing/hooks";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
 import { usePricingPreview } from "@/lib/pricing/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import {
+  ComposerBody,
+  ComposerMetricCard,
+  ComposerMiniList,
+  ComposerSection,
+  ComposerStepBar,
+  ComposerStickyActions,
+  ComposerSummaryRail,
+  ComposerWarningStack,
+} from "@/lib/ui/composer";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, PageHeader } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatPricingSource(source?: string | null) {
   switch (source) {
@@ -102,6 +104,36 @@ export default function NewSalesOrderPage({ params }: Props) {
         return sum + (taxable * rate) / 100;
       }, 0),
     [lines, productsById],
+  );
+
+  const activeStep = React.useMemo(() => {
+    if (!customerId) return "party";
+    if (!lines.some((line) => line.productId)) return "lines";
+    return "review";
+  }, [customerId, lines]);
+
+  const stepItems = React.useMemo(
+    () => [
+      {
+        id: "party",
+        label: "Party and timing",
+        description: "Choose the customer, owner, and dispatch commitment before the order body is locked.",
+        meta: customerId ? "Customer selected" : "Waiting for customer",
+      },
+      {
+        id: "lines",
+        label: "Order lines",
+        description: "Capture the exact demand, commercial rate, and any justified overrides.",
+        meta: `${lines.filter((line) => line.productId).length} product lines ready`,
+      },
+      {
+        id: "review",
+        label: "Review and save",
+        description: "Check totals, add context for ops, and save the draft for dispatch planning.",
+        meta: `${(subTotal + estimatedTax).toFixed(2)} draft value`,
+      },
+    ],
+    [customerId, estimatedTax, lines, subTotal],
   );
 
   const previewableLines = React.useMemo(
@@ -243,8 +275,10 @@ export default function NewSalesOrderPage({ params }: Props) {
         }
       />
 
+      <ComposerStepBar steps={stepItems} activeId={activeStep} />
+
       <form
-        className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]"
+        className="space-y-6"
         onSubmit={async (event) => {
           event.preventDefault();
           setError(null);
@@ -280,14 +314,66 @@ export default function NewSalesOrderPage({ params }: Props) {
           }
         }}
       >
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <Badge variant="secondary" className="w-fit">Sales order workflow</Badge>
-              <CardTitle>Order capture</CardTitle>
-              <CardDescription>Lock the demand signal before invoice issue and keep dispatch timing visible.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
+        <ComposerBody
+          rail={
+            <ComposerSummaryRail
+              eyebrow="Review"
+              title="Order summary"
+              description="Keep the commercial value, dispatch expectation, and final action together while you complete the draft."
+            >
+              <ComposerMetricCard label="Subtotal" value={subTotal.toFixed(2)} />
+              <ComposerMetricCard label="Estimated tax" value={estimatedTax.toFixed(2)} />
+              <ComposerMetricCard
+                label="Draft total"
+                value={(subTotal + estimatedTax).toFixed(2)}
+                hint="The final invoice can still be staged later from this order."
+                strong
+              />
+              <ComposerMiniList
+                items={[
+                  {
+                    label: "Customer",
+                    value: customerId
+                      ? (Array.isArray(customers.data?.data) ? customers.data.data : []).find((customer) => customer.id === customerId)?.name ?? "Selected"
+                      : "Not selected",
+                  },
+                  {
+                    label: "Expected dispatch",
+                    value: expectedDispatchDate || "Not set",
+                  },
+                  {
+                    label: "Draft lines",
+                    value: lines.filter((line) => line.productId).length,
+                  },
+                ]}
+              />
+              <ComposerWarningStack>
+                {error ? <InlineError message={error} /> : null}
+              </ComposerWarningStack>
+              <ComposerStickyActions
+                aside="Orders preserve the commercial conversation before billing, so dispatch and staged invoicing stay aligned."
+                primary={
+                  <PrimaryButton disabled={create.isPending} type="submit" className="w-full">
+                    {create.isPending ? "Saving…" : "Save sales order"}
+                  </PrimaryButton>
+                }
+                secondary={
+                  <Link href={`/c/${companyId}/sales/orders`}>
+                    <SecondaryButton type="button" className="w-full">
+                      Cancel
+                    </SecondaryButton>
+                  </Link>
+                }
+              />
+            </ComposerSummaryRail>
+          }
+        >
+          <ComposerSection
+            eyebrow="Step 1"
+            title="Party and dispatch timing"
+            description="Lock the demand signal before invoice issue and keep dispatch timing visible to the warehouse and sales team."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
               <SelectField label="Customer" value={customerId} onChange={setCustomerId}>
                 <option value="">Select…</option>
                 {(Array.isArray(customers.data?.data) ? customers.data.data : []).map((customer) => (
@@ -309,15 +395,22 @@ export default function NewSalesOrderPage({ params }: Props) {
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
                 Sales orders can later convert partially or fully into invoice drafts as the dispatch plan moves.
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </ComposerSection>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Order lines</CardTitle>
-              <CardDescription>Capture the ordered quantities and agreed commercial rate per product.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <ComposerSection
+            eyebrow="Step 2"
+            title="Order lines"
+            description="Capture the ordered quantities and agreed commercial rate per product."
+            actions={
+              <SecondaryButton
+                type="button"
+                onClick={() => setLines((prev) => [...prev, { id: crypto.randomUUID(), productId: "", quantity: "1", unitPrice: "", discount: "" }])}
+              >
+                Add line
+              </SecondaryButton>
+            }
+          >
               <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
                 <table className="min-w-[720px] w-full text-sm">
                   <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -445,38 +538,20 @@ export default function NewSalesOrderPage({ params }: Props) {
                   </tbody>
                 </table>
               </div>
-              <SecondaryButton type="button" onClick={() => setLines((prev) => [...prev, { id: crypto.randomUUID(), productId: "", quantity: "1", unitPrice: "", discount: "" }])}>
-                Add line
-              </SecondaryButton>
-            </CardContent>
-          </Card>
-        </div>
+          </ComposerSection>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order summary</CardTitle>
-              <CardDescription>Keep the commercial and dispatch note together before confirmation.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
-                <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Subtotal</span><span className="font-semibold">{subTotal.toFixed(2)}</span></div>
-                <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Estimated tax</span><span className="font-semibold">{estimatedTax.toFixed(2)}</span></div>
-                <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-base"><span>Total</span><span className="font-semibold">{(subTotal + estimatedTax).toFixed(2)}</span></div>
-              </div>
-              <TextField label="Internal notes" value={notes} onChange={setNotes} placeholder="Dispatch note, customer commitment, route context…" />
-              {error ? <InlineError message={error} /> : null}
-              <div className="flex flex-wrap gap-3">
-                <PrimaryButton disabled={create.isPending} type="submit">
-                  {create.isPending ? "Saving…" : "Save sales order"}
-                </PrimaryButton>
-                <Link href={`/c/${companyId}/sales/orders`}>
-                  <SecondaryButton type="button">Cancel</SecondaryButton>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          <ComposerSection
+            eyebrow="Step 3"
+            title="Review notes"
+            description="Add the last bit of operating context so dispatch, billing, and collections start from the same expectation."
+            tone="muted"
+          >
+            <TextField label="Internal notes" value={notes} onChange={setNotes} placeholder="Dispatch note, customer commitment, route context…" />
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm leading-6 text-[var(--muted)]">
+              Use notes for route context, promised windows, or any instruction the invoicing team should preserve when the order converts later.
+            </div>
+          </ComposerSection>
+        </ComposerBody>
       </form>
     </div>
   );

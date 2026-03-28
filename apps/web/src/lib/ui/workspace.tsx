@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/lib/ui/page-header";
 import { cn } from "@/lib/utils";
 
 export function WorkspaceHero(props: {
@@ -15,27 +16,16 @@ export function WorkspaceHero(props: {
   const admin = props.tone === "admin";
 
   return (
-    <section
-      className={cn(
-        "grid gap-6 overflow-hidden rounded-[32px] border p-6 shadow-[var(--shadow-soft)] md:p-8 xl:grid-cols-[1.12fr_0.88fr] xl:items-end",
-        admin
-          ? "border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))]"
-          : "border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,244,238,0.94))]",
-      )}
-    >
-      <div className="space-y-5">
-        <div className="space-y-3">
-          {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
-          <h1 className="max-w-4xl font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">
-            {props.title}
-          </h1>
-          {props.subtitle ? <div className="max-w-3xl text-sm leading-7 text-[var(--muted-strong)]">{props.subtitle}</div> : null}
-        </div>
-        {props.badges?.length ? <div className="flex flex-wrap gap-2">{props.badges.map((badge, index) => <React.Fragment key={index}>{badge}</React.Fragment>)}</div> : null}
-        {props.actions ? <div className="flex flex-wrap gap-3">{props.actions}</div> : null}
-      </div>
-      {props.aside ? <div className="xl:justify-self-end xl:max-w-[440px]">{props.aside}</div> : null}
-    </section>
+    <PageHeader
+      eyebrow={props.eyebrow}
+      title={props.title}
+      subtitle={props.subtitle}
+      actions={props.actions}
+      badges={props.badges}
+      aside={props.aside}
+      tone={admin ? "admin" : "tenant"}
+      size="hero"
+    />
   );
 }
 
@@ -74,10 +64,10 @@ export function WorkspacePanel(props: {
       className={cn(
         "rounded-[28px] border p-5 shadow-[var(--shadow-soft)] md:p-6",
         props.tone === "strong"
-          ? "border-[rgba(23,32,51,0.08)] bg-[rgba(23,32,51,0.96)] text-white"
+          ? "border-[var(--border)] bg-[var(--surface-panel-strong)] text-white"
           : props.tone === "muted"
-            ? "border-[rgba(23,32,51,0.08)] bg-[rgba(248,246,242,0.92)]"
-            : "border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)]",
+            ? "border-[var(--border)] bg-[var(--surface-panel-muted)] [background-image:var(--inspector-highlight)]"
+            : "border-[var(--border)] bg-[var(--surface-panel)] [background-image:var(--panel-highlight)]",
         props.className,
       )}
     >
@@ -116,7 +106,7 @@ export function WorkspaceFilterBar(props: {
   return (
     <section
       className={cn(
-        "grid gap-4 rounded-[28px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.9)] p-5 shadow-[var(--shadow-soft)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
+        "grid gap-4 rounded-[28px] border border-[var(--border)] bg-[var(--surface-panel)] p-5 shadow-[var(--shadow-soft)] [background-image:var(--panel-highlight)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
         props.className,
       )}
     >
@@ -135,27 +125,15 @@ export function WorkspaceDetailHero(props: {
   metrics?: Array<{ label: string; value: React.ReactNode }>;
 }) {
   return (
-    <section className="space-y-4 rounded-[32px] border border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))] p-6 shadow-[var(--shadow-soft)] md:p-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-3">
-          {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
-          <h1 className="font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">{props.title}</h1>
-          {props.subtitle ? <div className="max-w-3xl text-sm leading-7 text-[var(--muted-strong)]">{props.subtitle}</div> : null}
-          {props.badges?.length ? <div className="flex flex-wrap gap-2">{props.badges.map((badge, index) => <React.Fragment key={index}>{badge}</React.Fragment>)}</div> : null}
-        </div>
-        {props.actions ? <div className="shrink-0">{props.actions}</div> : null}
-      </div>
-      {props.metrics?.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {props.metrics.map((metric) => (
-            <div key={String(metric.label)} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{metric.label}</div>
-              <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{metric.value}</div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </section>
+    <PageHeader
+      eyebrow={props.eyebrow}
+      title={props.title}
+      subtitle={props.subtitle}
+      badges={props.badges}
+      actions={props.actions}
+      metrics={props.metrics}
+      size="hero"
+    />
   );
 }
 
@@ -167,14 +145,13 @@ export function WorkspaceConfigHero(props: {
   aside?: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-6 rounded-[32px] border border-[rgba(23,32,51,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,246,242,0.94))] p-6 shadow-[var(--shadow-soft)] md:p-8 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
-      <div className="space-y-4">
-        {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
-        <h1 className="font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">{props.title}</h1>
-        {props.subtitle ? <div className="max-w-3xl text-sm leading-7 text-[var(--muted-strong)]">{props.subtitle}</div> : null}
-        {props.badges?.length ? <div className="flex flex-wrap gap-2">{props.badges.map((badge, index) => <React.Fragment key={index}>{badge}</React.Fragment>)}</div> : null}
-      </div>
-      {props.aside ? <div>{props.aside}</div> : null}
-    </section>
+    <PageHeader
+      eyebrow={props.eyebrow}
+      title={props.title}
+      subtitle={props.subtitle}
+      badges={props.badges}
+      aside={props.aside}
+      size="hero"
+    />
   );
 }

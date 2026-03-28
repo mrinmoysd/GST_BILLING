@@ -3,18 +3,15 @@
 import * as React from "react";
 
 import { useCreateLedger, useLedgers } from "@/lib/billing/hooks";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, TextField } from "@/lib/ui/form";
+import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { QueueInspector, QueueMetaList, QueueQuickActions, QueueShell, QueueToolbar } from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function LedgersPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -23,63 +20,147 @@ export default function LedgersPage({ params }: Props) {
 
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState("");
+  const [q, setQ] = React.useState("");
+  const [selectedLedgerId, setSelectedLedgerId] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
-  const rows = query.data?.data ?? [];
+  const rows = React.useMemo(() => query.data?.data ?? [], [query.data]);
+  const filteredRows = React.useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((row) =>
+      [row.name, row.account_code, row.type].some((value) => String(value ?? "").toLowerCase().includes(term)),
+    );
+  }, [q, rows]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedLedgerId("");
+      return;
+    }
+    if (!selectedLedgerId || !filteredRows.some((row) => row.id === selectedLedgerId)) {
+      setSelectedLedgerId(filteredRows[0]?.id ?? "");
+    }
+  }, [filteredRows, selectedLedgerId]);
+
+  const selectedLedger = filteredRows.find((row) => row.id === selectedLedgerId) ?? filteredRows[0] ?? null;
+  const typeCounts = React.useMemo(() => {
+    return rows.reduce<Record<string, number>>((acc, row) => {
+      const key = String(row.type ?? "Unclassified");
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [rows]);
 
   return (
-  <div className="space-y-6">
-      <PageHeader title="Ledgers" subtitle="Create and manage ledgers." />
+    <div className="space-y-7">
+      <WorkspaceHero
+        eyebrow="Accounting"
+        title="Ledgers"
+        subtitle="Keep ledger creation and chart review in one serious workspace, with the selected account context visible while the main table stays dense and readable."
+        badges={[
+          <WorkspaceStatBadge key="total" label="Ledgers" value={rows.length} />,
+          <WorkspaceStatBadge key="types" label="Classes" value={Object.keys(typeCounts).length} variant="outline" />,
+        ]}
+      />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3 max-w-2xl">
-        <div className="text-sm font-medium">Create ledger</div>
+      <WorkspacePanel title="Create ledger" subtitle="Add the account first, then continue chart review from the same finance workspace.">
         <div className="grid gap-4 md:grid-cols-2">
           <TextField label="Name" value={name} onChange={setName} />
           <TextField label="Type (optional)" value={type} onChange={setType} placeholder="ASSET / LIABILITY / INCOME / EXPENSE" />
         </div>
         {error ? <InlineError message={error} /> : null}
-        <PrimaryButton
-          type="button"
-          disabled={create.isPending}
-          onClick={async () => {
-            setError(null);
-            if (!name.trim()) return setError("Enter a ledger name.");
-            try {
-              await create.mutateAsync({ name: name.trim(), type: type.trim() || undefined });
+        <div className="mt-4 flex flex-wrap gap-3">
+          <PrimaryButton
+            type="button"
+            disabled={create.isPending}
+            onClick={async () => {
+              setError(null);
+              if (!name.trim()) return setError("Enter a ledger name.");
+              try {
+                await create.mutateAsync({ name: name.trim(), type: type.trim() || undefined });
+                setName("");
+                setType("");
+              } catch (e: unknown) {
+                setError(getErrorMessage(e, "Failed to create ledger"));
+              }
+            }}
+          >
+            {create.isPending ? "Creating…" : "Create ledger"}
+          </PrimaryButton>
+          <SecondaryButton
+            type="button"
+            onClick={() => {
               setName("");
               setType("");
-            } catch (e: unknown) {
-              setError(getErrorMessage(e, "Failed to create ledger"));
-            }
-          }}
-        >
-          {create.isPending ? "Creating…" : "Create"}
-        </PrimaryButton>
-      </div>
+              setError(null);
+            }}
+          >
+            Clear
+          </SecondaryButton>
+        </div>
+      </WorkspacePanel>
+
+      <QueueToolbar filters={<TextField label="Search ledgers" value={q} onChange={setQ} placeholder="Name / code / type" />} />
 
       {query.isLoading ? <LoadingBlock label="Loading ledgers…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load ledgers")} /> : null}
-      {query.data && rows.length === 0 ? <EmptyState title="No ledgers" hint="Create a ledger to start posting journals." /> : null}
+      {query.data && filteredRows.length === 0 ? <EmptyState title="No ledgers" hint="Create a ledger to start posting journals." /> : null}
 
-      {query.data && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium">Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((l) => (
-                <tr key={l.id} className="border-t">
-                  <td className="px-4 py-3">{l.name}</td>
-                  <td className="px-4 py-3">{l.type ?? "—"}</td>
+      {query.data && filteredRows.length > 0 ? (
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected ledger"
+              title={selectedLedger?.name ?? "Select ledger"}
+              subtitle="Keep account classification and reference context visible while working the chart table."
+              footer={
+                selectedLedger ? (
+                  <QueueQuickActions>
+                    <SecondaryButton type="button">Ledger selected</SecondaryButton>
+                  </QueueQuickActions>
+                ) : null
+              }
+            >
+              {selectedLedger ? (
+                <QueueMetaList
+                  items={[
+                    { label: "Type", value: selectedLedger.type ?? "Unclassified" },
+                    { label: "Code", value: selectedLedger.account_code ?? "—" },
+                    { label: "Created", value: selectedLedger.createdAt?.slice?.(0, 10) ?? "—" },
+                  ]}
+                />
+              ) : (
+                <div className="text-sm text-[var(--muted)]">Select a ledger to inspect its classification.</div>
+              )}
+            </QueueInspector>
+          }
+        >
+          <DataTableShell>
+            <DataTable>
+              <DataThead>
+                <tr>
+                  <DataTh>Name</DataTh>
+                  <DataTh>Type</DataTh>
+                  <DataTh>Code</DataTh>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </DataThead>
+              <tbody>
+                {filteredRows.map((ledger) => (
+                  <DataTr
+                    key={ledger.id}
+                    className={selectedLedger?.id === ledger.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
+                    onClick={() => setSelectedLedgerId(ledger.id)}
+                  >
+                    <DataTd>{ledger.name}</DataTd>
+                    <DataTd>{ledger.type ?? "—"}</DataTd>
+                    <DataTd>{ledger.account_code ?? "—"}</DataTd>
+                  </DataTr>
+                ))}
+              </tbody>
+            </DataTable>
+          </DataTableShell>
+        </QueueShell>
       ) : null}
     </div>
   );

@@ -12,16 +12,10 @@ import {
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function RolesSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -80,13 +74,13 @@ export default function RolesSettingsPage({ params }: Props) {
             </div>
             <TextField label="Role name" value={name} onChange={setName} placeholder="e.g. warehouse-manager" />
 
-            <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+            <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
               {groups.map((group) => (
                 <div key={group} className="space-y-2">
                   <div className="text-[13px] font-semibold capitalize text-[var(--muted-strong)]">{group}</div>
                   <div className="grid gap-2">
                     {permissions.filter((permission) => permission.group === group).map((permission) => (
-                      <label key={permission.code} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                      <label key={permission.code} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm shadow-[var(--shadow-soft)]">
                         <input
                           checked={selectedPermissions.includes(permission.code)}
                           onChange={() => togglePermission(permission.code, selectedPermissions, setSelectedPermissions)}
@@ -104,7 +98,7 @@ export default function RolesSettingsPage({ params }: Props) {
             </div>
 
             {error ? <InlineError message={error} /> : null}
-            {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+            {ok ? <div className="text-sm text-[var(--success)]">{ok}</div> : null}
 
             <PrimaryButton
               type="button"
@@ -143,8 +137,8 @@ export default function RolesSettingsPage({ params }: Props) {
                       key={role.id}
                       className={`rounded-2xl border p-4 text-left transition ${
                         selectedRoleId === role.id
-                          ? "border-[var(--accent)] bg-[var(--surface)]"
-                          : "border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--accent-soft)]"
+                          ? "border-[var(--accent-soft)] bg-[var(--surface-elevated)] [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]"
+                          : "border-[var(--border)] bg-[var(--surface-secondary)] hover:border-[var(--accent-soft)] hover:bg-[var(--surface-elevated)]"
                       }`}
                       onClick={() => setSelectedRoleId(role.id)}
                       type="button"
@@ -156,14 +150,14 @@ export default function RolesSettingsPage({ params }: Props) {
                 </div>
 
                 {selectedRole ? (
-                  <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                     <TextField label="Role name" value={editorName} onChange={setEditorName} />
                     <div className="space-y-3">
                       {groups.map((group) => (
                         <div key={group} className="space-y-2">
                           <div className="text-[13px] font-semibold capitalize text-[var(--muted-strong)]">{group}</div>
                           {permissions.filter((permission) => permission.group === group).map((permission) => (
-                            <label key={permission.code} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                            <label key={permission.code} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm shadow-[var(--shadow-soft)]">
                               <input
                                 checked={editorPermissions.includes(permission.code)}
                                 onChange={() => togglePermission(permission.code, editorPermissions, setEditorPermissions)}
@@ -229,7 +223,7 @@ export default function RolesSettingsPage({ params }: Props) {
             <EmptyState title="No admin changes yet" hint="Role and user changes will appear here." />
           ) : (
             auditEntries.map((entry) => (
-              <div key={entry.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+              <div key={entry.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="text-sm font-medium text-[var(--foreground)]">{entry.summary}</div>
                 <div className="mt-1 text-xs text-[var(--muted)]">
                   {entry.actor_email ?? entry.actor_user_id} • {new Date(entry.created_at).toLocaleString()}

@@ -11,6 +11,7 @@ import type { Invoice, InvoiceItem } from "@/lib/billing/types";
 import { usePrintTemplates } from "@/lib/migration/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; invoiceId: string }> };
 
@@ -20,13 +21,6 @@ type ReceiptInvoiceItem = InvoiceItem & {
   lineTotal?: string | number | null;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);

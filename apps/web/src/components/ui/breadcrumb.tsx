@@ -10,17 +10,17 @@ export function Breadcrumbs(props: {
   className?: string;
 }) {
   return (
-    <nav aria-label="Breadcrumb" className={cn("text-xs text-neutral-500", props.className)}>
+    <nav aria-label="Breadcrumb" className={cn("text-xs text-[var(--muted)]", props.className)}>
       <ol className="flex flex-wrap items-center gap-1">
         {props.items.map((it, idx) => (
           <li key={idx} className="flex items-center gap-1">
-            {idx > 0 ? <span className="text-neutral-300">/</span> : null}
+            {idx > 0 ? <span className="text-[var(--border-strong)]">/</span> : null}
             {it.href ? (
-              <Link href={it.href} className="hover:underline">
+              <Link href={it.href} className="hover:text-[var(--foreground)] hover:underline">
                 {it.label}
               </Link>
             ) : (
-              <span className="text-neutral-700">{it.label}</span>
+              <span className="text-[var(--muted-strong)]">{it.label}</span>
             )}
           </li>
         ))}

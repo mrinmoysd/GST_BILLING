@@ -4,24 +4,26 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateInvoice } from "@/lib/billing/hooks";
 import { useBatchStock, useCustomers, useProducts, useWarehouses } from "@/lib/masters/hooks";
 import { usePricingPreview } from "@/lib/pricing/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import {
+  ComposerBody,
+  ComposerMetricCard,
+  ComposerMiniList,
+  ComposerSection,
+  ComposerStepBar,
+  ComposerStickyActions,
+  ComposerSummaryRail,
+  ComposerWarningStack,
+} from "@/lib/ui/composer";
 import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectControl, SelectField, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatPricingSource(source?: string | null) {
   switch (source) {
@@ -139,6 +141,36 @@ export default function NewInvoicePage({ params }: Props) {
       .filter((row) => row.taxable > 0)
       .sort((a, b) => a.rate - b.rate);
   }, [lines, productsById]);
+
+  const activeStep = React.useMemo(() => {
+    if (!customerId) return "party";
+    if (!lines.some((line) => line.productId)) return "lines";
+    return "review";
+  }, [customerId, lines]);
+
+  const stepItems = React.useMemo(
+    () => [
+      {
+        id: "party",
+        label: "Customer and stock source",
+        description: "Choose the bill-to party, owner, and warehouse before the invoice body is built.",
+        meta: customerId ? "Customer selected" : "Waiting for customer",
+      },
+      {
+        id: "lines",
+        label: "Items and batch choices",
+        description: "Capture the exact billing lines and preferred batch consumption where needed.",
+        meta: `${lines.filter((line) => line.productId).length} product lines ready`,
+      },
+      {
+        id: "review",
+        label: "Review and create",
+        description: "Confirm tax, totals, and operator notes before the draft moves forward.",
+        meta: `${(subTotal + estimatedTax).toFixed(2)} draft total`,
+      },
+    ],
+    [customerId, estimatedTax, lines, subTotal],
+  );
 
   const previewableLines = React.useMemo(
     () =>
@@ -278,8 +310,10 @@ export default function NewInvoicePage({ params }: Props) {
         }
       />
 
+      <ComposerStepBar steps={stepItems} activeId={activeStep} />
+
       <form
-        className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]"
+        className="space-y-6"
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
@@ -354,14 +388,83 @@ export default function NewInvoicePage({ params }: Props) {
           }
         }}
       >
-        <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <Badge variant="secondary" className="w-fit">Draft workflow</Badge>
-            <CardTitle>Invoice builder</CardTitle>
-            <CardDescription>Select a customer, add products, and review the totals before saving the draft.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+        <ComposerBody
+          rail={
+            <ComposerSummaryRail
+              eyebrow="Review"
+              title="Draft summary"
+              description="Stay on one clean control rail for totals, tax, stock context, and the final save action."
+            >
+              <ComposerMetricCard label="Sub-total" value={subTotal.toFixed(2)} />
+              <ComposerMetricCard label="Estimated tax" value={estimatedTax.toFixed(2)} />
+              <ComposerMetricCard
+                label="Draft total"
+                value={(subTotal + estimatedTax).toFixed(2)}
+                hint="Final posting and batch allocation happen after the draft is reviewed on the detail screen."
+                strong
+              />
+              <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax breakdown</div>
+                <div className="mt-3 space-y-2">
+                  {taxBreakdown.length > 0 ? (
+                    taxBreakdown.map((row) => (
+                      <div key={row.rate} className="flex items-center justify-between gap-3 text-sm">
+                        <div className="text-[var(--muted-strong)]">
+                          {row.rate}% on {row.taxable.toFixed(2)}
+                        </div>
+                        <div className="font-medium text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm leading-6 text-[var(--muted)]">Tax will appear once products with GST rates are added to the draft.</div>
+                  )}
+                </div>
+              </div>
+              <ComposerMiniList
+                items={[
+                  {
+                    label: "Customer",
+                    value: customerId
+                      ? (Array.isArray(customers.data?.data) ? customers.data.data : []).find((customer) => customer.id === customerId)?.name ?? "Selected"
+                      : "Not selected",
+                  },
+                  {
+                    label: "Warehouse",
+                    value: warehouseId
+                      ? ((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).find((warehouse: { id: string; name: string }) => warehouse.id === warehouseId)?.name ?? "Selected")
+                      : "Automatic / later",
+                  },
+                  {
+                    label: "Draft lines",
+                    value: lines.filter((line) => line.productId).length,
+                  },
+                ]}
+              />
+              <ComposerWarningStack>
+                {error ? <InlineError message={error} /> : null}
+              </ComposerWarningStack>
+              <ComposerStickyActions
+                aside="Use the notes field for delivery context, invoice narration, or anything the post-draft reviewer should preserve."
+                primary={
+                  <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
+                    {create.isPending ? "Creating…" : "Create draft"}
+                  </PrimaryButton>
+                }
+                secondary={
+                  <SecondaryButton type="button" className="w-full" onClick={() => router.back()}>
+                    Cancel
+                  </SecondaryButton>
+                }
+              />
+            </ComposerSummaryRail>
+          }
+        >
+          <ComposerSection
+            eyebrow="Step 1"
+            title="Customer and stock source"
+            description="Select the bill-to party, assign the salesperson if needed, and choose the warehouse before you assemble the invoice."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
             <SelectField
               label="Customer"
               value={customerId}
@@ -401,15 +504,38 @@ export default function NewInvoicePage({ params }: Props) {
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
               Add products below. Unit price auto-fills from the current product price where available, and the right-hand summary reflects draft totals in real time.
             </div>
-          </CardContent>
-        </Card>
+            </div>
+          </ComposerSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Line items</CardTitle>
-            <CardDescription>Use the table to build the invoice body. Each row contributes to the live draft summary.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <ComposerSection
+            eyebrow="Step 2"
+            title="Line items and preferred batches"
+            description="Use the table to build the invoice body. Each row contributes to the live draft summary and can optionally guide batch consumption."
+            actions={
+              <div className="flex items-center gap-3">
+                <SecondaryButton
+                  type="button"
+                  onClick={() =>
+                    setLines((prev) => [
+                      ...prev,
+                      {
+                        id: `l${prev.length + 1}_${Date.now()}`,
+                        productId: "",
+                        quantity: "1",
+                        unitPrice: "",
+                        batchAllocations: [],
+                      },
+                    ])
+                  }
+                >
+                  Add line
+                </SecondaryButton>
+                <div className="text-sm text-[var(--muted)]">
+                  Draft lines: <span className="font-semibold text-[var(--foreground)]">{lines.length}</span>
+                </div>
+              </div>
+            }
+          >
         <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
           <table className="w-full text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -442,11 +568,11 @@ export default function NewInvoicePage({ params }: Props) {
                   <React.Fragment key={l.id}>
                   <tr className="border-t border-[var(--border)]">
                     <td className="px-3 py-2">
-                      <select
-                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                      <SelectControl
+                        ariaLabel={`Line ${idx + 1} product`}
+                        className="w-full px-3 py-2"
                         value={l.productId}
-                        onChange={(e) => {
-                          const next = e.target.value;
+                        onChange={(next) => {
                           setLines((prev) =>
                             prev.map((x) =>
                               x.id === l.id
@@ -474,7 +600,7 @@ export default function NewInvoicePage({ params }: Props) {
                             {p.name}
                           </option>
                         ))}
-                      </select>
+                      </SelectControl>
                       <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
                       {l.productId ? (
                         <div className="mt-1 text-xs text-[var(--muted)]">
@@ -603,10 +729,11 @@ export default function NewInvoicePage({ params }: Props) {
                           <div className="space-y-2">
                             {l.batchAllocations.map((allocation) => (
                               <div key={allocation.id} className="grid gap-2 lg:grid-cols-[1.4fr_0.8fr_auto]">
-                                <select
-                                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
+                                <SelectControl
+                                  ariaLabel={`Preferred batch for line ${idx + 1}`}
+                                  className="px-3 py-2"
                                   value={allocation.productBatchId}
-                                  onChange={(e) =>
+                                  onChange={(value) =>
                                     setLines((prev) =>
                                       prev.map((line) =>
                                         line.id === l.id
@@ -614,7 +741,7 @@ export default function NewInvoicePage({ params }: Props) {
                                               ...line,
                                               batchAllocations: line.batchAllocations.map((entry) =>
                                                 entry.id === allocation.id
-                                                  ? { ...entry, productBatchId: e.target.value }
+                                                  ? { ...entry, productBatchId: value }
                                                   : entry,
                                               ),
                                             }
@@ -633,7 +760,7 @@ export default function NewInvoicePage({ params }: Props) {
                                           : "")}
                                     </option>
                                   ))}
-                                </select>
+                                </SelectControl>
                                 <input
                                   className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm shadow-sm"
                                   value={allocation.quantity}
@@ -688,86 +815,20 @@ export default function NewInvoicePage({ params }: Props) {
             </tbody>
           </table>
         </div>
+          </ComposerSection>
 
-        <div className="flex gap-3">
-          <SecondaryButton
-            type="button"
-            onClick={() =>
-              setLines((prev) => [
-                ...prev,
-                {
-                  id: `l${prev.length + 1}_${Date.now()}`,
-                  productId: "",
-                  quantity: "1",
-                  unitPrice: "",
-                  batchAllocations: [],
-                },
-              ])
-            }
+          <ComposerSection
+            eyebrow="Step 3"
+            title="Review notes"
+            description="Add operator notes or delivery context that should travel with the draft before issue."
+            tone="muted"
           >
-            Add line
-          </SecondaryButton>
-          <div className="ml-auto text-sm text-[var(--muted)]">
-            Draft lines: <span className="font-semibold text-[var(--foreground)]">{lines.length}</span>
-          </div>
-        </div>
-
-        <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
-
-        {error ? <InlineError message={error} /> : null}
-          </CardContent>
-        </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Draft summary</CardTitle>
-              <CardDescription>Live totals based on the current line items and selected products.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Sub-total</div>
-                <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{subTotal.toFixed(2)}</div>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Estimated tax</div>
-                <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{estimatedTax.toFixed(2)}</div>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Draft total</div>
-                <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{(subTotal + estimatedTax).toFixed(2)}</div>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax breakdown</div>
-                <div className="mt-3 space-y-2">
-                  {taxBreakdown.length > 0 ? (
-                    taxBreakdown.map((row) => (
-                      <div key={row.rate} className="flex items-center justify-between gap-3 text-sm">
-                        <div className="text-[var(--muted-strong)]">
-                          {row.rate}% on {row.taxable.toFixed(2)}
-                        </div>
-                        <div className="font-medium text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-[var(--muted)]">Tax will appear once products with GST rates are added to the draft.</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
-                  {create.isPending ? "Creating…" : "Create draft"}
-                </PrimaryButton>
-                <SecondaryButton type="button" className="w-full" onClick={() => router.back()}>
-                  Cancel
-                </SecondaryButton>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm leading-6 text-[var(--muted)]">
+              Keep notes short and operational: delivery sequence, route callout, batch sensitivity, or instructions for the reviewer who will issue the invoice later.
+            </div>
+          </ComposerSection>
+        </ComposerBody>
       </form>
     </div>
   );

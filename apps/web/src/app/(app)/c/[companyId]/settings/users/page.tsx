@@ -9,21 +9,14 @@ import {
   useInviteCompanyUser,
   usePatchCompanyUser,
 } from "@/lib/settings/usersHooks";
+import { getErrorMessage } from "@/lib/errors";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import type { CompanyUser, RolesResponse } from "@/lib/settings/usersHooks";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function UsersSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -92,29 +85,24 @@ export default function UsersSettingsPage({ params }: Props) {
             <TextField label="Email" value={email} onChange={setEmail} placeholder="user@example.com" />
             <TextField label="Name" value={name} onChange={setName} placeholder="Optional" />
             <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Primary role</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={primaryRole}
-                onChange={(e) => setPrimaryRole(e.target.value)}
-              >
+              <SelectField label="Primary role" value={primaryRole} onChange={setPrimaryRole}>
                 {builtInRoles.map((role) => (
                   <option key={role.id} value={role.name}>
                     {role.name}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+          <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
             <div className="text-[13px] font-semibold text-[var(--muted-strong)]">Custom roles</div>
             {customRoles.length === 0 ? (
               <div className="text-sm text-[var(--muted)]">No custom roles yet. Create them from the Roles screen.</div>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {customRoles.map((role) => (
-                  <label key={role.id} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                  <label key={role.id} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm shadow-[var(--shadow-soft)]">
                     <input
                       checked={selectedRoleIds.includes(role.id)}
                       onChange={() => toggleRoleSelection(role.id, selectedRoleIds, setSelectedRoleIds)}
@@ -131,7 +119,7 @@ export default function UsersSettingsPage({ params }: Props) {
           </div>
 
           {error ? <InlineError message={error} /> : null}
-          {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+          {ok ? <div className="text-sm text-[var(--success)]">{ok}</div> : null}
 
           <PrimaryButton
             type="button"
@@ -214,7 +202,7 @@ export default function UsersSettingsPage({ params }: Props) {
               <EmptyState title="Select a user" hint="Choose a user from the table to edit access." />
             ) : (
               <>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-sm font-semibold text-[var(--foreground)]">{selectedUser.email}</div>
                   <div className="mt-1 text-xs text-[var(--muted)]">Last login: {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Never"}</div>
                 </div>
@@ -222,27 +210,22 @@ export default function UsersSettingsPage({ params }: Props) {
                 <TextField label="Name" value={editorName} onChange={setEditorName} />
 
                 <div>
-                  <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Primary role</label>
-                  <select
-                    className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                    value={editorPrimaryRole}
-                    onChange={(e) => setEditorPrimaryRole(e.target.value)}
-                  >
+                  <SelectField label="Primary role" value={editorPrimaryRole} onChange={setEditorPrimaryRole}>
                     {builtInRoles.map((role) => (
                       <option key={role.id} value={role.name}>
                         {role.name}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </div>
 
-                <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="text-[13px] font-semibold text-[var(--muted-strong)]">Custom roles</div>
                   {customRoles.length === 0 ? (
                     <div className="text-sm text-[var(--muted)]">No custom roles created yet.</div>
                   ) : (
                     customRoles.map((role) => (
-                      <label key={role.id} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                      <label key={role.id} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm shadow-[var(--shadow-soft)]">
                         <input
                           checked={editorRoleIds.includes(role.id)}
                           onChange={() => toggleRoleSelection(role.id, editorRoleIds, setEditorRoleIds)}

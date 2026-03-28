@@ -4,25 +4,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateQuotation } from "@/lib/billing/hooks";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
 import type { Product } from "@/lib/masters/types";
 import { usePricingPreview } from "@/lib/pricing/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import {
+  ComposerBody,
+  ComposerMetricCard,
+  ComposerMiniList,
+  ComposerSection,
+  ComposerStepBar,
+  ComposerStickyActions,
+  ComposerSummaryRail,
+  ComposerWarningStack,
+} from "@/lib/ui/composer";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, PageHeader } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatPricingSource(source?: string | null) {
   switch (source) {
@@ -231,6 +233,12 @@ export default function NewQuotationPage({ params }: Props) {
     };
   }, [customerId, previewPricing, pricingSignature]);
 
+  const activeStep = React.useMemo(() => {
+    if (!customerId) return "context";
+    if (!lines.some((line) => line.productId)) return "lines";
+    return "review";
+  }, [customerId, lines]);
+
   return (
     <div className="space-y-7">
       <PageHeader
@@ -244,8 +252,32 @@ export default function NewQuotationPage({ params }: Props) {
         }
       />
 
+      <ComposerStepBar
+        activeId={activeStep}
+        steps={[
+          {
+            id: "context",
+            label: "Customer and validity",
+            description: "Choose the party, ownership, and validity dates before the commercial body is shaped.",
+            meta: customerId ? "Customer selected" : "Waiting for customer",
+          },
+          {
+            id: "lines",
+            label: "Quoted items",
+            description: "Build the commercial offer with resolved price, quantity, and override guardrails.",
+            meta: `${lines.filter((line) => line.productId).length} lines ready`,
+          },
+          {
+            id: "review",
+            label: "Review and save",
+            description: "Confirm totals and internal notes before the quote enters the pipeline.",
+            meta: `${(subTotal + estimatedTax).toFixed(2)} offer total`,
+          },
+        ]}
+      />
+
       <form
-        className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]"
+        className="space-y-6"
         onSubmit={async (event) => {
           event.preventDefault();
           setError(null);
@@ -281,14 +313,38 @@ export default function NewQuotationPage({ params }: Props) {
           }
         }}
       >
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <Badge variant="secondary" className="w-fit">Quotation workflow</Badge>
-              <CardTitle>Offer builder</CardTitle>
-              <CardDescription>Set the commercial context, then shape the quote body below.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
+        <ComposerBody
+          rail={
+            <ComposerSummaryRail
+              eyebrow="Quote summary"
+              title={customerId ? "Offer in progress" : "Awaiting customer"}
+              description="Use the right rail to keep totals and commercial posture stable while the main body stays focused on editing."
+            >
+              <ComposerMetricCard label="Subtotal" value={subTotal.toFixed(2)} />
+              <ComposerMetricCard label="Estimated tax" value={estimatedTax.toFixed(2)} />
+              <ComposerMetricCard
+                label="Offer total"
+                value={(subTotal + estimatedTax).toFixed(2)}
+                strong
+                hint="This stays estimated until the quotation is saved and reviewed in the detail workspace."
+              />
+              <ComposerMiniList
+                items={[
+                  { label: "Customer", value: customerId ? "Selected" : "Pending" },
+                  { label: "Issue date", value: issueDate || "Not set" },
+                  { label: "Expiry date", value: expiryDate || "Not set" },
+                  { label: "Lines", value: lines.filter((line) => line.productId).length },
+                ]}
+              />
+            </ComposerSummaryRail>
+          }
+        >
+          <ComposerSection
+            eyebrow="Commercial context"
+            title="Offer setup"
+            description="Set the customer, salesperson ownership, and validity dates before shaping the offer body."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
               <SelectField label="Customer" value={customerId} onChange={setCustomerId}>
                 <option value="">Select…</option>
                 {(Array.isArray(customers.data?.data) ? customers.data.data : []).map((customer) => (
@@ -310,15 +366,14 @@ export default function NewQuotationPage({ params }: Props) {
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
                 Quotes stay lightweight here: build, send, approve, then convert to invoice when the commercial commitment is ready.
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </ComposerSection>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Line items</CardTitle>
-              <CardDescription>Capture product, quantity, commercial rate, and any discount to shape the offer value.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <ComposerSection
+            eyebrow="Offer body"
+            title="Line items"
+            description="Capture the quoted items in one dense editing grid, while commercial hints and overrides stay contextual to each row."
+          >
               <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
                 <table className="min-w-[720px] w-full text-sm">
                   <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -456,35 +511,35 @@ export default function NewQuotationPage({ params }: Props) {
               >
                 Add line
               </SecondaryButton>
-            </CardContent>
-          </Card>
-        </div>
+          </ComposerSection>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Offer summary</CardTitle>
-              <CardDescription>Review the commercial value before saving the quotation.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
-                <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Subtotal</span><span className="font-semibold">{subTotal.toFixed(2)}</span></div>
-                <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Estimated tax</span><span className="font-semibold">{estimatedTax.toFixed(2)}</span></div>
-                <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-base"><span>Total</span><span className="font-semibold">{(subTotal + estimatedTax).toFixed(2)}</span></div>
-              </div>
+          <ComposerSection
+            eyebrow="Review"
+            title="Internal note and save"
+            description="Keep internal selling context here, then save the quotation into the operational pipeline."
+            tone="muted"
+          >
               <TextField label="Internal notes" value={notes} onChange={setNotes} placeholder="Commercial note, delivery context, validity terms…" />
-              {error ? <InlineError message={error} /> : null}
-              <div className="flex flex-wrap gap-3">
-                <PrimaryButton disabled={create.isPending} type="submit">
-                  {create.isPending ? "Saving…" : "Save quotation"}
-                </PrimaryButton>
-                <Link href={`/c/${companyId}/sales/quotations`}>
-                  <SecondaryButton type="button">Cancel</SecondaryButton>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </ComposerSection>
+
+          <ComposerWarningStack>
+            {error ? <InlineError message={error} /> : null}
+          </ComposerWarningStack>
+
+          <ComposerStickyActions
+            aside="Save the quotation once the customer, commercial lines, and validity posture are ready."
+            primary={
+              <PrimaryButton disabled={create.isPending} type="submit">
+                {create.isPending ? "Saving…" : "Save quotation"}
+              </PrimaryButton>
+            }
+            secondary={
+              <Link href={`/c/${companyId}/sales/quotations`}>
+                <SecondaryButton type="button" className="w-full">Cancel</SecondaryButton>
+              </Link>
+            }
+          />
+        </ComposerBody>
       </form>
     </div>
   );

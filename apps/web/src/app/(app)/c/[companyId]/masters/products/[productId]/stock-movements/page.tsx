@@ -4,14 +4,8 @@ import * as React from "react";
 
 import { useStockMovements } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type Props = { params: Promise<{ companyId: string; productId: string }> };
 
@@ -31,9 +25,9 @@ export default function ProductStockMovementsPage({ params }: Props) {
       {query.data && query.data.data.data.length === 0 ? <EmptyState title="No movements" /> : null}
 
       {query.data && query.data.data.data.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+            <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">When</th>
                 <th className="text-left px-4 py-3 font-medium">Change</th>

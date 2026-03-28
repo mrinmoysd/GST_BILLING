@@ -15,19 +15,14 @@ import {
   useSendQuotation,
 } from "@/lib/billing/hooks";
 import type { Quotation } from "@/lib/billing/types";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { WorkspaceDetailHero, WorkspacePanel, WorkspaceSection } from "@/lib/ui/workspace";
+import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; quotationId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function QuotationDetailPage({ params }: Props) {
   const { companyId, quotationId } = React.use(params);
@@ -46,17 +41,79 @@ export default function QuotationDetailPage({ params }: Props) {
   const canEditState = status === "draft" || status === "sent";
   const canConvert = !["cancelled", "expired", "converted"].includes(status);
 
-  async function runAction(action: () => Promise<unknown>, fallback: string) {
+  async function runAction(
+    action: () => Promise<unknown>,
+    messages: { success: string; failure: string },
+  ) {
     try {
       await action();
+      toastSuccess(messages.success);
     } catch (err) {
-      window.alert(getErrorMessage(err, fallback));
+      toastError(err, {
+        fallback: messages.failure,
+        context: "quotation-action",
+        metadata: { companyId, quotationId },
+      });
     }
   }
 
   if (query.isLoading) return <LoadingBlock label="Loading quotation…" />;
   if (query.isError) return <InlineError message={getErrorMessage(query.error, "Failed to load quotation")} />;
   if (!quote) return <EmptyState title="Quotation not found" />;
+  const detailRail = (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Quote controls"
+        subtitle="Keep the key commercial actions visible while the main tab body focuses on the current job."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/sales/quotations`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to quotations</SecondaryButton>
+          </Link>
+          <Link href={`/c/${companyId}/sales/quotations/new`}>
+            <SecondaryButton type="button" className="w-full justify-start">New quotation</SecondaryButton>
+          </Link>
+          {canConvert ? (
+            <PrimaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={convert.isPending}
+              onClick={() =>
+                runAction(
+                  async () => {
+                    const res = await convert.mutateAsync({});
+                    router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
+                  },
+                  {
+                    success: "Quotation converted to invoice.",
+                    failure: "Failed to convert quotation.",
+                  },
+                )
+              }
+            >
+              {convert.isPending ? "Converting…" : "Convert to invoice"}
+            </PrimaryButton>
+          ) : null}
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Commercial posture"
+        subtitle="These are the details sales teams need to keep in view while they push a quote forward."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Customer", value: quote.customer?.name ?? "—" },
+            { label: "Status", value: quote.status ?? "—" },
+            { label: "Issue date", value: quote.issueDate?.slice?.(0, 10) ?? quote.issue_date ?? "—" },
+            { label: "Expiry", value: quote.expiryDate?.slice?.(0, 10) ?? quote.expiry_date ?? "—" },
+            { label: "Total", value: quote.total ?? "—" },
+          ]}
+        />
+      </DetailRail>
+    </>
+  );
 
   return (
     <div className="space-y-7">
@@ -88,7 +145,10 @@ export default function QuotationDetailPage({ params }: Props) {
                       const res = await convertToSalesOrder.mutateAsync();
                       router.push(`/c/${companyId}/sales/orders/${res.data.id}`);
                     },
-                    "Failed to convert quotation",
+                    {
+                      success: "Quotation converted to sales order.",
+                      failure: "Failed to convert quotation.",
+                    },
                   )
                 }
               >
@@ -105,7 +165,10 @@ export default function QuotationDetailPage({ params }: Props) {
                       const res = await convert.mutateAsync({});
                       router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
                     },
-                    "Failed to convert quotation",
+                    {
+                      success: "Quotation converted to invoice.",
+                      failure: "Failed to convert quotation.",
+                    },
                   )
                 }
               >
@@ -122,9 +185,16 @@ export default function QuotationDetailPage({ params }: Props) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <WorkspaceSection eyebrow="Quotation body" title="Quoted items" subtitle="The commercial offer is stored exactly as it will flow into invoice draft conversion.">
-          <WorkspacePanel>
+      <DetailTabs
+        defaultValue="summary"
+        items={[
+          { id: "summary", label: "Summary", badge: items.length },
+          { id: "actions", label: "Actions" },
+          { id: "linked", label: "Linked docs", badge: invoices.length },
+        ]}
+      >
+        <DetailTabPanel value="summary" rail={detailRail}>
+          <WorkspacePanel title="Quoted items" subtitle="The commercial offer is stored exactly as it will flow into invoice draft conversion.">
             <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
               <table className="min-w-[720px] w-full text-sm">
                 <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -150,29 +220,6 @@ export default function QuotationDetailPage({ params }: Props) {
               </table>
             </div>
           </WorkspacePanel>
-        </WorkspaceSection>
-
-        <div className="space-y-6">
-          <WorkspacePanel
-            title="Commercial actions"
-            subtitle="Move the quotation through the sales posture before converting it."
-          >
-            <div className="flex flex-wrap gap-2">
-              <SecondaryButton type="button" disabled={send.isPending || !canEditState} onClick={() => runAction(() => send.mutateAsync(undefined), "Failed to mark quotation as sent")}>
-                Mark sent
-              </SecondaryButton>
-              <SecondaryButton type="button" disabled={approve.isPending || !canConvert} onClick={() => runAction(() => approve.mutateAsync(undefined), "Failed to approve quotation")}>
-                Approve
-              </SecondaryButton>
-              <SecondaryButton type="button" disabled={expire.isPending || !canConvert} onClick={() => runAction(() => expire.mutateAsync(undefined), "Failed to expire quotation")}>
-                Expire
-              </SecondaryButton>
-              <SecondaryButton type="button" disabled={cancel.isPending || status === "converted"} onClick={() => runAction(() => cancel.mutateAsync(undefined), "Failed to cancel quotation")}>
-                Cancel
-              </SecondaryButton>
-            </div>
-          </WorkspacePanel>
-
           <WorkspacePanel
             title="Commercial context"
             subtitle="Notes and customer data remain attached to the quote so conversion preserves the selling context."
@@ -184,11 +231,72 @@ export default function QuotationDetailPage({ params }: Props) {
               <div><span className="font-semibold text-[var(--foreground)]">Notes:</span> {quote.notes ?? "—"}</div>
             </div>
           </WorkspacePanel>
+        </DetailTabPanel>
 
-          <WorkspacePanel
-            title="Invoice conversions"
-            subtitle="Once converted, the quotation stays linked to the invoice drafts it produced."
-          >
+        <DetailTabPanel value="actions" rail={detailRail}>
+          <WorkspacePanel title="Commercial actions" subtitle="Move the quotation through the sales posture before converting it.">
+            <div className="flex flex-wrap gap-2">
+              <SecondaryButton
+                type="button"
+                disabled={send.isPending || !canEditState}
+                onClick={() =>
+                  runAction(() => send.mutateAsync(undefined), {
+                    success: "Quotation marked as sent.",
+                    failure: "Failed to mark quotation as sent.",
+                  })
+                }
+              >
+                Mark sent
+              </SecondaryButton>
+              <SecondaryButton
+                type="button"
+                disabled={approve.isPending || !canConvert}
+                onClick={() =>
+                  runAction(() => approve.mutateAsync(undefined), {
+                    success: "Quotation approved.",
+                    failure: "Failed to approve quotation.",
+                  })
+                }
+              >
+                Approve
+              </SecondaryButton>
+              <SecondaryButton
+                type="button"
+                disabled={expire.isPending || !canConvert}
+                onClick={() =>
+                  runAction(() => expire.mutateAsync(undefined), {
+                    success: "Quotation expired.",
+                    failure: "Failed to expire quotation.",
+                  })
+                }
+              >
+                Expire
+              </SecondaryButton>
+              <SecondaryButton
+                type="button"
+                disabled={cancel.isPending || status === "converted"}
+                onClick={() =>
+                  runAction(() => cancel.mutateAsync(undefined), {
+                    success: "Quotation cancelled.",
+                    failure: "Failed to cancel quotation.",
+                  })
+                }
+              >
+                Cancel
+              </SecondaryButton>
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Conversion posture" subtitle="Use the quote status first, then convert only when the selling conversation is ready to become an order or invoice.">
+            <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
+              <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Status</span><span className="font-semibold">{quote.status ?? "—"}</span></div>
+              <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Salesperson</span><span className="font-semibold">{quote.salesperson?.name ?? quote.salesperson?.email ?? "Unassigned"}</span></div>
+              <div className="flex items-center justify-between"><span className="text-[var(--muted)]">Convertible</span><span className="font-semibold">{canConvert ? "Yes" : "No"}</span></div>
+            </div>
+          </WorkspacePanel>
+        </DetailTabPanel>
+
+        <DetailTabPanel value="linked" rail={detailRail}>
+          <WorkspacePanel title="Invoice conversions" subtitle="Once converted, the quotation stays linked to the invoice drafts it produced.">
             {invoices.length === 0 ? (
               <div className="text-sm text-[var(--muted)]">No invoice draft has been created from this quotation yet.</div>
             ) : (
@@ -206,8 +314,8 @@ export default function QuotationDetailPage({ params }: Props) {
               </div>
             )}
           </WorkspacePanel>
-        </div>
-      </div>
+        </DetailTabPanel>
+      </DetailTabs>
     </div>
   );
 }

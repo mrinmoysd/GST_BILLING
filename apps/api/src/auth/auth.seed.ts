@@ -1,6 +1,11 @@
 import * as bcrypt from 'bcryptjs';
 
 import { PrismaClient } from '@prisma/client';
+import {
+  DEFAULT_SEED_COMPANY_ID,
+  DEFAULT_SEED_OWNER_USER_ID,
+  DEFAULT_SEED_SUPER_ADMIN_USER_ID,
+} from '../seed/seed.constants';
 
 async function main() {
   const prisma = new PrismaClient();
@@ -14,10 +19,10 @@ async function main() {
 
   const company = await prisma.company.upsert({
     where: {
-      id: process.env.SEED_COMPANY_ID ?? '00000000-0000-0000-0000-000000000001',
+      id: process.env.SEED_COMPANY_ID ?? DEFAULT_SEED_COMPANY_ID,
     },
     create: {
-      id: process.env.SEED_COMPANY_ID ?? '00000000-0000-0000-0000-000000000001',
+      id: process.env.SEED_COMPANY_ID ?? DEFAULT_SEED_COMPANY_ID,
       name: companyName,
       businessType: 'retailer',
     },
@@ -31,10 +36,10 @@ async function main() {
 
   await prisma.user.upsert({
     where: {
-      id: process.env.SEED_USER_ID ?? '00000000-0000-0000-0000-000000000002',
+      id: process.env.SEED_USER_ID ?? DEFAULT_SEED_OWNER_USER_ID,
     },
     create: {
-      id: process.env.SEED_USER_ID ?? '00000000-0000-0000-0000-000000000002',
+      id: process.env.SEED_USER_ID ?? DEFAULT_SEED_OWNER_USER_ID,
       companyId: company.id,
       email,
       name: 'Owner',
@@ -53,14 +58,10 @@ async function main() {
 
   await prisma.user.upsert({
     where: {
-      id:
-        process.env.SEED_SUPER_ADMIN_USER_ID ??
-        '00000000-0000-0000-0000-0000000000aa',
+      id: process.env.SEED_SUPER_ADMIN_USER_ID ?? DEFAULT_SEED_SUPER_ADMIN_USER_ID,
     },
     create: {
-      id:
-        process.env.SEED_SUPER_ADMIN_USER_ID ??
-        '00000000-0000-0000-0000-0000000000aa',
+      id: process.env.SEED_SUPER_ADMIN_USER_ID ?? DEFAULT_SEED_SUPER_ADMIN_USER_ID,
       companyId: null,
       email: superAdminEmail,
       name: 'Super Admin',

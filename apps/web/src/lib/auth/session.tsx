@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { apiClient } from "@/lib/api/client";
 import { config } from "@/lib/config";
+import { logError } from "@/lib/errors";
 import type { ApiEnvelope } from "@/lib/api/types";
 import type { SessionCompany, SessionState, SessionUser } from "@/lib/auth/types";
 
@@ -101,8 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSessionHint(true);
         setAccessToken(json.data.access_token);
         await refreshMe();
-      } catch {
-        // ignore
+      } catch (error) {
+        setSessionHint(false);
+        logError(error, "auth-bootstrap-refresh");
       } finally {
         if (!cancelled) setBootstrapped(true);
       }

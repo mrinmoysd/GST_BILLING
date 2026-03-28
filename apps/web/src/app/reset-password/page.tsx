@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthShell } from "@/components/public/auth-shell";
-import type { NormalizedApiError } from "@/lib/api/types";
+import { getErrorMessage, logError } from "@/lib/errors";
 import { useResetPassword } from "@/lib/auth/hooks";
 
 function ResetPasswordContent() {
@@ -95,8 +95,8 @@ function ResetPasswordContent() {
                 setOk(data.message);
                 window.setTimeout(() => router.replace("/login"), 900);
               } catch (err: unknown) {
-                const apiError = err as NormalizedApiError;
-                setError(apiError.message ?? "Failed to reset password");
+                logError(err, "reset-password-submit");
+                setError(getErrorMessage(err, "Failed to reset password."));
               }
             }}
           >

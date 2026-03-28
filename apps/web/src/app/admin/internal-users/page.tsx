@@ -10,17 +10,10 @@ import {
 } from "@/lib/admin/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
+import { PrimaryButton, SecondaryButton, SelectControl, SelectField, TextField } from "@/lib/ui/form";
 
 type RoleOption = {
   code: string;
@@ -52,14 +45,15 @@ function InternalUserActions(props: {
   return (
     <>
       <DataTd>
-        <select
-          className="h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm shadow-sm"
+        <SelectControl
+          ariaLabel="Internal user role"
+          className="h-10 px-3"
           value={props.row.role}
-          onChange={async (e) => {
+          onChange={async (value) => {
             try {
               props.setError(null);
               props.setBusyId(props.row.id);
-              await updater.mutateAsync({ role: e.target.value });
+              await updater.mutateAsync({ role: value });
             } catch (err) {
               props.setError(getErrorMessage(err, "Failed to update admin role"));
             } finally {
@@ -73,7 +67,7 @@ function InternalUserActions(props: {
               {option.label}
             </option>
           ))}
-        </select>
+        </SelectControl>
       </DataTd>
       <DataTd>
         <Badge variant={props.row.is_active ? "secondary" : "outline"}>
@@ -177,18 +171,13 @@ export default function AdminInternalUsersPage() {
             <TextField label="Email" value={email} onChange={setEmail} required />
             <TextField label="Temporary password" type="password" value={password} onChange={setPassword} required />
             <div>
-              <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Role</label>
-              <select
-                className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
+              <SelectField label="Role" value={role} onChange={setRole}>
                 {roles.map((option) => (
                   <option key={option.code} value={option.code}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </div>
             <PrimaryButton
               type="button"

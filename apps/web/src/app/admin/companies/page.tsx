@@ -8,25 +8,48 @@ import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/
 import { useAdminCompanies } from "@/lib/admin/hooks";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, TextField } from "@/lib/ui/form";
-import { WorkspaceFilterBar, WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { QueueInspector, QueueMetaList, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar, QueueRowStateBadge } from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminCompaniesPage() {
   const [q, setQ] = React.useState("");
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState("");
   const query = useAdminCompanies({ q: q || undefined, page: 1, limit: 50 });
   const payload = query.data as
     | { data?: Array<Record<string, unknown>>; meta?: { total?: number } }
     | undefined;
 
-  const rows = payload?.data ?? [];
+  const rows = React.useMemo(() => payload?.data ?? [], [payload]);
   const total = payload?.meta?.total ?? rows.length;
+  const counts = React.useMemo(() => {
+    const suspended = rows.filter((row) => String(row.admin_status ?? "active") === "suspended").length;
+    const active = rows.filter((row) => String(row.admin_status ?? "active") !== "suspended").length;
+    return { all: rows.length, active, suspended };
+  }, [rows]);
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      const status = String(row.admin_status ?? "active");
+      if (segment === "suspended") return status === "suspended";
+      if (segment === "active") return status !== "suspended";
+      return true;
+    });
+  }, [rows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedCompanyId("");
+      return;
+    }
+    if (!selectedCompanyId || !filteredRows.some((row) => String(row.id) === selectedCompanyId)) {
+      setSelectedCompanyId(String(filteredRows[0]?.id ?? ""));
+    }
+  }, [filteredRows, selectedCompanyId]);
+
+  const selectedRow = filteredRows.find((row) => String(row.id) === selectedCompanyId) ?? filteredRows[0] ?? null;
 
   return (
     <div className="space-y-7">
@@ -46,19 +69,62 @@ export default function AdminCompaniesPage() {
         }
       />
 
-      <WorkspaceFilterBar summary={<Badge variant="secondary">{total} total</Badge>}>
-        <TextField label="Search companies" value={q} onChange={setQ} placeholder="Name / GSTIN" />
-      </WorkspaceFilterBar>
+      <QueueSegmentBar
+        items={[
+          { id: "all", label: "All companies", count: counts.all },
+          { id: "active", label: "Active", count: counts.active },
+          { id: "suspended", label: "Suspended", count: counts.suspended },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "all", label: "Full roster" },
+              { id: "active", label: "Healthy tenants" },
+              { id: "suspended", label: "Intervention" },
+            ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
+          />
+        }
+      />
+
+      <QueueToolbar
+        filters={<TextField label="Search companies" value={q} onChange={setQ} placeholder="Name / GSTIN" />}
+        summary={<Badge variant="secondary">{total} total</Badge>}
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading companies…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load companies")} /> : null}
-      {query.data && rows.length === 0 ? <EmptyState title="No companies" hint="Try a different query." /> : null}
+      {query.data && filteredRows.length === 0 ? <EmptyState title="No companies" hint="Try a different query." /> : null}
 
-      {query.data && rows.length > 0 ? (
-        <WorkspaceSection
-          eyebrow="Tenant plane"
-          title="Companies in view"
-          subtitle="Use the table as the primary surface for scan, filter, and drill-in operations."
+      {query.data && filteredRows.length > 0 ? (
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected company"
+              title={String(selectedRow?.name ?? "Select company")}
+              subtitle="Keep owner, status, and usage posture visible while the main table stays tuned for admin scanning."
+            >
+              {selectedRow ? (
+                <>
+                  <QueueRowStateBadge label={String(selectedRow.admin_status ?? "active")} />
+                  <QueueMetaList
+                    items={[
+                      { label: "Owner", value: String(selectedRow.owner_name ?? "—") },
+                      { label: "Owner email", value: String(selectedRow.owner_email ?? "—") },
+                      { label: "GSTIN", value: String(selectedRow.gstin ?? "—") },
+                      { label: "Business type", value: String(selectedRow.businessType ?? selectedRow.business_type ?? "—") },
+                    ]}
+                  />
+                </>
+              ) : null}
+            </QueueInspector>
+          }
         >
           <DataTableShell>
             <DataTable>
@@ -74,8 +140,12 @@ export default function AdminCompaniesPage() {
                 </tr>
               </DataThead>
               <tbody>
-                {rows.map((row, index) => (
-                  <DataTr key={String(row.id ?? index)}>
+                {filteredRows.map((row, index) => (
+                  <DataTr
+                    key={String(row.id ?? index)}
+                    className={selectedRow?.id === row.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                    onClick={() => setSelectedCompanyId(String(row.id))}
+                  >
                     <DataTd className="font-semibold">
                       <Link href={`/admin/companies/${String(row.id)}`} className="hover:text-[var(--accent)] hover:underline">
                         {String(row.name ?? "—")}
@@ -104,7 +174,7 @@ export default function AdminCompaniesPage() {
               </tbody>
             </DataTable>
           </DataTableShell>
-        </WorkspaceSection>
+        </QueueShell>
       ) : null}
     </div>
   );

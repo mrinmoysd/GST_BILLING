@@ -1,11 +1,12 @@
 import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import { DEFAULT_SEED_COMPANY_ID } from './seed.constants';
 
 type Json = any;
 
 const API_BASE_URL = process.env.SEED_API_BASE_URL ?? 'http://localhost:4000/api';
 const COMPANY_ID =
-  process.env.SEED_COMPANY_ID ?? '00000000-0000-0000-0000-000000000001';
+  process.env.SEED_COMPANY_ID ?? DEFAULT_SEED_COMPANY_ID;
 const OWNER_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'owner@example.com';
 const OWNER_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'password123';
 const PASSWORD = process.env.SEED_DISTRIBUTOR_USER_PASSWORD ?? 'password123';

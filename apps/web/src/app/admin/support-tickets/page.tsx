@@ -7,17 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminApiClient } from "@/lib/admin/api-client";
 import { useAdminSupportTickets } from "@/lib/admin/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { PrimaryButton, SecondaryButton, SelectField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminSupportTicketsPage() {
   const [status, setStatus] = React.useState<string>("");
@@ -64,14 +57,13 @@ export default function AdminSupportTicketsPage() {
         <CardContent>
           <div className="grid gap-3 md:grid-cols-[1fr_200px] md:items-end">
           <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Filter by status</label>
-            <select className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <SelectField label="Filter by status" value={status} onChange={setStatus}>
               <option value="">All</option>
               <option value="open">Open</option>
               <option value="in_progress">In progress</option>
               <option value="resolved">Resolved</option>
               <option value="closed">Closed</option>
-            </select>
+            </SelectField>
           </div>
           <div className="flex gap-2">
             <SecondaryButton

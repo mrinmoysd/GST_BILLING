@@ -157,6 +157,36 @@ export default function CompanyDashboardPage({ params }: Props) {
     },
   ];
 
+  const priorityBlocks = [
+    {
+      label: "Collections pressure",
+      value: formatCurrency(outstandingValue),
+      hint:
+        (distributorDashboard?.top_due_customers?.length ?? 0) > 0
+          ? `${distributorDashboard?.top_due_customers?.[0]?.customer_name ?? "Customer"} is currently the largest due account.`
+          : "No major due concentration is visible right now.",
+      href: `/c/${companyId}/payments/collections`,
+      action: "Open collections",
+    },
+    {
+      label: "Stock attention",
+      value: `${lowStockItems.length}`,
+      hint:
+        lowStockItems.length > 0
+          ? `${String(lowStockItems[0]?.name ?? "Product")} is already at or below threshold.`
+          : "No low-stock items are currently visible in the dashboard view.",
+      href: `/c/${companyId}/inventory/batches`,
+      action: "Review stock",
+    },
+    {
+      label: "Dispatch backlog",
+      value: `${(distributorDashboard?.top_due_customers?.length ?? 0) + (distributorDashboard?.top_salespeople?.length ?? 0)}`,
+      hint: "Use dispatch and challan workspaces to convert order pressure into planned movement.",
+      href: `/c/${companyId}/sales/dispatch`,
+      action: "Open dispatch",
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <WorkspaceHero
@@ -184,12 +214,12 @@ export default function CompanyDashboardPage({ params }: Props) {
             subtitle="Use the overview to decide whether the next move is collections, replenishment, or document creation."
           >
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+              <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Receivables</div>
                 <div className="mt-2 text-2xl font-semibold">{formatCurrency(outstandingValue)}</div>
                 <div className="mt-1 text-sm text-white/72">Open receivable exposure in the current view.</div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-4">
+              <div className="rounded-2xl border border-white/12 bg-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/58">Stock attention</div>
                 <div className="mt-2 text-2xl font-semibold">{lowStockItems.length}</div>
                 <div className="mt-1 text-sm text-white/72">Products currently need replenishment review.</div>
@@ -203,9 +233,35 @@ export default function CompanyDashboardPage({ params }: Props) {
       {hasLoadingState ? <LoadingBlock label="Refreshing dashboard metrics…" /> : null}
 
       <WorkspaceSection
+        eyebrow="Today"
+        title="Needs attention first"
+        subtitle="Start from pressure, not broad summary. These are the fastest ways to decide what the team should touch next."
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          {priorityBlocks.map((block) => (
+            <Link
+              key={block.label}
+              href={block.href}
+              className="group rounded-[28px] border border-[var(--border)] bg-[var(--surface-elevated)] p-5 shadow-[var(--shadow-soft)] transition [background-image:var(--surface-highlight)] hover:-translate-y-0.5 hover:border-[var(--border-strong)]"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">{block.label}</div>
+                  <div className="text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">{block.value}</div>
+                  <div className="text-sm leading-6 text-[var(--muted)]">{block.hint}</div>
+                </div>
+                <ArrowRight className="mt-1 h-4 w-4 text-[var(--muted)] transition-transform group-hover:translate-x-0.5" />
+              </div>
+              <div className="mt-5 text-sm font-medium text-[var(--secondary)]">{block.action}</div>
+            </Link>
+          ))}
+        </div>
+      </WorkspaceSection>
+
+      <WorkspaceSection
         eyebrow="Overview"
         title="Today’s operating picture"
-        subtitle="Use these signals first, then move into collections, product setup, purchasing, or payment workflows."
+        subtitle="Use this layer to measure throughput, receivable pressure, and replenishment posture at a glance."
       >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Today's sales" value={formatCurrency(todaysSalesValue)} hint={`${Number(salesToday.count ?? 0)} invoice(s) today.`} />
@@ -216,9 +272,9 @@ export default function CompanyDashboardPage({ params }: Props) {
       </WorkspaceSection>
 
       <WorkspaceSection
-        eyebrow="Distributor view"
+        eyebrow="Management"
         title="Owner operating view"
-        subtitle="Use this layer to understand rep contribution, due concentration, warehouse stock posture, and product movement."
+        subtitle="Use this layer to understand rep contribution, due concentration, warehouse posture, and product movement without opening reports first."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Gross sales" value={formatCurrency(distributorDashboard?.totals.gross_sales ?? 0)} hint="Selected distributor period." />
@@ -232,7 +288,7 @@ export default function CompanyDashboardPage({ params }: Props) {
         <WorkspacePanel title="Top salespeople" subtitle="Who is driving invoiced value this period.">
           <div className="space-y-3">
             {(distributorDashboard?.top_salespeople ?? []).slice(0, 5).map((row) => (
-              <div key={row.salesperson_user_id ?? row.salesperson_name} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <div key={row.salesperson_user_id ?? row.salesperson_name} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium text-[var(--foreground)]">{row.salesperson_name}</div>
@@ -243,7 +299,7 @@ export default function CompanyDashboardPage({ params }: Props) {
               </div>
             ))}
             {(distributorDashboard?.top_salespeople?.length ?? 0) === 0 ? (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 Salesperson analytics will appear once attributed invoices are issued.
               </div>
             ) : null}
@@ -253,7 +309,7 @@ export default function CompanyDashboardPage({ params }: Props) {
         <WorkspacePanel title="Top due customers" subtitle="Which accounts need the fastest follow-up.">
           <div className="space-y-3">
             {(distributorDashboard?.top_due_customers ?? []).slice(0, 5).map((row) => (
-              <div key={row.customer_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <div key={row.customer_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium text-[var(--foreground)]">{row.customer_name}</div>
@@ -264,7 +320,7 @@ export default function CompanyDashboardPage({ params }: Props) {
               </div>
             ))}
             {(distributorDashboard?.top_due_customers?.length ?? 0) === 0 ? (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 No open customer dues are currently visible in the distributor window.
               </div>
             ) : null}
@@ -274,7 +330,7 @@ export default function CompanyDashboardPage({ params }: Props) {
         <WorkspacePanel title="Warehouse snapshot" subtitle="How stock is distributed across active locations.">
           <div className="space-y-3">
             {(distributorDashboard?.warehouse_snapshot ?? []).slice(0, 5).map((row) => (
-              <div key={row.warehouse_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <div key={row.warehouse_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium text-[var(--foreground)]">{row.warehouse_name}</div>
@@ -288,7 +344,7 @@ export default function CompanyDashboardPage({ params }: Props) {
               </div>
             ))}
             {(distributorDashboard?.warehouse_snapshot?.length ?? 0) === 0 ? (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted)]">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 Warehouse analytics will appear once active locations hold stock.
               </div>
             ) : null}
@@ -300,7 +356,7 @@ export default function CompanyDashboardPage({ params }: Props) {
         <WorkspacePanel title="Fast-moving products" subtitle="Products with the strongest sell-through this period.">
           <div className="space-y-3">
             {(distributorDashboard?.fast_moving ?? []).slice(0, 5).map((row) => (
-              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium text-[var(--foreground)]">{row.product_name}</div>
@@ -319,7 +375,7 @@ export default function CompanyDashboardPage({ params }: Props) {
         <WorkspacePanel title="Slow-moving products" subtitle="Products with stock still sitting against low movement.">
           <div className="space-y-3">
             {(distributorDashboard?.slow_moving ?? []).slice(0, 5).map((row) => (
-              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+              <div key={row.product_id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium text-[var(--foreground)]">{row.product_name}</div>
@@ -345,11 +401,11 @@ export default function CompanyDashboardPage({ params }: Props) {
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="group rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 hover:border-[var(--border-strong)] hover:bg-[var(--surface)]"
+                  className="group rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:-translate-y-0.5 hover:border-[var(--border-strong)]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-2">
-                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--accent)] shadow-sm">
+                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-panel)] text-[var(--secondary)] shadow-sm">
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="font-semibold text-[var(--foreground)]">{action.label}</div>
@@ -370,7 +426,7 @@ export default function CompanyDashboardPage({ params }: Props) {
                 <Link
                   key={`${activity.kind}-${activity.id}`}
                   href={activity.href}
-                  className="block rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 hover:bg-[var(--surface)]"
+                  className="block rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:-translate-y-0.5 hover:border-[var(--border-strong)]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -383,7 +439,7 @@ export default function CompanyDashboardPage({ params }: Props) {
                 </Link>
               ))
             ) : (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm leading-6 text-[var(--muted-strong)]">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm leading-6 text-[var(--muted-strong)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                 Recent activity will appear here once invoices, purchases, or payments are recorded.
               </div>
             )}

@@ -9,17 +9,11 @@ import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 type SectionRow = { ledger_id: string; ledger_name: string; amount: number };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function BalanceSheetSectionPanel(props: {
   companyId: string;

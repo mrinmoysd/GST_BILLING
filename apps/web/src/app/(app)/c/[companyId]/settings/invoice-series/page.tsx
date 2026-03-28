@@ -10,19 +10,13 @@ import {
   useInvoiceSeries,
   useUpdateInvoiceSeries,
 } from "@/lib/settings/invoiceSeriesHooks";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function InvoiceSeriesSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -74,8 +68,16 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
                 await create.mutateAsync({ code: code.trim(), prefix: prefix.trim() || undefined, next_number: nn, is_active: true });
                 setCode("");
                 setNextNumber("1");
+                toastSuccess("Invoice series created.");
               } catch (e: unknown) {
-                setError(getErrorMessage(e, "Failed to create"));
+                const message = getErrorMessage(e, "Failed to create invoice series.");
+                setError(message);
+                toastError(e, {
+                  fallback: "Failed to create invoice series.",
+                  title: message,
+                  context: "invoice-series-create",
+                  metadata: { companyId },
+                });
               }
             }}
           >
@@ -124,8 +126,13 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
                           if (newPrefix === null) return;
                           try {
                             await update.mutateAsync({ seriesId: s.id, patch: { prefix: newPrefix } });
+                            toastSuccess("Invoice series updated.");
                           } catch (e: unknown) {
-                            window.alert(getErrorMessage(e, "Failed to update"));
+                            toastError(e, {
+                              fallback: "Failed to update invoice series.",
+                              context: "invoice-series-update",
+                              metadata: { companyId, seriesId: s.id },
+                            });
                           }
                         }}
                       >
@@ -138,8 +145,13 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
                           if (!window.confirm("Delete this series?")) return;
                           try {
                             await del.mutateAsync(s.id);
+                            toastSuccess("Invoice series deleted.");
                           } catch (e: unknown) {
-                            window.alert(getErrorMessage(e, "Failed to delete"));
+                            toastError(e, {
+                              fallback: "Failed to delete invoice series.",
+                              context: "invoice-series-delete",
+                              metadata: { companyId, seriesId: s.id },
+                            });
                           }
                         }}
                       >

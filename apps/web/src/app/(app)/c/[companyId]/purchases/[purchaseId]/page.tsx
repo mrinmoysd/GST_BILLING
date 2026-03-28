@@ -15,8 +15,10 @@ import {
   useRecordPayment,
   useUploadPurchaseBill,
 } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
+import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
-import { DateField, PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; purchaseId: string }> };
@@ -31,13 +33,6 @@ type PurchaseItemLike = {
   unit_cost?: string | number | null;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function PurchaseDetailPage({ params }: Props) {
   const { companyId, purchaseId } = React.use(params);
@@ -97,6 +92,57 @@ export default function PurchaseDetailPage({ params }: Props) {
     () => purchaseReturns.reduce((sum, entry) => sum + Number((entry as { total?: string | number | null }).total ?? 0), 0),
     [purchaseReturns],
   );
+  const detailRail = purchase ? (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Purchase controls"
+        subtitle="Keep receiving, bill attachment, and the return workflow close while you switch between tabs."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/purchases`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to purchases</SecondaryButton>
+          </Link>
+          <a href={purchaseBillUrl(companyId, purchaseId)} target="_blank" rel="noreferrer">
+            <SecondaryButton type="button" className="w-full justify-start">Open bill attachment</SecondaryButton>
+          </a>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            disabled={receive.isPending}
+            onClick={async () => {
+              setError(null);
+              setOk(null);
+              try {
+                await receive.mutateAsync();
+                setOk("Purchase received.");
+              } catch (e: unknown) {
+                setError(getErrorMessage(e, "Failed to receive purchase"));
+              }
+            }}
+          >
+            {receive.isPending ? "Receiving…" : "Receive purchase"}
+          </SecondaryButton>
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Purchase posture"
+        subtitle="These stay visible while the main body focuses on returns, payments, or lifecycle review."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Status", value: purchase.status ?? "—" },
+            { label: "Purchase date", value: purchase.purchase_date ?? "—" },
+            { label: "Warehouse", value: purchase.warehouse?.name ?? purchase.warehouse?.code ?? "—" },
+            { label: "Purchase total", value: Number(purchase.total ?? 0).toFixed(2) },
+            { label: "Returned", value: totalReturned.toFixed(2) },
+            { label: "Net after returns", value: (Number(purchase.total ?? 0) - totalReturned).toFixed(2) },
+          ]}
+        />
+      </DetailRail>
+    </>
+  ) : null;
 
   return (
     <div className="space-y-7">
@@ -129,8 +175,16 @@ export default function PurchaseDetailPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load purchase")} /> : null}
 
       {purchase ? (
-        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-          <div className="space-y-6">
+        <DetailTabs
+          defaultValue="summary"
+          items={[
+            { id: "summary", label: "Summary", badge: items.length },
+            { id: "returns", label: "Returns", badge: purchaseReturns.length },
+            { id: "payments", label: "Payments", badge: paymentsForPurchase.length },
+            { id: "activity", label: "Activity", badge: lifecycleEvents.length },
+          ]}
+        >
+          <DetailTabPanel value="summary" rail={detailRail}>
             <WorkspacePanel title="Purchase actions" subtitle="Track receive state, bill attachment, purchase returns, and supplier payments.">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -225,9 +279,9 @@ export default function PurchaseDetailPage({ params }: Props) {
 
             {error ? <InlineError message={error} /> : null}
             {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
-          </div>
+          </DetailTabPanel>
 
-          <div className="space-y-6">
+          <DetailTabPanel value="returns" rail={detailRail}>
             <WorkspacePanel title="Purchase returns" subtitle="Create post-receipt returns and push the stock reversal through the workflow.">
               <div className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -311,7 +365,9 @@ export default function PurchaseDetailPage({ params }: Props) {
                 </div>
               </div>
             </WorkspacePanel>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="payments" rail={detailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Payments</CardTitle>
@@ -343,17 +399,12 @@ export default function PurchaseDetailPage({ params }: Props) {
                 >
                   <TextField label="Amount" value={payAmount} onChange={setPayAmount} type="number" />
                   <div>
-                    <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Method</label>
-                    <select
-                      className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
-                      value={payMethod}
-                      onChange={(e) => setPayMethod(e.target.value)}
-                    >
+                    <SelectField label="Method" value={payMethod} onChange={setPayMethod}>
                       <option value="cash">Cash</option>
                       <option value="upi">UPI</option>
                       <option value="bank">Bank</option>
                       <option value="card">Card</option>
-                    </select>
+                    </SelectField>
                   </div>
                   <TextField label="Reference" value={payReference} onChange={setPayReference} placeholder="Optional" />
                   <div className="flex gap-3">
@@ -398,7 +449,9 @@ export default function PurchaseDetailPage({ params }: Props) {
                 ) : null}
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="activity" rail={detailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Lifecycle history</CardTitle>
@@ -419,8 +472,8 @@ export default function PurchaseDetailPage({ params }: Props) {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </DetailTabPanel>
+        </DetailTabs>
       ) : null}
     </div>
   );

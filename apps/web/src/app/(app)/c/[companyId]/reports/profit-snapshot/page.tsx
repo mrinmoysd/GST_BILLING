@@ -7,16 +7,10 @@ import { useProfitSnapshot } from "@/lib/reports/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function ProfitSnapshotPage({ params }: Props) {
   const { companyId } = React.use(params);

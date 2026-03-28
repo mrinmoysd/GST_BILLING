@@ -10,18 +10,12 @@ import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
 import { WorkspaceDetailHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = {
   params: Promise<{ companyId: string }>;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminCompanyDetailPage({ params }: Props) {
   const { companyId } = React.use(params);

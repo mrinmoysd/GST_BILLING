@@ -27,7 +27,7 @@ async function login(page: import("@playwright/test").Page) {
 }
 
 test("reports: hub and business report pages render", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
 
   await login(page);
 
@@ -45,7 +45,7 @@ test("reports: hub and business report pages render", async ({ page }) => {
 });
 
 test("reports: gst and accounting report pages render", async ({ page }) => {
-  const companyId = process.env.E2E_COMPANY_ID ?? "00000000-0000-0000-0000-000000000001";
+  const companyId = process.env.E2E_COMPANY_ID ?? "11111111-1111-4111-8111-111111111111";
 
   await login(page);
 

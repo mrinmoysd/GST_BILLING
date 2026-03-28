@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
 
 import {
   useCancelEInvoice,
@@ -13,17 +12,11 @@ import {
   useSyncEWayBill,
   useUpdateEWayBillVehicle,
 } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspacePanel } from "@/lib/ui/workspace";
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 type Props = {
   companyId: string;
@@ -84,11 +77,16 @@ export function InvoiceCompliancePanel({ companyId, invoiceId }: Props) {
     setError(null);
     try {
       await fn();
-      toast.success(successMessage);
+      toastSuccess(successMessage);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, "Compliance action failed");
+      const message = getErrorMessage(err, "Compliance action failed.");
       setError(message);
-      toast.error(message);
+      toastError(err, {
+        fallback: "Compliance action failed.",
+        title: message,
+        context: "invoice-compliance-action",
+        metadata: { companyId, invoiceId },
+      });
     }
   }
 
@@ -114,7 +112,7 @@ export function InvoiceCompliancePanel({ companyId, invoiceId }: Props) {
               </div>
             ) : null}
             {compliance.e_invoice.last_error ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+              <div className="rounded-2xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-3 text-[var(--foreground)]">
                 {compliance.e_invoice.last_error}
               </div>
             ) : null}
@@ -195,7 +193,7 @@ export function InvoiceCompliancePanel({ companyId, invoiceId }: Props) {
               </div>
             ) : null}
             {compliance.e_way_bill.last_error ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+              <div className="rounded-2xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-3 text-[var(--foreground)]">
                 {compliance.e_way_bill.last_error}
               </div>
             ) : null}
@@ -277,7 +275,7 @@ export function InvoiceCompliancePanel({ companyId, invoiceId }: Props) {
                 <div className="mt-1 text-[var(--muted)]">
                   {event.event_type} · {event.status} · {new Date(event.created_at).toLocaleString()}
                 </div>
-                {event.error_message ? <div className="mt-1 text-amber-800">{event.error_message}</div> : null}
+                {event.error_message ? <div className="mt-1 text-[var(--secondary-foreground)]">{event.error_message}</div> : null}
               </div>
             ))
           )}

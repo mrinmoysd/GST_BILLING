@@ -5,8 +5,17 @@ import * as React from "react";
 
 import { useCreateCustomer } from "@/lib/masters/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
+import {
+  ComposerBody,
+  ComposerMiniList,
+  ComposerSection,
+  ComposerStepBar,
+  ComposerStickyActions,
+  ComposerSummaryRail,
+  ComposerWarningStack,
+} from "@/lib/ui/composer";
+import { DateField, PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -35,12 +44,41 @@ export default function NewCustomerPage({ params }: Props) {
     ? salespeople.data.data
     : [];
 
+  const activeStep = React.useMemo(() => {
+    if (!name) return "identity";
+    if (!creditLimit && !creditDays && !pricingTier) return "commercial";
+    return "credit";
+  }, [creditDays, creditLimit, name, pricingTier]);
+
   return (
     <div className="space-y-6">
-      <PageHeader title="New customer" subtitle="Create a customer record." />
+      <PageHeader title="New customer" subtitle="Create a customer record with commercial ownership and credit posture staged cleanly." />
+      <ComposerStepBar
+        activeId={activeStep}
+        steps={[
+          {
+            id: "identity",
+            label: "Identity",
+            description: "Capture the basic account identity and relationship owner first.",
+            meta: name ? "Customer named" : "Waiting for basic profile",
+          },
+          {
+            id: "commercial",
+            label: "Commercial setup",
+            description: "Set pricing tier and account owner before the customer starts transacting.",
+            meta: pricingTier ? "Commercial tier set" : "Optional tier",
+          },
+          {
+            id: "credit",
+            label: "Credit control",
+            description: "Define limits, warning posture, and any immediate hold or override context.",
+            meta: creditLimit || creditDays ? "Credit policy added" : "Using defaults",
+          },
+        ]}
+      />
 
       <form
-        className="rounded-xl border bg-white p-4 space-y-4 max-w-xl"
+        className="space-y-6"
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
@@ -71,39 +109,92 @@ export default function NewCustomerPage({ params }: Props) {
           }
         }}
       >
-        <TextField label="Name" value={name} onChange={setName} required />
-        <TextField label="Email" value={email} onChange={setEmail} type="email" />
-        <TextField label="Phone" value={phone} onChange={setPhone} />
-        <TextField label="Pricing tier" value={pricingTier} onChange={setPricingTier} placeholder="Optional commercial tier" />
-        <SelectField label="Primary salesperson" value={salespersonUserId} onChange={setSalespersonUserId}>
-          <option value="">Unassigned</option>
-          {salespersonOptions.map((person) => (
-            <option key={person.id} value={person.id}>
-              {person.name || person.email}
-            </option>
-          ))}
-        </SelectField>
-        <TextField label="Credit limit" value={creditLimit} onChange={setCreditLimit} type="number" />
-        <TextField label="Credit days" value={creditDays} onChange={setCreditDays} type="number" />
-        <SelectField label="Credit control mode" value={creditControlMode} onChange={setCreditControlMode}>
-          <option value="warn">Warn</option>
-          <option value="block">Block</option>
-        </SelectField>
-        <TextField label="Warning threshold %" value={creditWarningPercent} onChange={setCreditWarningPercent} type="number" />
-        <TextField label="Block threshold %" value={creditBlockPercent} onChange={setCreditBlockPercent} type="number" />
-        <SelectField label="Credit hold" value={creditHold} onChange={setCreditHold}>
-          <option value="false">No</option>
-          <option value="true">Yes</option>
-        </SelectField>
-        <TextField label="Credit hold reason" value={creditHoldReason} onChange={setCreditHoldReason} />
-        <TextField label="Override until" value={creditOverrideUntil} onChange={setCreditOverrideUntil} type="date" />
-        <TextField label="Override reason" value={creditOverrideReason} onChange={setCreditOverrideReason} />
+        <ComposerBody
+          rail={
+            <ComposerSummaryRail
+              eyebrow="Review"
+              title="Customer draft"
+              description="Keep the first commercial posture and credit posture visible while you finish the account setup."
+            >
+              <ComposerMiniList
+                items={[
+                  { label: "Name", value: name || "Not set" },
+                  { label: "Salesperson", value: salespersonOptions.find((person) => person.id === salespersonUserId)?.name || salespersonOptions.find((person) => person.id === salespersonUserId)?.email || "Unassigned" },
+                  { label: "Pricing tier", value: pricingTier || "Default pricing" },
+                  { label: "Credit limit", value: creditLimit || "Not set" },
+                  { label: "Credit mode", value: creditControlMode },
+                  { label: "Hold", value: creditHold === "true" ? "Yes" : "No" },
+                ]}
+              />
+              <ComposerWarningStack>
+                {error ? <InlineError message={error} /> : null}
+              </ComposerWarningStack>
+              <ComposerStickyActions
+                aside="Create the customer once identity, owner, and credit posture are good enough for the first transaction."
+                primary={
+                  <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
+                    {create.isPending ? "Creating…" : "Create customer"}
+                  </PrimaryButton>
+                }
+              />
+            </ComposerSummaryRail>
+          }
+        >
+          <ComposerSection
+            eyebrow="Step 1"
+            title="Identity"
+            description="Capture the basic account identity and contact information."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Name" value={name} onChange={setName} required />
+              <TextField label="Email" value={email} onChange={setEmail} type="email" />
+              <TextField label="Phone" value={phone} onChange={setPhone} />
+            </div>
+          </ComposerSection>
 
-        {error ? <InlineError message={error} /> : null}
+          <ComposerSection
+            eyebrow="Step 2"
+            title="Commercial setup"
+            description="Assign the commercial tier and primary owner for the account."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Pricing tier" value={pricingTier} onChange={setPricingTier} placeholder="Optional commercial tier" />
+              <SelectField label="Primary salesperson" value={salespersonUserId} onChange={setSalespersonUserId}>
+                <option value="">Unassigned</option>
+                {salespersonOptions.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.name || person.email}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+          </ComposerSection>
 
-        <PrimaryButton type="submit" disabled={create.isPending}>
-          {create.isPending ? "Creating…" : "Create"}
-        </PrimaryButton>
+          <ComposerSection
+            eyebrow="Step 3"
+            title="Credit control"
+            description="Define the first credit policy so invoices and collections start from an explicit posture."
+            tone="muted"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Credit limit" value={creditLimit} onChange={setCreditLimit} type="number" />
+              <TextField label="Credit days" value={creditDays} onChange={setCreditDays} type="number" />
+              <SelectField label="Credit control mode" value={creditControlMode} onChange={setCreditControlMode}>
+                <option value="warn">Warn</option>
+                <option value="block">Block</option>
+              </SelectField>
+              <TextField label="Warning threshold %" value={creditWarningPercent} onChange={setCreditWarningPercent} type="number" />
+              <TextField label="Block threshold %" value={creditBlockPercent} onChange={setCreditBlockPercent} type="number" />
+              <SelectField label="Credit hold" value={creditHold} onChange={setCreditHold}>
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </SelectField>
+              <TextField label="Credit hold reason" value={creditHoldReason} onChange={setCreditHoldReason} />
+              <DateField label="Override until" value={creditOverrideUntil} onChange={setCreditOverrideUntil} />
+              <TextField label="Override reason" value={creditOverrideReason} onChange={setCreditOverrideReason} />
+            </div>
+          </ComposerSection>
+        </ComposerBody>
       </form>
     </div>
   );

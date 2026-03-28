@@ -3,24 +3,25 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreatePurchase } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
 import { useProducts, useSuppliers, useWarehouses } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
+import {
+  ComposerBody,
+  ComposerMetricCard,
+  ComposerMiniList,
+  ComposerSection,
+  ComposerStepBar,
+  ComposerStickyActions,
+  ComposerSummaryRail,
+  ComposerWarningStack,
+} from "@/lib/ui/composer";
 import { InlineError, PageHeader } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function NewPurchasePage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -81,6 +82,36 @@ export default function NewPurchasePage({ params }: Props) {
     }, 0);
   }, [lines]);
 
+  const activeStep = React.useMemo(() => {
+    if (!supplierId) return "supplier";
+    if (!lines.some((line) => line.productId)) return "items";
+    return "review";
+  }, [lines, supplierId]);
+
+  const stepItems = React.useMemo(
+    () => [
+      {
+        id: "supplier",
+        label: "Supplier and receipt target",
+        description: "Choose who supplied the stock and where the draft will land once the purchase is received.",
+        meta: supplierId ? "Supplier selected" : "Waiting for supplier",
+      },
+      {
+        id: "items",
+        label: "Items and batch capture",
+        description: "Record quantities, costs, and every batch detail required for stock accuracy.",
+        meta: `${lines.filter((line) => line.productId).length} product lines ready`,
+      },
+      {
+        id: "review",
+        label: "Review and create",
+        description: "Check the incoming value, receiving date, and note handoff before saving the draft.",
+        meta: `${subTotal.toFixed(2)} incoming cost`,
+      },
+    ],
+    [lines, subTotal, supplierId],
+  );
+
   return (
     <div className="space-y-7">
       <PageHeader
@@ -94,8 +125,10 @@ export default function NewPurchasePage({ params }: Props) {
         }
       />
 
+      <ComposerStepBar steps={stepItems} activeId={activeStep} />
+
       <form
-        className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]"
+        className="space-y-6"
         onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
@@ -171,23 +204,82 @@ export default function NewPurchasePage({ params }: Props) {
               notes: notes || undefined,
               items: clean,
             });
-            toast.success("Purchase draft created");
+            toastSuccess("Purchase draft created.");
             router.replace(`/c/${companyId}/purchases/${res.data.id}`);
           } catch (e: unknown) {
-            const message = getErrorMessage(e, "Failed to create purchase");
+            const message = getErrorMessage(e, "Failed to create purchase.");
             setError(message);
-            toast.error(message);
+            toastError(e, {
+              fallback: "Failed to create purchase.",
+              title: message,
+              context: "purchase-create",
+              metadata: { companyId, supplierId, warehouseId },
+            });
           }
         }}
       >
-        <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <Badge variant="secondary" className="w-fit">Draft workflow</Badge>
-            <CardTitle>Purchase builder</CardTitle>
-            <CardDescription>Select the supplier, add purchased products, and review the draft before saving it.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+        <ComposerBody
+          rail={
+            <ComposerSummaryRail
+              eyebrow="Review"
+              title="Draft summary"
+              description="Keep receiving context, incoming value, and the final draft action in one operator rail."
+            >
+              <ComposerMetricCard
+                label="Incoming sub-total"
+                value={subTotal.toFixed(2)}
+                hint="Taxes and landed-cost extensions can layer onto this summary later without changing the page structure."
+                strong
+              />
+              <ComposerMiniList
+                items={[
+                  {
+                    label: "Supplier",
+                    value: supplierId
+                      ? (Array.isArray(suppliers.data?.data) ? suppliers.data.data : []).find((supplier) => supplier.id === supplierId)?.name ?? "Selected"
+                      : "Not selected",
+                  },
+                  {
+                    label: "Warehouse",
+                    value: warehouseId
+                      ? ((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).find((warehouse: { id: string; name: string }) => warehouse.id === warehouseId)?.name ?? "Selected")
+                      : "Not set",
+                  },
+                  {
+                    label: "Purchase date",
+                    value: purchaseDate || "Not set",
+                  },
+                  {
+                    label: "Draft lines",
+                    value: lines.filter((line) => line.productId).length,
+                  },
+                ]}
+              />
+              <ComposerWarningStack>
+                {error ? <InlineError message={error} /> : null}
+              </ComposerWarningStack>
+              <ComposerStickyActions
+                aside="Create the purchase draft once the supplier, receiving target, and batch details are coherent."
+                primary={
+                  <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
+                    {create.isPending ? "Creating…" : "Create draft"}
+                  </PrimaryButton>
+                }
+                secondary={
+                  <SecondaryButton type="button" className="w-full" onClick={() => router.back()}>
+                    Cancel
+                  </SecondaryButton>
+                }
+              />
+            </ComposerSummaryRail>
+          }
+        >
+          <ComposerSection
+            eyebrow="Step 1"
+            title="Supplier and receiving target"
+            description="Select the supplier, pick the warehouse if stock is already earmarked, and stage the purchase before receipt."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
             <SelectField
               label="Supplier"
               value={supplierId}
@@ -215,15 +307,38 @@ export default function NewPurchasePage({ params }: Props) {
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm leading-6 text-[var(--muted)]">
               Use this builder to stage incoming stock before receive. Unit cost can auto-fill from the existing product price as a starting point.
             </div>
-          </CardContent>
-        </Card>
+            </div>
+          </ComposerSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Line items</CardTitle>
-            <CardDescription>Capture the purchased products, quantities, and unit costs before saving the draft.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <ComposerSection
+            eyebrow="Step 2"
+            title="Line items and batch capture"
+            description="Capture the purchased products, quantities, and unit costs before saving the draft."
+            actions={
+              <div className="flex items-center gap-3">
+                <SecondaryButton
+                  type="button"
+                  onClick={() =>
+                    setLines((prev) => [
+                      ...prev,
+                      {
+                        id: `l${prev.length + 1}_${Date.now()}`,
+                        productId: "",
+                        quantity: "1",
+                        unitCost: "",
+                        batches: [],
+                      },
+                    ])
+                  }
+                >
+                  Add line
+                </SecondaryButton>
+                <div className="text-sm text-[var(--muted)]">
+                  Draft lines: <span className="font-semibold text-[var(--foreground)]">{lines.length}</span>
+                </div>
+              </div>
+            }
+          >
         <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
           <table className="min-w-[880px] w-full text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -514,63 +629,23 @@ export default function NewPurchasePage({ params }: Props) {
             </tbody>
           </table>
         </div>
+          </ComposerSection>
 
-        <div className="flex gap-3">
-          <SecondaryButton
-            type="button"
-            onClick={() =>
-              setLines((prev) => [
-                ...prev,
-                {
-                  id: `l${prev.length + 1}_${Date.now()}`,
-                  productId: "",
-                  quantity: "1",
-                  unitCost: "",
-                  batches: [],
-                },
-              ])
-            }
+          <ComposerSection
+            eyebrow="Step 3"
+            title="Receiving notes"
+            description="Set the reference date and note anything the receiving operator should see when the draft is processed."
+            tone="muted"
           >
-            Add line
-          </SecondaryButton>
-          <div className="ml-auto text-sm text-[var(--muted)]">
-            Draft lines: <span className="font-semibold text-[var(--foreground)]">{lines.length}</span>
-          </div>
-        </div>
-
-        <DateField label="Purchase date" value={purchaseDate} onChange={setPurchaseDate} />
-        <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
-
-        {error ? <InlineError message={error} /> : null}
-          </CardContent>
-        </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Draft summary</CardTitle>
-              <CardDescription>Live cost summary for the current purchase draft.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Sub-total</div>
-                <div className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{subTotal.toFixed(2)}</div>
-              </div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--muted)]">
-                Draft purchases can be received later on the detail page. This summary block will expand further once richer totals and taxes are added.
-              </div>
-              <div className="space-y-3 pt-2">
-                <PrimaryButton type="submit" disabled={create.isPending} className="w-full">
-                  {create.isPending ? "Creating…" : "Create draft"}
-                </PrimaryButton>
-                <SecondaryButton type="button" className="w-full" onClick={() => router.back()}>
-                  Cancel
-                </SecondaryButton>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <DateField label="Purchase date" value={purchaseDate} onChange={setPurchaseDate} />
+            </div>
+            <TextField label="Notes" value={notes} onChange={setNotes} placeholder="Optional" />
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm leading-6 text-[var(--muted)]">
+              Draft purchases can be received later on the detail page. Keep notes practical: supplier issue, shortage follow-up, or receiving exceptions.
+            </div>
+          </ComposerSection>
+        </ComposerBody>
       </form>
     </div>
   );

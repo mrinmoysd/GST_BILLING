@@ -3,10 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 import { useAuth } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/errors";
 import { useCreateVisit, useGenerateVisitPlans, useMyCustomers, useMySummary } from "@/lib/field-sales/hooks";
+import { isRfcUuid } from "@/lib/ids";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -14,14 +16,6 @@ import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -34,9 +28,15 @@ export default function FieldSalesTodayPage({ params }: Props) {
   const [date, setDate] = React.useState(todayIso());
   const [adHocCustomerId, setAdHocCustomerId] = React.useState("");
   const [adHocNotes, setAdHocNotes] = React.useState("");
+  const userRole = String(session.user?.role ?? "").toLowerCase();
+  const salespersonUserId =
+    userRole === "salesperson" && isRfcUuid(session.user?.id)
+      ? session.user!.id
+      : "";
+  const canRunRepWorkspace = Boolean(salespersonUserId);
 
-  const summary = useMySummary({ companyId, date, enabled: Boolean(session.user?.id) });
-  const customers = useMyCustomers(companyId, Boolean(session.user?.id));
+  const summary = useMySummary({ companyId, date, enabled: canRunRepWorkspace });
+  const customers = useMyCustomers(companyId, canRunRepWorkspace);
   const generatePlans = useGenerateVisitPlans(companyId);
   const createVisit = useCreateVisit(companyId);
 
@@ -53,17 +53,40 @@ export default function FieldSalesTodayPage({ params }: Props) {
           <>
             <PrimaryButton
               type="button"
-              disabled={generatePlans.isPending || !session.user?.id}
+              disabled={generatePlans.isPending || !canRunRepWorkspace}
               onClick={async () => {
+                if (!canRunRepWorkspace) {
+                  toastError(
+                    {
+                      message:
+                        "Sign in as a salesperson account with a valid user id to generate a personal worklist.",
+                    },
+                    {
+                      fallback: "This workspace needs a valid salesperson login.",
+                      context: "field-today-invalid-salesperson-session",
+                      metadata: {
+                        companyId,
+                        date,
+                        sessionUserId: session.user?.id,
+                        sessionRole: session.user?.role,
+                      },
+                    },
+                  );
+                  return;
+                }
                 try {
                   await generatePlans.mutateAsync({
                     date,
-                    salesperson_user_ids: session.user?.id ? [session.user.id] : undefined,
+                    salesperson_user_ids: [salespersonUserId],
                     mode: "replace_missing_only",
                   });
-                  toast.success("Today's worklist refreshed");
+                  toastSuccess("Today's worklist refreshed.");
                 } catch (err) {
-                  toast.error(getErrorMessage(err, "Failed to generate worklist"));
+                  toastError(err, {
+                    fallback: "Failed to generate worklist.",
+                    context: "field-today-generate-plan",
+                    metadata: { companyId, date },
+                  });
                 }
               }}
             >
@@ -80,6 +103,11 @@ export default function FieldSalesTodayPage({ params }: Props) {
         <div className="grid gap-4 md:grid-cols-3">
           <DateField label="Working date" value={date} onChange={setDate} />
         </div>
+        {!canRunRepWorkspace ? (
+          <div className="mt-4 rounded-2xl border border-[var(--warning)]/30 bg-[var(--warning-soft)] px-4 py-3 text-sm text-[var(--muted-strong)]">
+            This screen is currently scoped to salesperson sessions. The active login is not a valid salesperson identity for personal worklist generation.
+          </div>
+        ) : null}
       </WorkspacePanel>
 
       {summary.isLoading ? <LoadingBlock label="Loading today’s field view…" /> : null}
@@ -126,13 +154,13 @@ export default function FieldSalesTodayPage({ params }: Props) {
                       <DataTd>{visit.status}</DataTd>
                       <DataTd>
                         {visit.visit_id ? (
-                          <Link className="text-sm font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/sales/field/visits/${visit.visit_id}`}>
+                          <Link className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]" href={`/c/${companyId}/sales/field/visits/${visit.visit_id}`}>
                             Open visit
                           </Link>
                         ) : (
                           <button
                             type="button"
-                            className="text-sm font-medium text-[var(--accent)] hover:underline"
+                            className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]"
                             onClick={async () => {
                               try {
                                 const res = await createVisit.mutateAsync({ visit_plan_id: visit.visit_plan_id });
@@ -143,7 +171,11 @@ export default function FieldSalesTodayPage({ params }: Props) {
                                   router.push(`/c/${companyId}/sales/field/visits/${nextVisitId}`);
                                 }
                               } catch (err) {
-                                toast.error(getErrorMessage(err, "Failed to start visit"));
+                                toastError(err, {
+                                  fallback: "Failed to start visit.",
+                                  context: "field-today-start-visit",
+                                  metadata: { companyId, visitPlanId: visit.visit_plan_id },
+                                });
                               }
                             }}
                           >
@@ -175,10 +207,14 @@ export default function FieldSalesTodayPage({ params }: Props) {
                   ((res as unknown as { data?: { id?: string } }).data?.id);
                 setAdHocCustomerId("");
                 setAdHocNotes("");
-                toast.success("Ad-hoc visit created");
+                toastSuccess("Ad-hoc visit created.");
                 if (nextVisitId) router.push(`/c/${companyId}/sales/field/visits/${nextVisitId}`);
               } catch (err) {
-                toast.error(getErrorMessage(err, "Failed to create visit"));
+                toastError(err, {
+                  fallback: "Failed to create visit.",
+                  context: "field-today-create-visit",
+                  metadata: { companyId, customerId: adHocCustomerId },
+                });
               }
             }}
           >
@@ -191,7 +227,7 @@ export default function FieldSalesTodayPage({ params }: Props) {
               ))}
             </SelectField>
             <TextField label="Notes" value={adHocNotes} onChange={setAdHocNotes} placeholder="Reason, urgency, recovery context…" />
-            <PrimaryButton type="submit" disabled={createVisit.isPending || !adHocCustomerId}>
+            <PrimaryButton type="submit" disabled={createVisit.isPending || !adHocCustomerId || !canRunRepWorkspace}>
               {createVisit.isPending ? "Creating…" : "Create ad-hoc visit"}
             </PrimaryButton>
           </form>

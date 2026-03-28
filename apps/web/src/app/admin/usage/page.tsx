@@ -9,6 +9,7 @@ import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection } from "@/lib/ui/workspace";
+import { getErrorMessage } from "@/lib/errors";
 
 type UsagePayload = {
   data?: {
@@ -33,13 +34,6 @@ type UsagePayload = {
   };
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function AdminUsagePage() {
   const [from, setFrom] = React.useState("");

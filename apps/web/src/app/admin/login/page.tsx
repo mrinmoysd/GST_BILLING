@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 
 import { AuthShell } from "@/components/public/auth-shell";
-import type { NormalizedApiError } from "@/lib/api/types";
+import { getErrorMessage, logError } from "@/lib/errors";
 import { useAdminLogin } from "@/lib/admin/auth-hooks";
 
 const schema = z.object({
@@ -42,8 +42,8 @@ export default function AdminLoginPage() {
         router.replace(nextPath);
       });
     } catch (e: unknown) {
-      const err = e as NormalizedApiError;
-      setError(err.message ?? "Admin login failed");
+      logError(e, "admin-login-submit", { email: parsed.data.email });
+      setError(getErrorMessage(e, "Admin login failed. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               autoComplete="email"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 text-sm text-[var(--foreground)] shadow-sm"
             />
           </label>
 
@@ -99,12 +99,12 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               autoComplete="current-password"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 text-sm text-[var(--foreground)] shadow-sm"
             />
           </label>
 
           {error ? (
-            <div className="rounded-[22px] border border-red-200 bg-[#fff6f3] px-4 py-3 text-sm text-[#7e3128]">
+            <div className="rounded-[22px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {error}
             </div>
           ) : null}

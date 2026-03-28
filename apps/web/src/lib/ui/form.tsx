@@ -1,8 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -165,7 +172,7 @@ export function CalendarPopoverField({
         id={id}
         type="button"
         className={cn(
-          "flex h-11 w-full items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-left text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]",
+          "flex h-11 w-full items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-left text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]",
           !value && "text-[var(--muted)]",
         )}
         onClick={() => setOpen((current) => !current)}
@@ -174,11 +181,11 @@ export function CalendarPopoverField({
         <CalendarDays className="h-4 w-4 text-[var(--muted)]" />
       </button>
       {open ? (
-        <div className="absolute left-0 top-full z-50 mt-2 w-[320px] rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xl">
+        <div className="absolute left-0 top-full z-50 mt-2 w-[320px] rounded-2xl border border-[var(--border)] bg-[var(--surface-panel)] p-4 shadow-xl [background-image:var(--surface-highlight)]">
           <div className="mb-3 flex items-center justify-between gap-2">
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-sm"
               onClick={() => setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -188,7 +195,7 @@ export function CalendarPopoverField({
             </div>
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--foreground)] shadow-sm"
               onClick={() => setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
             >
               <ChevronRight className="h-4 w-4" />
@@ -215,7 +222,7 @@ export function CalendarPopoverField({
                     inMonth ? "text-[var(--foreground)]" : "text-[var(--muted)]",
                     selected
                       ? "bg-[var(--accent)] font-semibold text-white shadow-sm"
-                      : "bg-[var(--surface-muted)] hover:bg-[var(--accent-soft)]",
+                      : "bg-[var(--surface-elevated)] shadow-sm hover:bg-[var(--accent-soft)]",
                     todayMatch && !selected && "border border-[var(--accent)]",
                   )}
                   onClick={() => {
@@ -266,6 +273,8 @@ export function SelectField({
   options,
   required,
   className,
+  placeholder,
+  disabled,
 }: {
   label: string;
   value: string;
@@ -274,27 +283,186 @@ export function SelectField({
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
   className?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }) {
   return (
     <label className="block space-y-2">
       <Label className="text-[13px] font-semibold text-[var(--muted-strong)]">{label}</Label>
-      <select
-        className={cn(
-          "h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]",
-          className,
-        )}
+      <SelectControl
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
+        options={options}
         required={required}
+        className={className}
+        placeholder={placeholder}
+        disabled={disabled}
       >
-        {options?.map((option) => (
-          <option key={`${option.value}:${option.label}`} value={option.value}>
+        {children}
+      </SelectControl>
+    </label>
+  );
+}
+
+type SelectOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+};
+
+function flattenOptionChildren(children: React.ReactNode): SelectOption[] {
+  return React.Children.toArray(children).flatMap((child) => {
+    if (!React.isValidElement(child)) return [];
+    const element = child as React.ReactElement<{
+      children?: React.ReactNode;
+      value?: string;
+      disabled?: boolean;
+    }>;
+    if (element.type === React.Fragment) {
+      return flattenOptionChildren(element.props.children);
+    }
+    if (element.type !== "option") return [];
+    const optionChildren = React.Children.toArray(element.props.children);
+    const label = optionChildren
+      .map((entry) => {
+        if (typeof entry === "string" || typeof entry === "number") {
+          return String(entry);
+        }
+        return "";
+      })
+      .join("")
+      .trim();
+    return [
+      {
+        value: String(element.props.value ?? ""),
+        label: label || String(element.props.value ?? ""),
+        disabled: Boolean(element.props.disabled),
+      },
+    ];
+  });
+}
+
+function useSelectOptions(
+  options?: Array<{ value: string; label: string; disabled?: boolean }>,
+  children?: React.ReactNode,
+) {
+  return React.useMemo<SelectOption[]>(() => {
+    const normalized = options?.map((option) => ({
+      value: option.value,
+      label: option.label,
+      disabled: option.disabled,
+    })) ?? [];
+
+    if (normalized.length > 0) return normalized;
+    return flattenOptionChildren(children);
+  }, [children, options]);
+}
+
+export function SelectControl({
+  value,
+  onChange,
+  children,
+  options,
+  required,
+  className,
+  placeholder,
+  disabled,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  children?: React.ReactNode;
+  options?: Array<{ value: string; label: string; disabled?: boolean }>;
+  required?: boolean;
+  className?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  ariaLabel?: string;
+}) {
+  const selectId = React.useId();
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const [contentWidth, setContentWidth] = React.useState<number | undefined>(undefined);
+  const resolvedOptions = useSelectOptions(options, children);
+
+  React.useEffect(() => {
+    if (!triggerRef.current) return;
+    const updateWidth = () => {
+      setContentWidth(triggerRef.current?.offsetWidth);
+    };
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(triggerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const selectedOption = resolvedOptions.find((option) => option.value === value);
+  const displayLabel =
+    selectedOption?.label ??
+    placeholder ??
+    resolvedOptions.find((option) => option.value === "")?.label ??
+    "Select";
+
+  const currentValue =
+    value && resolvedOptions.some((option) => option.value === value) ? value : value || "";
+
+  return (
+    <div className="relative">
+      <select
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0"
+        id={selectId}
+        onChange={() => undefined}
+        required={required}
+        tabIndex={-1}
+        value={currentValue}
+      >
+        {resolvedOptions.map((option) => (
+          <option key={`${option.value}:${option.label}`} disabled={option.disabled} value={option.value}>
             {option.label}
           </option>
         ))}
-        {children}
       </select>
-    </label>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button
+            ref={triggerRef}
+            aria-label={ariaLabel}
+            className={cn(
+              "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-left text-sm text-[var(--foreground)] shadow-sm outline-none transition hover:bg-[var(--surface-elevated)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-60",
+              !selectedOption && "text-[var(--muted)]",
+              className,
+            )}
+            disabled={disabled}
+            type="button"
+          >
+            <span className="truncate">{displayLabel}</span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="max-h-80 overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-1.5 [background-image:var(--surface-highlight)] shadow-[var(--shadow-overlay)]"
+          sideOffset={8}
+          style={contentWidth ? { width: contentWidth } : undefined}
+        >
+          <DropdownMenuRadioGroup onValueChange={onChange} value={currentValue}>
+            {resolvedOptions.map((option) => (
+              <DropdownMenuRadioItem
+                className="rounded-xl px-3 py-2.5 text-sm"
+                disabled={option.disabled}
+                key={`${option.value}:${option.label}`}
+                value={option.value}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">{option.label}</span>
+                  {currentValue === option.value ? <Check className="ml-auto h-4 w-4 text-[var(--accent)]" /> : null}
+                </div>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 

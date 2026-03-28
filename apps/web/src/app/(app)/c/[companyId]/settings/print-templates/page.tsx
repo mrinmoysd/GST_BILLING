@@ -12,7 +12,7 @@ import {
   usePublishPrintTemplate,
   useSetDefaultPrintTemplate,
 } from "@/lib/migration/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -60,6 +60,24 @@ export default function PrintTemplatesPage({ params }: Props) {
         eyebrow="Configuration"
         title="Print templates"
         subtitle="Create D13 print layouts, version them safely, preview the data payload, and set the default template per document type."
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Template control</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Draft, publish, and set defaults without mixing experimental layouts into live print output.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Runtime preview</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">The preview payload keeps design and document data close enough for safe iteration.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Version history</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">New versions stay separate from the active default until the team is ready to promote them.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
 
       {templates.isLoading ? <LoadingBlock label="Loading print templates…" /> : null}
@@ -97,7 +115,7 @@ export default function PrintTemplatesPage({ params }: Props) {
               <label className="grid gap-2">
                 <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Layout JSON</span>
                 <textarea
-                  className="min-h-52 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
+                  className="min-h-52 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3 py-2 text-sm"
                   value={layoutJson}
                   onChange={(event) => setLayoutJson(event.target.value)}
                 />
@@ -117,7 +135,7 @@ export default function PrintTemplatesPage({ params }: Props) {
           </CardHeader>
           <CardContent>
             {previewPayload ? (
-              <pre className="overflow-x-auto rounded-2xl bg-[var(--surface-muted)] p-4 text-xs text-[var(--muted-strong)]">
+              <pre className="overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-xs text-[var(--muted-strong)] [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 {JSON.stringify(previewPayload, null, 2)}
               </pre>
             ) : (
@@ -138,7 +156,7 @@ export default function PrintTemplatesPage({ params }: Props) {
             {templateRows.map((template) => {
               const latestVersion = Array.isArray(template.versions) ? template.versions[0] : null;
               return (
-                <div key={template.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={template.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="font-semibold text-[var(--foreground)]">{template.name}</div>
@@ -181,7 +199,7 @@ export default function PrintTemplatesPage({ params }: Props) {
                     </div>
                   </div>
                   {latestVersion ? (
-                    <pre className="mt-3 overflow-x-auto rounded-2xl bg-[var(--surface)] p-3 text-xs text-[var(--muted-strong)]">
+                    <pre className="mt-3 overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] p-3 text-xs text-[var(--muted-strong)] shadow-[var(--shadow-soft)]">
                       {JSON.stringify(latestVersion.layoutJson ?? latestVersion.layout_json ?? {}, null, 2)}
                     </pre>
                   ) : null}

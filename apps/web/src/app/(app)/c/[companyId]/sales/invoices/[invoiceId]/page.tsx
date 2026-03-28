@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { InvoiceCompliancePanel } from "@/components/invoices/invoice-compliance-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,9 @@ import {
   useRegenerateInvoicePdf,
   useShareInvoice,
 } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
+import { toastError, toastSuccess } from "@/lib/toast";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceDetailHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
@@ -54,12 +56,20 @@ type InvoiceItemLike = {
   line_total?: string | number | null;
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
+function readInvoiceNumber(invoice: { invoiceNumber?: string | null; invoice_no?: string | null; id?: string | null } | null | undefined) {
+  return invoice?.invoiceNumber ?? invoice?.invoice_no ?? invoice?.id ?? "Invoice";
+}
+
+function readInvoiceIssueDate(
+  invoice: { issueDate?: string | null; issue_date?: string | null } | null | undefined,
+) {
+  return invoice?.issueDate ?? invoice?.issue_date ?? "—";
+}
+
+function readInvoiceDueDate(
+  invoice: { dueDate?: string | null; due_date?: string | null } | null | undefined,
+) {
+  return invoice?.dueDate ?? invoice?.due_date ?? "—";
 }
 
 export default function InvoiceDetailPage({ params }: Props) {
@@ -136,27 +146,117 @@ export default function InvoiceDetailPage({ params }: Props) {
     () => creditNotes.reduce((sum, note) => sum + Number((note as { total?: string | number | null }).total ?? 0), 0),
     [creditNotes],
   );
+  const invoiceDetailRail = invoice ? (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Document workspace"
+        subtitle="Keep the core PDF, receipt, and cancellation actions nearby while moving between tabs."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/sales/invoices`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to invoices</SecondaryButton>
+          </Link>
+          <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
+            <SecondaryButton type="button" className="w-full justify-start">Receipt view</SecondaryButton>
+          </Link>
+          <SecondaryButton type="button" className="w-full justify-start" onClick={() => window.open(invoicePdfUrl(companyId, invoiceId), "_blank", "noopener,noreferrer")}>
+            Open PDF
+          </SecondaryButton>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            disabled={regen.isPending}
+            onClick={async () => {
+              setError(null);
+              try {
+                const res = await regen.mutateAsync();
+                const job = res.data as { data?: { jobId?: string } } | undefined;
+                if (job?.data?.jobId) setPdfJobId(String(job.data.jobId));
+              } catch (e: unknown) {
+                const message = getErrorMessage(e, "Failed to enqueue PDF regeneration.");
+                setError(message);
+                toastError(e, {
+                  fallback: "Failed to enqueue PDF regeneration.",
+                  title: message,
+                  context: "invoice-regenerate-pdf",
+                  metadata: { companyId, invoiceId },
+                });
+                return;
+              }
+              toastSuccess("PDF regeneration queued.");
+            }}
+          >
+            {regen.isPending ? "Queueing PDF…" : "Regenerate PDF"}
+          </SecondaryButton>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            disabled={cancel.isPending}
+            onClick={async () => {
+              setError(null);
+              setOk(null);
+              if (!window.confirm("Cancel this invoice?")) return;
+              try {
+                await cancel.mutateAsync();
+                setOk("Invoice cancelled.");
+              } catch (e: unknown) {
+                const message = getErrorMessage(e, "Failed to cancel invoice.");
+                setError(message);
+                toastError(e, {
+                  fallback: "Failed to cancel invoice.",
+                  title: message,
+                  context: "invoice-cancel",
+                  metadata: { companyId, invoiceId },
+                });
+                return;
+              }
+              toastSuccess("Invoice cancelled.");
+            }}
+          >
+            {cancel.isPending ? "Cancelling…" : "Cancel invoice"}
+          </SecondaryButton>
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Invoice posture"
+        subtitle="Core status and totals that should stay visible across compliance, payments, and post-issue actions."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Status", value: invoice.status ?? "—" },
+            { label: "Issue date", value: readInvoiceIssueDate(invoice) },
+            { label: "Due date", value: readInvoiceDueDate(invoice) },
+            { label: "Total", value: Number(invoice.total ?? 0).toFixed(2) },
+            { label: "Credited", value: totalCredited.toFixed(2) },
+            { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
+          ]}
+        />
+      </DetailRail>
+    </>
+  ) : null;
 
   return (
     <div className="space-y-7">
       <WorkspaceDetailHero
         eyebrow="Sales detail"
-        title={invoice?.invoice_no ?? "Invoice"}
+        title={readInvoiceNumber(invoice)}
         subtitle="Handle issuance, sharing, credit notes, sales returns, payments, and lifecycle history from one operational surface."
         badges={[
           <WorkspaceStatBadge key="status" label="Status" value={invoice?.status ?? "—"} />,
           <WorkspaceStatBadge key="credited" label="Credited" value={totalCredited.toFixed(2)} variant="outline" />,
         ]}
         actions={
-          <Link className="text-sm underline" href={`/c/${companyId}/sales/invoices`}>
-            Back
+          <Link href={`/c/${companyId}/sales/invoices`}>
+            <SecondaryButton type="button">Back</SecondaryButton>
           </Link>
         }
         metrics={
           invoice
             ? [
-                { label: "Issue date", value: invoice.issue_date ?? "—" },
-                { label: "Due date", value: invoice.due_date ?? "—" },
+                { label: "Issue date", value: readInvoiceIssueDate(invoice) },
+                { label: "Due date", value: readInvoiceDueDate(invoice) },
                 { label: "Invoice total", value: Number(invoice.total ?? 0).toFixed(2) },
                 { label: "Net after credits", value: (Number(invoice.total ?? 0) - totalCredited).toFixed(2) },
               ]
@@ -168,27 +268,36 @@ export default function InvoiceDetailPage({ params }: Props) {
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load invoice")} /> : null}
 
       {invoice ? (
-        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-          <div className="space-y-6">
-            <WorkspacePanel title="Invoice actions" subtitle="Issue, cancel, share, or credit the document while keeping a visible lifecycle trail.">
+        <DetailTabs
+          defaultValue="summary"
+          items={[
+            { id: "summary", label: "Summary" },
+            { id: "compliance", label: "Compliance", badge: shares.length },
+            { id: "post-issue", label: "Post-issue", badge: creditNotes.length },
+            { id: "payments", label: "Payments", badge: paymentsForInvoice.length },
+            { id: "activity", label: "Activity", badge: lifecycleEvents.length },
+          ]}
+        >
+          <DetailTabPanel value="summary" rail={invoiceDetailRail}>
+            <WorkspacePanel title="Invoice actions" subtitle="Issue the document and keep the series-controlled transition explicit.">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Issue date</div>
-                  <div className="mt-2 text-sm font-medium">{invoice.issue_date ?? "—"}</div>
+                  <div className="mt-2 text-sm font-medium">{readInvoiceIssueDate(invoice)}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Due date</div>
-                  <div className="mt-2 text-sm font-medium">{invoice.due_date ?? "—"}</div>
+                  <div className="mt-2 text-sm font-medium">{readInvoiceDueDate(invoice)}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Invoice total</div>
                   <div className="mt-2 text-sm font-medium">{Number(invoice.total ?? 0).toFixed(2)}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Net after credits</div>
                   <div className="mt-2 text-sm font-medium">{(Number(invoice.total ?? 0) - totalCredited).toFixed(2)}</div>
                 </div>
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:col-span-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] sm:col-span-2">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Series code</div>
                   <div className="mt-3 flex flex-wrap items-end gap-3">
                     <div className="min-w-[220px] flex-1">
@@ -204,12 +313,17 @@ export default function InvoiceDetailPage({ params }: Props) {
                           await issue.mutateAsync({ series_code: seriesCode });
                           setOk("Invoice issued.");
                         } catch (e: unknown) {
-                          const message = getErrorMessage(e, "Failed to issue invoice");
+                          const message = getErrorMessage(e, "Failed to issue invoice.");
                           setError(message);
-                          toast.error(message);
+                          toastError(e, {
+                            fallback: "Failed to issue invoice.",
+                            title: message,
+                            context: "invoice-issue",
+                            metadata: { companyId, invoiceId, seriesCode },
+                          });
                           return;
                         }
-                        toast.success("Invoice issued");
+                        toastSuccess("Invoice issued.");
                       }}
                     >
                       {issue.isPending ? "Issuing…" : "Issue"}
@@ -219,60 +333,33 @@ export default function InvoiceDetailPage({ params }: Props) {
               </div>
             </WorkspacePanel>
 
-            <WorkspacePanel title="Document actions" subtitle="PDF and lifecycle actions for the current invoice." tone="muted">
-              <div className="flex flex-wrap gap-3">
-                <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
-                  <SecondaryButton type="button">Receipt view</SecondaryButton>
-                </Link>
-                <SecondaryButton
-                  type="button"
-                  disabled={cancel.isPending}
-                  onClick={async () => {
-                    setError(null);
-                    setOk(null);
-                    if (!window.confirm("Cancel this invoice?")) return;
-                    try {
-                      await cancel.mutateAsync();
-                      setOk("Invoice cancelled.");
-                    } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to cancel invoice");
-                      setError(message);
-                      toast.error(message);
-                      return;
-                    }
-                    toast.success("Invoice cancelled");
-                  }}
-                >
-                  {cancel.isPending ? "Cancelling…" : "Cancel"}
-                </SecondaryButton>
-                <SecondaryButton type="button" onClick={() => window.open(invoicePdfUrl(companyId, invoiceId), "_blank", "noopener,noreferrer")}>
-                  Open PDF
-                </SecondaryButton>
-                <SecondaryButton
-                  type="button"
-                  disabled={regen.isPending}
-                  onClick={async () => {
-                    setError(null);
-                    try {
-                      const res = await regen.mutateAsync();
-                      const job = res.data as { data?: { jobId?: string } } | undefined;
-                      if (job?.data?.jobId) setPdfJobId(String(job.data.jobId));
-                    } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to enqueue PDF regeneration");
-                      setError(message);
-                      toast.error(message);
-                      return;
-                    }
-                    toast.success("PDF regeneration queued");
-                  }}
-                >
-                  {regen.isPending ? "Enqueueing…" : "Regenerate PDF"}
-                </SecondaryButton>
-              </div>
-            </WorkspacePanel>
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax summary</CardTitle>
+                <CardDescription>Current GST estimate based on the invoice line items returned by the API.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {invoiceTaxBreakdown.length > 0 ? (
+                  invoiceTaxBreakdown.map((row) => (
+                    <div key={row.rate} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
+                      <div>
+                        <div className="font-medium text-[var(--foreground)]">{row.rate}% GST</div>
+                        <div className="text-[var(--muted)]">Taxable value {row.taxable.toFixed(2)}</div>
+                      </div>
+                      <div className="font-semibold text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
+                    Tax details will appear here once line-level GST data is available on the invoice payload.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="compliance" rail={invoiceDetailRail}>
             <InvoiceCompliancePanel companyId={companyId} invoiceId={invoiceId} />
-
             <Card>
               <CardHeader>
                 <CardTitle>Share invoice</CardTitle>
@@ -296,12 +383,17 @@ export default function InvoiceDetailPage({ params }: Props) {
                       setShareMessage("");
                       setOk("Invoice share logged.");
                     } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to share invoice");
+                      const message = getErrorMessage(e, "Failed to share invoice.");
                       setError(message);
-                      toast.error(message);
+                      toastError(e, {
+                        fallback: "Failed to share invoice.",
+                        title: message,
+                        context: "invoice-share",
+                        metadata: { companyId, invoiceId, channel: shareChannel },
+                      });
                       return;
                     }
-                    toast.success("Invoice share logged");
+                    toastSuccess("Invoice share logged.");
                   }}
                 >
                   <SelectField
@@ -327,12 +419,12 @@ export default function InvoiceDetailPage({ params }: Props) {
 
                 <div className="space-y-3">
                   {shares.length === 0 ? (
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                       No share events logged yet.
                     </div>
                   ) : (
                     shares.map((entry) => (
-                      <div key={entry.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
+                      <div key={entry.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                         <div className="font-medium text-[var(--foreground)]">{entry.channel} to {entry.recipient}</div>
                         <div className="mt-1 text-[var(--muted)]">{entry.sentAt ?? entry.sent_at ?? "—"}</div>
                       </div>
@@ -354,23 +446,20 @@ export default function InvoiceDetailPage({ params }: Props) {
                     {pdfJobQuery.isLoading ? <LoadingBlock label="Checking PDF job…" /> : null}
                     {pdfJobQuery.isError ? <InlineError message={getErrorMessage(pdfJobQuery.error, "Failed to fetch PDF job status")} /> : null}
                     {pdfJobQuery.data ? (
-                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                         <div className="font-medium text-[var(--foreground)]">Status: {pdfJobQuery.data.data.data.state}</div>
                         {pdfJobQuery.data.data.data.failed_reason ? <div className="mt-2 text-[var(--danger)]">{pdfJobQuery.data.data.data.failed_reason}</div> : null}
                       </div>
                     ) : null}
                   </>
                 ) : (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-[var(--muted)]">No PDF regeneration job is currently being tracked.</div>
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">No PDF regeneration job is currently being tracked.</div>
                 )}
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
-            {error ? <InlineError message={error} /> : null}
-            {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
-          </div>
-
-          <div className="space-y-6">
+          <DetailTabPanel value="post-issue" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Credit notes and sales returns</CardTitle>
@@ -401,14 +490,14 @@ export default function InvoiceDetailPage({ params }: Props) {
                   Restock returned quantity into inventory
                 </label>
 
-                <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-panel)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   {items.map((item) => {
                     const qty = Number(item.quantity ?? 0);
                     const credited = creditedByItem.get(item.id) ?? 0;
                     const available = Math.max(0, qty - credited);
                     const productName = item.product?.name ?? item.productId ?? item.product_id ?? item.id;
                     return (
-                      <div key={item.id} className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 md:grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr]">
+                      <div key={item.id} className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] md:grid-cols-[1.4fr_0.6fr_0.6fr_0.8fr]">
                         <div>
                           <div className="font-medium text-[var(--foreground)]">{productName}</div>
                           <div className="mt-1 text-xs text-[var(--muted)]">Issued {qty} • Already credited {credited}</div>
@@ -416,7 +505,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                         <div className="text-sm text-[var(--muted-strong)]">Available {available}</div>
                         <div className="text-sm text-[var(--muted-strong)]">Unit {Number(item.unitPrice ?? item.unit_price ?? 0).toFixed(2)}</div>
                         <input
-                          className="h-11 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+                          className="h-11 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-sm shadow-sm"
                           min="0"
                           step="0.01"
                           value={creditQuantities[item.id] ?? ""}
@@ -456,12 +545,19 @@ export default function InvoiceDetailPage({ params }: Props) {
                       setCreditNotesText("");
                       setOk(creditKind === "sales_return" ? "Sales return created." : "Credit note created.");
                     } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to create credit note");
+                      const message = getErrorMessage(e, "Failed to create credit note.");
                       setError(message);
-                      toast.error(message);
+                      toastError(e, {
+                        fallback: "Failed to create credit note.",
+                        title: message,
+                        context: "invoice-credit-note",
+                        metadata: { companyId, invoiceId, kind: creditKind },
+                      });
                       return;
                     }
-                    toast.success(creditKind === "sales_return" ? "Sales return created" : "Credit note created");
+                    toastSuccess(
+                      creditKind === "sales_return" ? "Sales return created." : "Credit note created.",
+                    );
                   }}
                 >
                   {credit.isPending ? "Saving…" : creditKind === "sales_return" ? "Create sales return" : "Create credit note"}
@@ -469,12 +565,12 @@ export default function InvoiceDetailPage({ params }: Props) {
 
                 <div className="space-y-3">
                   {creditNotes.length === 0 ? (
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                       No credit notes or sales returns have been created yet.
                     </div>
                   ) : (
                     creditNotes.map((note) => (
-                      <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
+                      <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                         <div className="font-medium text-[var(--foreground)]">
                           {(note.kind ?? "credit_note").replace(/_/g, " ")} • {note.noteNumber ?? note.note_number ?? note.id}
                         </div>
@@ -487,31 +583,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                 </div>
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Tax summary</CardTitle>
-                <CardDescription>Current GST estimate based on the invoice line items returned by the API.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {invoiceTaxBreakdown.length > 0 ? (
-                  invoiceTaxBreakdown.map((row) => (
-                    <div key={row.rate} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm">
-                      <div>
-                        <div className="font-medium text-[var(--foreground)]">{row.rate}% GST</div>
-                        <div className="text-[var(--muted)]">Taxable value {row.taxable.toFixed(2)}</div>
-                      </div>
-                      <div className="font-semibold text-[var(--foreground)]">{row.tax.toFixed(2)}</div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
-                    Tax details will appear here once line-level GST data is available on the invoice payload.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
+          <DetailTabPanel value="payments" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Payments</CardTitle>
@@ -538,12 +612,17 @@ export default function InvoiceDetailPage({ params }: Props) {
                       setPayDate("");
                       setOk("Payment recorded.");
                     } catch (e: unknown) {
-                      const message = getErrorMessage(e, "Failed to record payment");
+                      const message = getErrorMessage(e, "Failed to record payment.");
                       setError(message);
-                      toast.error(message);
+                      toastError(e, {
+                        fallback: "Failed to record payment.",
+                        title: message,
+                        context: "invoice-record-payment",
+                        metadata: { companyId, invoiceId, method: payMethod },
+                      });
                       return;
                     }
-                    toast.success("Payment recorded");
+                    toastSuccess("Payment recorded.");
                   }}
                 >
                   <TextField label="Amount" value={payAmount} onChange={setPayAmount} type="number" />
@@ -601,7 +680,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                 ) : null}
               </CardContent>
             </Card>
+          </DetailTabPanel>
 
+          <DetailTabPanel value="activity" rail={invoiceDetailRail}>
             <Card>
               <CardHeader>
                 <CardTitle>Lifecycle history</CardTitle>
@@ -609,12 +690,12 @@ export default function InvoiceDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-3">
                 {lifecycleEvents.length === 0 ? (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     No lifecycle history has been recorded yet.
                   </div>
                 ) : (
                   lifecycleEvents.map((event) => (
-                    <div key={event.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
+                    <div key={event.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-sm shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                       <div className="font-medium text-[var(--foreground)]">{event.summary}</div>
                       <div className="mt-1 text-[var(--muted)]">{event.eventType ?? event.event_type ?? "event"} • {event.createdAt ?? event.created_at ?? "—"}</div>
                     </div>
@@ -622,8 +703,10 @@ export default function InvoiceDetailPage({ params }: Props) {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </div>
+            {error ? <InlineError message={error} /> : null}
+            {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+          </DetailTabPanel>
+        </DetailTabs>
       ) : null}
     </div>
   );

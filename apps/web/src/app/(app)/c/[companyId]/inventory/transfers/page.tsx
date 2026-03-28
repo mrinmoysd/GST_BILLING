@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useCancelStockTransfer,
   useCreateStockTransfer,
@@ -15,6 +15,7 @@ import {
   useStockTransfers,
   useWarehouses,
 } from "@/lib/masters/hooks";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -26,14 +27,6 @@ type TransferLine = {
   productId: string;
   quantity: string;
 };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function TransfersPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -62,8 +55,8 @@ export default function TransfersPage({ params }: Props) {
         title="Stock transfers"
         subtitle="Move stock between godowns in two steps: dispatch from source, then receive into destination."
         actions={
-          <Link href={`/c/${companyId}/inventory`} className="text-sm underline">
-            Back
+          <Link href={`/c/${companyId}/inventory`}>
+            <SecondaryButton type="button">Back</SecondaryButton>
           </Link>
         }
       />
@@ -198,16 +191,21 @@ export default function TransfersPage({ params }: Props) {
                       notes: notes || undefined,
                       items: clean,
                     });
-                    toast.success("Transfer created");
+                    toastSuccess("Transfer created.");
                     setFromWarehouseId("");
                     setToWarehouseId("");
                     setTransferDate("");
                     setNotes("");
                     setLines([{ id: "tr-1", productId: "", quantity: "1" }]);
                   } catch (err: unknown) {
-                    const message = getErrorMessage(err, "Failed to create transfer");
+                    const message = getErrorMessage(err, "Failed to create transfer.");
                     setError(message);
-                    toast.error(message);
+                    toastError(err, {
+                      fallback: "Failed to create transfer.",
+                      title: message,
+                      context: "inventory-transfer-create",
+                      metadata: { companyId, fromWarehouseId, toWarehouseId },
+                    });
                   }
                 }}
               >
@@ -335,7 +333,7 @@ function TransferRow(props: {
                 disabled={dispatch.isPending}
                 onClick={async () => {
                   await dispatch.mutateAsync();
-                  toast.success("Transfer dispatched");
+                  toastSuccess("Transfer dispatched.");
                 }}
               >
                 Dispatch
@@ -345,7 +343,7 @@ function TransferRow(props: {
                 disabled={cancel.isPending}
                 onClick={async () => {
                   await cancel.mutateAsync();
-                  toast.success("Transfer cancelled");
+                  toastSuccess("Transfer cancelled.");
                 }}
               >
                 Cancel
@@ -358,7 +356,7 @@ function TransferRow(props: {
               disabled={receive.isPending}
               onClick={async () => {
                 await receive.mutateAsync();
-                toast.success("Transfer received");
+                toastSuccess("Transfer received.");
               }}
             >
               Receive

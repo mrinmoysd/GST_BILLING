@@ -2,20 +2,13 @@
 
 import * as React from "react";
 
+import { getErrorMessage } from "@/lib/errors";
 import { useCheckoutSubscription, useSubscription } from "@/lib/settings/subscriptionHooks";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { WorkspaceConfigHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function SubscriptionSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -73,18 +66,16 @@ export default function SubscriptionSettingsPage({ params }: Props) {
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Provider</label>
-            <select
-              className="mt-2 h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm shadow-sm"
+            <SelectField
+              label="Provider"
               value={provider}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === "stripe" || v === "razorpay") setProvider(v);
+              onChange={(value) => {
+                if (value === "stripe" || value === "razorpay") setProvider(value);
               }}
             >
               <option value="stripe">Stripe</option>
               <option value="razorpay">Razorpay</option>
-            </select>
+            </SelectField>
           </div>
           <TextField label="Plan code" value={planCode} onChange={setPlanCode} />
           <TextField label="Success URL" value={successUrl} onChange={setSuccessUrl} />

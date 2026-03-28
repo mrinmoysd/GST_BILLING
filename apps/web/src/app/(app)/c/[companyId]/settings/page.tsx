@@ -83,7 +83,7 @@ export default function SettingsPage({ params }: Props) {
               {section.items.map((item) => (
                 <Link
                   key={item.href}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface)]"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:-translate-y-0.5 hover:border-[var(--border-strong)]"
                   href={item.href}
                 >
                   <div className="font-semibold text-[var(--foreground)]">{item.title}</div>

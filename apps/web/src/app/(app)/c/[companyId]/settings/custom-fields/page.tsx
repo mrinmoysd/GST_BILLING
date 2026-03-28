@@ -10,7 +10,7 @@ import {
   useCustomFields,
   useSetCustomFieldValue,
 } from "@/lib/migration/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SelectField, TextField } from "@/lib/ui/form";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -50,6 +50,24 @@ export default function CustomFieldsPage({ params }: Props) {
         eyebrow="Configuration"
         title="Custom fields"
         subtitle="Define controlled D13 fields for supported entities and attach typed values without changing the core schema every time."
+        context={
+          <PageContextStrip>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Bounded flexibility</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Teams can add business-specific fields without creating uncontrolled schema drift.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Typed values</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">The editor keeps values explicit so print, export, and reports can consume them safely.</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Operator control</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Field setup and value assignment stay close together for fast tenant-level administration.</div>
+              </div>
+            </div>
+          </PageContextStrip>
+        }
       />
 
       {fields.isLoading ? <LoadingBlock label="Loading custom fields…" /> : null}
@@ -156,7 +174,7 @@ export default function CustomFieldsPage({ params }: Props) {
               <label className="grid gap-2">
                 <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Value JSON</span>
                 <textarea
-                  className="min-h-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
+                  className="min-h-24 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3 py-2 text-sm"
                   value={valueJson}
                   onChange={(event) => setValueJson(event.target.value)}
                 />
@@ -169,7 +187,7 @@ export default function CustomFieldsPage({ params }: Props) {
             {values.isError ? <InlineError message={getMessage(values.error, "Failed to load field values")} /> : null}
             <div className="mt-5 grid gap-3">
               {valueRows.map((row) => (
-                <div key={row.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={row.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="font-semibold text-[var(--foreground)]">{row.definition?.label}</div>
                   <pre className="mt-2 overflow-x-auto text-xs text-[var(--muted-strong)]">
                     {JSON.stringify(row.valueJson ?? row.value_json, null, 2)}
@@ -188,7 +206,7 @@ export default function CustomFieldsPage({ params }: Props) {
           </CardHeader>
           <CardContent className="grid gap-3">
             {fieldRows.map((field) => (
-              <div key={field.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+              <div key={field.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-[var(--foreground)]">{field.label}</div>

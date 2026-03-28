@@ -14,20 +14,15 @@ import {
   useSalesOrder,
 } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
+import { getErrorMessage } from "@/lib/errors";
 import { useWarehouses } from "@/lib/masters/hooks";
-import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
+import { toastError, toastSuccess } from "@/lib/toast";
+import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
+import { PrimaryButton, SecondaryButton, SelectField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { WorkspaceDetailHero, WorkspacePanel, WorkspaceSection } from "@/lib/ui/workspace";
+import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string; salesOrderId: string }> };
-
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 export default function SalesOrderDetailPage({ params }: Props) {
   const { companyId, salesOrderId } = React.use(params);
@@ -64,11 +59,19 @@ export default function SalesOrderDetailPage({ params }: Props) {
   const canConfirm = status === "draft";
   const canConvert = status === "confirmed" || status === "partially_fulfilled";
 
-  async function runAction(action: () => Promise<unknown>, fallback: string) {
+  async function runAction(
+    action: () => Promise<unknown>,
+    messages: { success: string; failure: string },
+  ) {
     try {
       await action();
+      toastSuccess(messages.success);
     } catch (err) {
-      window.alert(getErrorMessage(err, fallback));
+      toastError(err, {
+        fallback: messages.failure,
+        context: "sales-order-action",
+        metadata: { companyId, salesOrderId },
+      });
     }
   }
 
@@ -86,6 +89,72 @@ export default function SalesOrderDetailPage({ params }: Props) {
     | { data?: Array<{ id: string; name?: string; code?: string }> }
     | undefined;
   const warehouseRows = warehousePayload?.data ?? [];
+  const detailRail = (
+    <>
+      <DetailRail
+        eyebrow="Quick actions"
+        title="Order controls"
+        subtitle="Keep the main document decisions visible while moving between fulfillment, dispatch, and conversion tabs."
+      >
+        <div className="flex flex-col gap-2">
+          <Link href={`/c/${companyId}/sales/orders`}>
+            <SecondaryButton type="button" className="w-full justify-start">Back to orders</SecondaryButton>
+          </Link>
+          <Link href={`/c/${companyId}/sales/dispatch`}>
+            <SecondaryButton type="button" className="w-full justify-start">Dispatch queue</SecondaryButton>
+          </Link>
+          {canConfirm ? (
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={confirm.isPending}
+              onClick={() =>
+                runAction(() => confirm.mutateAsync(), {
+                  success: "Sales order confirmed.",
+                  failure: "Failed to confirm sales order.",
+                })
+              }
+            >
+              {confirm.isPending ? "Confirming…" : "Confirm order"}
+            </SecondaryButton>
+          ) : null}
+          {status !== "fulfilled" && status !== "cancelled" ? (
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={cancel.isPending || status === "partially_fulfilled"}
+              onClick={() =>
+                runAction(() => cancel.mutateAsync(), {
+                  success: "Sales order cancelled.",
+                  failure: "Failed to cancel sales order.",
+                })
+              }
+            >
+              {cancel.isPending ? "Cancelling…" : "Cancel order"}
+            </SecondaryButton>
+          ) : null}
+        </div>
+      </DetailRail>
+      <DetailRail
+        eyebrow="Snapshot"
+        title="Order posture"
+        subtitle="These details stay visible while the main tab body focuses on one workflow at a time."
+      >
+        <DetailInfoList
+          items={[
+            { label: "Customer", value: order.customer?.name ?? "—" },
+            { label: "Status", value: order.status ?? "—" },
+            { label: "Order date", value: order.orderDate?.slice?.(0, 10) ?? order.order_date ?? "—" },
+            {
+              label: "Expected dispatch",
+              value: order.expectedDispatchDate?.slice?.(0, 10) ?? order.expected_dispatch_date ?? "—",
+            },
+            { label: "Total", value: order.total ?? "—" },
+          ]}
+        />
+      </DetailRail>
+    </>
+  );
 
   return (
     <div className="space-y-7">
@@ -103,12 +172,30 @@ export default function SalesOrderDetailPage({ params }: Props) {
               <SecondaryButton type="button">Back</SecondaryButton>
             </Link>
             {canConfirm ? (
-              <SecondaryButton type="button" disabled={confirm.isPending} onClick={() => runAction(() => confirm.mutateAsync(), "Failed to confirm sales order")}>
+              <SecondaryButton
+                type="button"
+                disabled={confirm.isPending}
+                onClick={() =>
+                  runAction(() => confirm.mutateAsync(), {
+                    success: "Sales order confirmed.",
+                    failure: "Failed to confirm sales order.",
+                  })
+                }
+              >
                 Confirm
               </SecondaryButton>
             ) : null}
             {status !== "fulfilled" && status !== "cancelled" ? (
-              <SecondaryButton type="button" disabled={cancel.isPending || status === "partially_fulfilled"} onClick={() => runAction(() => cancel.mutateAsync(), "Failed to cancel sales order")}>
+              <SecondaryButton
+                type="button"
+                disabled={cancel.isPending || status === "partially_fulfilled"}
+                onClick={() =>
+                  runAction(() => cancel.mutateAsync(), {
+                    success: "Sales order cancelled.",
+                    failure: "Failed to cancel sales order.",
+                  })
+                }
+              >
                 Cancel
               </SecondaryButton>
             ) : null}
@@ -122,9 +209,16 @@ export default function SalesOrderDetailPage({ params }: Props) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <WorkspaceSection eyebrow="Fulfillment body" title="Ordered items" subtitle="Remaining quantity stays visible so invoice conversion can be partial or complete.">
-          <WorkspacePanel>
+      <DetailTabs
+        defaultValue="summary"
+        items={[
+          { id: "summary", label: "Summary", badge: items.length },
+          { id: "dispatch", label: "Dispatch", badge: challanRows.length },
+          { id: "conversion", label: "Invoice conversion", badge: invoices.length },
+        ]}
+      >
+        <DetailTabPanel value="summary" rail={detailRail}>
+          <WorkspacePanel title="Ordered items" subtitle="Remaining quantity stays visible so invoice conversion can be partial or complete.">
             <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
               <table className="min-w-[820px] w-full text-sm">
                 <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
@@ -157,28 +251,30 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </table>
             </div>
           </WorkspacePanel>
-        </WorkspaceSection>
+          <WorkspacePanel title="Commercial context" subtitle="The order preserves both customer and quotation origin, so fulfillment stays tied to the selling conversation.">
+            <div className="space-y-3 text-sm">
+              <div><span className="font-semibold text-[var(--foreground)]">Customer:</span> {order.customer?.name ?? "—"}</div>
+              <div><span className="font-semibold text-[var(--foreground)]">Quotation:</span> {order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</div>
+              <div><span className="font-semibold text-[var(--foreground)]">Notes:</span> {order.notes ?? "—"}</div>
+            </div>
+          </WorkspacePanel>
+        </DetailTabPanel>
 
-        <div className="space-y-6">
+        <DetailTabPanel value="dispatch" rail={detailRail}>
           <WorkspacePanel title="Create delivery challan" subtitle="Move the order into warehouse execution without posting stock or accounting yet.">
             {challanError ? <InlineError message={challanError} /> : null}
             <div className="space-y-4">
               <div className="grid gap-3">
-                <label className="block space-y-2">
-                  <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Warehouse</span>
-                  <select
-                    className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-sm text-[var(--foreground)] shadow-sm outline-none"
-                    value={warehouseId}
-                    onChange={(e) => setWarehouseId(e.target.value)}
-                  >
+                <div>
+                  <SelectField label="Warehouse" value={warehouseId} onChange={setWarehouseId}>
                     <option value="">Select warehouse</option>
                     {warehouseRows.map((warehouse) => (
                       <option key={warehouse.id} value={warehouse.id}>
                         {warehouse.name ?? warehouse.id}{warehouse.code ? ` • ${warehouse.code}` : ""}
                       </option>
                     ))}
-                  </select>
-                </label>
+                  </SelectField>
+                </div>
                 <label className="block space-y-2">
                   <span className="text-[13px] font-semibold text-[var(--muted-strong)]">Transporter</span>
                   <input
@@ -252,9 +348,17 @@ export default function SalesOrderDetailPage({ params }: Props) {
                       dispatch_notes: dispatchNotes || undefined,
                       items: challanItems,
                     });
+                    toastSuccess("Delivery challan created.");
                     router.push(`/c/${companyId}/sales/challans/${res.data.id}`);
                   } catch (err) {
-                    setChallanError(getErrorMessage(err, "Failed to create delivery challan"));
+                    const message = getErrorMessage(err, "Failed to create delivery challan.");
+                    setChallanError(message);
+                    toastError(err, {
+                      fallback: "Failed to create delivery challan.",
+                      title: message,
+                      context: "sales-order-create-challan",
+                      metadata: { companyId, salesOrderId },
+                    });
                   }
                 }}
               >
@@ -262,61 +366,6 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </PrimaryButton>
             </div>
           </WorkspacePanel>
-
-          <WorkspacePanel title="Invoice conversion" subtitle="Generate a draft invoice from all remaining quantity or only the selected partial quantities.">
-            {convertError ? <InlineError message={convertError} /> : null}
-            <div className="flex flex-wrap gap-3">
-              <PrimaryButton
-                type="button"
-                disabled={convert.isPending || !canConvert}
-                onClick={async () => {
-                  setConvertError(null);
-                  try {
-                    const itemsToConvert = fulfillmentRows
-                      .map(({ item, remaining }) => ({
-                        sales_order_item_id: item.id ?? "",
-                        quantity: quantities[item.id ?? ""] ?? String(remaining),
-                      }))
-                      .filter((entry) => entry.sales_order_item_id && Number(entry.quantity) > 0);
-                    const res = await convert.mutateAsync({ items: itemsToConvert });
-                    router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
-                  } catch (err) {
-                    setConvertError(getErrorMessage(err, "Failed to convert sales order"));
-                  }
-                }}
-              >
-                {convert.isPending ? "Converting…" : "Convert to invoice"}
-              </PrimaryButton>
-            </div>
-          </WorkspacePanel>
-
-          <WorkspacePanel title="Commercial context" subtitle="The order preserves both customer and quotation origin, so fulfillment stays tied to the selling conversation.">
-            <div className="space-y-3 text-sm">
-              <div><span className="font-semibold text-[var(--foreground)]">Customer:</span> {order.customer?.name ?? "—"}</div>
-              <div><span className="font-semibold text-[var(--foreground)]">Quotation:</span> {order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</div>
-              <div><span className="font-semibold text-[var(--foreground)]">Notes:</span> {order.notes ?? "—"}</div>
-            </div>
-          </WorkspacePanel>
-
-          <WorkspacePanel title="Generated invoices" subtitle="Each conversion creates a draft invoice linked back to this order.">
-            {invoices.length === 0 ? (
-              <div className="text-sm text-[var(--muted)]">No invoices generated from this sales order yet.</div>
-            ) : (
-              <div className="space-y-3">
-                {invoices.map((invoice) => (
-                  <Link
-                    key={invoice.id}
-                    href={`/c/${companyId}/sales/invoices/${invoice.id}`}
-                    className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm hover:border-[var(--accent)]"
-                  >
-                    <div className="font-semibold text-[var(--foreground)]">{invoice.invoiceNumber ?? invoice.invoice_number ?? invoice.id}</div>
-                    <div className="mt-1 text-[var(--muted)]">Status: {invoice.status ?? "draft"} · Total: {invoice.total ?? "—"}</div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </WorkspacePanel>
-
           <WorkspacePanel title="Delivery challans" subtitle="Dispatch can now happen before invoice creation, with visible source traceability.">
             {challansQuery.isLoading ? <div className="text-sm text-[var(--muted)]">Loading challans…</div> : null}
             {!challansQuery.isLoading && challanRows.length === 0 ? (
@@ -340,8 +389,64 @@ export default function SalesOrderDetailPage({ params }: Props) {
               </div>
             )}
           </WorkspacePanel>
-        </div>
-      </div>
+        </DetailTabPanel>
+
+        <DetailTabPanel value="conversion" rail={detailRail}>
+          <WorkspacePanel title="Invoice conversion" subtitle="Generate a draft invoice from all remaining quantity or only the selected partial quantities.">
+            {convertError ? <InlineError message={convertError} /> : null}
+            <div className="flex flex-wrap gap-3">
+              <PrimaryButton
+                type="button"
+                disabled={convert.isPending || !canConvert}
+                onClick={async () => {
+                  setConvertError(null);
+                  try {
+                    const itemsToConvert = fulfillmentRows
+                      .map(({ item, remaining }) => ({
+                        sales_order_item_id: item.id ?? "",
+                        quantity: quantities[item.id ?? ""] ?? String(remaining),
+                      }))
+                      .filter((entry) => entry.sales_order_item_id && Number(entry.quantity) > 0);
+                    const res = await convert.mutateAsync({ items: itemsToConvert });
+                    toastSuccess("Sales order converted to invoice.");
+                    router.push(`/c/${companyId}/sales/invoices/${res.data.id}`);
+                  } catch (err) {
+                    const message = getErrorMessage(err, "Failed to convert sales order.");
+                    setConvertError(message);
+                    toastError(err, {
+                      fallback: "Failed to convert sales order.",
+                      title: message,
+                      context: "sales-order-convert",
+                      metadata: { companyId, salesOrderId },
+                    });
+                  }
+                }}
+              >
+                {convert.isPending ? "Converting…" : "Convert to invoice"}
+              </PrimaryButton>
+            </div>
+          </WorkspacePanel>
+
+          <WorkspacePanel title="Generated invoices" subtitle="Each conversion creates a draft invoice linked back to this order.">
+            {invoices.length === 0 ? (
+              <div className="text-sm text-[var(--muted)]">No invoices generated from this sales order yet.</div>
+            ) : (
+              <div className="space-y-3">
+                {invoices.map((invoice) => (
+                  <Link
+                    key={invoice.id}
+                    href={`/c/${companyId}/sales/invoices/${invoice.id}`}
+                    className="block rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm hover:border-[var(--accent)]"
+                  >
+                    <div className="font-semibold text-[var(--foreground)]">{invoice.invoiceNumber ?? invoice.invoice_number ?? invoice.id}</div>
+                    <div className="mt-1 text-[var(--muted)]">Status: {invoice.status ?? "draft"} · Total: {invoice.total ?? "—"}</div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </WorkspacePanel>
+        </DetailTabPanel>
+      </DetailTabs>
     </div>
   );
 }

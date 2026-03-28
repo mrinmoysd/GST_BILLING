@@ -8,6 +8,7 @@ import { companyPath } from "@/lib/api/companyRoutes";
 import { useCustomer } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
+import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; customerId: string }> };
 
@@ -36,13 +37,6 @@ type LedgerResp = {
   };
 };
 
-function getErrorMessage(err: unknown, fallback: string) {
-  if (err && typeof err === "object" && "message" in err) {
-    const message = (err as { message?: unknown }).message;
-    if (typeof message === "string") return message;
-  }
-  return fallback;
-}
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -109,7 +103,7 @@ export default function CustomerLedgerPage({ params }: Props) {
               {customer.data?.data?.name ?? "Customer"} <code>{customerId}</code>
             </span>
             {data ? (
-              <span className="ml-3 text-sm text-neutral-500">
+              <span className="ml-3 text-sm text-[var(--muted)]">
                 Opening: {formatMoney(data.opening_balance)} · Closing: {formatMoney(data.closing_balance)}
               </span>
             ) : null}
@@ -127,7 +121,7 @@ export default function CustomerLedgerPage({ params }: Props) {
         }
       />
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
+      <div className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)]">
         <div className="grid gap-4 md:grid-cols-3">
           <TextField label="From" type="date" value={from} onChange={setFrom} />
           <TextField label="To" type="date" value={to} onChange={setTo} />
@@ -158,9 +152,9 @@ export default function CustomerLedgerPage({ params }: Props) {
       ) : null}
 
       {!loading && !error && rows.length > 0 ? (
-        <div className="rounded-xl border bg-white overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-neutral-600">
+            <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Date</th>
                 <th className="text-left px-4 py-3 font-medium">Description</th>
@@ -186,13 +180,13 @@ export default function CustomerLedgerPage({ params }: Props) {
                         r.description
                       )}
                     </div>
-                    <div className="text-xs text-neutral-500 capitalize">
+                    <div className="text-xs capitalize text-[var(--muted)]">
                       {r.type}
                       {r.type === "payment" && r.payment_method ? ` · ${r.payment_method}` : ""}
                       {r.type === "payment" && r.payment_reference ? ` · Ref ${r.payment_reference}` : ""}
                     </div>
                     {r.type === "payment" ? (
-                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-neutral-500">
+                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
                         <Link className="underline" href={`/c/${companyId}/payments`}>
                           Open payments workspace
                         </Link>
@@ -218,7 +212,7 @@ export default function CustomerLedgerPage({ params }: Props) {
       ) : null}
 
       {data ? (
-        <div className="flex items-center justify-between text-sm text-neutral-600">
+        <div className="flex items-center justify-between text-sm text-[var(--muted)]">
           <div>
             Page {page} of {totalPages} · {total} entries
           </div>

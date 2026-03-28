@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { AuthShell } from "@/components/public/auth-shell";
-import type { NormalizedApiError } from "@/lib/api/types";
+import { getErrorMessage, logError } from "@/lib/errors";
 import { useForgotPassword } from "@/lib/auth/hooks";
 import { InlineError } from "@/lib/ui/state";
 import { PrimaryButton, TextField } from "@/lib/ui/form";
@@ -69,8 +69,8 @@ export default function ForgotPasswordPage() {
                   setMessage(data.message);
                   setDevResetPath(data.dev?.reset_path ?? null);
                 } catch (err: unknown) {
-                  const apiError = err as NormalizedApiError;
-                  setError(apiError.message ?? "Failed to prepare reset link");
+                  logError(err, "forgot-password-submit", { email: email.trim() });
+                  setError(getErrorMessage(err, "Failed to prepare reset link."));
                 }
               }}
             >
