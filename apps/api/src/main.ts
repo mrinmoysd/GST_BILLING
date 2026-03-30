@@ -2,6 +2,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParserImport from 'cookie-parser';
+import {
+  getCorsOriginConfig,
+  getTrustProxyValue,
+} from './common/config/http-runtime.config';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { AppModule } from './app.module';
 
@@ -13,13 +17,18 @@ async function bootstrap() {
   // Ensure request bodies are parsed (JSON) for normal API routes.
   // We still register a special JSON parser with `verify` for webhooks below.
   const app = await NestFactory.create(AppModule, { bodyParser: true });
+  const trustProxy = getTrustProxyValue();
 
   // Allow the Next.js frontend to send cookies (refresh token) to the API.
-  // In production, lock this down to your real frontend origin(s).
+  // In production, lock this down via API_CORS_ORIGIN / WEB_BASE_URL.
   app.enableCors({
-    origin: true,
+    origin: getCorsOriginConfig(),
     credentials: true,
   });
+
+  if (trustProxy) {
+    app.getHttpAdapter().getInstance().set('trust proxy', trustProxy);
+  }
 
   // cookie-parser is published as CommonJS; depending on ts-node/tsconfig interop,
   // it can appear as { default: fn } or directly as fn.

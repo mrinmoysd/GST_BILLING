@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+import { getRefreshCookieOptions } from '../common/config/http-runtime.config';
 import { BootstrapOnboardingDto } from './dto/bootstrap-onboarding.dto';
 import { OnboardingService } from './onboarding.service';
 
@@ -20,12 +21,11 @@ export class OnboardingController {
     const refreshToken = result.refresh_token;
 
     if (refreshToken) {
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        path: '/api/auth',
-      });
+      res.cookie(
+        'refresh_token',
+        refreshToken,
+        getRefreshCookieOptions('/api/auth'),
+      );
       delete (result as any).refresh_token;
     }
 

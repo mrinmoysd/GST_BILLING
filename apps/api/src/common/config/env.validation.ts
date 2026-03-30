@@ -1,8 +1,25 @@
 import { z } from 'zod';
 
+const booleanEnv = z.preprocess((value) => {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  }
+  return value;
+}, z.boolean());
+
 export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().optional(),
   DATABASE_URL: z.string().min(1),
+  APP_BASE_URL: z.string().url().optional(),
+  WEB_BASE_URL: z.string().url().optional(),
+  API_CORS_ORIGIN: z.string().min(1).optional(),
+  COOKIE_SECURE: booleanEnv.default(false),
+  COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
+  COOKIE_DOMAIN: z.string().min(1).optional(),
+  TRUST_PROXY: booleanEnv.default(false),
+  TRUST_PROXY_HOPS: z.coerce.number().int().positive().optional(),
   JWT_ACCESS_SECRET: z.string().min(10).default('dev-access-secret-change-me'),
   JWT_REFRESH_SECRET: z
     .string()
@@ -30,6 +47,14 @@ export const envSchema = z.object({
   NOTIFICATIONS_EMAIL_WEBHOOK_URL: z.string().url().optional(),
   NOTIFICATIONS_SMS_WEBHOOK_URL: z.string().url().optional(),
   NOTIFICATIONS_WHATSAPP_WEBHOOK_URL: z.string().url().optional(),
+}).superRefine((env, ctx) => {
+  if (env.COOKIE_SAMESITE === 'none' && env.COOKIE_SECURE !== true) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['COOKIE_SECURE'],
+      message: 'COOKIE_SECURE must be true when COOKIE_SAMESITE is none',
+    });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

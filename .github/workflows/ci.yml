@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm --workspace apps/api run prisma:generate
+
+      - name: API typecheck
+        run: npm --workspace apps/api run typecheck
+
+      - name: API build
+        run: npm --workspace apps/api run build
+
+      - name: Web lint
+        run: npm --workspace apps/web run lint
+
+      - name: Web build
+        run: npm --workspace apps/web run build

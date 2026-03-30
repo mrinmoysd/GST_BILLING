@@ -16,6 +16,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import {
+  getRefreshClearCookieOptions,
+  getRefreshCookieOptions,
+} from '../common/config/http-runtime.config';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
@@ -40,14 +44,11 @@ export class AuthController {
 
     const refreshToken: string | undefined = result?.data?.refresh_token;
     if (refreshToken) {
-      // Option A: store refresh token in httpOnly cookie.
-      // For localhost dev we keep `secure: false`; set secure true behind HTTPS.
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        path: '/api/auth',
-      });
+      res.cookie(
+        'refresh_token',
+        refreshToken,
+        getRefreshCookieOptions('/api/auth'),
+      );
 
       // Don't expose refresh token in response body.
       delete (result as any).data.refresh_token;
@@ -95,7 +96,10 @@ export class AuthController {
   @ApiOkResponse({ description: 'OK' })
   async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
     const out = await this.authService.logout(req.user);
-    res.clearCookie('refresh_token', { path: '/api/auth' });
+    res.clearCookie(
+      'refresh_token',
+      getRefreshClearCookieOptions('/api/auth'),
+    );
     return out;
   }
 }

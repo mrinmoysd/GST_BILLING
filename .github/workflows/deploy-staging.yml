@@ -1,0 +1,103 @@
+name: Deploy Staging
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Push Staging
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Optional image tag to deploy. Defaults to develop-latest.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'develop')
+    runs-on:
+      - self-hosted
+      - linux
+      - x64
+      - gst-billing-staging
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Login to DOCR
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Resolve deploy tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
+            echo "DEPLOY_TAG=${{ inputs.image_tag }}" >> "$GITHUB_ENV"
+          else
+            echo "DEPLOY_TAG=develop-latest" >> "$GITHUB_ENV"
+          fi
+
+      - name: Render staging env file
+        env:
+          APP_ROOT: /opt/vyapar-genie
+          STAGING_ENV_FILE: /opt/vyapar-genie/.env.staging
+          APP_SITE: ${{ secrets.STAGING_DOMAIN }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.STAGING_PUBLIC_API_BASE_URL }}
+          WEB_BASE_URL: ${{ secrets.STAGING_WEB_BASE_URL }}
+          API_CORS_ORIGIN: ${{ secrets.STAGING_WEB_BASE_URL }}
+          COOKIE_SECURE: "true"
+          COOKIE_SAMESITE: "lax"
+          COOKIE_DOMAIN: ${{ secrets.STAGING_COOKIE_DOMAIN }}
+          TRUST_PROXY: "true"
+          TRUST_PROXY_HOPS: "1"
+          POSTGRES_DB: ${{ secrets.STAGING_POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          REDIS_HOST: redis
+          REDIS_PORT: "6379"
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_ACCESS_TTL_SECONDS: "900"
+          JWT_REFRESH_TTL_SECONDS: "2592000"
+          FILE_SIGNING_SECRET: ${{ secrets.FILE_SIGNING_SECRET }}
+          FILE_STORAGE_DRIVER: local
+          FILE_STORAGE_ROOT: /var/lib/vyapar-genie/storage
+          FILE_STORAGE_BUCKET: ${{ secrets.FILE_STORAGE_BUCKET }}
+          FILE_STORAGE_REGION: ${{ secrets.FILE_STORAGE_REGION }}
+          FILE_STORAGE_ENDPOINT: ${{ secrets.FILE_STORAGE_ENDPOINT }}
+          FILE_STORAGE_ACCESS_KEY_ID: ${{ secrets.FILE_STORAGE_ACCESS_KEY_ID }}
+          FILE_STORAGE_SECRET_ACCESS_KEY: ${{ secrets.FILE_STORAGE_SECRET_ACCESS_KEY }}
+          BILLING_STRIPE_SECRET_KEY: ${{ secrets.BILLING_STRIPE_SECRET_KEY }}
+          BILLING_STRIPE_WEBHOOK_SECRET: ${{ secrets.BILLING_STRIPE_WEBHOOK_SECRET }}
+          BILLING_RAZORPAY_KEY_ID: ${{ secrets.BILLING_RAZORPAY_KEY_ID }}
+          BILLING_RAZORPAY_KEY_SECRET: ${{ secrets.BILLING_RAZORPAY_KEY_SECRET }}
+          BILLING_RAZORPAY_WEBHOOK_SECRET: ${{ secrets.BILLING_RAZORPAY_WEBHOOK_SECRET }}
+          NOTIFICATIONS_EMAIL_WEBHOOK_URL: ${{ secrets.NOTIFICATIONS_EMAIL_WEBHOOK_URL }}
+          NOTIFICATIONS_SMS_WEBHOOK_URL: ${{ secrets.NOTIFICATIONS_SMS_WEBHOOK_URL }}
+          NOTIFICATIONS_WHATSAPP_WEBHOOK_URL: ${{ secrets.NOTIFICATIONS_WHATSAPP_WEBHOOK_URL }}
+        run: bash deployment/scripts/render-staging-env.sh
+
+      - name: Deploy staging stack
+        env:
+          APP_ROOT: /opt/vyapar-genie
+          STAGING_ENV_FILE: /opt/vyapar-genie/.env.staging
+          SOURCE_DEPLOY_DIR: ${{ github.workspace }}/deployment/docker
+          API_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie-api:${{ env.DEPLOY_TAG }}
+          WEB_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie-web:${{ env.DEPLOY_TAG }}
+        run: bash deployment/scripts/deploy-staging.sh
