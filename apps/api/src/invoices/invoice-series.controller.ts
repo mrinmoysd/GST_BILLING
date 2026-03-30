@@ -27,7 +27,7 @@ export class InvoiceSeriesController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  @RequirePermissions('settings.view')
+  @RequirePermissions('settings.invoice_series.manage')
   async list(@Param('companyId') companyId: string) {
     const rows = await this.prisma.invoiceSeries.findMany({
       where: { companyId },

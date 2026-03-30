@@ -5,12 +5,15 @@ import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 import { PDF_QUEUE_NAME } from '../jobs/jobs.constants';
 import { PrismaService } from '../prisma/prisma.service';
+import { AdminPermissionGuard } from './super/admin-permission.guard';
+import { RequireAdminPermissions } from './super/require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super/super-admin.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/queues')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.observability.read')
 export class QueuesAdminController {
   constructor(
     @InjectQueue(PDF_QUEUE_NAME) private readonly pdfQueue: Queue,

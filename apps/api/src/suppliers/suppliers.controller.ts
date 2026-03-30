@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { SuppliersService } from './suppliers.service';
@@ -20,7 +22,8 @@ import { SuppliersService } from './suppliers.service';
 @ApiTags('Suppliers')
 @ApiBearerAuth()
 @Controller('api/companies/:companyId/suppliers')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('masters.view')
 export class SuppliersController {
   constructor(private readonly suppliers: SuppliersService) {}
 
@@ -41,6 +44,7 @@ export class SuppliersController {
   }
 
   @Post()
+  @RequirePermissions('masters.manage')
   async create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateSupplierDto,
@@ -59,6 +63,7 @@ export class SuppliersController {
   }
 
   @Patch(':supplierId')
+  @RequirePermissions('masters.manage')
   async update(
     @Param('companyId') companyId: string,
     @Param('supplierId') supplierId: string,
@@ -69,6 +74,7 @@ export class SuppliersController {
   }
 
   @Delete(':supplierId')
+  @RequirePermissions('masters.manage')
   async remove(
     @Param('companyId') companyId: string,
     @Param('supplierId') supplierId: string,

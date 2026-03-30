@@ -122,6 +122,30 @@ html[data-theme="light"] {
   --shell-rail-card-strong: rgba(255, 255, 255, 0.12);
   --row-selected-bg: rgba(29, 109, 150, 0.12);
   --row-selected-border: rgba(29, 109, 150, 0.24);
+  --public-border: rgba(79, 102, 131, 0.18);
+  --public-border-strong: rgba(79, 102, 131, 0.24);
+  --public-header-bg: rgba(248, 245, 239, 0.76);
+  --public-header-hover: rgba(255, 255, 255, 0.72);
+  --public-mobile-chip-bg: rgba(255, 255, 255, 0.78);
+  --public-footer-bg: rgba(255, 255, 255, 0.56);
+  --public-footer-bottom-bg: rgba(255, 255, 255, 0.42);
+  --public-hero-bg: linear-gradient(180deg, #e9eef3 0%, #f1ece3 30%, #f8f5ee 100%);
+  --public-hero-bg-gold: linear-gradient(180deg, #f3ead7 0%, #efe6d8 28%, #fbf8f1 100%);
+  --public-hero-right-plane:
+    radial-gradient(circle at 30% 40%, rgba(15, 95, 140, 0.2), transparent 34%),
+    radial-gradient(circle at 65% 48%, rgba(23, 32, 51, 0.12), transparent 42%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(23, 32, 51, 0.03));
+  --public-hero-left-plane: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 251, 245, 0.68));
+  --public-card-bg: rgba(255, 255, 255, 0.82);
+  --public-card-subtle: rgba(255, 255, 255, 0.72);
+  --public-card-muted: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(245, 248, 251, 0.88));
+  --public-card-tint: rgba(184, 120, 24, 0.14);
+  --public-card-strong: rgba(23, 32, 51, 0.95);
+  --public-card-strong-fg: #f8fbff;
+  --public-card-strong-muted: rgba(248, 251, 255, 0.74);
+  --public-auth-bg: linear-gradient(180deg, #e8eef3 0%, #f0ece3 28%, #f7f4ed 100%);
+  --public-auth-bg-admin: linear-gradient(180deg, #e8ecef 0%, #dfe6ea 22%, #f5f3ee 100%);
+  --public-auth-panel-bg: rgba(255, 255, 255, 0.88);
   --background-image:
     radial-gradient(circle at top left, rgba(29, 109, 150, 0.12), transparent 28%),
     radial-gradient(circle at 88% 12%, rgba(153, 101, 42, 0.1), transparent 22%),
@@ -204,6 +228,30 @@ html[data-theme="dark"] {
   --shell-rail-card-strong: rgba(255, 255, 255, 0.08);
   --row-selected-bg: rgba(111, 180, 216, 0.14);
   --row-selected-border: rgba(111, 180, 216, 0.24);
+  --public-border: rgba(154, 175, 201, 0.18);
+  --public-border-strong: rgba(154, 175, 201, 0.28);
+  --public-header-bg: rgba(12, 18, 27, 0.84);
+  --public-header-hover: rgba(111, 180, 216, 0.12);
+  --public-mobile-chip-bg: rgba(20, 29, 41, 0.88);
+  --public-footer-bg: rgba(12, 18, 27, 0.74);
+  --public-footer-bottom-bg: rgba(9, 14, 22, 0.86);
+  --public-hero-bg: linear-gradient(180deg, #0f1723 0%, #121b28 34%, #161f2b 100%);
+  --public-hero-bg-gold: linear-gradient(180deg, #161414 0%, #1b1917 28%, #171d28 100%);
+  --public-hero-right-plane:
+    radial-gradient(circle at 30% 36%, rgba(111, 180, 216, 0.16), transparent 34%),
+    radial-gradient(circle at 66% 50%, rgba(244, 204, 151, 0.08), transparent 42%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
+  --public-hero-left-plane: linear-gradient(180deg, rgba(18, 27, 40, 0.88), rgba(14, 21, 31, 0.72));
+  --public-card-bg: rgba(18, 27, 39, 0.84);
+  --public-card-subtle: rgba(20, 30, 43, 0.8);
+  --public-card-muted: linear-gradient(180deg, rgba(20, 29, 41, 0.94), rgba(15, 23, 34, 0.96));
+  --public-card-tint: rgba(190, 143, 78, 0.16);
+  --public-card-strong: rgba(8, 13, 22, 0.96);
+  --public-card-strong-fg: #eff5ff;
+  --public-card-strong-muted: rgba(239, 245, 255, 0.72);
+  --public-auth-bg: linear-gradient(180deg, #0d141f 0%, #101a28 30%, #0f1722 100%);
+  --public-auth-bg-admin: linear-gradient(180deg, #0e131c 0%, #121a26 22%, #101620 100%);
+  --public-auth-panel-bg: rgba(18, 27, 39, 0.9);
   --background-image:
     radial-gradient(circle at top left, rgba(111, 180, 216, 0.12), transparent 26%),
     radial-gradient(circle at 88% 10%, rgba(190, 143, 78, 0.12), transparent 24%),
@@ -231,6 +279,48 @@ body {
 
 .text-balance {
   text-wrap: balance;
+}
+
+.public-divider {
+  border-color: var(--public-border);
+}
+
+.public-card-surface {
+  border: 1px solid var(--public-border);
+  background: var(--public-card-bg);
+  box-shadow: var(--shadow-soft);
+}
+
+.public-card-soft-surface {
+  border: 1px solid var(--public-border);
+  background: var(--public-card-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+.public-card-muted-surface {
+  border: 1px solid var(--public-border);
+  background: var(--public-card-muted);
+  box-shadow: var(--shadow-soft);
+}
+
+.public-card-strong-surface {
+  border: 1px solid var(--public-border);
+  background: var(--public-card-strong);
+  color: var(--public-card-strong-fg);
+  box-shadow: var(--shadow-soft);
+}
+
+.public-card-tint-surface {
+  border: 1px solid var(--public-border);
+  background: var(--public-card-tint);
+  box-shadow: var(--shadow-soft);
+}
+
+.public-input {
+  border: 1px solid var(--public-border);
+  background: var(--surface-field);
+  color: var(--foreground);
+  box-shadow: var(--shadow-soft);
 }
 
 @keyframes hero-rise {

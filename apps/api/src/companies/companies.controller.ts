@@ -30,7 +30,7 @@ export class CompaniesController {
   constructor(private readonly companies: CompaniesService) {}
 
   @Get()
-  @RequirePermissions('settings.view')
+  @RequirePermissions('settings.company.manage')
   async getCompany(@Param('companyId') companyId: string) {
     const company = await this.companies.getCompany(companyId);
     return { ok: true, data: company };
@@ -70,7 +70,7 @@ export class CompaniesController {
   }
 
   @Get('/logo')
-  @RequirePermissions('settings.view')
+  @RequirePermissions('settings.company.manage')
   async getLogo(
     @Param('companyId') companyId: string,
     @Res() res: Response,

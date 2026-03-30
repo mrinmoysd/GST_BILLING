@@ -12,6 +12,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -19,7 +21,8 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 @ApiTags('Categories')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/categories')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('masters.view')
 export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}
 
@@ -30,6 +33,7 @@ export class CategoriesController {
   }
 
   @Post()
+  @RequirePermissions('masters.manage')
   async create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateCategoryDto,
@@ -39,6 +43,7 @@ export class CategoriesController {
   }
 
   @Patch('/:categoryId')
+  @RequirePermissions('masters.manage')
   async update(
     @Param('companyId') companyId: string,
     @Param('categoryId') categoryId: string,
@@ -49,6 +54,7 @@ export class CategoriesController {
   }
 
   @Delete('/:categoryId')
+  @RequirePermissions('masters.manage')
   async remove(
     @Param('companyId') companyId: string,
     @Param('categoryId') categoryId: string,

@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { PaymentsService } from './payments.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
@@ -19,7 +21,8 @@ import { UpdatePaymentInstrumentDto } from './dto/update-payment-instrument.dto'
 @ApiTags('Payments')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/payments')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('payments.view')
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
@@ -47,6 +50,7 @@ export class PaymentsController {
   }
 
   @Post()
+  @RequirePermissions('payments.manage')
   record(
     @Param('companyId') companyId: string,
     @Body() dto: RecordPaymentDto,
@@ -56,6 +60,7 @@ export class PaymentsController {
   }
 
   @Patch(':paymentId')
+  @RequirePermissions('payments.manage')
   updateInstrument(
     @Param('companyId') companyId: string,
     @Param('paymentId') paymentId: string,

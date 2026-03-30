@@ -5,8 +5,10 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useAuth } from "@/lib/auth/session";
+import { getCompanyRouteAccess, hasCompanyRouteAccess } from "@/lib/auth/company-route-access";
 import { CompanyHeader } from "@/components/app/company-header";
 import { CompanyNav } from "@/components/app/company-nav";
+import { AccessDeniedState } from "@/components/ui/access-denied-state";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LoadingBlock } from "@/lib/ui/state";
 
@@ -50,6 +52,10 @@ export default function CompanyLayout({ params, children }: Props) {
 
   if (!session.user) return null;
 
+  const localPath = pathname?.split(`/c/${companyId}/`)[1] ?? "dashboard";
+  const routeAccess = getCompanyRouteAccess(localPath);
+  const canAccessRoute = hasCompanyRouteAccess(session, localPath);
+
   return (
     <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
@@ -72,7 +78,20 @@ export default function CompanyLayout({ params, children }: Props) {
         <div className="min-w-0 [background-image:linear-gradient(180deg,transparent,rgba(255,255,255,0.02))]">
           <CompanyHeader companyId={companyId} onOpenNav={() => setNavOpen(true)} />
           <main className="px-4 py-5 md:px-7 md:py-7">
-            <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+            <div className="mx-auto w-full max-w-[1440px]">
+              {canAccessRoute ? (
+                children
+              ) : (
+                <AccessDeniedState
+                  title={`Access blocked${routeAccess ? `: ${routeAccess.label}` : ""}`}
+                  description="Your current role does not include the permissions needed for this workspace. Use the navigation to move to an allowed area or ask an owner/admin to update your access bundle."
+                  primaryHref={`/c/${companyId}/dashboard`}
+                  primaryLabel="Open dashboard"
+                  secondaryHref={`/c/${companyId}/settings`}
+                  secondaryLabel="Open settings overview"
+                />
+              )}
+            </div>
           </main>
         </div>
       </div>

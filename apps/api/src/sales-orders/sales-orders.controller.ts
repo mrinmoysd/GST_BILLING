@@ -12,6 +12,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateSalesOrderDto } from './dto/create-sales-order.dto';
 import { UpdateSalesOrderDto } from './dto/update-sales-order.dto';
 import { ConvertSalesOrderToInvoiceDto } from './dto/convert-sales-order-to-invoice.dto';
@@ -20,7 +22,8 @@ import { SalesOrdersService } from './sales-orders.service';
 @ApiTags('Sales Orders')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/sales-orders')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('sales.view')
 export class SalesOrdersController {
   constructor(private readonly salesOrders: SalesOrdersService) {}
 
@@ -54,6 +57,7 @@ export class SalesOrdersController {
   }
 
   @Post()
+  @RequirePermissions('sales.manage')
   create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateSalesOrderDto,
@@ -67,6 +71,7 @@ export class SalesOrdersController {
   }
 
   @Patch('/:salesOrderId')
+  @RequirePermissions('sales.manage')
   patch(
     @Param('companyId') companyId: string,
     @Param('salesOrderId') salesOrderId: string,
@@ -82,6 +87,7 @@ export class SalesOrdersController {
   }
 
   @Post('/:salesOrderId/confirm')
+  @RequirePermissions('sales.manage')
   confirm(
     @Param('companyId') companyId: string,
     @Param('salesOrderId') salesOrderId: string,
@@ -90,6 +96,7 @@ export class SalesOrdersController {
   }
 
   @Post('/:salesOrderId/cancel')
+  @RequirePermissions('sales.manage')
   cancel(
     @Param('companyId') companyId: string,
     @Param('salesOrderId') salesOrderId: string,
@@ -98,6 +105,7 @@ export class SalesOrdersController {
   }
 
   @Post('/:salesOrderId/convert-to-invoice')
+  @RequirePermissions('sales.manage')
   convert(
     @Param('companyId') companyId: string,
     @Param('salesOrderId') salesOrderId: string,

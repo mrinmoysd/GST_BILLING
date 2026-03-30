@@ -14,13 +14,16 @@ import * as fs from 'fs';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateGstExportDto } from './dto/create-gst-export.dto';
 import { GstService } from './gst.service';
 
 @ApiTags('GST')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/gst')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('reports.view')
 export class GstController {
   constructor(private readonly gst: GstService) {}
 

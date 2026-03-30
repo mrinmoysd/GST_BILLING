@@ -12,6 +12,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateQuotationDto } from './dto/create-quotation.dto';
 import { UpdateQuotationDto } from './dto/update-quotation.dto';
 import { ConvertQuotationToInvoiceDto } from './dto/convert-quotation.dto';
@@ -20,7 +22,8 @@ import { QuotationsService } from './quotations.service';
 @ApiTags('Quotations')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/quotations')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('sales.view')
 export class QuotationsController {
   constructor(private readonly quotations: QuotationsService) {}
 
@@ -54,6 +57,7 @@ export class QuotationsController {
   }
 
   @Post()
+  @RequirePermissions('sales.manage')
   create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateQuotationDto,
@@ -67,6 +71,7 @@ export class QuotationsController {
   }
 
   @Patch('/:quotationId')
+  @RequirePermissions('sales.manage')
   patch(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -82,6 +87,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/send')
+  @RequirePermissions('sales.manage')
   send(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -94,6 +100,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/approve')
+  @RequirePermissions('sales.manage')
   approve(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -106,6 +113,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/expire')
+  @RequirePermissions('sales.manage')
   expire(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -118,6 +126,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/cancel')
+  @RequirePermissions('sales.manage')
   cancel(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -130,6 +139,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/convert-to-invoice')
+  @RequirePermissions('sales.manage')
   convert(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,
@@ -143,6 +153,7 @@ export class QuotationsController {
   }
 
   @Post('/:quotationId/convert-to-sales-order')
+  @RequirePermissions('sales.manage')
   convertToSalesOrder(
     @Param('companyId') companyId: string,
     @Param('quotationId') quotationId: string,

@@ -45,8 +45,8 @@ export default function NotificationsSettingsPage({ params }: Props) {
   const [testError, setTestError] = React.useState<string | null>(null);
   const [testOk, setTestOk] = React.useState<string | null>(null);
 
-  const rows = list.data?.data.data ?? [];
-  const outboxRows = outbox.data?.data.data ?? [];
+  const rows = list.data ?? [];
+  const outboxRows = outbox.data ?? [];
   const firstTemplateCode = rows[0]?.code ?? "";
 
   React.useEffect(() => {

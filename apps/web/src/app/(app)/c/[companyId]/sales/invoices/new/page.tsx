@@ -5,8 +5,10 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useCreateInvoice } from "@/lib/billing/hooks";
+import { BillingWarningStack } from "@/components/billing/warning-stack";
 import { useBatchStock, useCustomers, useProducts, useWarehouses } from "@/lib/masters/hooks";
 import { usePricingPreview } from "@/lib/pricing/hooks";
+import { useInvoiceBillingWarnings } from "@/lib/settings/subscriptionHooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
 import {
   ComposerBody,
@@ -46,6 +48,7 @@ export default function NewInvoicePage({ params }: Props) {
   const { companyId } = React.use(params);
   const router = useRouter();
   const create = useCreateInvoice({ companyId: companyId });
+  const billingWarnings = useInvoiceBillingWarnings(companyId);
   const customers = useCustomers({ companyId: companyId, limit: 50 });
   const products = useProducts({ companyId: companyId, limit: 50 });
   const warehouses = useWarehouses({ companyId, activeOnly: true });
@@ -311,6 +314,9 @@ export default function NewInvoicePage({ params }: Props) {
       />
 
       <ComposerStepBar steps={stepItems} activeId={activeStep} />
+      <ComposerWarningStack>
+        <BillingWarningStack summary={billingWarnings.data} limit={2} />
+      </ComposerWarningStack>
 
       <form
         className="space-y-6"

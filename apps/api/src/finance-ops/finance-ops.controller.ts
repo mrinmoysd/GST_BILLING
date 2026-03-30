@@ -11,6 +11,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { FinanceOpsService } from './finance-ops.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
@@ -23,7 +25,8 @@ import { UnmatchBankStatementLineDto } from './dto/unmatch-bank-statement-line.d
 @ApiTags('FinanceOps')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('payments.view')
 export class FinanceOpsController {
   constructor(private readonly financeOps: FinanceOpsService) {}
 
@@ -33,6 +36,7 @@ export class FinanceOpsController {
   }
 
   @Post('bank-accounts')
+  @RequirePermissions('payments.manage')
   createBankAccount(
     @Param('companyId') companyId: string,
     @Body() dto: CreateBankAccountDto,
@@ -41,6 +45,7 @@ export class FinanceOpsController {
   }
 
   @Patch('bank-accounts/:bankAccountId')
+  @RequirePermissions('payments.manage')
   updateBankAccount(
     @Param('companyId') companyId: string,
     @Param('bankAccountId') bankAccountId: string,
@@ -65,6 +70,7 @@ export class FinanceOpsController {
   }
 
   @Post('collections/tasks')
+  @RequirePermissions('payments.manage')
   createCollectionTask(
     @Param('companyId') companyId: string,
     @Body() dto: CreateCollectionTaskDto,
@@ -73,6 +79,7 @@ export class FinanceOpsController {
   }
 
   @Patch('collections/tasks/:taskId')
+  @RequirePermissions('payments.manage')
   updateCollectionTask(
     @Param('companyId') companyId: string,
     @Param('taskId') taskId: string,
@@ -90,6 +97,7 @@ export class FinanceOpsController {
   }
 
   @Post('bank-statements/imports')
+  @RequirePermissions('payments.manage')
   importBankStatement(
     @Param('companyId') companyId: string,
     @Body() dto: ImportBankStatementDto,
@@ -111,6 +119,7 @@ export class FinanceOpsController {
   }
 
   @Post('bank-reconciliation/match')
+  @RequirePermissions('payments.manage')
   matchStatementLine(
     @Param('companyId') companyId: string,
     @Body() dto: MatchBankStatementLineDto,
@@ -119,6 +128,7 @@ export class FinanceOpsController {
   }
 
   @Post('bank-reconciliation/unmatch')
+  @RequirePermissions('payments.manage')
   unmatchStatementLine(
     @Param('companyId') companyId: string,
     @Body() dto: UnmatchBankStatementLineDto,

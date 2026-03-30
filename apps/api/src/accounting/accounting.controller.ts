@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { AccountingService } from './accounting.service';
 import { CreateLedgerDto } from './dto/create-ledger.dto';
@@ -19,7 +21,8 @@ import { UpdatePeriodLockDto } from './dto/update-period-lock.dto';
 
 @ApiTags('Accounting')
 @Controller('/api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('accounting.view')
 export class AccountingController {
   constructor(private readonly accounting: AccountingService) {}
 
@@ -30,6 +33,7 @@ export class AccountingController {
   }
 
   @Post('/ledgers')
+  @RequirePermissions('accounting.manage')
   async createLedger(
     @Param('companyId') companyId: string,
     @Body() dto: CreateLedgerDto,
@@ -66,6 +70,7 @@ export class AccountingController {
   }
 
   @Post('/journals')
+  @RequirePermissions('accounting.manage')
   async createJournal(
     @Param('companyId') companyId: string,
     @Body() dto: CreateJournalDto,
@@ -81,6 +86,7 @@ export class AccountingController {
   }
 
   @Put('/accounting/period-lock')
+  @RequirePermissions('accounting.manage')
   async updatePeriodLock(
     @Param('companyId') companyId: string,
     @Body() dto: UpdatePeriodLockDto,

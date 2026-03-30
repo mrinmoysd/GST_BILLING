@@ -26,7 +26,7 @@ export default function SettingsPage({ params }: Props) {
         { href: `/c/${companyId}/settings/users`, title: "Users", hint: "Invite teammates and adjust current role assignments.", permission: "settings.users.manage" },
         { href: `/c/${companyId}/settings/roles`, title: "Roles", hint: "Create custom roles and choose their permission inventory.", permission: "settings.roles.manage" },
         { href: `/c/${companyId}/settings/notifications`, title: "Notifications", hint: "Template configuration and test-send workspace.", permission: "settings.notifications.manage" },
-        { href: `/c/${companyId}/settings/sales/assignments`, title: "Field sales", hint: "Territories, routes, beats, and customer coverage for D12 execution.", permission: "masters.manage" },
+        { href: `/c/${companyId}/settings/sales/assignments`, title: "Field sales", hint: "Territories, routes, beats, and customer coverage for D12 execution.", permission: "field_sales.manage_masters" },
       ],
     },
     {

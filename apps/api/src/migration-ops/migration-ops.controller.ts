@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
 import { AuthUser, type AuthUserPayload } from '../common/auth/auth-user.decorator';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import {
   CreateCustomFieldDto,
   CreateImportProfileDto,
@@ -36,7 +38,8 @@ import { MigrationOpsService } from './migration-ops.service';
 @ApiTags('MigrationOps')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('settings.migrations.manage')
 export class MigrationOpsController {
   constructor(private readonly migrationOps: MigrationOpsService) {}
 
@@ -244,6 +247,7 @@ export class MigrationOpsController {
   }
 
   @Get('print-templates')
+  @RequirePermissions('settings.print_templates.manage')
   listPrintTemplates(
     @Param('companyId') companyId: string,
     @Query('template_type') templateType?: string,
@@ -252,6 +256,7 @@ export class MigrationOpsController {
   }
 
   @Post('print-templates')
+  @RequirePermissions('settings.print_templates.manage')
   createPrintTemplate(
     @Param('companyId') companyId: string,
     @Body() dto: CreatePrintTemplateDto,
@@ -261,6 +266,7 @@ export class MigrationOpsController {
   }
 
   @Get('print-templates/:templateId')
+  @RequirePermissions('settings.print_templates.manage')
   getPrintTemplate(
     @Param('companyId') companyId: string,
     @Param('templateId') templateId: string,
@@ -269,6 +275,7 @@ export class MigrationOpsController {
   }
 
   @Post('print-templates/:templateId/versions')
+  @RequirePermissions('settings.print_templates.manage')
   createPrintTemplateVersion(
     @Param('companyId') companyId: string,
     @Param('templateId') templateId: string,
@@ -284,6 +291,7 @@ export class MigrationOpsController {
   }
 
   @Post('print-templates/:templateId/publish')
+  @RequirePermissions('settings.print_templates.manage')
   publishPrintTemplate(
     @Param('companyId') companyId: string,
     @Param('templateId') templateId: string,
@@ -292,6 +300,7 @@ export class MigrationOpsController {
   }
 
   @Post('print-templates/:templateId/set-default')
+  @RequirePermissions('settings.print_templates.manage')
   setDefaultPrintTemplate(
     @Param('companyId') companyId: string,
     @Param('templateId') templateId: string,
@@ -300,6 +309,7 @@ export class MigrationOpsController {
   }
 
   @Post('print-templates/:templateId/preview')
+  @RequirePermissions('settings.print_templates.manage')
   previewPrintTemplate(
     @Param('companyId') companyId: string,
     @Param('templateId') templateId: string,
@@ -309,6 +319,7 @@ export class MigrationOpsController {
   }
 
   @Get('custom-fields')
+  @RequirePermissions('settings.custom_fields.manage')
   listCustomFields(
     @Param('companyId') companyId: string,
     @Query('entity_type') entityType?: string,
@@ -317,6 +328,7 @@ export class MigrationOpsController {
   }
 
   @Post('custom-fields')
+  @RequirePermissions('settings.custom_fields.manage')
   createCustomField(
     @Param('companyId') companyId: string,
     @Body() dto: CreateCustomFieldDto,
@@ -326,6 +338,7 @@ export class MigrationOpsController {
   }
 
   @Patch('custom-fields/:fieldId')
+  @RequirePermissions('settings.custom_fields.manage')
   updateCustomField(
     @Param('companyId') companyId: string,
     @Param('fieldId') fieldId: string,
@@ -335,6 +348,7 @@ export class MigrationOpsController {
   }
 
   @Get('custom-fields/values')
+  @RequirePermissions('settings.custom_fields.manage')
   listCustomFieldValues(
     @Param('companyId') companyId: string,
     @Query('entity_type') entityType: string,
@@ -344,6 +358,7 @@ export class MigrationOpsController {
   }
 
   @Post('custom-fields/values')
+  @RequirePermissions('settings.custom_fields.manage')
   setCustomFieldValue(
     @Param('companyId') companyId: string,
     @Body() dto: SetCustomFieldValueDto,
@@ -352,16 +367,19 @@ export class MigrationOpsController {
   }
 
   @Get('integrations/webhooks')
+  @RequirePermissions('integrations.webhooks.manage')
   listWebhookEndpoints(@Param('companyId') companyId: string) {
     return this.migrationOps.listWebhookEndpoints(companyId);
   }
 
   @Get('integrations/webhooks/events')
+  @RequirePermissions('integrations.webhooks.manage')
   listWebhookEvents() {
     return this.migrationOps.listSupportedWebhookEvents();
   }
 
   @Post('integrations/webhooks')
+  @RequirePermissions('integrations.webhooks.manage')
   createWebhookEndpoint(
     @Param('companyId') companyId: string,
     @Body() dto: CreateWebhookEndpointDto,
@@ -371,6 +389,7 @@ export class MigrationOpsController {
   }
 
   @Patch('integrations/webhooks/:endpointId')
+  @RequirePermissions('integrations.webhooks.manage')
   updateWebhookEndpoint(
     @Param('companyId') companyId: string,
     @Param('endpointId') endpointId: string,
@@ -380,6 +399,7 @@ export class MigrationOpsController {
   }
 
   @Post('integrations/webhooks/:endpointId/test')
+  @RequirePermissions('integrations.webhooks.manage')
   testWebhookEndpoint(
     @Param('companyId') companyId: string,
     @Param('endpointId') endpointId: string,
@@ -389,6 +409,7 @@ export class MigrationOpsController {
   }
 
   @Get('integrations/webhooks/:endpointId/deliveries')
+  @RequirePermissions('integrations.webhooks.manage')
   listWebhookDeliveries(
     @Param('companyId') companyId: string,
     @Param('endpointId') endpointId: string,
@@ -397,6 +418,7 @@ export class MigrationOpsController {
   }
 
   @Post('integrations/webhooks/:endpointId/deliveries/:deliveryId/retry')
+  @RequirePermissions('integrations.webhooks.manage')
   retryWebhookDelivery(
     @Param('companyId') companyId: string,
     @Param('endpointId') endpointId: string,
@@ -406,11 +428,13 @@ export class MigrationOpsController {
   }
 
   @Get('integrations/api-keys')
+  @RequirePermissions('integrations.api_keys.manage')
   listApiKeys(@Param('companyId') companyId: string) {
     return this.migrationOps.listIntegrationApiKeys(companyId);
   }
 
   @Post('integrations/api-keys')
+  @RequirePermissions('integrations.api_keys.manage')
   createApiKey(
     @Param('companyId') companyId: string,
     @Body() dto: CreateIntegrationApiKeyDto,
@@ -420,6 +444,7 @@ export class MigrationOpsController {
   }
 
   @Post('integrations/api-keys/:keyId/revoke')
+  @RequirePermissions('integrations.api_keys.manage')
   revokeApiKey(
     @Param('companyId') companyId: string,
     @Param('keyId') keyId: string,

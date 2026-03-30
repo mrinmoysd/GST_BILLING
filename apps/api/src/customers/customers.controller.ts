@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -20,7 +22,8 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 @ApiTags('Customers')
 @ApiBearerAuth()
 @Controller('api/companies/:companyId/customers')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('masters.view')
 export class CustomersController {
   constructor(private readonly customers: CustomersService) {}
 
@@ -41,6 +44,7 @@ export class CustomersController {
   }
 
   @Post()
+  @RequirePermissions('masters.manage')
   async create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateCustomerDto,
@@ -59,6 +63,7 @@ export class CustomersController {
   }
 
   @Patch(':customerId')
+  @RequirePermissions('masters.manage')
   async update(
     @Param('companyId') companyId: string,
     @Param('customerId') customerId: string,
@@ -69,6 +74,7 @@ export class CustomersController {
   }
 
   @Delete(':customerId')
+  @RequirePermissions('masters.manage')
   async remove(
     @Param('companyId') companyId: string,
     @Param('customerId') customerId: string,

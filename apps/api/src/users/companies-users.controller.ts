@@ -6,6 +6,8 @@ import { AuthUser } from '../common/auth/auth-user.decorator';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
 import { PermissionGuard } from '../common/auth/permission.guard';
 import { RequirePermissions } from '../common/auth/require-permissions.decorator';
+import { BillingEnforcementService } from '../billing/billing-enforcement.service';
+import { BillingUsageService } from '../billing/billing-usage.service';
 import { RbacService } from '../rbac/rbac.service';
 import { InviteUserDto } from './dto/invite-user.dto';
 import { PatchUserDto } from './dto/patch-user.dto';
@@ -15,7 +17,11 @@ import { PatchUserDto } from './dto/patch-user.dto';
 @Controller('/api/companies/:companyId/users')
 @UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
 export class CompaniesUsersController {
-  constructor(private readonly rbac: RbacService) {}
+  constructor(
+    private readonly rbac: RbacService,
+    private readonly billingEnforcement: BillingEnforcementService,
+    private readonly usage: BillingUsageService,
+  ) {}
 
   @Get()
   @RequirePermissions('settings.users.manage')
@@ -38,7 +44,12 @@ export class CompaniesUsersController {
     @Body() dto: InviteUserDto,
     @AuthUser() user: { sub: string },
   ) {
+    await this.billingEnforcement.assertSeatAvailableForInvite({
+      companyId,
+      isActive: dto.is_active ?? true,
+    });
     const data = await this.rbac.inviteUser(companyId, dto, user.sub);
+    await this.usage.syncSeatUsageForCompany({ companyId });
     return { ok: true, data };
   }
 
@@ -50,7 +61,13 @@ export class CompaniesUsersController {
     @Body() dto: PatchUserDto,
     @AuthUser() user: { sub: string },
   ) {
+    await this.billingEnforcement.assertSeatAvailableForUserPatch({
+      companyId,
+      userId,
+      nextIsActive: dto.is_active,
+    });
     const updated = await this.rbac.patchUser(companyId, userId, dto, user.sub);
+    await this.usage.syncSeatUsageForCompany({ companyId });
     return { ok: true, data: updated };
   }
 }

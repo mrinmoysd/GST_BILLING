@@ -3,12 +3,15 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { AdminGovernanceService } from './admin-governance.service';
+import { AdminPermissionGuard } from './admin-permission.guard';
+import { RequireAdminPermissions } from './require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super-admin.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/audit-logs')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.audit.read')
 export class AdminAuditController {
   constructor(private readonly governance: AdminGovernanceService) {}
 
@@ -35,4 +38,3 @@ export class AdminAuditController {
     return { data: rows, meta: { total, page, limit } };
   }
 }
-

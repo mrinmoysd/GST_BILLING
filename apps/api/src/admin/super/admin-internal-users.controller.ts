@@ -14,12 +14,15 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { AdminGovernanceService } from './admin-governance.service';
 import { INTERNAL_ADMIN_ROLE_DEFINITIONS } from './admin-roles.constants';
+import { AdminPermissionGuard } from './admin-permission.guard';
+import { RequireAdminPermissions } from './require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super-admin.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/internal-users')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.internal_users.manage')
 export class AdminInternalUsersController {
   constructor(private readonly governance: AdminGovernanceService) {}
 

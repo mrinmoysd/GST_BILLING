@@ -3,11 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { BillingWarningStack } from "@/components/billing/warning-stack";
 import { Badge } from "@/components/ui/badge";
+import type { CommercialWarningSummary } from "@/lib/settings/subscriptionCommerce";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { getErrorMessage } from "@/lib/errors";
-import { useAdminSubscription, useUpdateAdminSubscription } from "@/lib/admin/hooks";
+import {
+  useAdminSubscription,
+  useUpdateAdminSubscription,
+  useUpdateAdminSubscriptionOverrides,
+} from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 
@@ -19,17 +25,28 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
   const { subscriptionId } = React.use(params);
   const query = useAdminSubscription(subscriptionId);
   const update = useUpdateAdminSubscription(subscriptionId);
+  const overrides = useUpdateAdminSubscriptionOverrides(subscriptionId);
   const [selectedPlan, setSelectedPlan] = React.useState("");
   const [note, setNote] = React.useState("");
+  const [trialDays, setTrialDays] = React.useState("30");
+  const [extraFullSeats, setExtraFullSeats] = React.useState("0");
+  const [extraViewSeats, setExtraViewSeats] = React.useState("0");
+  const [invoiceUplift, setInvoiceUplift] = React.useState("0");
+  const [companyUplift, setCompanyUplift] = React.useState("0");
+  const [enforcementMode, setEnforcementMode] = React.useState<"hard_block" | "wallet_overage" | "warn_only">("warn_only");
   const [error, setError] = React.useState<string | null>(null);
 
   const subscription = query.data?.data as
     | {
         id: string;
         company: { id: string; name: string; gstin?: string | null; owner_name?: string | null; owner_email?: string | null };
-        current: { plan?: string | null; plan_name?: string | null; status?: string | null; provider?: string | null; provider_subscription_id?: string | null; started_at?: string | null; expires_at?: string | null; created_at: string };
+        current: { plan?: string | null; plan_name?: string | null; status?: string | null; provider?: string | null; provider_subscription_id?: string | null; started_at?: string | null; expires_at?: string | null; trial_started_at?: string | null; trial_ends_at?: string | null; created_at: string };
+        current_plan?: { code: string; name: string; price_inr: number; billing_interval: string; trial_days?: number; allow_add_ons?: boolean; limits?: unknown } | null;
         metadata?: { success_url?: string | null; cancel_url?: string | null; provider_session_id?: string | null; admin_last_operation?: { action?: string; note?: string | null; updated_at?: string | null } | null };
-        available_plans?: Array<{ code: string; name: string; price_inr: number; billing_interval: string }>;
+        available_plans?: Array<{ code: string; name: string; price_inr: number; billing_interval: string; trial_days?: number; allow_add_ons?: boolean; limits?: unknown }>;
+        entitlement?: { id: string; plan_code?: string | null; status?: string | null; effective_limits?: unknown; overrides?: { extra_full_seats?: number; extra_view_only_seats?: number; invoice_uplift_per_month?: number; company_uplift?: number; enforcement_mode?: "hard_block" | "wallet_overage" | "warn_only" | null } | null; billing_period_start?: string | null; billing_period_end?: string | null; trial_started_at?: string | null; trial_ends_at?: string | null; trial_status?: string | null; updated_at?: string | null } | null;
+        usage_summary?: { period_start?: string | null; period_end?: string | null; summary?: Record<string, number> } | null;
+        warnings?: CommercialWarningSummary | null;
         company_usage?: Array<{ id: string; key: string; value: number; period_start: string; period_end: string; updated_at: string }>;
         webhooks?: Array<{ id: string; provider: string; event_type: string; status: string; error?: string | null; received_at: string; processed_at?: string | null }>;
         company_subscriptions?: Array<{ id: string; plan?: string | null; status?: string | null; provider?: string | null; created_at: string }>;
@@ -45,8 +62,30 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
     }
   }, [currentPlan]);
 
+  React.useEffect(() => {
+    setTrialDays(String(subscription?.current_plan?.trial_days ?? 30));
+    setExtraFullSeats(String(subscription?.entitlement?.overrides?.extra_full_seats ?? 0));
+    setExtraViewSeats(String(subscription?.entitlement?.overrides?.extra_view_only_seats ?? 0));
+    setInvoiceUplift(String(subscription?.entitlement?.overrides?.invoice_uplift_per_month ?? 0));
+    setCompanyUplift(String(subscription?.entitlement?.overrides?.company_uplift ?? 0));
+    setEnforcementMode(
+      subscription?.entitlement?.overrides?.enforcement_mode === "hard_block" ||
+      subscription?.entitlement?.overrides?.enforcement_mode === "wallet_overage"
+        ? subscription.entitlement.overrides.enforcement_mode
+        : "warn_only",
+    );
+  }, [subscription?.current_plan?.trial_days, subscription?.entitlement?.overrides]);
+
   async function runAction(
-    action: "cancel" | "reactivate" | "mark_past_due" | "mark_active" | "change_plan" | "reconcile",
+    action:
+      | "cancel"
+      | "reactivate"
+      | "mark_past_due"
+      | "mark_active"
+      | "change_plan"
+      | "reconcile"
+      | "extend_trial"
+      | "end_trial",
   ) {
     try {
       setError(null);
@@ -54,10 +93,27 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
         action,
         plan_code: action === "change_plan" ? selectedPlan || undefined : undefined,
         note: note || undefined,
+        trial_days: action === "extend_trial" ? Number(trialDays || 0) : undefined,
       });
       if (action !== "change_plan") setNote("");
     } catch (e: unknown) {
       setError(getErrorMessage(e, "Failed to update subscription"));
+    }
+  }
+
+  async function saveOverrides() {
+    try {
+      setError(null);
+      await overrides.mutateAsync({
+        extra_full_seats: Number(extraFullSeats || 0),
+        extra_view_only_seats: Number(extraViewSeats || 0),
+        invoice_uplift_per_month: Number(invoiceUplift || 0),
+        company_uplift: Number(companyUplift || 0),
+        enforcement_mode: enforcementMode,
+        note: note || undefined,
+      });
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, "Failed to update overrides"));
     }
   }
 
@@ -77,6 +133,7 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
       {query.isLoading ? <LoadingBlock label="Loading subscription workspace..." /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load subscription")} /> : null}
       {error ? <InlineError message={error} /> : null}
+      <BillingWarningStack summary={subscription?.warnings} limit={3} />
 
       {subscription ? (
         <>
@@ -95,6 +152,7 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
               <CardContent className="space-y-1 text-sm">
                 <div>{subscription.current.plan_name ?? subscription.current.plan ?? "—"}</div>
                 <div className="text-[var(--muted)]">Code: {subscription.current.plan ?? "—"}</div>
+                <div className="text-[var(--muted)]">Trial days: {subscription.current_plan?.trial_days ?? "—"}</div>
               </CardContent>
             </Card>
             <Card>
@@ -129,6 +187,8 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
                 <div>GSTIN: {subscription.company.gstin ?? "—"}</div>
                 <div className="text-[var(--muted)]">Started: {subscription.current.started_at ? new Date(subscription.current.started_at).toLocaleString() : "—"}</div>
                 <div className="text-[var(--muted)]">Expires: {subscription.current.expires_at ? new Date(subscription.current.expires_at).toLocaleString() : "—"}</div>
+                <div className="text-[var(--muted)]">Trial start: {subscription.current.trial_started_at ? new Date(subscription.current.trial_started_at).toLocaleString() : "—"}</div>
+                <div className="text-[var(--muted)]">Trial end: {subscription.current.trial_ends_at ? new Date(subscription.current.trial_ends_at).toLocaleString() : "—"}</div>
               </CardContent>
             </Card>
 
@@ -148,8 +208,11 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
                   </SelectField>
                 </label>
                 <TextField label="Operator note" value={note} onChange={setNote} placeholder="Optional action note" />
+                <TextField label="Trial days" value={trialDays} onChange={setTrialDays} type="number" />
                 <div className="flex flex-wrap gap-3">
                   <PrimaryButton type="button" disabled={update.isPending} onClick={() => void runAction("change_plan")}>Change plan</PrimaryButton>
+                  <SecondaryButton type="button" disabled={update.isPending} onClick={() => void runAction("extend_trial")}>Extend trial</SecondaryButton>
+                  <SecondaryButton type="button" disabled={update.isPending} onClick={() => void runAction("end_trial")}>End trial</SecondaryButton>
                   <SecondaryButton type="button" disabled={update.isPending} onClick={() => void runAction("mark_past_due")}>Mark past due</SecondaryButton>
                   <SecondaryButton type="button" disabled={update.isPending} onClick={() => void runAction("mark_active")}>Mark active</SecondaryButton>
                   <SecondaryButton type="button" disabled={update.isPending} onClick={() => void runAction("cancel")}>Cancel</SecondaryButton>
@@ -172,6 +235,67 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Entitlement snapshot</CardTitle>
+                <CardDescription>Backend-resolved plan, trial, and effective-limits snapshot for this company.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-2 text-sm text-[var(--foreground)] sm:grid-cols-2">
+                  <div>Snapshot status: <span className="text-[var(--muted)]">{subscription.entitlement?.status ?? "—"}</span></div>
+                  <div>Trial status: <span className="text-[var(--muted)]">{subscription.entitlement?.trial_status ?? "—"}</span></div>
+                  <div>Billing period start: <span className="text-[var(--muted)]">{subscription.entitlement?.billing_period_start ?? "—"}</span></div>
+                  <div>Billing period end: <span className="text-[var(--muted)]">{subscription.entitlement?.billing_period_end ?? "—"}</span></div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-xs text-[var(--muted)] overflow-auto">
+                  <pre>{JSON.stringify(subscription.entitlement?.effective_limits ?? {}, null, 2)}</pre>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Current metered usage</CardTitle>
+                <CardDescription>Current-period commercial usage derived from backend lifecycle events.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
+                  <div>Issued invoices: <span className="text-[var(--muted)]">{subscription.usage_summary?.summary?.issued_invoice_count ?? 0}</span></div>
+                  <div>Billed value: <span className="text-[var(--muted)]">INR {(subscription.usage_summary?.summary?.invoice_billed_value_inr ?? 0).toLocaleString("en-IN")}</span></div>
+                  <div>Full seats: <span className="text-[var(--muted)]">{subscription.usage_summary?.summary?.active_full_seat_count ?? 0}</span></div>
+                  <div>View-only seats: <span className="text-[var(--muted)]">{subscription.usage_summary?.summary?.active_view_only_seat_count ?? 0}</span></div>
+                </div>
+                <div className="text-xs text-[var(--muted)]">
+                  Period: {subscription.usage_summary?.period_start ?? "—"} to {subscription.usage_summary?.period_end ?? "—"}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Tenant overrides</CardTitle>
+                <CardDescription>Apply tenant-specific commercial adjustments without editing the underlying plan definition.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <TextField label="Extra full seats" value={extraFullSeats} onChange={setExtraFullSeats} type="number" />
+                  <TextField label="Extra view-only seats" value={extraViewSeats} onChange={setExtraViewSeats} type="number" />
+                  <TextField label="Invoice uplift / month" value={invoiceUplift} onChange={setInvoiceUplift} type="number" />
+                  <TextField label="Company uplift" value={companyUplift} onChange={setCompanyUplift} type="number" />
+                  <SelectField label="Enforcement mode" value={enforcementMode} onChange={(value) => setEnforcementMode(value === "hard_block" || value === "wallet_overage" ? value : "warn_only")}>
+                    <option value="warn_only">Warn only</option>
+                    <option value="wallet_overage">Wallet overage</option>
+                    <option value="hard_block">Hard block</option>
+                  </SelectField>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <PrimaryButton type="button" disabled={overrides.isPending} onClick={() => void saveOverrides()}>
+                    Save overrides
+                  </PrimaryButton>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Usage rollups</CardTitle>

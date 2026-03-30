@@ -23,7 +23,7 @@ export default function PrivacyPage() {
               "This page should be replaced with reviewed legal language covering data handling, retention, subprocessors, user rights, lawful basis, and contact or escalation mechanisms.",
             ],
           ].map(([title, body]) => (
-            <section key={title} className="border-t border-[rgba(23,32,51,0.08)] pt-6 first:border-t-0 first:pt-0">
+            <section key={title} className="border-t border-[var(--public-border)] pt-6 first:border-t-0 first:pt-0">
               <h2 className="font-semibold text-[var(--foreground)]">{title}</h2>
               <p className="mt-3">{body}</p>
             </section>

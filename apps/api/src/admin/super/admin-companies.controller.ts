@@ -12,6 +12,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { AdminGovernanceService } from './admin-governance.service';
+import { AdminPermissionGuard } from './admin-permission.guard';
+import { RequireAdminPermissions } from './require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super-admin.guard';
 import { PlatformAdminService } from './platform-admin.service';
 import { CreateAdminCompanyDto } from './dto/create-admin-company.dto';
@@ -20,7 +22,8 @@ import { UpdateAdminCompanyLifecycleDto } from './dto/update-admin-company-lifec
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/companies')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.companies.manage')
 export class AdminCompaniesController {
   constructor(
     private readonly admin: PlatformAdminService,

@@ -17,7 +17,7 @@ describe('BillingService', () => {
   it('verifies stripe webhook signatures using timestamped payload signing', () => {
     process.env.BILLING_STRIPE_WEBHOOK_SECRET = 'stripe_secret_12345';
 
-    const svc = new BillingService({} as any);
+    const svc = new BillingService({} as any, {} as any, {} as any);
     const payload = JSON.stringify({
       id: 'evt_1',
       type: 'checkout.session.completed',
@@ -43,7 +43,7 @@ describe('BillingService', () => {
   it('verifies razorpay webhook signatures using raw payload signing', () => {
     process.env.BILLING_RAZORPAY_WEBHOOK_SECRET = 'razor_secret_12345';
 
-    const svc = new BillingService({} as any);
+    const svc = new BillingService({} as any, {} as any, {} as any);
     const payload = JSON.stringify({ event: 'payment_link.paid', id: 'pl_1' });
     const { createHmac } = require('crypto');
     const signature = createHmac(
@@ -75,7 +75,11 @@ describe('BillingService', () => {
       },
     };
 
-    const svc = new BillingService(prisma as any);
+    const entitlements = {
+      syncEntitlementForSubscription: jest.fn(),
+    };
+
+    const svc = new BillingService(prisma as any, entitlements as any, {} as any);
 
     await expect(
       svc.processWebhookEvent({
@@ -116,7 +120,7 @@ describe('BillingService', () => {
       },
     };
 
-    const svc = new BillingService(prisma as any);
+    const svc = new BillingService(prisma as any, {} as any, {} as any);
 
     await expect(
       svc.processWebhookEvent({

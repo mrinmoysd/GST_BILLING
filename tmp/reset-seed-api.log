@@ -1,0 +1,399 @@
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] PrismaModule dependencies initialized +19ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] PassportModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] JwtModule dependencies initialized +9ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ConfigHostModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] AppModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] DiscoveryModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] IdempotencyModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] RbacModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] BullModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] BullModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] CustomersModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] SuppliersModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] InventoryModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] GstModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] AccountingModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] PricingModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ReportsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] NotificationsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] CompaniesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] CategoriesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] FinanceOpsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] OnboardingModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] UsersModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ProductsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] ExportsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] BullModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] MigrationOpsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] SalesOrdersModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] PurchasesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] BillingModule dependencies initialized +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] QuotationsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] PlatformAdminModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] FieldSalesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] InvoicesModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [InstanceLoader] JobsModule dependencies initialized +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AppController {/}: +30ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/health, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/login, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/forgot-password, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/reset-password, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/auth/logout, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminAuthController {/api/admin/auth}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/auth/login, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/auth/refresh, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/auth/me, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/auth/logout, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] CustomersController {/api/companies/:companyId/customers}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers, POST} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers/:customerId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers/:customerId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers/:customerId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/customers/:customerId/ledger, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] SuppliersController {/api/companies/:companyId/suppliers}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers/:supplierId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers/:supplierId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers/:supplierId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/suppliers/:supplierId/ledger, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] ProductsController {/api/companies/:companyId/products}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products/:productId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products/:productId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products/:productId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products/:productId/stock-adjustment, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] InventoryController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/products/:productId/stock-adjustment, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-movements, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/inventory/low-stock, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/inventory/batches, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/inventory/near-expiry, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/warehouses, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/warehouses, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/warehouses/:warehouseId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/warehouses/:warehouseId/stock, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers/:transferId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers/:transferId/dispatch, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers/:transferId/receive, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/stock-transfers/:transferId/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] InvoicesController {/api/companies/:companyId/invoices}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/issue, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/credit-notes, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/share, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/pdf/regenerate, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/pdf, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] InvoiceComplianceController {/api/companies/:companyId/invoices}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/compliance/exceptions, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-invoice/generate, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-invoice/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-invoice/sync, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-way-bill/generate, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-way-bill/update-vehicle, POST} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-way-bill/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoices/:invoiceId/compliance/e-way-bill/sync, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] PaymentsController {/api/companies/:companyId/payments}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/payments, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/payments, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/payments/:paymentId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] InvoiceSeriesController {/api/companies/:companyId/invoice-series}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoice-series, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoice-series, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoice-series/:seriesId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/invoice-series/:seriesId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AccountingController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/ledgers, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/ledgers, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/journals, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/journals/:id, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/journals, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/accounting/period-lock, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/accounting/period-lock, PUT} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/trial-balance, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/profit-loss, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/balance-sheet, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/books/cash, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/books/bank, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] GstController {/api/companies/:companyId/gst}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/gstr1, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/gstr3b, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/hsn-summary, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/itc, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/export, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/exports/:jobId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/gst/exports/:jobId/download, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] PricingController {/api/companies/:companyId/pricing}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/price-lists, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/price-lists, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/customer-rates, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/customer-rates, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/schemes, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/schemes, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/audit-logs, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/pricing/preview, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] SalesOrdersController {/api/companies/:companyId/sales-orders}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId/confirm, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId/convert-to-invoice, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] DeliveryChallansController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/dispatch-queue, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/delivery-challans, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/delivery-challans/:challanId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/sales-orders/:salesOrderId/delivery-challans, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/delivery-challans/:challanId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/delivery-challans/:challanId/status, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/delivery-challans/:challanId/convert-to-invoice, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] MigrationOpsController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/migration-projects, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/migration-projects, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/migration-projects/:projectId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/migration-projects/:projectId, PATCH} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/templates, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/templates/:entityType/download, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-profiles, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-profiles, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-profiles/:profileId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs/:jobId/dry-run, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs/:jobId/commit, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs/:jobId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/import-jobs/:jobId/rows, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/opening-stock/template, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/opening-stock/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/opening-balances/template, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/opening-balances/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/open-sales-invoices/template, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/open-sales-invoices/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/open-purchases/template, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/imports/open-purchases/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates/:templateId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates/:templateId/versions, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates/:templateId/publish, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates/:templateId/set-default, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/print-templates/:templateId/preview, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/custom-fields, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/custom-fields, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/custom-fields/:fieldId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/custom-fields/values, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/custom-fields/values, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks/events, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks/:endpointId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks/:endpointId/test, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks/:endpointId/deliveries, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/webhooks/:endpointId/deliveries/:deliveryId/retry, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/api-keys, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/api-keys, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/integrations/api-keys/:keyId/revoke, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] BillingController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/subscription/plans, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/subscription/warnings, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/billing-warnings/invoices, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/billing-warnings/seats, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/subscription, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/subscription/checkout, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/subscription/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] BillingPublicController {/api/billing}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/billing/plans, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] BillingWebhookController {/api/billing/webhooks}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/billing/webhooks/:provider, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] JobsController {/api/companies/:companyId/jobs}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/jobs/:jobId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] PurchasesController {/api/companies/:companyId/purchases}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId/receive, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId/returns, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId/bill, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/purchases/:purchaseId/bill, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] ReportsController {/api/companies/:companyId/reports}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/sales/summary, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/purchases/summary, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/sales/outstanding, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/sales/top-products, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/profit/snapshot, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/sales-by-salesperson, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/collections-by-salesperson, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/outstanding-by-salesperson, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/outstanding-by-customer, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/stock-by-warehouse, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/product-movement, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/dashboard, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/dispatch-operations, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/commercial/scheme-usage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/commercial/discount-leakage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/commercial/price-coverage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/commercial/audit, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/receivables/aging, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/payables/aging, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/credit-control/dashboard, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/banking/reconciliation-summary, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/route-coverage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/rep-visit-productivity, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/missed-visits, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/route-outstanding, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/reports/distributor/dcr-register, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] ExportsController {/api/companies/:companyId/exports}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/exports/gstr1, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/exports/:jobId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/exports/:jobId/download, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] QueuesAdminController {/api/admin/queues}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/queues/metrics, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminAuditController {/api/admin/audit-logs}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/audit-logs, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminCompaniesController {/api/admin/companies}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/companies, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/companies, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/companies/:companyId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/companies/:companyId/lifecycle, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminDashboardController {/api/admin/dashboard}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/dashboard, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminInternalUsersController {/api/admin/internal-users}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/internal-users/roles, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/internal-users, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/internal-users, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/internal-users/:userId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminSubscriptionsController {/api/admin/subscriptions}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/plans, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/plans, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/plans/:planId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/:subscriptionId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/:subscriptionId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/subscriptions/:subscriptionId/overrides, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminUsageController {/api/admin/usage}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/usage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] AdminSupportTicketsController {/api/admin/support-tickets}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/support-tickets, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/admin/support-tickets/:id, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] NotificationsController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notification-templates, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notification-templates, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notification-templates/:templateId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notifications/test, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notifications/outbox, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notifications/process, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/notifications/outbox/:outboxId/retry, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] FilesController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/files/sign-upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/files/:fileId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/files/:fileId/content, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/files/upload, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] CompaniesController {/api/companies/:companyId}: +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/verify-gstin, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/logo, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/logo, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] CompaniesUsersController {/api/companies/:companyId/users}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/users, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/users/salespeople, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/users, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/users/:userId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] RolesController {/api/companies/:companyId/roles}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles/permissions, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles/audit, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles/:roleId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/roles/:roleId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] CategoriesController {/api/companies/:companyId/categories}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/categories, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/categories, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/categories/:categoryId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/categories/:categoryId, DELETE} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] OnboardingController {/api/onboarding}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/onboarding/bootstrap, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] QuotationsController {/api/companies/:companyId/quotations}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/send, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/approve, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/expire, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/cancel, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/convert-to-invoice, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/quotations/:quotationId/convert-to-sales-order, POST} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] FinanceOpsController {/api/companies/:companyId}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-accounts, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-accounts, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-accounts/:bankAccountId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/collections/tasks, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/collections/tasks, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/collections/tasks/:taskId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-statements/imports, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-statements/imports, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-statements/lines, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-reconciliation/match, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/bank-reconciliation/unmatch, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RoutesResolver] FieldSalesController {/api/companies/:companyId/field-sales}: +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/territories, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/territories, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/territories/:territoryId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/routes, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/routes, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/routes/:routeId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/beats, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/beats, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/beats/:beatId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/coverage, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/coverage, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/coverage/:coverageId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/customers/:customerId/assign-coverage, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/salespeople/:userId/assignments, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/salespeople/:userId/assignments, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visit-plans/generate, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visit-plans, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visit-plans, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visit-plans/:visitPlanId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/my/worklist, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/my/customers, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/my/summary, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId, GET} route +1ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/check-in, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/check-out, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId, PATCH} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/outcomes, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/mark-missed, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/create-sales-order, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/create-quotation, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/collection-updates, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/visits/:visitId/promises, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/dcr, GET} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/dcr/submit, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/dcr/:dcrId/reopen, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [RouterExplorer] Mapped {/api/companies/:companyId/field-sales/dcr/:dcrId/approve, POST} route +0ms
+[Nest] 75973  - 03/30/2026, 3:27:37 PM     LOG [NestApplication] Nest application successfully started +49ms

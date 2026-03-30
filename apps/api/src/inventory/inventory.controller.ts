@@ -13,6 +13,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateStockTransferDto } from './dto/create-stock-transfer.dto';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { StockAdjustmentV2Dto } from './dto/stock-adjustment-v2.dto';
@@ -22,11 +24,13 @@ import { InventoryService } from './inventory.service';
 @ApiTags('Inventory')
 @ApiBearerAuth()
 @Controller('api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('inventory.view')
 export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}
 
   @Post('products/:productId/stock-adjustment')
+  @RequirePermissions('inventory.manage')
   @ApiOkResponse({
     description: 'Creates a stock movement and updates product stock',
   })
@@ -140,6 +144,7 @@ export class InventoryController {
   }
 
   @Post('warehouses')
+  @RequirePermissions('inventory.manage')
   async createWarehouse(
     @Param('companyId') companyId: string,
     @Body() dto: CreateWarehouseDto,
@@ -155,6 +160,7 @@ export class InventoryController {
   }
 
   @Patch('warehouses/:warehouseId')
+  @RequirePermissions('inventory.manage')
   async updateWarehouse(
     @Param('companyId') companyId: string,
     @Param('warehouseId') warehouseId: string,
@@ -214,6 +220,7 @@ export class InventoryController {
   }
 
   @Post('stock-transfers')
+  @RequirePermissions('inventory.manage')
   async createTransfer(
     @Param('companyId') companyId: string,
     @Body() dto: CreateStockTransferDto,
@@ -233,6 +240,7 @@ export class InventoryController {
   }
 
   @Post('stock-transfers/:transferId/dispatch')
+  @RequirePermissions('inventory.manage')
   async dispatchTransfer(
     @Param('companyId') companyId: string,
     @Param('transferId') transferId: string,
@@ -242,6 +250,7 @@ export class InventoryController {
   }
 
   @Post('stock-transfers/:transferId/receive')
+  @RequirePermissions('inventory.manage')
   async receiveTransfer(
     @Param('companyId') companyId: string,
     @Param('transferId') transferId: string,
@@ -251,6 +260,7 @@ export class InventoryController {
   }
 
   @Post('stock-transfers/:transferId/cancel')
+  @RequirePermissions('inventory.manage')
   async cancelTransfer(
     @Param('companyId') companyId: string,
     @Param('transferId') transferId: string,

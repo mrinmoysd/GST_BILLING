@@ -55,7 +55,7 @@ function ResetPasswordContent() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+              className="public-input h-12 w-full rounded-2xl px-4 text-sm"
             />
           </label>
 
@@ -65,17 +65,17 @@ function ResetPasswordContent() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               type="password"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.9)] px-4 text-sm shadow-sm"
+              className="public-input h-12 w-full rounded-2xl px-4 text-sm"
             />
           </label>
 
           {error ? (
-            <div className="rounded-[22px] border border-red-200 bg-[#fff6f3] px-4 py-3 text-sm text-[#7e3128]">
+            <div className="rounded-[22px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {error}
             </div>
           ) : null}
           {ok ? (
-            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div className="rounded-[22px] border border-[var(--success-soft)] bg-[var(--success-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {ok}
             </div>
           ) : null}

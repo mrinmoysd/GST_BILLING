@@ -66,7 +66,7 @@ export function PublicSiteShell(props: {
 
 export function PublicHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-[rgba(23,32,51,0.08)] bg-[rgba(244,241,234,0.72)] backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-[var(--public-border)] bg-[var(--public-header-bg)] backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-6">
@@ -83,7 +83,7 @@ export function PublicHeader() {
               {primaryNav.map((item) => (
                 <Link
                   key={item.href}
-                  className="rounded-full px-3 py-2 text-sm text-[var(--muted-strong)] hover:bg-white/70 hover:text-[var(--foreground)]"
+                  className="rounded-full px-3 py-2 text-sm text-[var(--muted-strong)] transition hover:bg-[var(--public-header-hover)] hover:text-[var(--foreground)]"
                   href={item.href}
                 >
                   {item.label}
@@ -104,7 +104,7 @@ export function PublicHeader() {
           {[...primaryNav, { href: "/login", label: "Login" }].map((item) => (
             <Link
               key={item.href}
-              className="whitespace-nowrap rounded-full border border-[rgba(23,32,51,0.08)] bg-white/72 px-3 py-2 text-sm text-[var(--muted-strong)] shadow-[0_8px_24px_rgba(23,32,51,0.04)]"
+              className="whitespace-nowrap rounded-full border border-[var(--public-border)] bg-[var(--public-mobile-chip-bg)] px-3 py-2 text-sm text-[var(--muted-strong)] shadow-[var(--shadow-soft)]"
               href={item.href}
             >
               {item.label}
@@ -118,7 +118,7 @@ export function PublicHeader() {
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.52)]">
+    <footer className="border-t border-[var(--public-border)] bg-[var(--public-footer-bg)]">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-[1.45fr_1fr_1fr_1fr] md:px-6 lg:px-8">
         <div className="space-y-5">
           <Badge variant="secondary">Built for GST operations</Badge>
@@ -142,7 +142,7 @@ export function PublicFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-[rgba(23,32,51,0.08)] px-4 py-4 text-center text-xs text-[var(--muted)] md:px-6 lg:px-8">
+      <div className="border-t border-[var(--public-border)] bg-[var(--public-footer-bottom-bg)] px-4 py-4 text-center text-xs text-[var(--muted)] md:px-6 lg:px-8">
         GST Billing. Operational software for GST billing, accounting, inventory, and POS.
       </div>
     </footer>
@@ -161,18 +161,16 @@ export function FullBleedHero(props: {
   return (
     <section
       className={cn(
-        "relative isolate overflow-hidden border-b border-[rgba(23,32,51,0.08)]",
-        props.accent === "gold"
-          ? "bg-[linear-gradient(180deg,#f3ead7_0%,#efe6d8_28%,#fbf8f1_100%)]"
-          : "bg-[linear-gradient(180deg,#e9eef3_0%,#f1ece3_30%,#f8f5ee_100%)]",
+        "relative isolate overflow-hidden border-b border-[var(--public-border)]",
+        props.accent === "gold" ? "bg-[var(--public-hero-bg-gold)]" : "bg-[var(--public-hero-bg)]",
       )}
     >
       <div className="absolute inset-0 opacity-90">
-        <div className="absolute inset-y-0 right-0 w-[62%] bg-[radial-gradient(circle_at_30%_40%,rgba(15,95,140,0.22),transparent_34%),radial-gradient(circle_at_65%_48%,rgba(23,32,51,0.16),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.26),rgba(23,32,51,0.04))]" />
-        <div className="absolute bottom-0 left-[-6%] h-[48%] w-[62%] rounded-tr-[160px] border-t border-r border-[rgba(23,32,51,0.09)] bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,251,245,0.66))]" />
+        <div className="absolute inset-y-0 right-0 w-[62%] bg-[var(--public-hero-right-plane)]" />
+        <div className="absolute bottom-0 left-[-6%] h-[48%] w-[62%] rounded-tr-[160px] border-t border-r border-[var(--public-border)] bg-[var(--public-hero-left-plane)]" />
       </div>
-      <div className="relative mx-auto grid min-h-[calc(100svh-76px)] max-w-7xl gap-10 px-4 pb-12 pt-16 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:pb-18 lg:pt-20">
-        <div className="flex flex-col justify-end gap-8">
+      <div className="relative mx-auto grid min-h-[clamp(38rem,calc(100svh-76px),46rem)] max-w-7xl items-center gap-10 px-4 py-14 md:px-6 md:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-18">
+        <div className="flex flex-col justify-center gap-8">
           <div className="space-y-5">
             <div className="animate-hero-rise text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--muted)]">
               {props.eyebrow}
@@ -186,9 +184,9 @@ export function FullBleedHero(props: {
             <p className="max-w-lg text-base leading-7 text-[var(--muted-strong)] md:text-lg">{props.subtitle}</p>
           </div>
           {props.actions ? <div className="flex flex-wrap gap-3">{props.actions}</div> : null}
-          {props.support ? <div className="max-w-xl border-t border-[rgba(23,32,51,0.1)] pt-5">{props.support}</div> : null}
+          {props.support ? <div className="max-w-xl border-t border-[var(--public-border)] pt-5">{props.support}</div> : null}
         </div>
-        <div className="animate-hero-fade flex items-end justify-end">
+        <div className="animate-hero-fade flex items-center justify-center lg:justify-end">
           {props.visual}
         </div>
       </div>
@@ -203,7 +201,7 @@ export function EditorialBand(props: {
   aside?: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-6 border-t border-[rgba(23,32,51,0.08)] py-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10">
+    <section className="grid gap-6 border-t border-[var(--public-border)] py-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10">
       <div className="space-y-3">
         {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
         <h2 className="font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)]">{props.title}</h2>
@@ -220,7 +218,7 @@ export function RouteCluster(props: {
   items: Array<{ href: string; label: string; body: string }>;
 }) {
   return (
-    <div className="divide-y divide-[rgba(23,32,51,0.08)] border-y border-[rgba(23,32,51,0.08)]">
+    <div className="divide-y divide-[var(--public-border)] border-y border-[var(--public-border)]">
       {props.items.map((item) => (
         <Link
           key={item.href}
@@ -243,8 +241,8 @@ export function DocumentFrame(props: {
   children: React.ReactNode;
 }) {
   return (
-    <section className="mx-auto max-w-4xl rounded-[34px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.76)] p-6 shadow-[var(--shadow-soft)] md:p-10">
-      <div className="space-y-3 border-b border-[rgba(23,32,51,0.08)] pb-6">
+    <section className="mx-auto max-w-4xl rounded-[34px] border border-[var(--public-border)] bg-[var(--public-card-bg)] p-6 shadow-[var(--shadow-soft)] md:p-10">
+      <div className="space-y-3 border-b border-[var(--public-border)] pb-6">
         {props.eyebrow ? <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div> : null}
         <h1 className="font-display text-4xl leading-[0.92] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">{props.title}</h1>
         {props.subtitle ? <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">{props.subtitle}</p> : null}
@@ -263,7 +261,7 @@ export function MarketingHero(props: {
   aside?: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-8 rounded-[32px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,252,246,0.9))] p-6 shadow-[var(--shadow-soft)] md:p-8 xl:grid-cols-[1.15fr_0.85fr] xl:items-end">
+    <section className="grid gap-8 rounded-[32px] border border-[var(--public-border)] bg-[var(--public-card-muted)] p-6 shadow-[var(--shadow-soft)] md:p-8 xl:grid-cols-[1.15fr_0.85fr] xl:items-end">
       <div className="space-y-6">
         <div className="space-y-3">
           <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{props.eyebrow}</div>
@@ -300,7 +298,7 @@ export function SectionHeading(props: { eyebrow?: string; title: string; subtitl
 
 export function FeatureCard(props: { title: string; description: string; points?: string[] }) {
   return (
-    <Card className="rounded-[28px] bg-[rgba(255,255,255,0.9)]">
+    <Card className="rounded-[28px] border-[var(--public-border)] bg-[var(--public-card-bg)]">
       <CardHeader>
         <CardTitle>{props.title}</CardTitle>
         <CardDescription className="leading-6">{props.description}</CardDescription>
