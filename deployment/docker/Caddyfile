@@ -1,0 +1,13 @@
+{$APP_SITE:http://localhost} {
+  encode zstd gzip
+
+  @api path /api /api/* /swagger /swagger/* /health
+  handle @api {
+    reverse_proxy api:4000
+  }
+
+  handle {
+    reverse_proxy web:3000
+  }
+}
+

@@ -11,6 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+import {
+  getRefreshClearCookieOptions,
+  getRefreshCookieOptions,
+} from '../common/config/http-runtime.config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -33,12 +37,11 @@ export class AdminAuthController {
     const refreshToken: string | undefined = result?.data?.refresh_token;
 
     if (refreshToken) {
-      res.cookie('admin_refresh_token', refreshToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        path: '/api/admin/auth',
-      });
+      res.cookie(
+        'admin_refresh_token',
+        refreshToken,
+        getRefreshCookieOptions('/api/admin/auth'),
+      );
 
       delete (result as any).data.refresh_token;
     }
@@ -71,7 +74,10 @@ export class AdminAuthController {
   @ApiOkResponse({ description: 'OK' })
   async logout(@Req() req: any, @Res({ passthrough: true }) res: any) {
     const out = await this.authService.adminLogout(req.user);
-    res.clearCookie('admin_refresh_token', { path: '/api/admin/auth' });
+    res.clearCookie(
+      'admin_refresh_token',
+      getRefreshClearCookieOptions('/api/admin/auth'),
+    );
     return out;
   }
 }

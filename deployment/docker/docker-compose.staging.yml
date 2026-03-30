@@ -1,0 +1,129 @@
+name: vyapar-genie
+
+services:
+  caddy:
+    image: caddy:2.9
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_healthy
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    environment:
+      APP_SITE: ${APP_SITE:-http://localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+  web:
+    image: ${WEB_IMAGE:-vyapargenie-web:local}
+    build:
+      context: ../..
+      dockerfile: deployment/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost/api}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    image: ${API_IMAGE:-vyapargenie-api:local}
+    build:
+      context: ../..
+      dockerfile: deployment/docker/api.Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://gst:gst@postgres:5432/gst_billing?schema=public}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost}
+      API_CORS_ORIGIN: ${API_CORS_ORIGIN:-http://localhost}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-lax}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
+      JWT_REFRESH_TTL_SECONDS: ${JWT_REFRESH_TTL_SECONDS:-2592000}
+      FILE_SIGNING_SECRET: ${FILE_SIGNING_SECRET:-dev-file-signing-secret}
+      FILE_STORAGE_DRIVER: ${FILE_STORAGE_DRIVER:-local}
+      FILE_STORAGE_ROOT: ${FILE_STORAGE_ROOT:-/var/lib/vyapar-genie/storage}
+      FILE_STORAGE_BUCKET: ${FILE_STORAGE_BUCKET:-}
+      FILE_STORAGE_REGION: ${FILE_STORAGE_REGION:-}
+      FILE_STORAGE_ENDPOINT: ${FILE_STORAGE_ENDPOINT:-}
+      FILE_STORAGE_ACCESS_KEY_ID: ${FILE_STORAGE_ACCESS_KEY_ID:-}
+      FILE_STORAGE_SECRET_ACCESS_KEY: ${FILE_STORAGE_SECRET_ACCESS_KEY:-}
+      BILLING_STRIPE_SECRET_KEY: ${BILLING_STRIPE_SECRET_KEY:-}
+      BILLING_STRIPE_WEBHOOK_SECRET: ${BILLING_STRIPE_WEBHOOK_SECRET:-}
+      BILLING_RAZORPAY_KEY_ID: ${BILLING_RAZORPAY_KEY_ID:-}
+      BILLING_RAZORPAY_KEY_SECRET: ${BILLING_RAZORPAY_KEY_SECRET:-}
+      BILLING_RAZORPAY_WEBHOOK_SECRET: ${BILLING_RAZORPAY_WEBHOOK_SECRET:-}
+      NOTIFICATIONS_EMAIL_WEBHOOK_URL: ${NOTIFICATIONS_EMAIL_WEBHOOK_URL:-}
+      NOTIFICATIONS_SMS_WEBHOOK_URL: ${NOTIFICATIONS_SMS_WEBHOOK_URL:-}
+      NOTIFICATIONS_WHATSAPP_WEBHOOK_URL: ${NOTIFICATIONS_WHATSAPP_WEBHOOK_URL:-}
+    expose:
+      - "4000"
+    volumes:
+      - api_storage:/var/lib/vyapar-genie/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gst_billing}
+      POSTGRES_USER: ${POSTGRES_USER:-gst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gst}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gst} -d ${POSTGRES_DB:-gst_billing}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  api_storage:
+  caddy_data:
+  caddy_config:
+

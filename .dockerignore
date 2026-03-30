@@ -1,0 +1,16 @@
+.git
+.github
+.playwright-cli
+.DS_Store
+node_modules
+apps/*/node_modules
+apps/web/.next
+apps/web/test-results
+apps/api/dist
+coverage
+tmp
+output
+docs/user-guide/output
+docs/user-guide/assets
+*.log
+npm-debug.log*

@@ -1,0 +1,69 @@
+name: Build and Push Staging
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-push-staging
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      REGISTRY_NAME: ${{ secrets.DOCR_REGISTRY_NAME }}
+      STAGING_DOMAIN: ${{ secrets.STAGING_DOMAIN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Login to DOCR
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Set image tags
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          echo "REGISTRY_PATH=registry.digitalocean.com/${REGISTRY_NAME}" >> "$GITHUB_ENV"
+          echo "API_IMAGE_SHA=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-api:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "API_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-api:develop-latest" >> "$GITHUB_ENV"
+          echo "WEB_IMAGE_SHA=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-web:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "WEB_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-web:develop-latest" >> "$GITHUB_ENV"
+
+      - name: Build API image
+        run: |
+          docker build \
+            -f deployment/docker/api.Dockerfile \
+            -t "$API_IMAGE_SHA" \
+            -t "$API_IMAGE_BRANCH" \
+            .
+
+      - name: Build web image
+        run: |
+          docker build \
+            -f deployment/docker/web.Dockerfile \
+            --build-arg "NEXT_PUBLIC_API_BASE_URL=https://${STAGING_DOMAIN}/api" \
+            -t "$WEB_IMAGE_SHA" \
+            -t "$WEB_IMAGE_BRANCH" \
+            .
+
+      - name: Push API image
+        run: |
+          docker push "$API_IMAGE_SHA"
+          docker push "$API_IMAGE_BRANCH"
+
+      - name: Push web image
+        run: |
+          docker push "$WEB_IMAGE_SHA"
+          docker push "$WEB_IMAGE_BRANCH"
