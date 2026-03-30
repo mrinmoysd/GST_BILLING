@@ -13,12 +13,15 @@ import * as fs from 'fs';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { ExportsService } from './exports.service';
 
 @ApiTags('exports')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/exports')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('reports.view')
 export class ExportsController {
   constructor(private readonly exportsService: ExportsService) {}
 

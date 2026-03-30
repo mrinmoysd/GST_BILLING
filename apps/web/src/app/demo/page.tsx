@@ -29,9 +29,9 @@ export default function DemoPage() {
                 ["Rollout fit", "Decide whether self-serve or guided rollout is right."],
                 ["Stakeholder review", "Give finance, ops, and founders one product narrative."],
               ].map(([title, body], index) => (
-                <div key={title} className={`rounded-[30px] border border-[rgba(23,32,51,0.08)] p-6 shadow-[var(--shadow-soft)] ${index === 1 ? "bg-[rgba(23,32,51,0.95)] text-white" : "bg-[rgba(255,255,255,0.78)]"}`}>
+                <div key={title} className={`rounded-[30px] p-6 ${index === 1 ? "public-card-strong-surface" : "public-card-surface"}`}>
                   <div className={`font-display text-3xl font-semibold tracking-[-0.04em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>{title}</div>
-                  <div className={`mt-3 text-sm leading-6 ${index === 1 ? "text-white/76" : "text-[var(--muted-strong)]"}`}>{body}</div>
+                  <div className={`mt-3 text-sm leading-6 ${index === 1 ? "text-[var(--public-card-strong-muted)]" : "text-[var(--muted-strong)]"}`}>{body}</div>
                 </div>
               ))}
             </div>

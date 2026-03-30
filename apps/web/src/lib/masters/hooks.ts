@@ -490,9 +490,11 @@ export function useWarehouses(args: {
   limit?: number;
   q?: string;
   activeOnly?: boolean;
+  enabled?: boolean;
 }) {
-  const { companyId, page = 1, limit = 50, q, activeOnly = false } = args;
+  const { companyId, page = 1, limit = 50, q, activeOnly = false, enabled = true } = args;
   return useQuery({
+    enabled,
     queryKey: ["companies", companyId, "warehouses", { page, limit, q, activeOnly }],
     queryFn: async () => {
       const qs = new URLSearchParams();

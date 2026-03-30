@@ -1,13 +1,16 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
+import { AdminPermissionGuard } from './admin-permission.guard';
+import { RequireAdminPermissions } from './require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super-admin.guard';
 import { PlatformAdminService } from './platform-admin.service';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/usage')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.usage.read')
 export class AdminUsageController {
   constructor(private readonly admin: PlatformAdminService) {}
 

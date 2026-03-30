@@ -11,6 +11,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateCommercialSchemeDto } from './dto/create-commercial-scheme.dto';
 import { CreateCustomerProductPriceDto } from './dto/create-customer-product-price.dto';
 import { CreatePriceListDto } from './dto/create-price-list.dto';
@@ -20,7 +22,8 @@ import { PricingService } from './pricing.service';
 @ApiTags('Pricing')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/pricing')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('settings.pricing.manage')
 export class PricingController {
   constructor(private readonly pricing: PricingService) {}
 
@@ -77,6 +80,7 @@ export class PricingController {
   }
 
   @Post('/preview')
+  @RequirePermissions('sales.view')
   preview(
     @Param('companyId') companyId: string,
     @Body() dto: PricingPreviewDto,

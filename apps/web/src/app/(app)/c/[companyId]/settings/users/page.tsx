@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { BillingWarningStack } from "@/components/billing/warning-stack";
 import { Badge } from "@/components/ui/badge";
 import {
   useCompanyRoles,
@@ -9,6 +10,7 @@ import {
   useInviteCompanyUser,
   usePatchCompanyUser,
 } from "@/lib/settings/usersHooks";
+import { useSeatBillingWarnings } from "@/lib/settings/subscriptionHooks";
 import { getErrorMessage } from "@/lib/errors";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -22,6 +24,7 @@ export default function UsersSettingsPage({ params }: Props) {
   const { companyId } = React.use(params);
   const users = useCompanyUsers(companyId);
   const roles = useCompanyRoles(companyId);
+  const seatWarnings = useSeatBillingWarnings(companyId);
   const invite = useInviteCompanyUser(companyId);
   const patch = usePatchCompanyUser(companyId);
 
@@ -72,8 +75,11 @@ export default function UsersSettingsPage({ params }: Props) {
         badges={[
           <WorkspaceStatBadge key="users" label="Users" value={rows.length} />,
           <WorkspaceStatBadge key="roles" label="Custom roles" value={customRoles.length} variant="outline" />,
+          <WorkspaceStatBadge key="warnings" label="Seat warnings" value={seatWarnings.data?.items.length ?? 0} variant="outline" />,
         ]}
       />
+
+      <BillingWarningStack summary={seatWarnings.data} limit={2} />
 
       <WorkspacePanel title="Invite user" subtitle="The invite flow supports a built-in primary role plus any number of custom role assignments.">
         <div className="space-y-4">

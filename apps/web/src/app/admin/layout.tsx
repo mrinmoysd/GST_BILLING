@@ -5,7 +5,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { AccessDeniedState } from "@/components/ui/access-denied-state";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { getAdminRouteAccess, hasAdminRouteAccess } from "@/lib/admin/route-access";
 import { AdminAuthProvider, useAdminAuth } from "@/lib/admin/session";
 import { LoadingBlock } from "@/lib/ui/state";
 
@@ -45,6 +47,9 @@ function AdminRouteGate({ children }: { children: React.ReactNode }) {
   if (isLoginRoute) return <>{children}</>;
   if (!session.user) return null;
 
+  const routeAccess = getAdminRouteAccess(pathname);
+  const canAccessRoute = hasAdminRouteAccess(session, pathname);
+
   return (
     <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
@@ -72,7 +77,18 @@ function AdminRouteGate({ children }: { children: React.ReactNode }) {
         <div className="min-w-0 bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.02))]">
           <AdminHeader onOpenNav={() => setNavOpen(true)} />
           <main className="px-4 py-5 md:px-8 md:py-8">
-            <div className="mx-auto w-full max-w-[1320px]">{children}</div>
+            <div className="mx-auto w-full max-w-[1320px]">
+              {canAccessRoute ? (
+                children
+              ) : (
+                <AccessDeniedState
+                  title={`Access blocked${routeAccess ? `: ${routeAccess.label}` : ""}`}
+                  description="Your internal admin role does not include this control surface. Open an allowed admin area or ask a platform owner to adjust your admin permission bundle."
+                  primaryHref="/admin/dashboard"
+                  primaryLabel="Open admin dashboard"
+                />
+              )}
+            </div>
           </main>
         </div>
       </div>

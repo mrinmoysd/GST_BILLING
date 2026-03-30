@@ -15,13 +15,15 @@ import {
 } from "lucide-react";
 
 import type { SessionState } from "@/lib/auth/types";
-import { hasAnyPermission } from "@/lib/auth/permissions";
+import { hasPermissionMatch } from "@/lib/auth/permissions";
+import { settingsOverviewPermissions, type PermissionMatchMode } from "@/lib/auth/company-route-access";
 
 export type WorkflowLink = {
   href: string;
   label: string;
   hint: string;
   permissions: string[];
+  matchMode?: PermissionMatchMode;
 };
 
 export type WorkflowDefinition = {
@@ -31,6 +33,7 @@ export type WorkflowDefinition = {
   icon: React.ComponentType<{ className?: string }>;
   description: string;
   permissions: string[];
+  matchMode?: PermissionMatchMode;
   defaultHref: string;
   matches: string[];
   links: WorkflowLink[];
@@ -41,6 +44,7 @@ export type QuickCreateItem = {
   label: string;
   hint: string;
   permissions: string[];
+  matchMode?: PermissionMatchMode;
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
@@ -111,13 +115,18 @@ const workflowDefinitions: WorkflowDefinition[] = [
     shortLabel: "Field",
     icon: Truck,
     description: "Visits, DCR, and route coverage.",
-    permissions: ["sales.view", "settings.view"],
+    permissions: [
+      "field_sales.log_visits",
+      "field_sales.submit_dcr",
+      "field_sales.manage_masters",
+      "field_sales.view_team_worklists",
+    ],
     defaultHref: "sales/field/today",
     matches: ["sales/field", "settings/sales"],
     links: [
-      { href: "sales/field/today", label: "Today", hint: "Planned and active visits", permissions: ["sales.view"] },
-      { href: "sales/field/dcr", label: "DCR", hint: "Daily call report", permissions: ["sales.view"] },
-      { href: "settings/sales/assignments", label: "Assignments", hint: "Territory and beat setup", permissions: ["settings.view"] },
+      { href: "sales/field/today", label: "Today", hint: "Planned and active visits", permissions: ["field_sales.log_visits"] },
+      { href: "sales/field/dcr", label: "DCR", hint: "Daily call report", permissions: ["field_sales.submit_dcr"] },
+      { href: "settings/sales/assignments", label: "Assignments", hint: "Territory and beat setup", permissions: ["field_sales.manage_masters"] },
     ],
   },
   {
@@ -189,26 +198,32 @@ const workflowDefinitions: WorkflowDefinition[] = [
     shortLabel: "Setup",
     icon: Settings,
     description: "Commercial, access, templates, and integrations.",
-    permissions: ["settings.view"],
+    permissions: settingsOverviewPermissions,
     defaultHref: "settings",
     matches: ["settings"],
     links: [
-      { href: "settings", label: "Overview", hint: "Setup areas", permissions: ["settings.view"] },
-      { href: "settings/company", label: "Company", hint: "Identity and GST", permissions: ["settings.view"] },
-      { href: "settings/pricing", label: "Pricing", hint: "Guardrails and schemes", permissions: ["settings.view"] },
-      { href: "settings/roles", label: "Roles", hint: "Access structure", permissions: ["settings.view"] },
-      { href: "settings/users", label: "Users", hint: "Team and invites", permissions: ["settings.view"] },
-      { href: "settings/integrations", label: "Integrations", hint: "Webhooks and keys", permissions: ["settings.view"] },
+      { href: "settings", label: "Overview", hint: "Setup areas", permissions: settingsOverviewPermissions },
+      { href: "settings/company", label: "Company", hint: "Identity and GST", permissions: ["settings.company.manage"] },
+      { href: "settings/pricing", label: "Pricing", hint: "Guardrails and schemes", permissions: ["settings.pricing.manage"] },
+      { href: "settings/roles", label: "Roles", hint: "Access structure", permissions: ["settings.roles.manage"] },
+      { href: "settings/users", label: "Users", hint: "Team and invites", permissions: ["settings.users.manage"] },
+      {
+        href: "settings/integrations",
+        label: "Integrations",
+        hint: "Webhooks and keys",
+        permissions: ["integrations.webhooks.manage", "integrations.api_keys.manage"],
+        matchMode: "all",
+      },
     ],
   },
 ];
 
 export function getVisibleWorkflows(session: SessionState) {
   return workflowDefinitions
-    .filter((workflow) => hasAnyPermission(session, workflow.permissions))
+    .filter((workflow) => hasPermissionMatch(session, workflow.permissions, workflow.matchMode))
     .map((workflow) => ({
       ...workflow,
-      links: workflow.links.filter((link) => hasAnyPermission(session, link.permissions)),
+      links: workflow.links.filter((link) => hasPermissionMatch(session, link.permissions, link.matchMode)),
     }))
     .filter((workflow) => workflow.links.length > 0);
 }
@@ -228,14 +243,14 @@ export function toCompanyHref(companyId: string, href: string) {
 
 export function getQuickCreateItems(session: SessionState): QuickCreateItem[] {
   const items: QuickCreateItem[] = [
-    { href: "sales/invoices/new", label: "New invoice", hint: "Issue sales bill", permissions: ["sales.view"] },
-    { href: "sales/orders/new", label: "New order", hint: "Capture sales order", permissions: ["sales.view"] },
-    { href: "sales/quotations/new", label: "New quotation", hint: "Create quote", permissions: ["sales.view"] },
-    { href: "purchases/new", label: "New purchase", hint: "Receive supplier bill", permissions: ["purchases.view"] },
-    { href: "masters/customers/new", label: "New customer", hint: "Add trading account", permissions: ["masters.view"] },
-    { href: "masters/products/new", label: "New product", hint: "Add catalog item", permissions: ["masters.view"] },
+    { href: "sales/invoices/new", label: "New invoice", hint: "Issue sales bill", permissions: ["sales.manage"] },
+    { href: "sales/orders/new", label: "New order", hint: "Capture sales order", permissions: ["sales.manage"] },
+    { href: "sales/quotations/new", label: "New quotation", hint: "Create quote", permissions: ["sales.manage"] },
+    { href: "purchases/new", label: "New purchase", hint: "Receive supplier bill", permissions: ["purchases.manage"] },
+    { href: "masters/customers/new", label: "New customer", hint: "Add trading account", permissions: ["masters.manage"] },
+    { href: "masters/products/new", label: "New product", hint: "Add catalog item", permissions: ["masters.manage"] },
   ];
-  return items.filter((item) => hasAnyPermission(session, item.permissions));
+  return items.filter((item) => hasPermissionMatch(session, item.permissions, item.matchMode));
 }
 
 export function flattenCommandLinks(workflows: WorkflowDefinition[]) {

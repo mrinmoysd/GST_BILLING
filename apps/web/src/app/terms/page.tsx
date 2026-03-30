@@ -13,11 +13,11 @@ export default function TermsPage() {
             <h2 className="text-base font-semibold text-[var(--foreground)]">Use of the service</h2>
             <p>Use of GST Billing is subject to lawful business operation, valid account ownership, and compliance with billing, tax, accounting, and data obligations applicable to your business.</p>
           </section>
-          <section className="space-y-3 border-t border-[rgba(23,32,51,0.08)] pt-6">
+          <section className="space-y-3 border-t border-[var(--public-border)] pt-6">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Commercial terms still required</h2>
             <p>The production version of this page should define subscription commitments, billing rules, cancellation handling, acceptable use, suspension conditions, and service boundaries for the actual operating entity.</p>
           </section>
-          <section className="space-y-3 border-t border-[rgba(23,32,51,0.08)] pt-6">
+          <section className="space-y-3 border-t border-[var(--public-border)] pt-6">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Launch note</h2>
             <p>Replace this placeholder before public launch with reviewed legal language covering liability limits, data handling references, governing law, dispute handling, and termination conditions.</p>
           </section>

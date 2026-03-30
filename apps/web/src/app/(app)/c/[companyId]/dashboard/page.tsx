@@ -6,7 +6,7 @@ import { ArrowRight, FilePlus2, PackagePlus, ReceiptIndianRupee, Users2, Wallet 
 import { Button } from "@/components/ui/button";
 import { useInvoices, usePayments, usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
-import { useLowStock } from "@/lib/masters/hooks";
+import { useLowStock, useWarehouses } from "@/lib/masters/hooks";
 import { useDistributorDashboard, useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
@@ -40,6 +40,7 @@ export default function CompanyDashboardPage({ params }: Props) {
   });
   const outstandingQuery = useOutstandingInvoices({ companyId, page: 1, limit: 5, enabled: queriesEnabled });
   const lowStockQuery = useLowStock({ companyId, threshold: 0, page: 1, limit: 5, enabled: queriesEnabled });
+  const activeWarehousesQuery = useWarehouses({ companyId, page: 1, limit: 5, activeOnly: true, enabled: queriesEnabled });
   const recentInvoicesQuery = useInvoices({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
   const recentPurchasesQuery = usePurchases({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
   const recentPaymentsQuery = usePayments({ companyId, page: 1, limit: 4, enabled: queriesEnabled });
@@ -49,6 +50,7 @@ export default function CompanyDashboardPage({ params }: Props) {
   const distributorDashboard = distributorDashboardQuery.data?.data;
   const outstandingPayload = outstandingQuery.data?.data as { data?: Array<{ balanceDue?: string | number | null }> } | undefined;
   const lowStockItems = Array.isArray(lowStockQuery.data?.data) ? lowStockQuery.data.data : [];
+  const activeWarehousesPayload = activeWarehousesQuery.data?.data as { data?: Array<Record<string, unknown>>; meta?: { total?: number } } | undefined;
   const recentInvoicesPayload = recentInvoicesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
   const recentPurchasesPayload = recentPurchasesQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
   const recentPaymentsPayload = recentPaymentsQuery.data?.data as { data?: Array<Record<string, unknown>> } | undefined;
@@ -62,6 +64,7 @@ export default function CompanyDashboardPage({ params }: Props) {
       }, 0),
     [outstandingPayload?.data],
   );
+  const activeWarehouseCount = activeWarehousesPayload?.meta?.total ?? activeWarehousesPayload?.data?.length ?? 0;
 
   const recentActivity = React.useMemo(() => {
     const invoices = (recentInvoicesPayload?.data ?? []).map((row) => ({
@@ -345,7 +348,9 @@ export default function CompanyDashboardPage({ params }: Props) {
             ))}
             {(distributorDashboard?.warehouse_snapshot?.length ?? 0) === 0 ? (
               <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
-                Warehouse analytics will appear once active locations hold stock.
+                {activeWarehouseCount > 0
+                  ? "Warehouse locations exist, but this snapshot is not returning rows for the current company view."
+                  : "Create or activate warehouse locations to see warehouse analytics here."}
               </div>
             ) : null}
           </div>

@@ -23,7 +23,7 @@ export default function ContactPage() {
             </>
           }
           visual={
-            <div className="w-full max-w-[720px] rounded-[34px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.78)] p-8 shadow-[var(--shadow-soft)]">
+            <div className="public-card-surface w-full max-w-[720px] rounded-[34px] p-8">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Contact routing</div>
               <div className="mt-5 space-y-4">
                 {[
@@ -31,7 +31,7 @@ export default function ContactPage() {
                   ["Implementation planning", "For teams already planning migration or structured rollout."],
                   ["Product support", "For questions that should move through support rather than sales."],
                 ].map(([title, body]) => (
-                  <div key={title} className="border-t border-[rgba(23,32,51,0.08)] pt-4 first:border-t-0 first:pt-0">
+                  <div key={title} className="border-t border-[var(--public-border)] pt-4 first:border-t-0 first:pt-0">
                     <div className="font-semibold text-[var(--foreground)]">{title}</div>
                     <div className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">{body}</div>
                   </div>
@@ -56,7 +56,7 @@ export default function ContactPage() {
         ]}
       />
 
-      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-[rgba(23,32,51,0.08)] py-12">
+      <section className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--public-border)] py-12">
         <div>
           <div className="text-sm font-semibold text-[var(--foreground)]">Placeholder production channels</div>
           <div className="mt-2 text-sm leading-6 text-[var(--muted)]">Replace these with the real support and sales details during deployment hardening.</div>

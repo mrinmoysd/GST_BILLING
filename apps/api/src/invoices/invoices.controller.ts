@@ -12,6 +12,8 @@ import {
 import { Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { Headers } from '@nestjs/common';
 import type { Response } from 'express';
@@ -26,7 +28,8 @@ import { JobsService } from '../jobs/jobs.service';
 @ApiTags('Invoices')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/invoices')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('sales.view')
 export class InvoicesController {
   constructor(
     private readonly invoices: InvoicesService,
@@ -64,6 +67,7 @@ export class InvoicesController {
   }
 
   @Post()
+  @RequirePermissions('sales.manage')
   createDraft(
     @Param('companyId') companyId: string,
     @Body() dto: CreateInvoiceDto,
@@ -79,6 +83,7 @@ export class InvoicesController {
   }
 
   @Patch('/:invoiceId')
+  @RequirePermissions('sales.manage')
   patchDraft(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,
@@ -96,6 +101,7 @@ export class InvoicesController {
   }
 
   @Post('/:invoiceId/issue')
+  @RequirePermissions('sales.manage')
   issue(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,
@@ -110,6 +116,7 @@ export class InvoicesController {
   }
 
   @Post('/:invoiceId/cancel')
+  @RequirePermissions('sales.manage')
   cancel(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,
@@ -118,6 +125,7 @@ export class InvoicesController {
   }
 
   @Post('/:invoiceId/credit-notes')
+  @RequirePermissions('sales.manage')
   createCreditNote(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,
@@ -127,6 +135,7 @@ export class InvoicesController {
   }
 
   @Post('/:invoiceId/share')
+  @RequirePermissions('sales.manage')
   share(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,
@@ -136,6 +145,7 @@ export class InvoicesController {
   }
 
   @Post('/:invoiceId/pdf/regenerate')
+  @RequirePermissions('sales.manage')
   async regeneratePdf(
     @Param('companyId') companyId: string,
     @Param('invoiceId') invoiceId: string,

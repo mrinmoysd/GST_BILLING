@@ -35,6 +35,7 @@ const navItems: AdminNavItem[] = [
     icon: LayoutDashboard,
     section: "Control",
     hint: "Overview and priorities",
+    permission: "admin.dashboard.read",
   },
   {
     href: "/admin/companies",
@@ -42,6 +43,7 @@ const navItems: AdminNavItem[] = [
     icon: Building2,
     section: "Control",
     hint: "Tenant lifecycle",
+    permission: "admin.companies.manage",
   },
   {
     href: "/admin/subscriptions",
@@ -49,6 +51,7 @@ const navItems: AdminNavItem[] = [
     icon: CreditCard,
     section: "Control",
     hint: "Billing oversight",
+    permission: "admin.subscriptions.manage",
   },
   {
     href: "/admin/usage",
@@ -56,6 +59,7 @@ const navItems: AdminNavItem[] = [
     icon: BarChart3,
     section: "Operations",
     hint: "Adoption and meters",
+    permission: "admin.usage.read",
   },
   {
     href: "/admin/support-tickets",
@@ -63,6 +67,7 @@ const navItems: AdminNavItem[] = [
     icon: LifeBuoy,
     section: "Operations",
     hint: "Ticket triage",
+    permission: "admin.support.manage",
   },
   {
     href: "/admin/queues",
@@ -70,6 +75,7 @@ const navItems: AdminNavItem[] = [
     icon: ServerCog,
     section: "Operations",
     hint: "Jobs and failures",
+    permission: "admin.observability.read",
   },
   {
     href: "/admin/internal-users",

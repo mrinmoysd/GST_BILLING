@@ -6,6 +6,7 @@ import { AccountingService } from '../accounting/accounting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { BootstrapOnboardingDto } from './dto/bootstrap-onboarding.dto';
+import { BillingUsageService } from '../billing/billing-usage.service';
 
 @Injectable()
 export class OnboardingService {
@@ -14,6 +15,7 @@ export class OnboardingService {
     private readonly auth: AuthService,
     private readonly config: ConfigService,
     private readonly accounting: AccountingService,
+    private readonly usage: BillingUsageService,
   ) {}
 
   async bootstrap(dto: BootstrapOnboardingDto) {
@@ -108,6 +110,8 @@ export class OnboardingService {
         expiresAt: new Date(Date.now() + refreshTtl * 1000),
       },
     });
+
+    await this.usage.syncSeatUsageForCompany({ companyId: company.id });
 
     const sessionAccess = await this.auth.getSessionAccess(company.userId);
 

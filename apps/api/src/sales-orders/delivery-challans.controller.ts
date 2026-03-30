@@ -11,6 +11,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { DeliveryChallansService } from './delivery-challans.service';
 import { CreateDeliveryChallanDto } from './dto/create-delivery-challan.dto';
 import { UpdateDeliveryChallanDto } from './dto/update-delivery-challan.dto';
@@ -20,7 +22,8 @@ import { ConvertDeliveryChallanToInvoiceDto } from './dto/convert-delivery-chall
 @ApiTags('Delivery Challans')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('sales.view')
 export class DeliveryChallansController {
   constructor(private readonly challans: DeliveryChallansService) {}
 
@@ -61,6 +64,7 @@ export class DeliveryChallansController {
   }
 
   @Post('sales-orders/:salesOrderId/delivery-challans')
+  @RequirePermissions('sales.manage')
   create(
     @Param('companyId') companyId: string,
     @Param('salesOrderId') salesOrderId: string,
@@ -70,6 +74,7 @@ export class DeliveryChallansController {
   }
 
   @Patch('delivery-challans/:challanId')
+  @RequirePermissions('sales.manage')
   patch(
     @Param('companyId') companyId: string,
     @Param('challanId') challanId: string,
@@ -79,6 +84,7 @@ export class DeliveryChallansController {
   }
 
   @Post('delivery-challans/:challanId/status')
+  @RequirePermissions('sales.manage')
   transition(
     @Param('companyId') companyId: string,
     @Param('challanId') challanId: string,
@@ -88,6 +94,7 @@ export class DeliveryChallansController {
   }
 
   @Post('delivery-challans/:challanId/convert-to-invoice')
+  @RequirePermissions('sales.manage')
   convertToInvoice(
     @Param('companyId') companyId: string,
     @Param('challanId') challanId: string,

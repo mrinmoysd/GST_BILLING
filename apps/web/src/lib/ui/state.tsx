@@ -17,6 +17,42 @@ export function InlineError({ title, message }: { title?: string; message: strin
   );
 }
 
+export function InlineNotice({
+  title,
+  message,
+  tone = "info",
+}: {
+  title: string;
+  message: string;
+  tone?: "info" | "warning" | "critical";
+}) {
+  const accent =
+    tone === "critical"
+      ? "var(--danger)"
+      : tone === "warning"
+        ? "var(--warning)"
+        : "var(--accent)";
+  const soft =
+    tone === "critical"
+      ? "var(--danger-soft)"
+      : tone === "warning"
+        ? "var(--warning-soft)"
+        : "var(--accent-soft)";
+
+  return (
+    <div
+      className="rounded-2xl border p-4 text-sm text-[var(--foreground)] shadow-sm"
+      style={{
+        borderColor: `color-mix(in oklab, ${accent} 36%, var(--border))`,
+        background: `color-mix(in oklab, ${soft} 74%, var(--surface))`,
+      }}
+    >
+      <div className="font-semibold">{title}</div>
+      <div className="mt-1 leading-6 text-[var(--muted-strong)]">{message}</div>
+    </div>
+  );
+}
+
 export function LoadingBlock({ label }: { label?: string }) {
   return (
     <Card className="border-dashed bg-[var(--surface-elevated)]">

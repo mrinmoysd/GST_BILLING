@@ -25,7 +25,7 @@ export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Get('/notification-templates')
-  @RequirePermissions('settings.view')
+  @RequirePermissions('settings.notifications.manage')
   async list(@Param('companyId') companyId: string) {
     const data = await this.notifications.listTemplates(companyId);
     return { ok: true, data };
@@ -67,7 +67,7 @@ export class NotificationsController {
   }
 
   @Get('/notifications/outbox')
-  @RequirePermissions('settings.view')
+  @RequirePermissions('settings.notifications.manage')
   async outbox(@Param('companyId') companyId: string) {
     const data = await this.notifications.listOutbox(companyId);
     return { ok: true, data };

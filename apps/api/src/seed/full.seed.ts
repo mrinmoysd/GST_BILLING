@@ -230,6 +230,8 @@ async function main() {
         quantity: String(1 + j),
         unit_price: String(unitPrice),
         discount: j === 0 ? undefined : '5',
+        override_reason:
+          j === 0 ? undefined : `${SEED_PREFIX} seeded promotional discount`,
       };
     });
 

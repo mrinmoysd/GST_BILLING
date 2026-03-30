@@ -21,7 +21,7 @@ export default function HelpPage() {
             </>
           }
           visual={
-            <div className="w-full max-w-[680px] rounded-[34px] border border-[rgba(23,32,51,0.08)] bg-[rgba(255,255,255,0.8)] p-8 shadow-[var(--shadow-soft)]">
+            <div className="public-card-surface w-full max-w-[680px] rounded-[34px] p-8">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Primary support paths</div>
               <div className="mt-5 space-y-4">
                 {[
@@ -30,7 +30,7 @@ export default function HelpPage() {
                   "GST reporting, exports, and filing-oriented views",
                   "Accounting books, statements, and settings control",
                 ].map((item) => (
-                  <div key={item} className="border-t border-[rgba(23,32,51,0.08)] pt-4 text-sm leading-6 text-[var(--muted-strong)] first:border-t-0 first:pt-0">
+                  <div key={item} className="border-t border-[var(--public-border)] pt-4 text-sm leading-6 text-[var(--muted-strong)] first:border-t-0 first:pt-0">
                     {item}
                   </div>
                 ))}

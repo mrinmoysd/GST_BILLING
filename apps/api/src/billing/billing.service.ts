@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { createHmac, timingSafeEqual } from 'crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { BillingEntitlementsService } from './billing-entitlements.service';
+import { BillingWarningsService } from './billing-warnings.service';
 
 function hmacSha256Hex(secret: string, data: string) {
   return createHmac('sha256', secret).update(data).digest('hex');
@@ -22,7 +24,11 @@ function isUuidLike(value: string) {
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly entitlements: BillingEntitlementsService,
+    private readonly warnings: BillingWarningsService,
+  ) {}
 
   private getWebhookSecret(provider: 'stripe' | 'razorpay') {
     const key =
@@ -82,10 +88,38 @@ export class BillingService {
   }
 
   async getSubscription(companyId: string) {
-    return this.prisma.subscription.findFirst({
-      where: { companyId },
-      orderBy: [{ createdAt: 'desc' }],
+    return this.entitlements.getTenantSubscriptionSummary(companyId);
+  }
+
+  async listPublicPlans() {
+    const plans = await this.entitlements.listStructuredPlans();
+    return plans.filter((plan) => plan.is_public !== false);
+  }
+
+  async getWarningSummary(
+    companyId: string,
+    categories?: Array<
+      'trial' | 'invoices' | 'invoice_value' | 'full_seats' | 'view_only_seats' | 'companies'
+    >,
+  ) {
+    const subscription = await this.getSubscription(companyId);
+    if (!subscription) {
+      return {
+        highest_severity: 'none' as const,
+        items: [],
+        counts: { info: 0, warning: 0, critical: 0 },
+      };
+    }
+
+    const summary = subscription.warnings ?? this.warnings.evaluate({
+      effectiveLimits: subscription.entitlement?.effectiveLimits,
+      usageSummary: subscription.usage?.summary ?? {},
+      trialStatus: subscription.trialStatus,
+      trialDaysRemaining: subscription.trialDaysRemaining,
+      trialEndsAt: subscription.trialEndsAt,
     });
+
+    return categories?.length ? this.warnings.filter(summary, categories) : summary;
   }
 
   private async getPlanOrThrow(planCode?: string | null) {
@@ -263,6 +297,11 @@ export class BillingService {
         plan: plan.code,
         provider: args.provider,
         status: 'checkout_created',
+        trialStartedAt: new Date(),
+        trialEndsAt:
+          plan.trialDays > 0
+            ? new Date(Date.now() + plan.trialDays * 24 * 60 * 60 * 1000)
+            : null,
         metadata: {
           success_url: args.successUrl ?? null,
           cancel_url: args.cancelUrl ?? null,
@@ -301,6 +340,8 @@ export class BillingService {
       select: { id: true, status: true },
     });
 
+    await this.entitlements.syncEntitlementForSubscription(updated.id);
+
     return {
       status: updated.status ?? 'checkout_created',
       checkout_url: checkout.checkoutUrl,
@@ -308,8 +349,62 @@ export class BillingService {
     };
   }
 
+  async cancelTenantSubscription(companyId: string) {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: { companyId },
+      orderBy: [{ createdAt: 'desc' }],
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    const currentStatus = String(subscription.status ?? '');
+    if (['active', 'past_due'].includes(currentStatus)) {
+      throw new BadRequestException(
+        'Paid subscriptions cannot be cancelled from this screen',
+      );
+    }
+
+    if (currentStatus === 'cancelled') {
+      return this.entitlements.getTenantSubscriptionSummary(companyId);
+    }
+
+    const metadata =
+      subscription.metadata &&
+      typeof subscription.metadata === 'object' &&
+      !Array.isArray(subscription.metadata)
+        ? (subscription.metadata as Record<string, unknown>)
+        : {};
+
+    const updated = await this.prisma.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        status: 'cancelled',
+        expiresAt: new Date(),
+        metadata: {
+          ...metadata,
+          cancelled_from_tenant: true,
+          cancelled_at: new Date().toISOString(),
+        } as object,
+      },
+      select: { id: true },
+    });
+
+    await this.entitlements.syncEntitlementForSubscription(updated.id);
+    return this.entitlements.getTenantSubscriptionSummary(companyId);
+  }
+
   async syncSubscriptionUsageForCompany(companyId: string) {
     await this.syncSubscriptionUsage(companyId);
+  }
+
+  async syncEntitlementForSubscription(subscriptionId: string) {
+    await this.entitlements.syncEntitlementForSubscription(subscriptionId);
+  }
+
+  async syncEntitlementForCompany(companyId: string) {
+    await this.entitlements.syncEntitlementForCompany(companyId);
   }
 
   async storeWebhookEvent(args: {
@@ -370,9 +465,10 @@ export class BillingService {
     const updated = await this.prisma.subscription.update({
       where: { id: localSubscriptionId },
       data,
-      select: { companyId: true },
+      select: { id: true, companyId: true },
     });
     await this.syncSubscriptionUsage(updated.companyId);
+    await this.entitlements.syncEntitlementForSubscription(updated.id);
   }
 
   private async applyRazorpayWebhook(payload: any) {
@@ -407,9 +503,10 @@ export class BillingService {
     const updated = await this.prisma.subscription.update({
       where: { id: localSubscriptionId },
       data,
-      select: { companyId: true },
+      select: { id: true, companyId: true },
     });
     await this.syncSubscriptionUsage(updated.companyId);
+    await this.entitlements.syncEntitlementForSubscription(updated.id);
   }
 
   async processWebhookEvent(args: {

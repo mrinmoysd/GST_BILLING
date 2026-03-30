@@ -93,11 +93,8 @@ const STAFF_PERMISSION_CODES = [
 const SALESPERSON_PERMISSION_CODES = [
   'dashboard.view',
   'masters.view',
-  'masters.manage',
   'sales.view',
-  'sales.manage',
   'payments.view',
-  'payments.manage',
   'reports.view',
   'field_sales.log_visits',
   'field_sales.create_documents',

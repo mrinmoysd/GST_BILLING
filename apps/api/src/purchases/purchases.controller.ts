@@ -21,6 +21,8 @@ import * as path from 'path';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { CreatePurchaseReturnDto } from './dto/create-purchase-return.dto';
@@ -29,7 +31,8 @@ import { PatchPurchaseDto } from './dto/patch-purchase.dto';
 @ApiTags('purchases')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/purchases')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('purchases.view')
 export class PurchasesController {
   constructor(private readonly purchases: PurchasesService) {}
 
@@ -64,6 +67,7 @@ export class PurchasesController {
   }
 
   @Post()
+  @RequirePermissions('purchases.manage')
   async createDraft(
     @Param('companyId') companyId: string,
     @Body() dto: CreatePurchaseDto,
@@ -73,6 +77,7 @@ export class PurchasesController {
   }
 
   @Patch(':purchaseId')
+  @RequirePermissions('purchases.manage')
   async patchDraft(
     @Param('companyId') companyId: string,
     @Param('purchaseId') purchaseId: string,
@@ -82,6 +87,7 @@ export class PurchasesController {
   }
 
   @Post(':purchaseId/receive')
+  @RequirePermissions('purchases.manage')
   async receive(
     @Param('companyId') companyId: string,
     @Param('purchaseId') purchaseId: string,
@@ -90,6 +96,7 @@ export class PurchasesController {
   }
 
   @Post(':purchaseId/cancel')
+  @RequirePermissions('purchases.manage')
   async cancel(
     @Param('companyId') companyId: string,
     @Param('purchaseId') purchaseId: string,
@@ -98,6 +105,7 @@ export class PurchasesController {
   }
 
   @Post(':purchaseId/returns')
+  @RequirePermissions('purchases.manage')
   async createReturn(
     @Param('companyId') companyId: string,
     @Param('purchaseId') purchaseId: string,
@@ -107,6 +115,7 @@ export class PurchasesController {
   }
 
   @Post(':purchaseId/bill')
+  @RequirePermissions('purchases.manage')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async uploadBill(

@@ -11,13 +11,16 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../../auth/guards/jwt-access-auth.guard';
 import { AdminGovernanceService } from './admin-governance.service';
+import { AdminPermissionGuard } from './admin-permission.guard';
+import { RequireAdminPermissions } from './require-admin-permissions.decorator';
 import { SuperAdminGuard } from './super-admin.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('/api/admin/support-tickets')
-@UseGuards(JwtAccessAuthGuard, SuperAdminGuard)
+@UseGuards(JwtAccessAuthGuard, SuperAdminGuard, AdminPermissionGuard)
+@RequireAdminPermissions('admin.support.manage')
 export class AdminSupportTicketsController {
   constructor(
     private readonly prisma: PrismaService,

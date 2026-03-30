@@ -31,9 +31,9 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
   const routes = useSalesRoutes({ companyId });
   const beats = useSalesBeats({ companyId });
   const coverage = useCustomerCoverage({ companyId });
-  const customers = useCustomers({ companyId, page: 1, limit: 200 });
+  const customers = useCustomers({ companyId, page: 1, limit: 500 });
   const salespeople = useCompanySalespeople(companyId);
-  const warehouses = useWarehouses({ companyId });
+  const warehouses = useWarehouses({ companyId, page: 1, limit: 200, activeOnly: true });
   const createTerritory = useCreateSalesTerritory(companyId);
   const createRoute = useCreateSalesRoute(companyId);
   const createBeat = useCreateSalesBeat(companyId);
@@ -81,14 +81,44 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
   const assignmentMutation = useCreateSalespersonAssignment(companyId, assignmentSalespersonUserId || "placeholder");
   const assignmentRows = useSalespersonAssignments(companyId, assignmentSalespersonUserId, Boolean(assignmentSalespersonUserId));
 
-  const filteredRouteRows = routeTerritoryId
-    ? routeRows.filter((row) => row.territory?.id === routeTerritoryId)
+  const filteredBeatRouteRows = beatTerritoryId
+    ? routeRows.filter((row) => row.territory?.id === beatTerritoryId)
+    : routeRows;
+  const filteredCoverageRouteRows = coverageTerritoryId
+    ? routeRows.filter((row) => row.territory?.id === coverageTerritoryId)
     : routeRows;
   const filteredBeatRows = coverageRouteId
     ? beatRows.filter((row) => row.route?.id === coverageRouteId)
     : coverageTerritoryId
       ? beatRows.filter((row) => row.territory?.id === coverageTerritoryId)
       : beatRows;
+  const filteredAssignmentBeatRows = assignmentRouteId
+    ? beatRows.filter((row) => row.route?.id === assignmentRouteId)
+    : beatRows;
+
+  React.useEffect(() => {
+    if (beatRouteId && !filteredBeatRouteRows.some((row) => row.id === beatRouteId)) {
+      setBeatRouteId("");
+    }
+  }, [beatRouteId, filteredBeatRouteRows]);
+
+  React.useEffect(() => {
+    if (coverageRouteId && !filteredCoverageRouteRows.some((row) => row.id === coverageRouteId)) {
+      setCoverageRouteId("");
+    }
+  }, [coverageRouteId, filteredCoverageRouteRows]);
+
+  React.useEffect(() => {
+    if (coverageBeatId && !filteredBeatRows.some((row) => row.id === coverageBeatId)) {
+      setCoverageBeatId("");
+    }
+  }, [coverageBeatId, filteredBeatRows]);
+
+  React.useEffect(() => {
+    if (assignmentBeatId && !filteredAssignmentBeatRows.some((row) => row.id === assignmentBeatId)) {
+      setAssignmentBeatId("");
+    }
+  }, [assignmentBeatId, filteredAssignmentBeatRows]);
 
   return (
     <div className="space-y-7">
@@ -244,7 +274,7 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
             </SelectField>
             <SelectField label="Route" value={beatRouteId} onChange={setBeatRouteId}>
               <option value="">Select route</option>
-              {routeRows.map((route) => (
+              {filteredBeatRouteRows.map((route) => (
                 <option key={route.id} value={route.id}>
                   {route.code} · {route.name}
                 </option>
@@ -331,7 +361,7 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
             </SelectField>
             <SelectField label="Beat" value={assignmentBeatId} onChange={setAssignmentBeatId}>
               <option value="">Optional beat</option>
-              {beatRows.map((beat) => (
+              {filteredAssignmentBeatRows.map((beat) => (
                 <option key={beat.id} value={beat.id}>
                   {beat.code} · {beat.name}
                 </option>
@@ -424,7 +454,7 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
             </SelectField>
             <SelectField label="Route" value={coverageRouteId} onChange={setCoverageRouteId}>
               <option value="">Optional route</option>
-              {filteredRouteRows.map((route) => (
+              {filteredCoverageRouteRows.map((route) => (
                 <option key={route.id} value={route.id}>
                   {route.code} · {route.name}
                 </option>
@@ -466,6 +496,11 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
               />
             </div>
             <div className="md:col-span-2">
+              {customerRows.length >= 500 ? (
+                <div className="mb-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--muted-strong)]">
+                  Customer selection is currently capped to the first 500 rows in this setup screen. Larger companies will need search-backed lookup in a later pass.
+                </div>
+              ) : null}
               <PrimaryButton type="submit" disabled={assignCoverage.isPending || !coverageCustomerId || !coverageSalespersonUserId}>
                 {assignCoverage.isPending ? "Saving…" : "Assign coverage"}
               </PrimaryButton>

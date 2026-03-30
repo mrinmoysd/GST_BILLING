@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class UpdateAdminSubscriptionDto {
   @IsString()
@@ -9,6 +9,8 @@ export class UpdateAdminSubscriptionDto {
     'mark_active',
     'change_plan',
     'reconcile',
+    'extend_trial',
+    'end_trial',
   ])
   action!:
     | 'cancel'
@@ -16,7 +18,9 @@ export class UpdateAdminSubscriptionDto {
     | 'mark_past_due'
     | 'mark_active'
     | 'change_plan'
-    | 'reconcile';
+    | 'reconcile'
+    | 'extend_trial'
+    | 'end_trial';
 
   @IsOptional()
   @IsString()
@@ -27,4 +31,9 @@ export class UpdateAdminSubscriptionDto {
   @IsString()
   @MaxLength(300)
   note?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  trial_days?: number;
 }

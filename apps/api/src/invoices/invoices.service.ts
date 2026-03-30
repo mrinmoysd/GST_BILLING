@@ -19,6 +19,8 @@ import { PricingService } from '../pricing/pricing.service';
 import { InvoiceComplianceService } from './invoice-compliance.service';
 import { SalesOrdersService } from '../sales-orders/sales-orders.service';
 import { MigrationOpsService } from '../migration-ops/migration-ops.service';
+import { BillingEnforcementService } from '../billing/billing-enforcement.service';
+import { BillingUsageService } from '../billing/billing-usage.service';
 
 function toDecimal(value: string | undefined, fallback = '0'): Decimal {
   const v = (value ?? fallback).trim();
@@ -76,6 +78,8 @@ export class InvoicesService {
     private readonly compliance: InvoiceComplianceService,
     private readonly salesOrders: SalesOrdersService,
     private readonly migrationOps: MigrationOpsService,
+    private readonly billingEnforcement: BillingEnforcementService,
+    private readonly usage: BillingUsageService,
   ) {}
 
   private async resolveSalespersonUserId(args: {
@@ -660,6 +664,13 @@ export class InvoicesService {
         throw new ConflictException('Only draft invoices can be issued');
       }
 
+      await this.billingEnforcement.assertInvoiceIssueAllowed({
+        companyId: args.companyId,
+        invoiceTotal: new Decimal(invoice.total),
+        issueDate: invoice.issueDate ?? new Date(),
+        client: tx,
+      });
+
       const creditDecision = await this.evaluateCreditControl({
         tx,
         companyId: args.companyId,
@@ -770,6 +781,9 @@ export class InvoicesService {
         },
       };
     });
+    await this.usage.syncInvoiceUsageForCompany({
+      companyId: args.companyId,
+    });
     await this.migrationOps.publishWebhookEvent(
       args.companyId,
       'invoice.issued',
@@ -878,6 +892,9 @@ export class InvoicesService {
           total: invoice.total.toString(),
         },
       };
+    });
+    await this.usage.syncInvoiceUsageForCompany({
+      companyId: args.companyId,
     });
     await this.migrationOps.publishWebhookEvent(
       args.companyId,

@@ -7,11 +7,17 @@ import {
 import * as bcrypt from 'bcryptjs';
 
 import { AccountingService } from '../../accounting/accounting.service';
+import { BillingEntitlementsService } from '../../billing/billing-entitlements.service';
 import { BillingService } from '../../billing/billing.service';
+import { BillingUsageService } from '../../billing/billing-usage.service';
+import { BillingWarningsService } from '../../billing/billing-warnings.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateAdminCompanyDto } from './dto/create-admin-company.dto';
+import { CreateAdminSubscriptionPlanDto } from './dto/create-admin-subscription-plan.dto';
 import { UpdateAdminCompanyLifecycleDto } from './dto/update-admin-company-lifecycle.dto';
+import { UpdateAdminSubscriptionOverridesDto } from './dto/update-admin-subscription-overrides.dto';
 import { UpdateAdminSubscriptionDto } from './dto/update-admin-subscription.dto';
+import { UpdateAdminSubscriptionPlanDto } from './dto/update-admin-subscription-plan.dto';
 
 @Injectable()
 export class PlatformAdminService {
@@ -19,6 +25,9 @@ export class PlatformAdminService {
     private readonly prisma: PrismaService,
     private readonly accounting: AccountingService,
     private readonly billing: BillingService,
+    private readonly entitlements: BillingEntitlementsService,
+    private readonly usage: BillingUsageService,
+    private readonly warnings: BillingWarningsService,
   ) {}
 
   async dashboardSummary() {
@@ -285,6 +294,8 @@ export class PlatformAdminService {
       };
     });
 
+    await this.usage.syncSeatUsageForCompany({ companyId: company.id });
+
     return this.getCompanyDetail(company.id);
   }
 
@@ -510,6 +521,8 @@ export class PlatformAdminService {
       });
     });
 
+    await this.usage.syncSeatUsageForCompany({ companyId });
+
     return this.getCompanyDetail(companyId);
   }
 
@@ -599,18 +612,94 @@ export class PlatformAdminService {
   }
 
   async listSubscriptionPlans() {
-    const plans = await this.prisma.subscriptionPlan.findMany({
-      where: { isActive: true },
-      orderBy: [{ priceInr: 'asc' }],
+    return this.entitlements.listStructuredPlans();
+  }
+
+  async createSubscriptionPlan(dto: CreateAdminSubscriptionPlanDto) {
+    const code = dto.code.trim().toLowerCase();
+    const existing = await this.prisma.subscriptionPlan.findFirst({
+      where: { code },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('Subscription plan code already exists');
+    }
+
+    const created = await this.prisma.subscriptionPlan.create({
+      data: {
+        code,
+        name: dto.name.trim(),
+        priceInr: dto.price_inr,
+        billingInterval: dto.billing_interval ?? 'month',
+        limits: this.entitlements.normalizePlanLimits({
+          limits: dto.limits ?? {},
+          trialDays: dto.trial_days ?? 30,
+          allowAddOns: dto.allow_add_ons ?? true,
+        }) as object,
+        isPublic: dto.is_public ?? true,
+        displayOrder: dto.display_order ?? 100,
+        trialDays: dto.trial_days ?? 30,
+        allowAddOns: dto.allow_add_ons ?? true,
+        isActive: dto.is_active ?? true,
+      },
     });
 
-    return plans.map((plan) => ({
-      id: plan.id,
-      code: plan.code,
-      name: plan.name,
-      price_inr: Number(plan.priceInr),
-      billing_interval: plan.billingInterval,
-    }));
+    return {
+      id: created.id,
+      code: created.code,
+      name: created.name,
+    };
+  }
+
+  async updateSubscriptionPlan(
+    planId: string,
+    dto: UpdateAdminSubscriptionPlanDto,
+  ) {
+    const existing = await this.prisma.subscriptionPlan.findUnique({
+      where: { id: planId },
+    });
+    if (!existing) throw new NotFoundException('Subscription plan not found');
+
+    const updated = await this.prisma.subscriptionPlan.update({
+      where: { id: planId },
+      data: {
+        name: dto.name?.trim() || undefined,
+        priceInr: dto.price_inr ?? undefined,
+        billingInterval: dto.billing_interval ?? undefined,
+        limits:
+          dto.limits !== undefined ||
+          dto.trial_days !== undefined ||
+          dto.allow_add_ons !== undefined
+            ? (this.entitlements.normalizePlanLimits({
+                limits: dto.limits ?? existing.limits ?? {},
+                trialDays: dto.trial_days ?? existing.trialDays,
+                allowAddOns: dto.allow_add_ons ?? existing.allowAddOns,
+              }) as object)
+            : undefined,
+        isPublic: dto.is_public ?? undefined,
+        displayOrder: dto.display_order ?? undefined,
+        trialDays: dto.trial_days ?? undefined,
+        allowAddOns: dto.allow_add_ons ?? undefined,
+        isActive: dto.is_active ?? undefined,
+      },
+    });
+
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { planId },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      subscriptions.map((subscription) =>
+        this.billing.syncEntitlementForSubscription(subscription.id),
+      ),
+    );
+
+    return {
+      id: updated.id,
+      code: updated.code,
+      name: updated.name,
+    };
   }
 
   async getSubscriptionDetail(subscriptionId: string) {
@@ -668,6 +757,30 @@ export class PlatformAdminService {
         ? (subscription.metadata as Record<string, unknown>)
         : {};
 
+    const entitlement = await this.entitlements.syncEntitlementForSubscription(
+      subscription.id,
+    );
+
+    const usageSummary = await this.usage.getCurrentUsageSummary(subscription.companyId);
+    const warningSummary = this.warnings.evaluate({
+      effectiveLimits: entitlement?.effectiveLimits,
+      usageSummary: usageSummary.summary,
+      trialStatus: entitlement?.trialStatus ?? null,
+      trialDaysRemaining:
+        entitlement &&
+        entitlement.trialStatus === 'trialing' &&
+        entitlement.trialEndsAt
+          ? Math.max(
+              0,
+              Math.ceil(
+                (entitlement.trialEndsAt.getTime() - Date.now()) /
+                  (1000 * 60 * 60 * 24),
+              ),
+            )
+          : 0,
+      trialEndsAt: entitlement?.trialEndsAt?.toISOString() ?? null,
+    });
+
     return {
       id: subscription.id,
       company: {
@@ -685,8 +798,24 @@ export class PlatformAdminService {
         provider_subscription_id: subscription.providerSubscriptionId,
         started_at: subscription.startedAt?.toISOString() ?? null,
         expires_at: subscription.expiresAt?.toISOString() ?? null,
+        trial_started_at: subscription.trialStartedAt?.toISOString() ?? null,
+        trial_ends_at: subscription.trialEndsAt?.toISOString() ?? null,
         created_at: subscription.createdAt.toISOString(),
       },
+      current_plan: subscription.planRel
+        ? {
+            id: subscription.planRel.id,
+            code: subscription.planRel.code,
+            name: subscription.planRel.name,
+            price_inr: Number(subscription.planRel.priceInr),
+            billing_interval: subscription.planRel.billingInterval,
+            is_public: subscription.planRel.isPublic,
+            display_order: subscription.planRel.displayOrder,
+            trial_days: subscription.planRel.trialDays,
+            allow_add_ons: subscription.planRel.allowAddOns,
+            limits: this.entitlements.normalizePlanLimits(subscription.planRel),
+          }
+        : null,
       metadata: {
         success_url:
           typeof metadata.success_url === 'string' ? metadata.success_url : null,
@@ -703,6 +832,34 @@ export class PlatformAdminService {
             : null,
       },
       available_plans: plans,
+      entitlement: entitlement
+        ? {
+            id: entitlement.id,
+            plan_code: entitlement.planCode,
+            status: entitlement.status,
+            effective_limits: entitlement.effectiveLimits,
+            overrides: entitlement.overrides ?? null,
+            billing_period_start:
+              entitlement.billingPeriodStart?.toISOString() ?? null,
+            billing_period_end:
+              entitlement.billingPeriodEnd?.toISOString() ?? null,
+            trial_started_at:
+              entitlement.trialStartedAt?.toISOString() ?? null,
+            trial_ends_at: entitlement.trialEndsAt?.toISOString() ?? null,
+            trial_status: entitlement.trialStatus,
+            updated_at: entitlement.updatedAt.toISOString(),
+          }
+        : null,
+      access_control: {
+        operational_write_blocked:
+          entitlement?.trialStatus === 'trial_expired',
+        reason:
+          entitlement?.trialStatus === 'trial_expired'
+            ? 'trial_expired'
+            : null,
+      },
+      usage_summary: usageSummary,
+      warnings: warningSummary,
       company_usage: usageMeters.map((meter) => ({
         id: meter.id,
         key: meter.key,
@@ -761,6 +918,7 @@ export class PlatformAdminService {
     let nextStatus = subscription.status ?? 'pending';
     let nextExpiresAt = subscription.expiresAt ?? null;
     let nextStartedAt = subscription.startedAt ?? null;
+    let nextTrialEndsAt = subscription.trialEndsAt ?? null;
 
     if (dto.action === 'change_plan') {
       if (!dto.plan_code?.trim()) {
@@ -781,6 +939,27 @@ export class PlatformAdminService {
       nextStartedAt = subscription.startedAt ?? new Date();
     } else if (dto.action === 'mark_past_due') {
       nextStatus = 'past_due';
+    } else if (dto.action === 'extend_trial') {
+      const days = Math.max(
+        0,
+        Number(dto.trial_days ?? subscription.planRel?.trialDays ?? 30),
+      );
+      nextStatus = 'trialing';
+      nextStartedAt = subscription.startedAt ?? null;
+      if (!subscription.trialStartedAt) {
+        nextTrialEndsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      } else {
+        nextTrialEndsAt = new Date(
+          Date.now() + days * 24 * 60 * 60 * 1000,
+        );
+      }
+      metadata.trial_last_extended_days = days;
+      metadata.trial_last_extended_at = new Date().toISOString();
+    } else if (dto.action === 'end_trial') {
+      nextStatus = 'trial_expired';
+      nextTrialEndsAt = new Date();
+      metadata.trial_ended_by_admin = true;
+      metadata.trial_ended_at = new Date().toISOString();
     }
 
     metadata.admin_last_operation = {
@@ -797,14 +976,43 @@ export class PlatformAdminService {
         status: nextStatus,
         startedAt: nextStartedAt,
         expiresAt: nextExpiresAt,
+        trialEndsAt: nextTrialEndsAt,
         metadata: metadata as object,
       },
       select: { id: true, companyId: true },
     });
 
     await this.billing.syncSubscriptionUsageForCompany(updated.companyId);
+    await this.billing.syncEntitlementForSubscription(updated.id);
 
     return this.getSubscriptionDetail(updated.id);
+  }
+
+  async updateSubscriptionOverrides(
+    subscriptionId: string,
+    dto: UpdateAdminSubscriptionOverridesDto,
+  ) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      select: { id: true, companyId: true },
+    });
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    await this.entitlements.setEntitlementOverrides({
+      companyId: subscription.companyId,
+      subscriptionId: subscription.id,
+      overrides: {
+        extra_full_seats: dto.extra_full_seats ?? 0,
+        extra_view_only_seats: dto.extra_view_only_seats ?? 0,
+        invoice_uplift_per_month: dto.invoice_uplift_per_month ?? 0,
+        company_uplift: dto.company_uplift ?? 0,
+        enforcement_mode: dto.enforcement_mode ?? null,
+      },
+    });
+
+    return this.getSubscriptionDetail(subscriptionId);
   }
 
   async usageSummary(args: { from?: Date; to?: Date }) {
@@ -857,12 +1065,31 @@ export class PlatformAdminService {
       }),
     ]);
 
+    const planMap = new Map(
+      (
+        await this.prisma.subscriptionPlan.findMany({
+          select: { id: true, code: true, priceInr: true },
+        })
+      ).flatMap((plan) => [
+        [plan.id, Number(plan.priceInr)],
+        [plan.code, Number(plan.priceInr)],
+      ]),
+    );
+
     const revenue = subscriptions.reduce((acc, subscription) => {
-      if (!subscription.planId || !subscription.status) return acc;
-      if (!['active', 'trialing', 'past_due', 'checkout_created'].includes(subscription.status)) {
+      if (!subscription.status) return acc;
+      if (
+        !['active', 'trialing', 'past_due', 'checkout_created'].includes(
+          subscription.status,
+        )
+      ) {
         return acc;
       }
-      return acc;
+      const price =
+        (subscription.planId ? planMap.get(subscription.planId) : undefined) ??
+        (subscription.plan ? planMap.get(subscription.plan) : undefined) ??
+        0;
+      return acc + price;
     }, 0);
 
     const byPlan = subscriptions.reduce<Record<string, number>>((acc, row) => {

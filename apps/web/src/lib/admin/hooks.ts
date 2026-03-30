@@ -101,6 +101,61 @@ export function useAdminSubscriptionPlans() {
   });
 }
 
+export function useCreateAdminSubscriptionPlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "subscriptions", "plans", "create"],
+    mutationFn: async (body: {
+      code: string;
+      name: string;
+      price_inr: number;
+      billing_interval?: "month" | "year";
+      limits?: Record<string, unknown>;
+      is_public?: boolean;
+      display_order?: number;
+      trial_days?: number;
+      allow_add_ons?: boolean;
+      is_active?: boolean;
+    }) => {
+      const res = await adminApiClient.post(`/admin/subscriptions/plans`, body);
+      return res.data;
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions", "plans"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions"] }),
+      ]);
+    },
+  });
+}
+
+export function useUpdateAdminSubscriptionPlan(planId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "subscriptions", "plans", planId, "update"],
+    mutationFn: async (body: {
+      name?: string;
+      price_inr?: number;
+      billing_interval?: "month" | "year";
+      limits?: Record<string, unknown>;
+      is_public?: boolean;
+      display_order?: number;
+      trial_days?: number;
+      allow_add_ons?: boolean;
+      is_active?: boolean;
+    }) => {
+      const res = await adminApiClient.patch(`/admin/subscriptions/plans/${planId}`, body);
+      return res.data;
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions", "plans"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions"] }),
+      ]);
+    },
+  });
+}
+
 export function useUpdateAdminSubscription(subscriptionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -112,11 +167,38 @@ export function useUpdateAdminSubscription(subscriptionId: string) {
         | "mark_past_due"
         | "mark_active"
         | "change_plan"
-        | "reconcile";
+        | "reconcile"
+        | "extend_trial"
+        | "end_trial";
       plan_code?: string;
       note?: string;
+      trial_days?: number;
     }) => {
       const res = await adminApiClient.patch(`/admin/subscriptions/${subscriptionId}`, body);
+      return res.data;
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions", subscriptionId] }),
+      ]);
+    },
+  });
+}
+
+export function useUpdateAdminSubscriptionOverrides(subscriptionId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["admin", "subscriptions", subscriptionId, "overrides"],
+    mutationFn: async (body: {
+      extra_full_seats?: number;
+      extra_view_only_seats?: number;
+      invoice_uplift_per_month?: number;
+      company_uplift?: number;
+      enforcement_mode?: "hard_block" | "wallet_overage" | "warn_only";
+      note?: string;
+    }) => {
+      const res = await adminApiClient.post(`/admin/subscriptions/${subscriptionId}/overrides`, body);
       return res.data;
     },
     onSuccess: async () => {

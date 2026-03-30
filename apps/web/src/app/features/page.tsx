@@ -31,17 +31,15 @@ export default function FeaturesPage() {
               ].map(([title, body], index) => (
                 <div
                   key={title}
-                  className={`rounded-[30px] border border-[rgba(23,32,51,0.08)] p-6 shadow-[var(--shadow-soft)] ${
-                    index === 1 ? "bg-[rgba(23,32,51,0.95)] text-white" : "bg-[rgba(255,255,255,0.78)]"
-                  }`}
+                  className={`rounded-[30px] p-6 ${index === 1 ? "public-card-strong-surface" : "public-card-surface"}`}
                 >
-                  <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-white/56" : "text-[var(--muted)]"}`}>
+                  <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-[var(--public-card-strong-muted)]" : "text-[var(--muted)]"}`}>
                     Workflow band
                   </div>
                   <div className={`mt-3 font-display text-3xl font-semibold tracking-[-0.04em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>
                     {title}
                   </div>
-                  <div className={`mt-2 text-sm leading-6 ${index === 1 ? "text-white/76" : "text-[var(--muted-strong)]"}`}>{body}</div>
+                  <div className={`mt-2 text-sm leading-6 ${index === 1 ? "text-[var(--public-card-strong-muted)]" : "text-[var(--muted-strong)]"}`}>{body}</div>
                 </div>
               ))}
             </div>
@@ -88,7 +86,7 @@ export default function FeaturesPage() {
             ],
           },
         ].map((section) => (
-          <div key={section.title} className="grid gap-5 border-t border-[rgba(23,32,51,0.08)] pt-8 lg:grid-cols-[0.75fr_1.25fr]">
+          <div key={section.title} className="grid gap-5 border-t border-[var(--public-border)] pt-8 lg:grid-cols-[0.75fr_1.25fr]">
             <div className="space-y-4">
               <div className="flex items-center gap-3">{section.icon}<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Capability area</div></div>
               <h2 className="font-display text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)]">{section.title}</h2>
@@ -96,7 +94,7 @@ export default function FeaturesPage() {
             </div>
             <div className="space-y-4">
               {section.points.map((point) => (
-                <div key={point} className="border-t border-[rgba(23,32,51,0.08)] pt-4 text-sm leading-6 text-[var(--muted-strong)] first:border-t-0 first:pt-0">
+                <div key={point} className="border-t border-[var(--public-border)] pt-4 text-sm leading-6 text-[var(--muted-strong)] first:border-t-0 first:pt-0">
                   {point}
                 </div>
               ))}

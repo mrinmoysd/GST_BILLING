@@ -43,13 +43,11 @@ export default function AboutPage() {
               ].map((item, index) => (
                 <div
                   key={item.title}
-                  className={`rounded-[30px] border border-[rgba(23,32,51,0.08)] p-6 shadow-[var(--shadow-soft)] ${
-                    index === 1 ? "bg-[rgba(23,32,51,0.95)] text-white" : "bg-[rgba(255,255,255,0.78)]"
-                  }`}
+                  className={`rounded-[30px] p-6 ${index === 1 ? "public-card-strong-surface" : "public-card-surface"}`}
                 >
-                  <div className="flex items-center gap-3">{item.icon}<div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-white/56" : "text-[var(--muted)]"}`}>Design principle</div></div>
+                  <div className="flex items-center gap-3">{item.icon}<div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${index === 1 ? "text-[var(--public-card-strong-muted)]" : "text-[var(--muted)]"}`}>Design principle</div></div>
                   <div className={`mt-4 font-display text-3xl leading-[0.96] font-semibold tracking-[-0.04em] ${index === 1 ? "text-white" : "text-[var(--foreground)]"}`}>{item.title}</div>
-                  <div className={`mt-3 text-sm leading-7 ${index === 1 ? "text-white/74" : "text-[var(--muted-strong)]"}`}>{item.body}</div>
+                  <div className={`mt-3 text-sm leading-7 ${index === 1 ? "text-[var(--public-card-strong-muted)]" : "text-[var(--muted-strong)]"}`}>{item.body}</div>
                 </div>
               ))}
             </div>
@@ -77,7 +75,7 @@ export default function AboutPage() {
             "Growing teams moving from ad hoc tools into a more governed product environment.",
             "Founders and finance-aware operators who need one system for billing, tax, inventory, and review.",
           ].map((point) => (
-            <div key={point} className="grid gap-3 border-t border-[rgba(23,32,51,0.08)] pt-4 md:grid-cols-[20px_1fr]">
+            <div key={point} className="grid gap-3 border-t border-[var(--public-border)] pt-4 md:grid-cols-[20px_1fr]">
               <ArrowRight className="mt-1 h-4 w-4 text-[var(--accent)]" />
               <div className="text-sm leading-7 text-[var(--muted-strong)]">{point}</div>
             </div>

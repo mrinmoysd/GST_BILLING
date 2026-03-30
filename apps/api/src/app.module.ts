@@ -31,6 +31,7 @@ import { PricingModule } from './pricing/pricing.module';
 import { FinanceOpsModule } from './finance-ops/finance-ops.module';
 import { FieldSalesModule } from './field-sales/field-sales.module';
 import { MigrationOpsModule } from './migration-ops/migration-ops.module';
+import { RbacModule } from './rbac/rbac.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { MigrationOpsModule } from './migration-ops/migration-ops.module';
     FinanceOpsModule,
     FieldSalesModule,
     MigrationOpsModule,
+    RbacModule,
   ],
   controllers: [AppController],
   providers: [AppService],

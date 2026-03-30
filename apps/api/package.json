@@ -24,7 +24,8 @@
     "prisma:migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy --schema ../../prisma/schema.prisma",
     "seed:auth": "dotenv -e ../../.env -- ts-node src/auth/auth.seed.ts",
     "seed:full": "dotenv -e ../../.env -- ts-node src/seed/full.seed.ts",
-    "seed:distributor": "dotenv -e ../../.env -- ts-node src/seed/distributor.seed.ts"
+    "seed:distributor": "dotenv -e ../../.env -- ts-node src/seed/distributor.seed.ts",
+    "seed:comprehensive": "dotenv -e ../../.env -- ts-node src/seed/comprehensive.seed.ts"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",

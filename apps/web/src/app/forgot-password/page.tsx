@@ -47,9 +47,9 @@ export default function ForgotPasswordPage() {
         <div className="space-y-4">
             <TextField label="Email" value={email} onChange={setEmail} type="email" />
             {error ? <InlineError message={error} /> : null}
-            {message ? <div className="rounded-[22px] border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-800">{message}</div> : null}
+            {message ? <div className="rounded-[22px] border border-[var(--success-soft)] bg-[var(--success-soft)] p-4 text-sm text-[var(--foreground)]">{message}</div> : null}
             {devResetPath ? (
-              <div className="rounded-[24px] border border-[rgba(23,32,51,0.08)] bg-[rgba(245,247,250,0.9)] p-4 text-sm">
+              <div className="public-card-soft-surface rounded-[24px] p-4 text-sm">
                 <div className="font-medium text-[var(--foreground)]">Development reset link</div>
                 <Link className="mt-2 inline-block text-[var(--accent)] underline" href={devResetPath}>
                   {devResetPath}

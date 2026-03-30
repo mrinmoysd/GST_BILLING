@@ -13,6 +13,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
 import { AuthUser } from '../common/auth/auth-user.decorator';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import {
   AssignCustomerCoverageDto,
   CreateCollectionUpdateDto,
@@ -42,7 +44,8 @@ import { FieldSalesService } from './field-sales.service';
 @ApiTags('FieldSales')
 @ApiBearerAuth()
 @Controller('/api/companies/:companyId/field-sales')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('field_sales.manage_masters')
 export class FieldSalesController {
   constructor(private readonly fieldSales: FieldSalesService) {}
 
@@ -177,6 +180,7 @@ export class FieldSalesController {
   }
 
   @Post('visit-plans/generate')
+  @RequirePermissions('field_sales.view_team_worklists')
   generateVisitPlans(
     @Param('companyId') companyId: string,
     @Body() dto: GenerateVisitPlansDto,
@@ -186,6 +190,7 @@ export class FieldSalesController {
   }
 
   @Get('visit-plans')
+  @RequirePermissions('field_sales.view_team_worklists')
   listVisitPlans(
     @Param('companyId') companyId: string,
     @Query('date') date: string,
@@ -195,6 +200,7 @@ export class FieldSalesController {
   }
 
   @Post('visit-plans')
+  @RequirePermissions('field_sales.view_team_worklists')
   createVisitPlan(
     @Param('companyId') companyId: string,
     @Body() dto: CreateVisitPlanDto,
@@ -204,6 +210,7 @@ export class FieldSalesController {
   }
 
   @Patch('visit-plans/:visitPlanId')
+  @RequirePermissions('field_sales.view_team_worklists')
   updateVisitPlan(
     @Param('companyId') companyId: string,
     @Param('visitPlanId') visitPlanId: string,
@@ -213,6 +220,7 @@ export class FieldSalesController {
   }
 
   @Get('my/worklist')
+  @RequirePermissions('field_sales.log_visits')
   myWorklist(
     @Param('companyId') companyId: string,
     @Query('date') date: string,
@@ -222,6 +230,7 @@ export class FieldSalesController {
   }
 
   @Get('my/customers')
+  @RequirePermissions('field_sales.log_visits')
   myCustomers(
     @Param('companyId') companyId: string,
     @AuthUser() user: { sub: string },
@@ -230,6 +239,7 @@ export class FieldSalesController {
   }
 
   @Get('my/summary')
+  @RequirePermissions('field_sales.log_visits')
   mySummary(
     @Param('companyId') companyId: string,
     @Query('date') date: string,
@@ -239,6 +249,7 @@ export class FieldSalesController {
   }
 
   @Get('visits/:visitId')
+  @RequirePermissions('field_sales.log_visits')
   getVisit(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -247,6 +258,7 @@ export class FieldSalesController {
   }
 
   @Post('visits')
+  @RequirePermissions('field_sales.log_visits')
   createVisit(
     @Param('companyId') companyId: string,
     @Body() dto: CreateVisitDto,
@@ -256,6 +268,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/check-in')
+  @RequirePermissions('field_sales.log_visits')
   checkIn(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -265,6 +278,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/check-out')
+  @RequirePermissions('field_sales.log_visits')
   checkOut(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -274,6 +288,7 @@ export class FieldSalesController {
   }
 
   @Patch('visits/:visitId')
+  @RequirePermissions('field_sales.log_visits')
   updateVisit(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -283,6 +298,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/outcomes')
+  @RequirePermissions('field_sales.log_visits')
   addOutcome(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -292,6 +308,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/mark-missed')
+  @RequirePermissions('field_sales.log_visits')
   markMissed(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -301,6 +318,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/create-sales-order')
+  @RequirePermissions('field_sales.create_documents')
   createSalesOrderFromVisit(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -311,6 +329,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/create-quotation')
+  @RequirePermissions('field_sales.create_documents')
   createQuotationFromVisit(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -321,6 +340,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/collection-updates')
+  @RequirePermissions('field_sales.record_followups')
   createCollectionUpdate(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -330,6 +350,7 @@ export class FieldSalesController {
   }
 
   @Post('visits/:visitId/promises')
+  @RequirePermissions('field_sales.record_followups')
   createPromise(
     @Param('companyId') companyId: string,
     @Param('visitId') visitId: string,
@@ -339,6 +360,7 @@ export class FieldSalesController {
   }
 
   @Get('dcr')
+  @RequirePermissions('field_sales.submit_dcr')
   getDcr(
     @Param('companyId') companyId: string,
     @Query('date') date: string,
@@ -348,6 +370,7 @@ export class FieldSalesController {
   }
 
   @Post('dcr/submit')
+  @RequirePermissions('field_sales.submit_dcr')
   submitDcr(
     @Param('companyId') companyId: string,
     @Body() dto: SubmitDcrDto,
@@ -357,6 +380,7 @@ export class FieldSalesController {
   }
 
   @Post('dcr/:dcrId/reopen')
+  @RequirePermissions('field_sales.review_dcr')
   reopenDcr(
     @Param('companyId') companyId: string,
     @Param('dcrId') dcrId: string,
@@ -367,6 +391,7 @@ export class FieldSalesController {
   }
 
   @Post('dcr/:dcrId/approve')
+  @RequirePermissions('field_sales.review_dcr')
   approveDcr(
     @Param('companyId') companyId: string,
     @Param('dcrId') dcrId: string,

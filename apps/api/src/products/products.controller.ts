@@ -14,6 +14,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { CompanyScopeGuard } from '../common/auth/company-scope.guard';
+import { PermissionGuard } from '../common/auth/permission.guard';
+import { RequirePermissions } from '../common/auth/require-permissions.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { StockAdjustmentDto } from './dto/stock-adjustment.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -23,7 +25,8 @@ import { InventoryService } from '../inventory/inventory.service';
 @ApiTags('Products')
 @ApiBearerAuth()
 @Controller('api/companies/:companyId/products')
-@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard)
+@UseGuards(JwtAccessAuthGuard, CompanyScopeGuard, PermissionGuard)
+@RequirePermissions('masters.view')
 export class ProductsController {
   constructor(
     private readonly products: ProductsService,
@@ -47,6 +50,7 @@ export class ProductsController {
   }
 
   @Post()
+  @RequirePermissions('masters.manage')
   async create(
     @Param('companyId') companyId: string,
     @Body() dto: CreateProductDto,
@@ -65,6 +69,7 @@ export class ProductsController {
   }
 
   @Patch(':productId')
+  @RequirePermissions('masters.manage')
   async update(
     @Param('companyId') companyId: string,
     @Param('productId') productId: string,
@@ -75,6 +80,7 @@ export class ProductsController {
   }
 
   @Delete(':productId')
+  @RequirePermissions('masters.manage')
   async remove(
     @Param('companyId') companyId: string,
     @Param('productId') productId: string,
@@ -84,6 +90,7 @@ export class ProductsController {
   }
 
   @Post(':productId/stock-adjustment')
+  @RequirePermissions('inventory.manage')
   async stockAdjustment(
     @Param('companyId') companyId: string,
     @Param('productId') productId: string,
