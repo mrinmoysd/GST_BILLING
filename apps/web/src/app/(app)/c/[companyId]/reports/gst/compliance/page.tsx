@@ -4,6 +4,8 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useInvoiceComplianceExceptions } from "@/lib/billing/hooks";
+import { type InvoiceComplianceExceptionRow } from "@/lib/billing/types";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -26,7 +28,15 @@ export default function GstComplianceExceptionsPage({ params }: Props) {
     limit: 100,
   });
 
-  const rows = React.useMemo(() => query.data?.data.data ?? [], [query.data]);
+  const rows = React.useMemo(() => {
+    const payload = query.data?.data as
+      | InvoiceComplianceExceptionRow[]
+      | { data?: InvoiceComplianceExceptionRow[] }
+      | undefined;
+    return Array.isArray(payload)
+      ? payload
+      : (payload?.data ?? []);
+  }, [query.data]);
   const counts = React.useMemo(() => {
     const blocked = rows.filter((row) => String(row.e_invoice_status ?? "").toUpperCase() === "BLOCKED").length;
     const pending = rows.filter((row) =>
@@ -137,7 +147,7 @@ export default function GstComplianceExceptionsPage({ params }: Props) {
                 <QueueRowStateBadge label={selectedRow.customer_name} variant="outline" />
                 <QueueMetaList
                   items={[
-                    { label: "Issue date", value: selectedRow.issue_date ?? "—" },
+                    { label: "Issue date", value: formatDateLabel(selectedRow.issue_date) },
                     { label: "Total", value: selectedRow.total.toFixed(2) },
                     { label: "E-invoice", value: `${selectedRow.e_invoice_status} · ${selectedRow.e_invoice_eligibility_status}` },
                     { label: "E-way bill", value: `${selectedRow.e_way_bill_status} · ${selectedRow.e_way_bill_eligibility_status}` },
@@ -168,7 +178,7 @@ export default function GstComplianceExceptionsPage({ params }: Props) {
                 >
                   <DataTd>
                     <div className="font-medium">{row.invoice_number}</div>
-                    <div className="text-xs text-[var(--muted)]">{row.issue_date ?? "—"} · {row.total.toFixed(2)}</div>
+                    <div className="text-xs text-[var(--muted)]">{formatDateLabel(row.issue_date)} · {row.total.toFixed(2)}</div>
                   </DataTd>
                   <DataTd>{row.customer_name}</DataTd>
                   <DataTd>

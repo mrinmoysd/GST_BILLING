@@ -4,6 +4,9 @@ import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  type SalespersonCollectionsRow,
+  type SalespersonOutstandingRow,
+  type SalespersonSalesRow,
   useCollectionsBySalesperson,
   useOutstandingBySalesperson,
   useSalesBySalesperson,
@@ -31,9 +34,18 @@ export default function SalesTeamReportPage({ params }: Props) {
   const collections = useCollectionsBySalesperson({ companyId, from: from || undefined, to: to || undefined });
   const outstanding = useOutstandingBySalesperson({ companyId, asOf: asOf || undefined });
 
-  const salesRows = sales.data?.data.data ?? [];
-  const collectionRows = collections.data?.data.data ?? [];
-  const outstandingRows = outstanding.data?.data.data ?? [];
+  const salesPayload = sales.data?.data as SalespersonSalesRow[] | { data?: SalespersonSalesRow[] } | undefined;
+  const collectionsPayload = collections.data?.data as SalespersonCollectionsRow[] | { data?: SalespersonCollectionsRow[] } | undefined;
+  const outstandingPayload = outstanding.data?.data as SalespersonOutstandingRow[] | { data?: SalespersonOutstandingRow[] } | undefined;
+  const salesRows = Array.isArray(salesPayload)
+    ? salesPayload
+    : (salesPayload?.data ?? []);
+  const collectionRows = Array.isArray(collectionsPayload)
+    ? collectionsPayload
+    : (collectionsPayload?.data ?? []);
+  const outstandingRows = Array.isArray(outstandingPayload)
+    ? outstandingPayload
+    : (outstandingPayload?.data ?? []);
 
   const totalSales = salesRows.reduce((sum, row) => sum + row.gross_sales, 0);
   const totalCollections = collectionRows.reduce((sum, row) => sum + row.collections_amount, 0);

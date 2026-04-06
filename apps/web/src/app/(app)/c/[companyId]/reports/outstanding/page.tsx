@@ -4,7 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOutstandingInvoices } from "@/lib/reports/hooks";
+import { type OutstandingInvoiceRow, useOutstandingInvoices } from "@/lib/reports/hooks";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { TextField } from "@/lib/ui/form";
@@ -18,7 +19,10 @@ export default function OutstandingInvoicesPage({ params }: Props) {
   const [q, setQ] = React.useState("");
   const query = useOutstandingInvoices({ companyId: companyId, q: q || undefined, page: 1, limit: 50 });
 
-  const rows = query.data?.data.data ?? [];
+  const payload = query.data?.data as OutstandingInvoiceRow[] | { data?: OutstandingInvoiceRow[] } | undefined;
+  const rows = Array.isArray(payload)
+    ? payload
+    : (payload?.data ?? []);
 
   return (
     <div className="space-y-7">
@@ -74,8 +78,8 @@ export default function OutstandingInvoicesPage({ params }: Props) {
                         )}
                       </DataTd>
                       <DataTd>{r.customer_name ?? "—"}</DataTd>
-                      <DataTd>{r.issue_date ?? "—"}</DataTd>
-                      <DataTd>{r.due_date ?? "—"}</DataTd>
+                      <DataTd>{formatDateLabel(r.issue_date)}</DataTd>
+                      <DataTd>{formatDateLabel(r.due_date)}</DataTd>
                       <DataTd className="text-right">{Number(r.amount_due ?? 0).toFixed(2)}</DataTd>
                       <DataTd className="text-right">{r.overdue_days ?? 0}</DataTd>
                     </DataTr>

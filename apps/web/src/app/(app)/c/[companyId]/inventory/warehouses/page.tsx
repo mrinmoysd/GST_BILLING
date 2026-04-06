@@ -31,10 +31,10 @@ export default function WarehousesPage({ params }: Props) {
     enabled: Boolean(selectedWarehouseId),
   });
 
-  const rows = React.useMemo(() => list.data?.data.data ?? [], [list.data]);
+  const rows = React.useMemo(() => (Array.isArray(list.data?.data) ? list.data.data : []), [list.data]);
   const stockRows =
-    selectedWarehouseId && Array.isArray(stock.data?.data.data)
-      ? stock.data.data.data
+    selectedWarehouseId && Array.isArray(stock.data?.data)
+      ? stock.data.data
       : [];
 
   React.useEffect(() => {

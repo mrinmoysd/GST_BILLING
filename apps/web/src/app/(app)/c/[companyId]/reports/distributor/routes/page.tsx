@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { useRouteCoverage, useRouteOutstanding } from "@/lib/reports/hooks";
+import { type RouteCoverageRow, type RouteOutstandingRow, useRouteCoverage, useRouteOutstanding } from "@/lib/reports/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -22,8 +22,14 @@ export default function RouteCoverageReportPage({ params }: Props) {
   const coverage = useRouteCoverage({ companyId, from: from || undefined, to: to || undefined });
   const outstanding = useRouteOutstanding({ companyId, asOf: asOf || undefined });
 
-  const coverageRows = coverage.data?.data?.data ?? [];
-  const outstandingRows = outstanding.data?.data?.data ?? [];
+  const coveragePayload = coverage.data?.data as RouteCoverageRow[] | { data?: RouteCoverageRow[] } | undefined;
+  const outstandingPayload = outstanding.data?.data as RouteOutstandingRow[] | { data?: RouteOutstandingRow[] } | undefined;
+  const coverageRows = Array.isArray(coveragePayload)
+    ? coveragePayload
+    : (coveragePayload?.data ?? []);
+  const outstandingRows = Array.isArray(outstandingPayload)
+    ? outstandingPayload
+    : (outstandingPayload?.data ?? []);
   const totalPlanned = coverageRows.reduce((sum, row) => sum + row.planned_visits, 0);
   const totalCompleted = coverageRows.reduce((sum, row) => sum + row.completed_visits, 0);
   const totalOutstanding = outstandingRows.reduce((sum, row) => sum + row.outstanding_amount, 0);

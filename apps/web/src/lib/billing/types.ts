@@ -442,11 +442,15 @@ export type Purchase = {
   id: string;
   supplier_id: string;
   warehouse_id?: string | null;
+  warehouseId?: string | null;
   purchase_date?: string | null;
+  purchaseDate?: string | null;
   notes?: string | null;
   status?: PurchaseStatus;
   total?: string | number | null;
   billUrl?: string | null;
+  billOriginalName?: string | null;
+  bill_original_name?: string | null;
   purchaseReturns?: Array<{
     id: string;
     returnNumber?: string;

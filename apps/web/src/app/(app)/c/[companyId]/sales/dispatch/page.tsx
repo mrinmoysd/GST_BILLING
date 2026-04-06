@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { useDispatchQueue } from "@/lib/billing/hooks";
 import type { DispatchQueueRow } from "@/lib/billing/types";
+import { formatDateLabel } from "@/lib/format/date";
 import { useWarehouses } from "@/lib/masters/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SelectField, TextField } from "@/lib/ui/form";
@@ -30,18 +31,24 @@ export default function DispatchQueuePage({ params }: Props) {
     warehouse_id: warehouseId || undefined,
   });
   const warehouses = useWarehouses({ companyId, activeOnly: true });
-  const rows = React.useMemo(
-    () =>
-      (((queue.data?.data as { data?: Array<Record<string, unknown>> } | undefined)?.data ??
-        []) as DispatchQueueRow[]),
-    [queue.data?.data],
-  );
-  const warehouseRows = React.useMemo(
-    () =>
-      (((warehouses.data?.data as { data?: Array<{ id: string; name?: string; code?: string }> } | undefined)?.data ??
-        []) as Array<{ id: string; name?: string; code?: string }>),
-    [warehouses.data?.data],
-  );
+  const rows = React.useMemo(() => {
+    const payload = queue.data?.data as unknown;
+    if (Array.isArray(payload)) return payload as DispatchQueueRow[];
+    if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown[] }).data)) {
+      return (payload as { data: DispatchQueueRow[] }).data;
+    }
+    return [];
+  }, [queue.data?.data]);
+  const warehouseRows = React.useMemo(() => {
+    const payload = warehouses.data?.data as unknown;
+    if (Array.isArray(payload)) {
+      return payload as Array<{ id: string; name?: string; code?: string }>;
+    }
+    if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown[] }).data)) {
+      return (payload as { data: Array<{ id: string; name?: string; code?: string }> }).data;
+    }
+    return [];
+  }, [warehouses.data?.data]);
 
   const pendingTotal = rows.reduce(
     (sum, row) => sum + Number(row.pending_dispatch_quantity ?? 0),
@@ -177,7 +184,7 @@ export default function DispatchQueuePage({ params }: Props) {
                   <QueueMetaList
                     items={[
                       { label: "Customer", value: selectedRow.customer?.name ?? "—" },
-                      { label: "Expected dispatch", value: selectedRow.expected_dispatch_date ?? "—" },
+                      { label: "Expected dispatch", value: formatDateLabel(selectedRow.expected_dispatch_date) },
                       { label: "Pending quantity", value: Number(selectedRow.pending_dispatch_quantity ?? 0).toFixed(2) },
                       { label: "Challans", value: selectedRow.challans_count ?? 0 },
                     ]}
@@ -211,7 +218,7 @@ export default function DispatchQueuePage({ params }: Props) {
                     <DataTd>{String(row.order_number ?? row.sales_order_id)}</DataTd>
                     <DataTd>{String((row.customer as { name?: string } | undefined)?.name ?? "—")}</DataTd>
                     <DataTd><QueueRowStateBadge label={String(row.status ?? "—")} /></DataTd>
-                    <DataTd>{String(row.expected_dispatch_date ?? "—")}</DataTd>
+                    <DataTd>{formatDateLabel(String(row.expected_dispatch_date ?? ""))}</DataTd>
                     <DataTd className="text-right">{Number(row.pending_dispatch_quantity ?? 0).toFixed(2)}</DataTd>
                     <DataTd>
                       <Link

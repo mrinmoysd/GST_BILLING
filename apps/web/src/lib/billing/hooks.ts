@@ -845,6 +845,10 @@ export function invoicePdfUrl(companyId: string, invoiceId: string) {
   return apiClient.resolveUrl(companyPath(companyId, `/invoices/${invoiceId}/pdf`));
 }
 
+export function openInvoicePdf(companyId: string, invoiceId: string) {
+  return apiClient.openAuthenticatedFile(companyPath(companyId, `/invoices/${invoiceId}/pdf`));
+}
+
 export function usePurchases(args: {
   companyId: string;
   page?: number;
@@ -980,6 +984,10 @@ export function useCreatePurchaseReturn(args: { companyId: string; purchaseId: s
 
 export function purchaseBillUrl(companyId: string, purchaseId: string) {
   return apiClient.resolveUrl(companyPath(companyId, `/purchases/${purchaseId}/bill`));
+}
+
+export function openPurchaseBill(companyId: string, purchaseId: string) {
+  return apiClient.openAuthenticatedFile(companyPath(companyId, `/purchases/${purchaseId}/bill`));
 }
 
 export function useUploadPurchaseBill(args: { companyId: string; purchaseId: string }) {

@@ -2,7 +2,8 @@
 
 import * as React from "react";
 
-import { useDcrRegister, useMissedVisits, useRepVisitProductivity } from "@/lib/reports/hooks";
+import { type DcrRegisterRow, type MissedVisitRow, type RepVisitProductivityRow, useDcrRegister, useMissedVisits, useRepVisitProductivity } from "@/lib/reports/hooks";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -27,9 +28,18 @@ export default function DcrRegisterPage({ params }: Props) {
   const missed = useMissedVisits({ companyId, date, enabled: Boolean(date) });
   const productivity = useRepVisitProductivity({ companyId, from: from || undefined, to: to || undefined });
 
-  const dcrRows = dcr.data?.data?.data ?? [];
-  const missedRows = missed.data?.data?.data ?? [];
-  const productivityRows = productivity.data?.data?.data ?? [];
+  const dcrPayload = dcr.data?.data as DcrRegisterRow[] | { data?: DcrRegisterRow[] } | undefined;
+  const missedPayload = missed.data?.data as MissedVisitRow[] | { data?: MissedVisitRow[] } | undefined;
+  const productivityPayload = productivity.data?.data as RepVisitProductivityRow[] | { data?: RepVisitProductivityRow[] } | undefined;
+  const dcrRows = Array.isArray(dcrPayload)
+    ? dcrPayload
+    : (dcrPayload?.data ?? []);
+  const missedRows = Array.isArray(missedPayload)
+    ? missedPayload
+    : (missedPayload?.data ?? []);
+  const productivityRows = Array.isArray(productivityPayload)
+    ? productivityPayload
+    : (productivityPayload?.data ?? []);
   const submitted = dcrRows.filter((row) => row.status === "submitted" || row.status === "approved").length;
   const approved = dcrRows.filter((row) => row.status === "approved").length;
   const totalVisits = productivityRows.reduce((sum, row) => sum + row.visits_count, 0);
@@ -81,7 +91,7 @@ export default function DcrRegisterPage({ params }: Props) {
             <tbody>
               {dcrRows.map((row) => (
                 <DataTr key={row.id}>
-                  <DataTd>{row.report_date}</DataTd>
+                  <DataTd>{formatDateLabel(row.report_date)}</DataTd>
                   <DataTd>{row.salesperson?.name ?? row.salesperson?.email ?? "—"}</DataTd>
                   <DataTd>{row.status}</DataTd>
                   <DataTd>{row.planned_visits_count}</DataTd>

@@ -3,11 +3,15 @@
 import * as React from "react";
 
 import {
+  type CustomerOutstandingRow,
+  type ProductMovementRow,
+  type WarehouseStockRow,
   useDistributorDashboard,
   useOutstandingByCustomer,
   useProductMovement,
   useStockByWarehouse,
 } from "@/lib/reports/hooks";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -20,11 +24,6 @@ type Props = { params: Promise<{ companyId: string }> };
 
 function formatMoney(value: number) {
   return value.toFixed(2);
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return "—";
-  return value;
 }
 
 export default function DistributorAnalyticsPage({ params }: Props) {
@@ -42,9 +41,21 @@ export default function DistributorAnalyticsPage({ params }: Props) {
   const productMovement = useProductMovement({ companyId, from, to, limit: 8 });
 
   const summary = dashboard.data?.data;
-  const dueCustomers = outstandingByCustomer.data?.data.data ?? [];
-  const warehouses = stockByWarehouse.data?.data.data ?? [];
-  const movement = productMovement.data?.data.data;
+  const outstandingPayload = outstandingByCustomer.data?.data as CustomerOutstandingRow[] | { data?: CustomerOutstandingRow[] } | undefined;
+  const warehousePayload = stockByWarehouse.data?.data as WarehouseStockRow[] | { data?: WarehouseStockRow[] } | undefined;
+  const movementPayload = productMovement.data?.data as
+    | { fast_moving: ProductMovementRow[]; slow_moving: ProductMovementRow[] }
+    | { data?: { fast_moving: ProductMovementRow[]; slow_moving: ProductMovementRow[] } }
+    | undefined;
+  const dueCustomers = Array.isArray(outstandingPayload)
+    ? outstandingPayload
+    : (outstandingPayload?.data ?? []);
+  const warehouses = Array.isArray(warehousePayload)
+    ? warehousePayload
+    : (warehousePayload?.data ?? []);
+  const movement = movementPayload
+    ? ("fast_moving" in movementPayload ? movementPayload : movementPayload.data)
+    : undefined;
 
   const isLoading =
     dashboard.isLoading ||
@@ -255,7 +266,7 @@ export default function DistributorAnalyticsPage({ params }: Props) {
                           <DataTd>{row.customer_name}</DataTd>
                           <DataTd>{row.salesperson_name}</DataTd>
                           <DataTd>{row.invoices_count}</DataTd>
-                          <DataTd>{formatDate(row.oldest_due_date)}</DataTd>
+                          <DataTd>{formatDateLabel(row.oldest_due_date)}</DataTd>
                           <DataTd>{formatMoney(row.outstanding_amount)}</DataTd>
                         </DataTr>
                       ))}

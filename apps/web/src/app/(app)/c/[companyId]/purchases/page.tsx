@@ -6,6 +6,7 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
@@ -185,7 +186,7 @@ export default function PurchasesPage({ params }: Props) {
                   <QueueMetaList
                     items={[
                       { label: "Supplier", value: selectedPurchase.supplier?.name ?? "—" },
-                      { label: "Purchase date", value: selectedPurchase.purchaseDate ?? selectedPurchase.purchase_date ?? "—" },
+                      { label: "Purchase date", value: formatDateLabel(selectedPurchase.purchaseDate ?? selectedPurchase.purchase_date) },
                       { label: "Warehouse", value: selectedPurchase.warehouse?.name ?? selectedPurchase.warehouse?.code ?? "—" },
                       { label: "Total", value: selectedPurchase.total ?? "—" },
                     ]}
@@ -224,7 +225,7 @@ export default function PurchasesPage({ params }: Props) {
                     <DataTd>
                       <QueueRowStateBadge label={p.status ?? "—"} />
                     </DataTd>
-                    <DataTd>{p.purchaseDate ?? p.purchase_date ?? "—"}</DataTd>
+                    <DataTd>{formatDateLabel(p.purchaseDate ?? p.purchase_date)}</DataTd>
                     <DataTd className="text-right">{p.total ?? "—"}</DataTd>
                   </DataTr>
                 ))}

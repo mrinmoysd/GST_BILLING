@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth/session";
 import { useQuotations } from "@/lib/billing/hooks";
 import type { Quotation } from "@/lib/billing/types";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -41,11 +42,13 @@ export default function QuotationsPage({ params }: Props) {
   }
 
   function readRows(value: unknown): Quotation[] {
+    if (Array.isArray(value)) return value as Quotation[];
     if (!isRecord(value) || !Array.isArray(value.data)) return [];
     return value.data as Quotation[];
   }
 
   function readTotal(value: unknown): number {
+    if (Array.isArray(value)) return value.length;
     if (!isRecord(value)) return 0;
     if (typeof value.total === "number") return value.total;
     if (isRecord(value.meta) && typeof value.meta.total === "number") return value.meta.total;
@@ -180,8 +183,8 @@ export default function QuotationsPage({ params }: Props) {
                   </QueueQuickActions>
                   <QueueMetaList
                     items={[
-                      { label: "Issue date", value: selectedQuotation.issueDate?.slice?.(0, 10) ?? selectedQuotation.issue_date ?? "—" },
-                      { label: "Expiry", value: selectedQuotation.expiryDate?.slice?.(0, 10) ?? selectedQuotation.expiry_date ?? "—" },
+                      { label: "Issue date", value: formatDateLabel(selectedQuotation.issueDate ?? selectedQuotation.issue_date) },
+                      { label: "Expiry", value: formatDateLabel(selectedQuotation.expiryDate ?? selectedQuotation.expiry_date) },
                       {
                         label: "Salesperson",
                         value: selectedQuotation.salesperson?.name ?? selectedQuotation.salesperson?.email ?? "Unassigned",
@@ -226,7 +229,7 @@ export default function QuotationsPage({ params }: Props) {
                     <DataTd>
                       <QueueRowStateBadge label={quote.status ?? "—"} />
                     </DataTd>
-                    <DataTd>{quote.expiryDate?.slice?.(0, 10) ?? quote.expiry_date ?? "—"}</DataTd>
+                    <DataTd>{formatDateLabel(quote.expiryDate ?? quote.expiry_date)}</DataTd>
                     <DataTd className="text-right">{quote.total ?? "—"}</DataTd>
                   </DataTr>
                 ))}

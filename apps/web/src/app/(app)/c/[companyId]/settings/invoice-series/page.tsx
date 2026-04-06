@@ -30,7 +30,14 @@ export default function InvoiceSeriesSettingsPage({ params }: Props) {
   const [nextNumber, setNextNumber] = React.useState("1");
   const [error, setError] = React.useState<string | null>(null);
 
-  const rows = list.data?.data.data ?? [];
+  const rows = React.useMemo(() => {
+    const payload = list.data?.data as unknown;
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown[] }).data)) {
+      return (payload as { data: Array<{ id: string; code: string; prefix?: string | null; nextNumber: number; isActive: boolean }> }).data;
+    }
+    return [];
+  }, [list.data?.data]);
 
   return (
     <div className="space-y-7">

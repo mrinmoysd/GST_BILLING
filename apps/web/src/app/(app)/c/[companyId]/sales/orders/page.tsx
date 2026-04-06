@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth/session";
 import { useSalesOrders } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -41,11 +42,13 @@ export default function SalesOrdersPage({ params }: Props) {
   }
 
   function readRows(value: unknown): SalesOrder[] {
+    if (Array.isArray(value)) return value as SalesOrder[];
     if (!isRecord(value) || !Array.isArray(value.data)) return [];
     return value.data as SalesOrder[];
   }
 
   function readTotal(value: unknown): number {
+    if (Array.isArray(value)) return value.length;
     if (!isRecord(value)) return 0;
     if (typeof value.total === "number") return value.total;
     if (isRecord(value.meta) && typeof value.meta.total === "number") return value.meta.total;
@@ -196,10 +199,10 @@ export default function SalesOrdersPage({ params }: Props) {
                   <QueueMetaList
                     items={[
                       { label: "Customer", value: selectedOrder.customer?.name ?? "—" },
-                      { label: "Order date", value: selectedOrder.orderDate?.slice?.(0, 10) ?? selectedOrder.order_date ?? "—" },
+                      { label: "Order date", value: formatDateLabel(selectedOrder.orderDate ?? selectedOrder.order_date) },
                       {
                         label: "Expected dispatch",
-                        value: selectedOrder.expectedDispatchDate?.slice?.(0, 10) ?? selectedOrder.expected_dispatch_date ?? "—",
+                        value: formatDateLabel(selectedOrder.expectedDispatchDate ?? selectedOrder.expected_dispatch_date),
                       },
                       { label: "Total", value: selectedOrder.total ?? "—" },
                     ]}

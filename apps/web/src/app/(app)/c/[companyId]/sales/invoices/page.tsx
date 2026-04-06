@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useInvoices } from "@/lib/billing/hooks";
 import type { Invoice } from "@/lib/billing/types";
 import { useAuth } from "@/lib/auth/session";
+import { formatDateLabel } from "@/lib/format/date";
+import { useInvoiceSeries } from "@/lib/settings/invoiceSeriesHooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
@@ -21,7 +23,7 @@ function readInvoiceNumber(invoice: Invoice) {
 }
 
 function readInvoiceDate(invoice: Invoice) {
-  return invoice.issueDate ?? invoice.issue_date ?? "—";
+  return formatDateLabel(invoice.issueDate ?? invoice.issue_date);
 }
 
 
@@ -33,8 +35,21 @@ export default function InvoicesPage({ params }: Props) {
   const [savedView, setSavedView] = React.useState("all");
   const { bootstrapped } = useAuth();
   const query = useInvoices({ companyId: companyId, q, enabled: bootstrapped });
+  const seriesQuery = useInvoiceSeries(companyId);
 
   const payload = query.data as unknown;
+  const seriesRows = React.useMemo(() => {
+    const data = seriesQuery.data?.data as unknown;
+    if (Array.isArray(data)) return data as Array<{ id: string; code: string }>;
+    if (data && typeof data === "object" && Array.isArray((data as { data?: unknown[] }).data)) {
+      return (data as { data: Array<{ id: string; code: string }> }).data;
+    }
+    return [];
+  }, [seriesQuery.data?.data]);
+  const seriesCodeById = React.useMemo(
+    () => new Map(seriesRows.map((series) => [series.id, series.code])),
+    [seriesRows],
+  );
 
   function isRecord(v: unknown): v is Record<string, unknown> {
     return !!v && typeof v === "object";
@@ -180,7 +195,13 @@ export default function InvoicesPage({ params }: Props) {
                   <QueueMetaList
                     items={[
                       { label: "Issue date", value: readInvoiceDate(selectedInvoice) },
-                      { label: "Due date", value: selectedInvoice.dueDate ?? selectedInvoice.due_date ?? "—" },
+                      { label: "Due date", value: formatDateLabel(selectedInvoice.dueDate ?? selectedInvoice.due_date) },
+                      {
+                        label: "Series",
+                        value:
+                          (selectedInvoice.seriesId ? seriesCodeById.get(selectedInvoice.seriesId) : null) ??
+                          (selectedInvoice.invoiceNumber ? selectedInvoice.invoiceNumber.split("-").slice(0, -1).join("-") || "Assigned" : "Assigned on issue"),
+                      },
                       { label: "Warehouse", value: selectedInvoice.warehouse?.name ?? selectedInvoice.warehouse?.code ?? "—" },
                       { label: "Total", value: selectedInvoice.total ?? "—" },
                     ]}

@@ -6,8 +6,7 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -445,21 +444,19 @@ export function SelectControl({
           sideOffset={8}
           style={contentWidth ? { width: contentWidth } : undefined}
         >
-          <DropdownMenuRadioGroup onValueChange={onChange} value={currentValue}>
-            {resolvedOptions.map((option) => (
-              <DropdownMenuRadioItem
-                className="rounded-xl px-3 py-2.5 text-sm"
-                disabled={option.disabled}
-                key={`${option.value}:${option.label}`}
-                value={option.value}
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate">{option.label}</span>
-                  {currentValue === option.value ? <Check className="ml-auto h-4 w-4 text-[var(--accent)]" /> : null}
-                </div>
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
+          {resolvedOptions.map((option) => (
+            <DropdownMenuItem
+              className="rounded-xl px-3 py-2.5 text-sm"
+              disabled={option.disabled}
+              key={`${option.value}:${option.label}`}
+              onSelect={() => onChange(option.value)}
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="truncate">{option.label}</span>
+                {currentValue === option.value ? <Check className="ml-auto h-4 w-4 text-[var(--accent)]" /> : null}
+              </div>
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -7,7 +7,7 @@ import { InvoiceCompliancePanel } from "@/components/invoices/invoice-compliance
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
-  invoicePdfUrl,
+  openInvoicePdf,
   useCancelInvoice,
   useCreateCreditNote,
   useInvoice,
@@ -19,6 +19,8 @@ import {
   useShareInvoice,
 } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
+import { useInvoiceSeries } from "@/lib/settings/invoiceSeriesHooks";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -63,19 +65,20 @@ function readInvoiceNumber(invoice: { invoiceNumber?: string | null; invoice_no?
 function readInvoiceIssueDate(
   invoice: { issueDate?: string | null; issue_date?: string | null } | null | undefined,
 ) {
-  return invoice?.issueDate ?? invoice?.issue_date ?? "—";
+  return formatDateLabel(invoice?.issueDate ?? invoice?.issue_date);
 }
 
 function readInvoiceDueDate(
   invoice: { dueDate?: string | null; due_date?: string | null } | null | undefined,
 ) {
-  return invoice?.dueDate ?? invoice?.due_date ?? "—";
+  return formatDateLabel(invoice?.dueDate ?? invoice?.due_date);
 }
 
 export default function InvoiceDetailPage({ params }: Props) {
   const { companyId, invoiceId } = React.use(params);
   const query = useInvoice({ companyId, invoiceId });
   const issue = useIssueInvoice({ companyId, invoiceId });
+  const invoiceSeries = useInvoiceSeries(companyId);
   const cancel = useCancelInvoice({ companyId, invoiceId });
   const credit = useCreateCreditNote({ companyId, invoiceId });
   const share = useShareInvoice({ companyId, invoiceId });
@@ -106,6 +109,29 @@ export default function InvoiceDetailPage({ params }: Props) {
   const [shareMessage, setShareMessage] = React.useState("");
 
   const invoice = query.data?.data;
+  const seriesOptions = React.useMemo(() => {
+    const payload = invoiceSeries.data?.data as unknown;
+    const rows = Array.isArray(payload)
+      ? payload
+      : payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown[] }).data)
+        ? (payload as { data: Array<{ code: string; isActive?: boolean }> }).data
+        : [];
+    return rows
+      .filter((row) => row && typeof row === "object" && ((row as { isActive?: boolean }).isActive ?? true))
+      .map((row) => ({
+        value: (row as { code: string }).code,
+        label: (row as { code: string; prefix?: string | null }).prefix
+          ? `${(row as { code: string }).code} • ${(row as { prefix?: string | null }).prefix}`
+          : (row as { code: string }).code,
+      }));
+  }, [invoiceSeries.data?.data]);
+
+  React.useEffect(() => {
+    if (!seriesOptions.length) return;
+    if (!seriesOptions.some((option) => option.value === seriesCode)) {
+      setSeriesCode(seriesOptions[0]?.value ?? "DEFAULT");
+    }
+  }, [seriesCode, seriesOptions]);
   const items = React.useMemo(() => (invoice?.items ?? []) as InvoiceItemLike[], [invoice?.items]);
   const creditNotes = React.useMemo(() => invoice?.creditNotes ?? [], [invoice?.creditNotes]);
   const shares = React.useMemo(() => invoice?.shares ?? [], [invoice?.shares]);
@@ -160,7 +186,25 @@ export default function InvoiceDetailPage({ params }: Props) {
           <Link href={`/c/${companyId}/pos/receipt/${invoiceId}`}>
             <SecondaryButton type="button" className="w-full justify-start">Receipt view</SecondaryButton>
           </Link>
-          <SecondaryButton type="button" className="w-full justify-start" onClick={() => window.open(invoicePdfUrl(companyId, invoiceId), "_blank", "noopener,noreferrer")}>
+          <SecondaryButton
+            type="button"
+            className="w-full justify-start"
+            onClick={async () => {
+              setError(null);
+              try {
+                await openInvoicePdf(companyId, invoiceId);
+              } catch (e: unknown) {
+                const message = getErrorMessage(e, "Failed to open invoice PDF.");
+                setError(message);
+                toastError(e, {
+                  fallback: "Failed to open invoice PDF.",
+                  title: message,
+                  context: "invoice-open-pdf",
+                  metadata: { companyId, invoiceId },
+                });
+              }
+            }}
+          >
             Open PDF
           </SecondaryButton>
           <SecondaryButton
@@ -301,7 +345,12 @@ export default function InvoiceDetailPage({ params }: Props) {
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Series code</div>
                   <div className="mt-3 flex flex-wrap items-end gap-3">
                     <div className="min-w-[220px] flex-1">
-                      <TextField label="Series code" value={seriesCode} onChange={setSeriesCode} />
+                      <SelectField
+                        label="Series code"
+                        value={seriesCode}
+                        onChange={setSeriesCode}
+                        options={seriesOptions.length ? seriesOptions : [{ value: "DEFAULT", label: "DEFAULT" }]}
+                      />
                     </div>
                     <PrimaryButton
                       type="button"

@@ -69,17 +69,17 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
   const [assignmentRouteId, setAssignmentRouteId] = React.useState("");
   const [assignmentBeatId, setAssignmentBeatId] = React.useState("");
 
-  const customerRows =
-    (((customers.data as unknown as { data?: { data?: Array<{ id: string; name: string }> } })?.data?.data) ?? []);
+  const customerRows = Array.isArray(customers.data?.data) ? customers.data.data : [];
   const salespersonRows = Array.isArray(salespeople.data?.data) ? salespeople.data.data : [];
-  const territoryRows = territories.data?.data?.data ?? [];
-  const routeRows = routes.data?.data?.data ?? [];
-  const beatRows = beats.data?.data?.data ?? [];
-  const coverageRows = coverage.data?.data?.data ?? [];
+  const territoryRows = Array.isArray(territories.data?.data) ? territories.data.data : [];
+  const routeRows = Array.isArray(routes.data?.data) ? routes.data.data : [];
+  const beatRows = Array.isArray(beats.data?.data) ? beats.data.data : [];
+  const coverageRows = Array.isArray(coverage.data?.data) ? coverage.data.data : [];
   const warehouseRows = Array.isArray(warehouses.data?.data) ? warehouses.data.data : [];
 
   const assignmentMutation = useCreateSalespersonAssignment(companyId, assignmentSalespersonUserId || "placeholder");
   const assignmentRows = useSalespersonAssignments(companyId, assignmentSalespersonUserId, Boolean(assignmentSalespersonUserId));
+  const assignmentListRows = Array.isArray(assignmentRows.data?.data) ? assignmentRows.data.data : [];
 
   const filteredBeatRouteRows = beatTerritoryId
     ? routeRows.filter((row) => row.territory?.id === beatTerritoryId)
@@ -133,13 +133,22 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
         ]}
       />
 
-      {territories.isLoading || routes.isLoading || beats.isLoading || coverage.isLoading ? (
+      {territories.isLoading ||
+      routes.isLoading ||
+      beats.isLoading ||
+      coverage.isLoading ||
+      customers.isLoading ||
+      salespeople.isLoading ||
+      warehouses.isLoading ? (
         <LoadingBlock label="Loading field-sales masters…" />
       ) : null}
       {territories.isError ? <InlineError message={getErrorMessage(territories.error, "Failed to load territories")} /> : null}
       {routes.isError ? <InlineError message={getErrorMessage(routes.error, "Failed to load routes")} /> : null}
       {beats.isError ? <InlineError message={getErrorMessage(beats.error, "Failed to load beats")} /> : null}
       {coverage.isError ? <InlineError message={getErrorMessage(coverage.error, "Failed to load customer coverage")} /> : null}
+      {customers.isError ? <InlineError message={getErrorMessage(customers.error, "Failed to load customers")} /> : null}
+      {salespeople.isError ? <InlineError message={getErrorMessage(salespeople.error, "Failed to load salespeople")} /> : null}
+      {warehouses.isError ? <InlineError message={getErrorMessage(warehouses.error, "Failed to load warehouses")} /> : null}
 
       <div className="grid gap-6 xl:grid-cols-3">
         <WorkspacePanel title="Create territory" subtitle="Start with sales geography and optional manager ownership.">
@@ -373,12 +382,12 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
           </form>
 
           <div className="mt-5 space-y-3">
-            {(assignmentRows.data?.data?.data ?? []).length === 0 ? (
+            {assignmentListRows.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-panel)] p-4 text-sm text-[var(--muted)]">
                 Select a salesperson to inspect or update current route ownership.
               </div>
             ) : (
-              (assignmentRows.data?.data?.data ?? []).map((assignment) => (
+              assignmentListRows.map((assignment) => (
                 <div key={assignment.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 [background-image:var(--surface-highlight)] shadow-[var(--shadow-soft)]">
                   <div className="font-medium text-[var(--foreground)]">{assignment.salesperson?.name ?? assignment.salesperson?.email ?? "Salesperson"}</div>
                   <div className="mt-1 text-sm text-[var(--muted)]">
@@ -564,9 +573,9 @@ export default function FieldSalesAssignmentsPage({ params }: Props) {
 
           {assignmentRows.isLoading ? <LoadingBlock label="Loading salesperson assignments…" /> : null}
           {assignmentRows.isError ? <InlineError message={getErrorMessage(assignmentRows.error, "Failed to load assignments")} /> : null}
-          {assignmentRows.data?.data?.data?.length ? (
+          {assignmentListRows.length ? (
             <div className="mt-5 space-y-2 text-sm text-[var(--muted-strong)]">
-              {assignmentRows.data.data.data.map((assignment) => (
+              {assignmentListRows.map((assignment) => (
                 <div key={assignment.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
                   {(assignment.route?.name ?? "No route")} {assignment.beat?.name ? `· ${assignment.beat.name}` : ""}
                 </div>

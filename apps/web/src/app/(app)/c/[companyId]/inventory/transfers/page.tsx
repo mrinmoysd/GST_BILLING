@@ -44,9 +44,9 @@ export default function TransfersPage({ params }: Props) {
     { id: "tr-1", productId: "", quantity: "1" },
   ]);
 
-  const warehouseRows = warehouses.data?.data.data ?? [];
+  const warehouseRows = Array.isArray(warehouses.data?.data) ? warehouses.data.data : [];
   const productRows = Array.isArray(products.data?.data) ? products.data.data : [];
-  const transferRows = transfers.data?.data.data ?? [];
+  const transferRows = Array.isArray(transfers.data?.data) ? transfers.data.data : [];
 
   return (
     <div className="space-y-7">

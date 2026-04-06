@@ -6,7 +6,7 @@ import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import {
-  purchaseBillUrl,
+  openPurchaseBill,
   useCancelPurchase,
   useCreatePurchaseReturn,
   usePayments,
@@ -16,6 +16,7 @@ import {
   useUploadPurchaseBill,
 } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel, formatDateTimeLabel } from "@/lib/format/date";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -61,6 +62,10 @@ export default function PurchaseDetailPage({ params }: Props) {
   const items = React.useMemo(() => (purchase?.items ?? []) as PurchaseItemLike[], [purchase?.items]);
   const purchaseReturns = React.useMemo(() => purchase?.purchaseReturns ?? [], [purchase?.purchaseReturns]);
   const lifecycleEvents = React.useMemo(() => purchase?.lifecycleEvents ?? [], [purchase?.lifecycleEvents]);
+  const purchaseStatus = String(purchase?.status ?? "").toUpperCase();
+  const isDraft = purchaseStatus === "DRAFT";
+  const hasBillAttachment = Boolean(purchase?.billUrl || purchase?.billOriginalName || purchase?.bill_original_name);
+  const purchaseDateLabel = formatDateLabel(purchase?.purchaseDate ?? purchase?.purchase_date);
 
   const returnedByItem = React.useMemo(() => {
     const bucket = new Map<string, number>();
@@ -103,26 +108,41 @@ export default function PurchaseDetailPage({ params }: Props) {
           <Link href={`/c/${companyId}/purchases`}>
             <SecondaryButton type="button" className="w-full justify-start">Back to purchases</SecondaryButton>
           </Link>
-          <a href={purchaseBillUrl(companyId, purchaseId)} target="_blank" rel="noreferrer">
-            <SecondaryButton type="button" className="w-full justify-start">Open bill attachment</SecondaryButton>
-          </a>
-          <SecondaryButton
-            type="button"
-            className="w-full justify-start"
-            disabled={receive.isPending}
-            onClick={async () => {
-              setError(null);
-              setOk(null);
-              try {
-                await receive.mutateAsync();
-                setOk("Purchase received.");
-              } catch (e: unknown) {
-                setError(getErrorMessage(e, "Failed to receive purchase"));
-              }
-            }}
-          >
-            {receive.isPending ? "Receiving…" : "Receive purchase"}
-          </SecondaryButton>
+          {hasBillAttachment ? (
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              onClick={async () => {
+                setError(null);
+                try {
+                  await openPurchaseBill(companyId, purchaseId);
+                } catch (e: unknown) {
+                  setError(getErrorMessage(e, "Failed to open bill attachment"));
+                }
+              }}
+            >
+              Open bill attachment
+            </SecondaryButton>
+          ) : null}
+          {isDraft ? (
+            <SecondaryButton
+              type="button"
+              className="w-full justify-start"
+              disabled={receive.isPending}
+              onClick={async () => {
+                setError(null);
+                setOk(null);
+                try {
+                  await receive.mutateAsync();
+                  setOk("Purchase received.");
+                } catch (e: unknown) {
+                  setError(getErrorMessage(e, "Failed to receive purchase"));
+                }
+              }}
+            >
+              {receive.isPending ? "Receiving…" : "Receive purchase"}
+            </SecondaryButton>
+          ) : null}
         </div>
       </DetailRail>
       <DetailRail
@@ -133,7 +153,7 @@ export default function PurchaseDetailPage({ params }: Props) {
         <DetailInfoList
           items={[
             { label: "Status", value: purchase.status ?? "—" },
-            { label: "Purchase date", value: purchase.purchase_date ?? "—" },
+            { label: "Purchase date", value: purchaseDateLabel },
             { label: "Warehouse", value: purchase.warehouse?.name ?? purchase.warehouse?.code ?? "—" },
             { label: "Purchase total", value: Number(purchase.total ?? 0).toFixed(2) },
             { label: "Returned", value: totalReturned.toFixed(2) },
@@ -162,8 +182,8 @@ export default function PurchaseDetailPage({ params }: Props) {
         metrics={
           purchase
             ? [
-                { label: "Purchase date", value: purchase.purchase_date ?? "—" },
-                { label: "Supplier bill", value: "Available" },
+                { label: "Purchase date", value: purchaseDateLabel },
+                { label: "Supplier bill", value: hasBillAttachment ? "Available" : "Not uploaded" },
                 { label: "Purchase total", value: Number(purchase.total ?? 0).toFixed(2) },
                 { label: "Net after returns", value: (Number(purchase.total ?? 0) - totalReturned).toFixed(2) },
               ]
@@ -189,14 +209,29 @@ export default function PurchaseDetailPage({ params }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Purchase date</div>
-                  <div className="mt-2 text-sm font-medium">{purchase.purchase_date ?? "—"}</div>
+                  <div className="mt-2 text-sm font-medium">{purchaseDateLabel}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Supplier bill</div>
                   <div className="mt-2 text-sm font-medium">
-                    <a className="text-[var(--accent)] underline" href={purchaseBillUrl(companyId, purchaseId)} target="_blank" rel="noreferrer">
-                      Download attachment
-                    </a>
+                    {hasBillAttachment ? (
+                      <button
+                        className="text-sm font-medium text-[var(--accent)] underline"
+                        type="button"
+                        onClick={async () => {
+                          setUploadError(null);
+                          try {
+                            await openPurchaseBill(companyId, purchaseId);
+                          } catch (err: unknown) {
+                            setUploadError(getErrorMessage(err, "Failed to download bill"));
+                          }
+                        }}
+                      >
+                        Download attachment
+                      </button>
+                    ) : (
+                      "Upload after receiving"
+                    )}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -213,22 +248,24 @@ export default function PurchaseDetailPage({ params }: Props) {
             <WorkspacePanel title="Document actions" subtitle="Receive stock, cancel the purchase, or upload the supplier bill." tone="muted">
               <div className="space-y-5">
                 <div className="flex flex-wrap gap-3">
-                  <PrimaryButton
-                    type="button"
-                    disabled={receive.isPending}
-                    onClick={async () => {
-                      setError(null);
-                      setOk(null);
-                      try {
-                        await receive.mutateAsync();
-                        setOk("Purchase received.");
-                      } catch (e: unknown) {
-                        setError(getErrorMessage(e, "Failed to receive purchase"));
-                      }
-                    }}
-                  >
-                    {receive.isPending ? "Receiving…" : "Receive"}
-                  </PrimaryButton>
+                  {isDraft ? (
+                    <PrimaryButton
+                      type="button"
+                      disabled={receive.isPending}
+                      onClick={async () => {
+                        setError(null);
+                        setOk(null);
+                        try {
+                          await receive.mutateAsync();
+                          setOk("Purchase received.");
+                        } catch (e: unknown) {
+                          setError(getErrorMessage(e, "Failed to receive purchase"));
+                        }
+                      }}
+                    >
+                      {receive.isPending ? "Receiving…" : "Receive"}
+                    </PrimaryButton>
+                  ) : null}
                   <SecondaryButton
                     type="button"
                     disabled={cancel.isPending}
@@ -250,28 +287,53 @@ export default function PurchaseDetailPage({ params }: Props) {
 
                 <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                   <div className="text-sm font-semibold">Bill attachment</div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <input
-                      accept="image/*,application/pdf"
-                      type="file"
-                      onChange={async (event) => {
-                        setUploadError(null);
-                        const file = event.target.files?.[0];
-                        if (!file) return;
-                        try {
-                          await uploadBill.mutateAsync(file);
-                          event.target.value = "";
-                          setOk("Bill uploaded.");
-                        } catch (err: unknown) {
-                          setUploadError(getErrorMessage(err, "Failed to upload bill"));
-                        }
-                      }}
-                    />
-                    <a className="text-sm font-medium text-[var(--accent)] underline" href={purchaseBillUrl(companyId, purchaseId)} target="_blank" rel="noreferrer">
-                      Download
-                    </a>
-                    <div className="text-xs text-[var(--muted)]">{uploadBill.isPending ? "Uploading…" : "PDF/JPG/PNG supported"}</div>
-                  </div>
+                  {isDraft ? (
+                    <div className="text-sm text-[var(--muted)]">
+                      Receive the purchase first, then upload the supplier bill so it becomes available for download.
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <input
+                        accept="image/*,application/pdf"
+                        type="file"
+                        onChange={async (event) => {
+                          setUploadError(null);
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            await uploadBill.mutateAsync(file);
+                            event.target.value = "";
+                            setOk("Bill uploaded.");
+                          } catch (err: unknown) {
+                            setUploadError(getErrorMessage(err, "Failed to upload bill"));
+                          }
+                        }}
+                      />
+                      {hasBillAttachment ? (
+                        <button
+                          className="text-sm font-medium text-[var(--accent)] underline"
+                          type="button"
+                          onClick={async () => {
+                            setUploadError(null);
+                            try {
+                              await openPurchaseBill(companyId, purchaseId);
+                            } catch (err: unknown) {
+                              setUploadError(getErrorMessage(err, "Failed to download bill"));
+                            }
+                          }}
+                        >
+                          Download
+                        </button>
+                      ) : null}
+                      <div className="text-xs text-[var(--muted)]">
+                        {uploadBill.isPending
+                          ? "Uploading…"
+                          : hasBillAttachment
+                            ? "Replace with PDF/JPG/PNG if needed"
+                            : "Upload PDF/JPG/PNG to make the bill downloadable"}
+                      </div>
+                    </div>
+                  )}
                   {uploadError ? <InlineError message={uploadError} /> : null}
                 </div>
               </div>
@@ -283,6 +345,11 @@ export default function PurchaseDetailPage({ params }: Props) {
 
           <DetailTabPanel value="returns" rail={detailRail}>
             <WorkspacePanel title="Purchase returns" subtitle="Create post-receipt returns and push the stock reversal through the workflow.">
+              {!["RECEIVED", "RETURNED_PARTIAL", "RETURNED"].includes(purchaseStatus) ? (
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                  Purchase returns become available after the stock is received.
+                </div>
+              ) : (
               <div className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <DateField label="Return date" value={returnDate} onChange={setReturnDate} />
@@ -358,12 +425,13 @@ export default function PurchaseDetailPage({ params }: Props) {
                     purchaseReturns.map((entry) => (
                       <div key={entry.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
                         <div className="font-medium text-[var(--foreground)]">{entry.returnNumber ?? entry.return_number ?? entry.id}</div>
-                        <div className="mt-1 text-[var(--muted)]">{entry.returnDate ?? entry.return_date ?? "—"} • Total {Number(entry.total ?? 0).toFixed(2)}</div>
+                        <div className="mt-1 text-[var(--muted)]">{formatDateLabel(entry.returnDate ?? entry.return_date)} • Total {Number(entry.total ?? 0).toFixed(2)}</div>
                       </div>
                     ))
                   )}
                 </div>
               </div>
+              )}
             </WorkspacePanel>
           </DetailTabPanel>
 
@@ -437,7 +505,7 @@ export default function PurchaseDetailPage({ params }: Props) {
                       <tbody>
                         {paymentsForPurchase.map((payment) => (
                           <DataTr key={payment.id}>
-                            <DataTd>{payment.paymentDate ?? payment.payment_date ?? "—"}</DataTd>
+                            <DataTd>{formatDateLabel(payment.paymentDate ?? payment.payment_date)}</DataTd>
                             <DataTd>{payment.method}</DataTd>
                             <DataTd>{payment.reference ?? "—"}</DataTd>
                             <DataTd className="text-right">{payment.amount}</DataTd>
@@ -466,7 +534,7 @@ export default function PurchaseDetailPage({ params }: Props) {
                   lifecycleEvents.map((event) => (
                     <div key={event.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm">
                       <div className="font-medium text-[var(--foreground)]">{event.summary}</div>
-                      <div className="mt-1 text-[var(--muted)]">{event.eventType ?? event.event_type ?? "event"} • {event.createdAt ?? event.created_at ?? "—"}</div>
+                      <div className="mt-1 text-[var(--muted)]">{event.eventType ?? event.event_type ?? "event"} • {formatDateTimeLabel(event.createdAt ?? event.created_at)}</div>
                     </div>
                   ))
                 )}

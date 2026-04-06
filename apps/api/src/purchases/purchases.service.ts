@@ -67,7 +67,7 @@ export class PurchasesService {
         orderBy: { createdAt: 'desc' },
         skip,
         take: args.limit,
-        include: { supplier: true },
+        include: { supplier: true, warehouse: true },
       }),
       this.prisma.purchase.count({ where }),
     ]);
@@ -80,6 +80,7 @@ export class PurchasesService {
       where: { companyId: args.companyId, id: args.purchaseId },
       include: {
         supplier: true,
+        warehouse: true,
         items: { include: { product: true, batchEntries: true } },
         purchaseReturns: {
           include: { items: { include: { product: true } } },

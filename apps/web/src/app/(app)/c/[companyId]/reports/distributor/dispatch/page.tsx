@@ -4,7 +4,8 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useWarehouses } from "@/lib/masters/hooks";
-import { useDispatchOperationsReport } from "@/lib/reports/hooks";
+import { type DispatchOperationsReport, useDispatchOperationsReport } from "@/lib/reports/hooks";
+import { formatDateLabel, formatDateTimeLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -31,10 +32,16 @@ export default function DispatchOperationsReportPage({ params }: Props) {
   });
   const warehouses = useWarehouses({ companyId, activeOnly: true });
 
-  const data = report.data?.data.data;
+  const reportPayload = report.data?.data as DispatchOperationsReport | { data?: DispatchOperationsReport } | undefined;
+  const data = Array.isArray(reportPayload)
+    ? undefined
+    : (reportPayload ? ("totals" in reportPayload ? reportPayload : (reportPayload.data ?? undefined)) : undefined);
+  const warehousePayload = warehouses.data?.data;
   const warehouseRows =
-    ((warehouses.data?.data as { data?: Array<{ id: string; name?: string; code?: string }> } | undefined)?.data ??
-      []) as Array<{ id: string; name?: string; code?: string }>;
+    (Array.isArray(warehousePayload)
+      ? warehousePayload
+      : ((warehousePayload as { data?: Array<{ id: string; name?: string; code?: string }> } | undefined)?.data ?? [])
+    ) as Array<{ id: string; name?: string; code?: string }>;
 
   return (
     <div className="space-y-7">
@@ -138,7 +145,7 @@ export default function DispatchOperationsReportPage({ params }: Props) {
                       <DataTd>{String(row.order_number ?? row.sales_order_id ?? "—")}</DataTd>
                       <DataTd>{row.customer?.name ?? "—"}</DataTd>
                       <DataTd>{row.status ?? "—"}</DataTd>
-                      <DataTd>{row.expected_dispatch_date ?? "—"}</DataTd>
+                      <DataTd>{formatDateLabel(row.expected_dispatch_date)}</DataTd>
                       <DataTd className="text-right">{formatQty(Number(row.pending_dispatch_quantity ?? 0))}</DataTd>
                       <DataTd>
                         <Link className="font-medium text-[var(--accent)] hover:underline" href={`/c/${companyId}/sales/orders/${row.sales_order_id}`}>
@@ -198,7 +205,7 @@ export default function DispatchOperationsReportPage({ params }: Props) {
                           </Link>
                         </DataTd>
                         <DataTd>{row.customer?.name ?? "—"}</DataTd>
-                        <DataTd>{row.delivered_at ? new Date(row.delivered_at).toLocaleString() : "—"}</DataTd>
+                        <DataTd>{formatDateTimeLabel(row.delivered_at)}</DataTd>
                         <DataTd className="text-right">{formatQty(row.delivered_quantity)}</DataTd>
                       </DataTr>
                     ))}
@@ -236,7 +243,7 @@ export default function DispatchOperationsReportPage({ params }: Props) {
                       <DataTd>{row.customer?.name ?? "—"}</DataTd>
                       <DataTd>{row.warehouse?.name ?? "—"}</DataTd>
                       <DataTd>{[row.transporter_name, row.vehicle_number].filter(Boolean).join(" · ") || "—"}</DataTd>
-                      <DataTd>{row.dispatched_at ? new Date(row.dispatched_at).toLocaleString() : "—"}</DataTd>
+                      <DataTd>{formatDateTimeLabel(row.dispatched_at)}</DataTd>
                       <DataTd className="text-right">{formatQty(row.dispatched_quantity)}</DataTd>
                     </DataTr>
                   ))}

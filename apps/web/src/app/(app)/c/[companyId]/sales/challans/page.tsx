@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useDeliveryChallans } from "@/lib/billing/hooks";
+import { formatDateLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -24,8 +25,14 @@ export default function DeliveryChallansPage({ params }: Props) {
     q: q || undefined,
     status: status || undefined,
   });
-  const payload = query.data?.data as { data?: Array<Record<string, unknown>>; total?: number } | undefined;
-  const rows = payload?.data ?? [];
+  const payload = query.data?.data as unknown;
+  const rows = React.useMemo(() => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown[] }).data)) {
+      return (payload as { data: Array<Record<string, unknown>> }).data;
+    }
+    return [];
+  }, [payload]);
 
   return (
     <div className="space-y-7">
@@ -78,6 +85,7 @@ export default function DeliveryChallansPage({ params }: Props) {
                   <DataTh>Order</DataTh>
                   <DataTh>Customer</DataTh>
                   <DataTh>Status</DataTh>
+                  <DataTh>Challan date</DataTh>
                   <DataTh>Warehouse</DataTh>
                   <DataTh>Invoice</DataTh>
                 </tr>
@@ -96,6 +104,7 @@ export default function DeliveryChallansPage({ params }: Props) {
                     <DataTd>{String((row.salesOrder as { orderNumber?: string; order_number?: string } | undefined)?.orderNumber ?? (row.salesOrder as { order_number?: string } | undefined)?.order_number ?? "—")}</DataTd>
                     <DataTd>{String((row.customer as { name?: string } | undefined)?.name ?? "—")}</DataTd>
                     <DataTd>{String(row.status ?? "—")}</DataTd>
+                    <DataTd>{formatDateLabel(String((row as { challanDate?: string; challan_date?: string }).challanDate ?? (row as { challan_date?: string }).challan_date ?? ""))}</DataTd>
                     <DataTd>{String((row.warehouse as { name?: string } | undefined)?.name ?? "—")}</DataTd>
                     <DataTd>
                       {(row.invoice as { id?: string; invoiceNumber?: string; invoice_number?: string } | undefined)?.id ? (

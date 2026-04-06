@@ -3,11 +3,15 @@
 import * as React from "react";
 
 import {
+  type CommercialAuditReportRow,
+  type DiscountLeakageReport,
+  type SchemeUsageRow,
   useCommercialAuditReport,
   useDiscountLeakage,
   usePriceCoverage,
   useSchemeUsage,
 } from "@/lib/reports/hooks";
+import { formatDateTimeLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -31,10 +35,19 @@ export default function CommercialReportsPage({ params }: Props) {
   const priceCoverage = usePriceCoverage({ companyId });
   const audit = useCommercialAuditReport({ companyId, limit: 50 });
 
-  const schemeRows = schemeUsage.data?.data.data ?? [];
-  const leakage = discountLeakage.data?.data.data;
+  const schemePayload = schemeUsage.data?.data as SchemeUsageRow[] | { data?: SchemeUsageRow[] } | undefined;
+  const leakagePayload = discountLeakage.data?.data as DiscountLeakageReport | { data?: DiscountLeakageReport } | undefined;
+  const auditPayload = audit.data?.data as CommercialAuditReportRow[] | { data?: CommercialAuditReportRow[] } | undefined;
+  const schemeRows = Array.isArray(schemePayload)
+    ? schemePayload
+    : (schemePayload?.data ?? []);
+  const leakage = leakagePayload
+    ? ("totals" in leakagePayload ? leakagePayload : (leakagePayload.data ?? undefined))
+    : undefined;
   const coverage = priceCoverage.data?.data;
-  const auditRows = audit.data?.data.data ?? [];
+  const auditRows = Array.isArray(auditPayload)
+    ? auditPayload
+    : (auditPayload?.data ?? []);
 
   return (
     <div className="space-y-7">
@@ -162,7 +175,7 @@ export default function CommercialReportsPage({ params }: Props) {
                 <tbody>
                   {auditRows.map((row) => (
                     <DataTr key={row.id}>
-                      <DataTd>{new Date(row.created_at).toLocaleString()}</DataTd>
+                      <DataTd>{formatDateTimeLabel(row.created_at)}</DataTd>
                       <DataTd>{row.document_type}</DataTd>
                       <DataTd>{row.override_reason || row.action}</DataTd>
                       <DataTd>{row.customer?.name ?? "—"}</DataTd>

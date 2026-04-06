@@ -3,6 +3,9 @@
 import * as React from "react";
 
 import {
+  type CreditControlDashboardReport,
+  type PayableAgingRow,
+  type ReceivableAgingRow,
   useBankingReconciliationSummary,
   useCreditControlDashboard,
   usePayableAging,
@@ -33,8 +36,22 @@ export default function CreditControlReportPage({ params }: Props) {
   const payables = usePayableAging({ companyId, as_of: asOf || undefined });
   const dashboard = useCreditControlDashboard({ companyId, as_of: asOf || undefined });
   const banking = useBankingReconciliationSummary({ companyId });
-  const dashboardData = dashboard.data?.data.data;
+  const dashboardPayload = dashboard.data?.data as
+    | CreditControlDashboardReport
+    | { data?: CreditControlDashboardReport }
+    | undefined;
+  const receivablesPayload = receivables.data?.data as ReceivableAgingRow[] | { data?: ReceivableAgingRow[] } | undefined;
+  const payablesPayload = payables.data?.data as PayableAgingRow[] | { data?: PayableAgingRow[] } | undefined;
+  const dashboardData = dashboardPayload
+    ? ("totals" in dashboardPayload ? dashboardPayload : (dashboardPayload.data ?? undefined))
+    : undefined;
   const bankingData = banking.data?.data;
+  const receivableRows = Array.isArray(receivablesPayload)
+    ? receivablesPayload
+    : (receivablesPayload?.data ?? []);
+  const payableRows = Array.isArray(payablesPayload)
+    ? payablesPayload
+    : (payablesPayload?.data ?? []);
 
   const loading =
     receivables.isLoading ||
@@ -113,7 +130,7 @@ export default function CreditControlReportPage({ params }: Props) {
                 </tr>
               </DataThead>
               <tbody>
-                {(receivables.data?.data.data ?? []).map((row) => (
+                {receivableRows.map((row) => (
                   <DataTr key={row.customer_id}>
                     <DataTd>{row.customer_name}</DataTd>
                     <DataTd>{formatMoney(row.current)}</DataTd>
@@ -142,7 +159,7 @@ export default function CreditControlReportPage({ params }: Props) {
                 </tr>
               </DataThead>
               <tbody>
-                {(payables.data?.data.data ?? []).map((row) => (
+                {payableRows.map((row) => (
                   <DataTr key={row.supplier_id}>
                     <DataTd>{row.supplier_name}</DataTd>
                     <DataTd>{formatMoney(row.current)}</DataTd>

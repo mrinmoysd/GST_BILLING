@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getErrorMessage } from "@/lib/errors";
-import { useTopProducts } from "@/lib/reports/hooks";
+import { type TopProductRow, useTopProducts } from "@/lib/reports/hooks";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -25,8 +25,14 @@ export default function TopProductsPage({ params }: Props) {
     sort_by: sortBy,
   });
 
-  const rows = query.data?.data.data ?? [];
-  const meta = query.data?.data.meta;
+  const payload = query.data?.data as
+    | TopProductRow[]
+    | { data?: TopProductRow[]; meta?: { limit?: number; sort_by?: "amount" | "quantity" } }
+    | undefined;
+  const rows = Array.isArray(payload)
+    ? payload
+    : (payload?.data ?? []);
+  const meta = Array.isArray(payload) ? undefined : payload?.meta;
 
   return (
     <div className="space-y-7">

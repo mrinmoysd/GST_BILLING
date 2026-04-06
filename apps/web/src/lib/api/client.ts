@@ -137,6 +137,62 @@ export class ApiClient {
     }
   }
 
+  private async requestBlob(
+    path: string,
+    init: RequestInit & { retryOnAuth?: boolean } = {},
+  ): Promise<Blob> {
+    try {
+      const url = `${config.apiBaseUrl}${path}`;
+      const headers = new Headers(init.headers);
+
+      if (this.accessToken) {
+        headers.set("authorization", `Bearer ${this.accessToken}`);
+      }
+
+      const res = await fetch(url, {
+        ...init,
+        headers,
+        credentials: "include",
+      });
+
+      if (res.status === 401 && init.retryOnAuth !== false) {
+        await this.refreshAccessToken();
+        if (this.accessToken) {
+          return this.requestBlob(path, { ...init, retryOnAuth: false });
+        }
+      }
+
+      if (!res.ok) {
+        const json = await tryParseJson<ApiErrorEnvelope>(res);
+        const normalized = normalizeError(
+          {
+            status: res.status,
+            code: json?.error?.code,
+            message: json?.error?.message ?? `Request failed (${res.status})`,
+            details: json?.error?.details,
+          },
+          {
+            fallback: `Request failed (${res.status})`,
+          },
+        );
+        throw toErrorPayload(normalized);
+      }
+
+      return await res.blob();
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof (error as NormalizedApiError).message === "string"
+      ) {
+        throw error;
+      }
+
+      throw toErrorPayload(normalizeError(error));
+    }
+  }
+
   get<T>(path: string, init?: RequestInit) {
     return this.request<T>(path, { method: "GET", ...(init ?? {}) });
   }
@@ -176,6 +232,29 @@ export class ApiClient {
 
   del<T>(path: string, init?: RequestInit) {
     return this.request<T>(path, { method: "DELETE", ...(init ?? {}) });
+  }
+
+  async openAuthenticatedFile(path: string) {
+    const popup =
+      typeof window !== "undefined"
+        ? window.open("", "_blank", "noopener,noreferrer")
+        : null;
+
+    try {
+      const blob = await this.requestBlob(path, { method: "GET" });
+      const objectUrl = URL.createObjectURL(blob);
+      if (popup && !popup.closed) {
+        popup.location.href = objectUrl;
+      } else if (typeof window !== "undefined") {
+        window.open(objectUrl, "_blank", "noopener,noreferrer");
+      }
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      if (popup && !popup.closed) {
+        popup.close();
+      }
+      throw error;
+    }
   }
 
   /**

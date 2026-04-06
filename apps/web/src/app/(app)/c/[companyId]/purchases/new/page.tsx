@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { useCreatePurchase } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { useProducts, useSuppliers, useWarehouses } from "@/lib/masters/hooks";
 import { toastError, toastSuccess } from "@/lib/toast";
 import {
@@ -30,6 +31,10 @@ export default function NewPurchasePage({ params }: Props) {
   const suppliers = useSuppliers({ companyId: companyId, limit: 50 });
   const products = useProducts({ companyId: companyId, limit: 50 });
   const warehouses = useWarehouses({ companyId, activeOnly: true });
+  const warehouseRows = React.useMemo(
+    () => (Array.isArray(warehouses.data?.data) ? warehouses.data.data : []),
+    [warehouses.data],
+  );
 
   const [supplierId, setSupplierId] = React.useState("");
   const [warehouseId, setWarehouseId] = React.useState("");
@@ -242,12 +247,12 @@ export default function NewPurchasePage({ params }: Props) {
                   {
                     label: "Warehouse",
                     value: warehouseId
-                      ? ((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).find((warehouse: { id: string; name: string }) => warehouse.id === warehouseId)?.name ?? "Selected")
+                      ? (warehouseRows.find((warehouse: { id: string; name: string }) => warehouse.id === warehouseId)?.name ?? "Selected")
                       : "Not set",
                   },
                   {
                     label: "Purchase date",
-                    value: purchaseDate || "Not set",
+                    value: purchaseDate ? formatDateLabel(purchaseDate) : "Not set",
                   },
                   {
                     label: "Draft lines",
@@ -298,7 +303,7 @@ export default function NewPurchasePage({ params }: Props) {
               onChange={setWarehouseId}
               options={[
                 { value: "", label: "Select warehouse (optional)" },
-                ...((Array.isArray(warehouses.data?.data.data) ? warehouses.data.data.data : []).map((warehouse: { id: string; name: string }) => ({
+                ...(warehouseRows.map((warehouse: { id: string; name: string }) => ({
                   value: warehouse.id,
                   label: warehouse.name,
                 }))),
