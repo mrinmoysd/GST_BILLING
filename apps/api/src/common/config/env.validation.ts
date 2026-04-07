@@ -47,6 +47,9 @@ export const envSchema = z.object({
   NOTIFICATIONS_EMAIL_WEBHOOK_URL: z.string().url().optional(),
   NOTIFICATIONS_SMS_WEBHOOK_URL: z.string().url().optional(),
   NOTIFICATIONS_WHATSAPP_WEBHOOK_URL: z.string().url().optional(),
+  REDIS_URL: z.string().url().optional(),
+  REDIS_HOST: z.string().min(1).optional(),
+  REDIS_PORT: z.coerce.number().int().positive().optional(),
 }).superRefine((env, ctx) => {
   if (env.COOKIE_SAMESITE === 'none' && env.COOKIE_SECURE !== true) {
     ctx.addIssue({

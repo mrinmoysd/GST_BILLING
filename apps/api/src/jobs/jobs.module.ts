@@ -14,12 +14,28 @@ import { InvoicesModule } from '../invoices/invoices.module';
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get<string>('REDIS_HOST') ?? 'localhost',
-          port: Number(config.get<string>('REDIS_PORT') ?? '6379'),
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const redisUrl = config.get<string>('REDIS_URL')?.trim();
+        if (redisUrl) {
+          const parsed = new URL(redisUrl);
+          return {
+            connection: {
+              host: parsed.hostname,
+              port: Number(parsed.port || '6379'),
+              username: parsed.username || undefined,
+              password: parsed.password || undefined,
+              tls: parsed.protocol === 'rediss:' ? {} : undefined,
+            },
+          };
+        }
+
+        return {
+          connection: {
+            host: config.get<string>('REDIS_HOST') ?? 'localhost',
+            port: Number(config.get<string>('REDIS_PORT') ?? '6379'),
+          },
+        };
+      },
     }),
     BullModule.registerQueue({ name: PDF_QUEUE_NAME }),
   ],
