@@ -26,7 +26,20 @@ export function useAdminLogout() {
   return useMutation({
     mutationKey: ["admin", "auth", "logout"],
     mutationFn: async () => {
-      await adminApiClient.post<{ ok: true }>("/admin/auth/logout");
+      // Avoid refresh-retry loops on logout; 401/403 means already logged out.
+      try {
+        await adminApiClient.post<{ ok: true }>("/admin/auth/logout", undefined, {
+          retryOnAuth: false,
+        });
+      } catch (error) {
+        const status =
+          error && typeof error === "object" && "status" in error
+            ? Number((error as { status?: unknown }).status)
+            : undefined;
+        if (status !== 401 && status !== 403) {
+          throw error;
+        }
+      }
     },
     onSettled: () => {
       clearSession();

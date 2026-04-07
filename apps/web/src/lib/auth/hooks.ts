@@ -75,8 +75,20 @@ export function useLogout() {
   return useMutation({
     mutationKey: ["auth", "logout"],
     mutationFn: async () => {
-      // API will revoke session + clear cookie.
-      await apiClient.post<{ ok: true }>("/auth/logout");
+      // Avoid refresh-retry loops on logout; 401/403 means already logged out.
+      try {
+        await apiClient.post<{ ok: true }>("/auth/logout", undefined, {
+          retryOnAuth: false,
+        });
+      } catch (error) {
+        const status =
+          error && typeof error === "object" && "status" in error
+            ? Number((error as { status?: unknown }).status)
+            : undefined;
+        if (status !== 401 && status !== 403) {
+          throw error;
+        }
+      }
     },
     onSettled: () => {
       // Always clear client memory even if the network call fails.

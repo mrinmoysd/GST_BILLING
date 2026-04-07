@@ -141,7 +141,7 @@ export class AdminApiClient {
     return this.request<T>(path, { method: "GET", ...(init ?? {}) });
   }
 
-  post<T>(path: string, body?: unknown, init?: RequestInit) {
+  post<T>(path: string, body?: unknown, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, {
       method: "POST",
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -149,7 +149,7 @@ export class AdminApiClient {
     });
   }
 
-  patch<T>(path: string, body?: unknown, init?: RequestInit) {
+  patch<T>(path: string, body?: unknown, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, {
       method: "PATCH",
       body: body === undefined ? undefined : JSON.stringify(body),

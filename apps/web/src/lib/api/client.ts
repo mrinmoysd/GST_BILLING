@@ -197,7 +197,7 @@ export class ApiClient {
     return this.request<T>(path, { method: "GET", ...(init ?? {}) });
   }
 
-  post<T>(path: string, body?: unknown, init?: RequestInit) {
+  post<T>(path: string, body?: unknown, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, {
       method: "POST",
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -214,7 +214,7 @@ export class ApiClient {
     });
   }
 
-  patch<T>(path: string, body?: unknown, init?: RequestInit) {
+  patch<T>(path: string, body?: unknown, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, {
       method: "PATCH",
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -222,7 +222,7 @@ export class ApiClient {
     });
   }
 
-  put<T>(path: string, body?: unknown, init?: RequestInit) {
+  put<T>(path: string, body?: unknown, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, {
       method: "PUT",
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -230,7 +230,7 @@ export class ApiClient {
     });
   }
 
-  del<T>(path: string, init?: RequestInit) {
+  del<T>(path: string, init?: RequestInit & { retryOnAuth?: boolean }) {
     return this.request<T>(path, { method: "DELETE", ...(init ?? {}) });
   }
 
