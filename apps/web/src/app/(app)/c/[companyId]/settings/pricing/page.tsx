@@ -5,6 +5,7 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
+import { formatProductOptionLabel } from "@/lib/masters/product-units";
 import {
   useCommercialAuditLogs,
   useCommercialSchemes,
@@ -116,8 +117,8 @@ export default function PricingSettingsPage({ params }: Props) {
                 <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Discount and margin policies force operators to explain manual commercial overrides.</div>
               </div>
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Operational target</div>
-                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Keep the pricing setup compact here so quote, order, and invoice forms stay fast later.</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Historical behavior</div>
+                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Product sell price is the default fallback, while time-windowed price lists and special rates change future selling rates without rewriting historical documents.</div>
               </div>
             </div>
           </PageContextStrip>
@@ -236,7 +237,7 @@ export default function PricingSettingsPage({ params }: Props) {
                   <option value="">Select…</option>
                   {productOptions.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {formatProductOptionLabel(product)}
                     </option>
                   ))}
                 </SelectField>
@@ -331,7 +332,7 @@ export default function PricingSettingsPage({ params }: Props) {
                   <option value="">All products</option>
                   {productOptions.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {formatProductOptionLabel(product)}
                     </option>
                   ))}
                 </SelectField>
@@ -398,7 +399,7 @@ export default function PricingSettingsPage({ params }: Props) {
                   <option value="">Select…</option>
                   {productOptions.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {formatProductOptionLabel(product)}
                     </option>
                   ))}
                 </SelectField>

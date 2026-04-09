@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { useCreateSalesOrder } from "@/lib/billing/hooks";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
+import { formatProductOptionLabel, formatUnitLabel } from "@/lib/masters/product-units";
 import { usePricingPreview } from "@/lib/pricing/hooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
 import {
@@ -460,11 +461,14 @@ export default function NewSalesOrderPage({ params }: Props) {
                               <option value="">Select…</option>
                               {productRows.map((product) => (
                                 <option key={product.id} value={product.id}>
-                                  {product.name}
+                                  {formatProductOptionLabel(product)}
                                 </option>
                               ))}
                             </SelectField>
                             <div className="mt-1 text-xs text-[var(--muted)]">Line {index + 1}</div>
+                            <div className="mt-1 text-xs text-[var(--muted)]">
+                              Unit {formatUnitLabel(productRows.find((product) => product.id === line.productId)?.unit)}
+                            </div>
                             {line.productId ? (
                               <div className="mt-1 text-xs text-[var(--muted)]">
                                 {line.pricingHint ||

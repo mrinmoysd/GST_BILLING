@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { useProducts } from "@/lib/masters/hooks";
+import { formatQuantityWithUnit, formatUnitLabel } from "@/lib/masters/product-units";
 import type { Product } from "@/lib/masters/types";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
@@ -162,10 +163,11 @@ export default function ProductsPage({ params }: Props) {
                   <QueueMetaList
                     items={[
                       { label: "SKU", value: selectedProduct.sku ?? "—" },
+                      { label: "Unit", value: formatUnitLabel(selectedProduct.unit) },
                       { label: "HSN", value: selectedProduct.hsn ?? "—" },
                       { label: "Price", value: selectedProduct.price ?? "—" },
                       { label: "Tax rate", value: selectedProduct.taxRate ?? "—" },
-                      { label: "Stock", value: selectedProduct.stock ?? "—" },
+                      { label: "Stock", value: formatQuantityWithUnit(selectedProduct.stock, selectedProduct.unit) },
                       { label: "Batch policy", value: selectedProduct.batchIssuePolicy ?? selectedProduct.batch_issue_policy ?? "—" },
                     ]}
                   />
@@ -183,6 +185,7 @@ export default function ProductsPage({ params }: Props) {
                   <DataTh>Name</DataTh>
                   <DataTh>SKU</DataTh>
                   <DataTh>HSN</DataTh>
+                  <DataTh>Unit</DataTh>
                   <DataTh>Tracking</DataTh>
                   <DataTh className="text-right">Stock</DataTh>
                 </tr>
@@ -204,6 +207,7 @@ export default function ProductsPage({ params }: Props) {
                     </DataTd>
                     <DataTd>{p.sku ?? "—"}</DataTd>
                     <DataTd>{p.hsn ?? "—"}</DataTd>
+                    <DataTd>{formatUnitLabel(p.unit)}</DataTd>
                     <DataTd>
                       {Boolean(p.batchTrackingEnabled ?? p.batch_tracking_enabled)
                         ? Boolean(p.expiryTrackingEnabled ?? p.expiry_tracking_enabled)
@@ -211,7 +215,7 @@ export default function ProductsPage({ params }: Props) {
                           : "Batch"
                         : "Standard"}
                     </DataTd>
-                    <DataTd className="text-right">{p.stock ?? "—"}</DataTd>
+                    <DataTd className="text-right">{formatQuantityWithUnit(p.stock, p.unit)}</DataTd>
                   </DataTr>
                 ))}
               </tbody>

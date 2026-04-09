@@ -1195,6 +1195,7 @@ model Product {
   name         String    @db.VarChar(200)
   sku          String?   @db.VarChar(64)
   hsn          String?   @db.VarChar(32)
+  unit         String?   @db.VarChar(32)
   price        Decimal
   costPrice    Decimal   @default(0) @map("cost_price")
   taxRate      Decimal?  @map("tax_rate")

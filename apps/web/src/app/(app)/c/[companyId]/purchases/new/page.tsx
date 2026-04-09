@@ -8,6 +8,7 @@ import { useCreatePurchase } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDateLabel } from "@/lib/format/date";
 import { useProducts, useSuppliers, useWarehouses } from "@/lib/masters/hooks";
+import { formatProductOptionLabel, formatUnitLabel } from "@/lib/masters/product-units";
 import { toastError, toastSuccess } from "@/lib/toast";
 import {
   ComposerBody,
@@ -67,6 +68,7 @@ export default function NewPurchasePage({ params }: Props) {
       {
         id: string;
         name: string;
+        unit?: string | null;
         price?: string | number | null;
         batchTrackingEnabled?: boolean;
         batch_tracking_enabled?: boolean;
@@ -104,7 +106,7 @@ export default function NewPurchasePage({ params }: Props) {
       {
         id: "items",
         label: "Items and batch capture",
-        description: "Record quantities, costs, and every batch detail required for stock accuracy.",
+        description: "Record quantities, units, costs, and every batch detail required for stock accuracy.",
         meta: `${lines.filter((line) => line.productId).length} product lines ready`,
       },
       {
@@ -122,7 +124,7 @@ export default function NewPurchasePage({ params }: Props) {
       <PageHeader
         eyebrow="Purchases"
         title="New purchase"
-        subtitle="Capture supplier purchases with a cleaner item-entry layout and a live draft summary."
+        subtitle="Capture supplier purchases with a cleaner item-entry layout, visible units, and a live draft summary."
         actions={
           <Link className="text-sm underline" href={`/c/${companyId}/purchases`}>
             Back
@@ -412,11 +414,14 @@ export default function NewPurchasePage({ params }: Props) {
                           { value: "", label: "Select…" },
                           ...(Array.isArray(products.data?.data) ? products.data.data : []).map((p) => ({
                             value: p.id,
-                            label: p.name,
+                            label: formatProductOptionLabel(p),
                           })),
                         ]}
                       />
                       <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
+                      <div className="mt-1 text-xs text-[var(--muted)]">
+                        Unit {formatUnitLabel(productsById.get(l.productId)?.unit)}
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <input

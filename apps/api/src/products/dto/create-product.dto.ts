@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  MaxLength,
   ValidateIf,
 } from 'class-validator';
 
@@ -24,6 +25,12 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   hsn?: string;
+
+  @ApiPropertyOptional({ description: 'Product unit such as pcs, pack, g, or kg' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  unit?: string;
 
   @ApiPropertyOptional({ description: 'Category ID' })
   @IsOptional()

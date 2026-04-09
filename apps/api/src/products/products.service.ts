@@ -27,6 +27,10 @@ export class ProductsService {
     return input.costPrice ?? legacy;
   }
 
+  private getUnit(input: CreateProductDto | UpdateProductDto) {
+    return (input as any)?.unit;
+  }
+
   private getReorderLevel(input: CreateProductDto | UpdateProductDto) {
     const legacy = (input as any)?.reorder_level;
     return (input as any)?.reorderLevel ?? legacy;
@@ -93,6 +97,7 @@ export class ProductsService {
         name: dto.name,
         sku: dto.sku ?? null,
         hsn: dto.hsn ?? null,
+        unit: this.getUnit(dto)?.trim() ? this.getUnit(dto).trim() : null,
         categoryId: dto.categoryId ?? null,
         price:
           dto.price !== undefined && dto.price !== null
@@ -154,6 +159,12 @@ export class ProductsService {
       name: dto.name,
       sku: dto.sku,
       hsn: dto.hsn,
+      unit:
+        this.getUnit(dto) === undefined
+          ? undefined
+          : this.getUnit(dto)?.trim()
+            ? this.getUnit(dto).trim()
+            : null,
   categoryId: dto.categoryId,
       taxRate:
         this.getGstRate(dto) === undefined

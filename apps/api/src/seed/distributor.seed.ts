@@ -276,6 +276,7 @@ async function main() {
     {
       name: `${PREFIX} Power Bank`,
       sku: `${PREFIX}-PB-01`,
+      unit: 'pcs',
       price: 1899,
       costPrice: 1350,
       taxRate: 18,
@@ -285,6 +286,7 @@ async function main() {
     {
       name: `${PREFIX} USB-C Cable`,
       sku: `${PREFIX}-CB-01`,
+      unit: 'pcs',
       price: 299,
       costPrice: 140,
       taxRate: 18,
@@ -294,6 +296,7 @@ async function main() {
     {
       name: `${PREFIX} Router`,
       sku: `${PREFIX}-NW-01`,
+      unit: 'pcs',
       price: 2499,
       costPrice: 1800,
       taxRate: 18,
@@ -303,6 +306,7 @@ async function main() {
     {
       name: `${PREFIX} Wall Charger`,
       sku: `${PREFIX}-AC-01`,
+      unit: 'pcs',
       price: 699,
       costPrice: 390,
       taxRate: 18,
@@ -328,6 +332,7 @@ async function main() {
           name: definition.name,
           sku: definition.sku,
           hsn: '8504',
+          unit: definition.unit,
           categoryId: definition.categoryId,
           price: definition.price,
           costPrice: definition.costPrice,

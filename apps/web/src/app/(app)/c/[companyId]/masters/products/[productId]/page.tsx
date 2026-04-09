@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getErrorMessage } from "@/lib/errors";
 import { useCategories, useDeleteProduct, useProduct, useStockAdjustment, useUpdateProduct } from "@/lib/masters/hooks";
+import { COMMON_PRODUCT_UNITS, formatQuantityWithUnit, formatUnitLabel } from "@/lib/masters/product-units";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { EmptyState, InlineError, LoadingBlock, PageContextStrip, PageHeader } from "@/lib/ui/state";
@@ -27,6 +28,7 @@ export default function ProductDetailPage({ params }: Props) {
   const [name, setName] = React.useState("");
   const [sku, setSku] = React.useState("");
   const [hsn, setHsn] = React.useState("");
+  const [unit, setUnit] = React.useState("");
   const [categoryId, setCategoryId] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [costPrice, setCostPrice] = React.useState("");
@@ -46,6 +48,7 @@ export default function ProductDetailPage({ params }: Props) {
     setName(p.name ?? "");
     setSku(p.sku ?? "");
     setHsn(p.hsn ?? "");
+    setUnit(p.unit ?? "");
     setCategoryId(p.categoryId ?? "");
     setPrice(p.price !== null && p.price !== undefined ? String(p.price) : "");
     setCostPrice(
@@ -92,6 +95,7 @@ export default function ProductDetailPage({ params }: Props) {
         <DetailInfoList
           items={[
             { label: "Current stock", value: String(product.stock ?? "—") },
+            { label: "Stock with unit", value: formatQuantityWithUnit(product.stock, product.unit) },
             { label: "Reorder level", value: String(product.reorderLevel ?? "Not set") },
             {
               label: "Batch policy",
@@ -115,6 +119,7 @@ export default function ProductDetailPage({ params }: Props) {
         subtitle="Review product metadata and stock controls from a more structured detail view."
         badges={[
           <Badge key="sku" variant="secondary">{product?.sku ?? "No SKU"}</Badge>,
+          <Badge key="unit" variant="outline">{formatUnitLabel(product?.unit)}</Badge>,
           <Badge key="batch" variant="outline">
             {product?.batchTrackingEnabled || product?.batch_tracking_enabled
               ? product?.batchIssuePolicy ?? product?.batch_issue_policy ?? "NONE"
@@ -138,13 +143,14 @@ export default function ProductDetailPage({ params }: Props) {
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Current stock</div>
                   <div className="mt-2 text-xl font-semibold">{product.stock ?? "—"}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{formatQuantityWithUnit(product.stock, product.unit)}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Price</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Default sell price</div>
                   <div className="mt-2 text-xl font-semibold">{product.price ?? "—"}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Cost price</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Default cost price</div>
                   <div className="mt-2 text-xl font-semibold">{product.costPrice ?? "—"}</div>
                 </div>
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
@@ -188,8 +194,12 @@ export default function ProductDetailPage({ params }: Props) {
                     <div className="mt-2 text-sm font-medium">{product.hsn ?? "Not set"}</div>
                   </div>
                   <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Unit</div>
+                    <div className="mt-2 text-sm font-medium">{formatUnitLabel(product.unit)}</div>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Current stock</div>
-                    <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{product.stock ?? "—"}</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-[-0.02em]">{formatQuantityWithUnit(product.stock, product.unit)}</div>
                   </div>
                   <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Tax rate</div>
@@ -258,7 +268,7 @@ export default function ProductDetailPage({ params }: Props) {
             <Card>
               <CardHeader>
                 <CardTitle>Edit product</CardTitle>
-                <CardDescription>Update product pricing, GST rate, and reorder settings.</CardDescription>
+                <CardDescription>Update product defaults, GST posture, and reorder settings. Time-based sell price changes still belong in pricing rules.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form
@@ -271,6 +281,7 @@ export default function ProductDetailPage({ params }: Props) {
                         name,
                         sku: sku || null,
                         hsn: hsn || null,
+                        unit: unit || null,
                         categoryId: categoryId || null,
                         price: price ? Number(price) : null,
                         costPrice: costPrice ? Number(costPrice) : null,
@@ -301,6 +312,14 @@ export default function ProductDetailPage({ params }: Props) {
                     <TextField label="Name" value={name} onChange={setName} required />
                     <TextField label="SKU" value={sku} onChange={setSku} />
                     <TextField label="HSN" value={hsn} onChange={setHsn} />
+                    <SelectField label="Unit" value={unit} onChange={setUnit}>
+                      <option value="">Select unit</option>
+                      {COMMON_PRODUCT_UNITS.map((itemUnit) => (
+                        <option key={itemUnit} value={itemUnit}>
+                          {itemUnit}
+                        </option>
+                      ))}
+                    </SelectField>
                     <SelectField label="Category" value={categoryId} onChange={setCategoryId}>
                       <option value="">Uncategorized</option>
                       {categories.data?.map((category) => (

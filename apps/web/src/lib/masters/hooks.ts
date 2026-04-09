@@ -291,6 +291,7 @@ export function useCreateProduct(args: { companyId: string }) {
       name: string;
       sku?: string;
       hsn?: string;
+      unit?: string;
   categoryId?: string | null;
       price?: string | number;
       costPrice?: string | number;
@@ -320,6 +321,7 @@ export function useUpdateProduct(args: { companyId: string; productId: string })
       name?: string;
       sku?: string | null;
       hsn?: string | null;
+      unit?: string | null;
   categoryId?: string | null;
       price?: string | number | null;
       costPrice?: string | number | null;

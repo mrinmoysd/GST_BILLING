@@ -158,6 +158,7 @@ async function main() {
           name,
           sku,
           hsn: '8507',
+          unit: 'pcs',
           categoryId: category.id,
           price,
           taxRate,

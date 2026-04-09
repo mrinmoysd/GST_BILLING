@@ -178,6 +178,7 @@ export type Product = {
   name: string;
   sku: string | null;
   hsn: string | null;
+  unit?: string | null;
   categoryId?: string | null;
   price?: string | number | null;
   costPrice?: string | number | null;

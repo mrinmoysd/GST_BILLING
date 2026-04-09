@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { getErrorMessage } from "@/lib/errors";
 import { useCategories, useCreateProduct } from "@/lib/masters/hooks";
+import { COMMON_PRODUCT_UNITS, formatUnitLabel } from "@/lib/masters/product-units";
 import { toastError, toastSuccess } from "@/lib/toast";
 import {
   ComposerBody,
@@ -29,6 +30,7 @@ export default function NewProductPage({ params }: Props) {
   const [name, setName] = React.useState("");
   const [sku, setSku] = React.useState("");
   const [hsn, setHsn] = React.useState("");
+  const [unit, setUnit] = React.useState("");
   const [categoryId, setCategoryId] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [costPrice, setCostPrice] = React.useState("");
@@ -53,13 +55,13 @@ export default function NewProductPage({ params }: Props) {
           {
             id: "identity",
             label: "Catalog identity",
-            description: "Define the product identity, SKU, HSN, and category first.",
+            description: "Define the product identity, SKU, HSN, unit, and category first.",
             meta: name ? "Product named" : "Waiting for core identity",
           },
           {
             id: "commercial",
             label: "Commercial setup",
-            description: "Set selling price, cost, and tax posture before the item is used in billing.",
+            description: "Set the default selling price, default cost, and tax posture before the item is used in billing.",
             meta: price || costPrice ? "Commercial values set" : "Pricing still blank",
           },
           {
@@ -81,6 +83,7 @@ export default function NewProductPage({ params }: Props) {
               name,
               sku: sku || undefined,
               hsn: hsn || undefined,
+              unit: unit || undefined,
               categoryId: categoryId || undefined,
               price: price ? Number(price) : undefined,
               costPrice: costPrice ? Number(costPrice) : undefined,
@@ -118,6 +121,7 @@ export default function NewProductPage({ params }: Props) {
                 items={[
                   { label: "Name", value: name || "Not set" },
                   { label: "Category", value: categories.data?.find((category) => category.id === categoryId)?.name ?? "Uncategorized" },
+                  { label: "Unit", value: formatUnitLabel(unit) },
                   { label: "Price", value: price || "Not set" },
                   { label: "Cost", value: costPrice || "Not set" },
                   { label: "Tax rate", value: taxRate || "Not set" },
@@ -147,6 +151,14 @@ export default function NewProductPage({ params }: Props) {
               <TextField label="Name" value={name} onChange={setName} required />
               <TextField label="SKU" value={sku} onChange={setSku} />
               <TextField label="HSN" value={hsn} onChange={setHsn} />
+              <SelectField label="Unit" value={unit} onChange={setUnit}>
+                <option value="">Select unit</option>
+                {COMMON_PRODUCT_UNITS.map((itemUnit) => (
+                  <option key={itemUnit} value={itemUnit}>
+                    {itemUnit}
+                  </option>
+                ))}
+              </SelectField>
               <SelectField label="Category" value={categoryId} onChange={setCategoryId}>
                 <option value="">Uncategorized</option>
                 {categories.data?.map((category) => (

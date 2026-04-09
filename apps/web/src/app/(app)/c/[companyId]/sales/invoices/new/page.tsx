@@ -7,6 +7,7 @@ import * as React from "react";
 import { useCreateInvoice } from "@/lib/billing/hooks";
 import { BillingWarningStack } from "@/components/billing/warning-stack";
 import { useBatchStock, useCustomers, useProducts, useWarehouses } from "@/lib/masters/hooks";
+import { formatProductOptionLabel, formatUnitLabel } from "@/lib/masters/product-units";
 import { usePricingPreview } from "@/lib/pricing/hooks";
 import { useInvoiceBillingWarnings } from "@/lib/settings/subscriptionHooks";
 import { useCompanySalespeople } from "@/lib/settings/usersHooks";
@@ -95,6 +96,7 @@ export default function NewInvoicePage({ params }: Props) {
       {
         id: string;
         name: string;
+        unit?: string | null;
         price?: string | number | null;
         taxRate?: string | number | null;
         batchTrackingEnabled?: boolean;
@@ -603,11 +605,14 @@ export default function NewInvoicePage({ params }: Props) {
                         <option value="">Select…</option>
                         {(Array.isArray(products.data?.data) ? products.data.data : []).map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name}
+                            {formatProductOptionLabel(p)}
                           </option>
                         ))}
                       </SelectControl>
                       <div className="mt-1 text-xs text-[var(--muted)]">Line {idx + 1}</div>
+                      <div className="mt-1 text-xs text-[var(--muted)]">
+                        Unit {formatUnitLabel(productsById.get(l.productId)?.unit)}
+                      </div>
                       {l.productId ? (
                         <div className="mt-1 text-xs text-[var(--muted)]">
                           {l.pricingHint ||
