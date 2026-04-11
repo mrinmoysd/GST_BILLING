@@ -1,0 +1,2 @@
+ALTER TABLE "products"
+ADD COLUMN "cost_price" DECIMAL NOT NULL DEFAULT 0;
