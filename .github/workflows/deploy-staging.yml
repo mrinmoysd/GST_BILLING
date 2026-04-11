@@ -8,8 +8,8 @@ on:
       - completed
   workflow_dispatch:
     inputs:
-      image_tag:
-        description: Optional image tag to deploy. Defaults to staging-latest.
+      image_sha:
+        description: Optional commit SHA to deploy. Defaults to staging latest image tags.
         required: false
         type: string
 
@@ -44,12 +44,14 @@ jobs:
       - name: Login to DOCR
         run: doctl registry login --expiry-seconds 1200
 
-      - name: Resolve deploy tag
+      - name: Resolve deploy image tags
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
-            echo "DEPLOY_TAG=${{ inputs.image_tag }}" >> "$GITHUB_ENV"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.image_sha }}" ]; then
+            echo "API_DEPLOY_TAG=${{ inputs.image_sha }}-api" >> "$GITHUB_ENV"
+            echo "WEB_DEPLOY_TAG=${{ inputs.image_sha }}-web" >> "$GITHUB_ENV"
           else
-            echo "DEPLOY_TAG=staging-latest" >> "$GITHUB_ENV"
+            echo "API_DEPLOY_TAG=staging-api-latest" >> "$GITHUB_ENV"
+            echo "WEB_DEPLOY_TAG=staging-web-latest" >> "$GITHUB_ENV"
           fi
 
       - name: Render staging env file
@@ -98,6 +100,6 @@ jobs:
           APP_ROOT: /opt/vyapar-genie
           STAGING_ENV_FILE: /opt/vyapar-genie/.env.staging
           SOURCE_DEPLOY_DIR: ${{ github.workspace }}/deployment/docker
-          API_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie-api:${{ env.DEPLOY_TAG }}
-          WEB_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie-web:${{ env.DEPLOY_TAG }}
+          API_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie:${{ env.API_DEPLOY_TAG }}
+          WEB_IMAGE: registry.digitalocean.com/${{ secrets.DOCR_REGISTRY_NAME }}/vyapar-genie:${{ env.WEB_DEPLOY_TAG }}
         run: bash deployment/scripts/deploy-staging.sh
