@@ -6,7 +6,7 @@ on:
       - staging
   push:
     branches:
-      - develop
+      - staging
   workflow_dispatch:
 
 permissions:
