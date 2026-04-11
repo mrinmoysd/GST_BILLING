@@ -3,8 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { useInvoices } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateTimeLabel } from "@/lib/format/date";
 import {
   useCheckInVisit,
   useCheckOutVisit,
@@ -74,14 +76,14 @@ export default function FieldVisitDetailPage({ params }: Props) {
         eyebrow="Field sales"
         title={visitRecord?.customer?.name ?? "Visit"}
         subtitle="Capture what happened at the outlet, tie it to real sales documents, and keep recovery follow-up connected to D9."
-        badges={visitRecord ? [<span key="status" className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted)]">{visitRecord.status}</span>] : undefined}
+        badges={visitRecord ? [<Badge key="status" variant="outline">{String(visitRecord.status)}</Badge>] : undefined}
         metrics={
           visitRecord
             ? [
                 { label: "Route", value: visitRecord.route?.name ?? "Unassigned" },
                 { label: "Beat", value: visitRecord.beat?.name ?? "Unassigned" },
-                { label: "Check in", value: visitRecord.checkInAt ?? visitRecord.check_in_at ?? "Not started" },
-                { label: "Check out", value: visitRecord.checkOutAt ?? visitRecord.check_out_at ?? "Open" },
+                { label: "Check in", value: formatDateTimeLabel(visitRecord.checkInAt ?? visitRecord.check_in_at, "Not started") },
+                { label: "Check out", value: formatDateTimeLabel(visitRecord.checkOutAt ?? visitRecord.check_out_at, "Open") },
               ]
             : undefined
         }

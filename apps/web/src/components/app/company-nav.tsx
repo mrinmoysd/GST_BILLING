@@ -15,6 +15,7 @@ export function CompanyNav(props: {
   companyId: string;
   onNavigate?: () => void;
   variant?: "sidebar" | "sheet";
+  collapsed?: boolean;
 }) {
   const pathname = usePathname();
   const { session } = useAuth();
@@ -104,15 +105,68 @@ export function CompanyNav(props: {
     );
   }
 
+  if (props.collapsed) {
+    return (
+      <nav className="flex h-full min-h-0 flex-col gap-4 overflow-hidden px-3 py-5">
+        <div className="flex justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card-strong)] text-sm font-semibold tracking-[-0.03em] text-[var(--shell-sidebar-fg)] shadow-[0_14px_36px_rgba(5,10,18,0.16)]">
+            VG
+          </div>
+        </div>
+        <div className="min-h-0 w-full flex-1 space-y-2 overflow-y-auto">
+          {workflows.map((workflow) => {
+            const Icon = workflow.icon;
+            const active = workflow.key === activeWorkflow?.key;
+            return (
+              <Link
+                key={workflow.key}
+                href={toCompanyHref(props.companyId, workflow.defaultHref)}
+                className={cn(
+                  "group flex items-center justify-center rounded-[14px] border px-2 py-3 text-left transition-all",
+                  active
+                    ? "border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-sidebar-active),var(--shell-sidebar-active-strong))] text-[var(--shell-sidebar-fg)] shadow-[inset_0_1px_0_var(--shell-sidebar-border),0_12px_28px_rgba(5,10,18,0.14)]"
+                    : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] text-[var(--shell-sidebar-fg-muted)] hover:border-[var(--shell-sidebar-border)] hover:bg-[var(--shell-sidebar-hover)] hover:text-[var(--shell-sidebar-fg)]",
+                )}
+                title={`${workflow.label}: ${workflow.description}`}
+                aria-label={workflow.label}
+              >
+                <span
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border transition-colors",
+                    active
+                      ? "border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card)] text-[var(--shell-sidebar-fg)]"
+                      : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--shell-rail-card)_84%,transparent)] text-[var(--shell-sidebar-fg-muted)] group-hover:bg-[var(--shell-sidebar-hover)] group-hover:text-[var(--shell-sidebar-fg)]",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    );
+  }
+
   return (
-    <nav className="flex h-full min-h-0 flex-col items-center gap-3 overflow-hidden px-3 py-5">
-      <div className="mb-3 flex w-full flex-col items-center gap-2">
-        <div className="flex h-14 w-14 items-center justify-center rounded-[22px] border border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-rail-card-strong),var(--shell-sidebar-hover))] text-sm font-semibold tracking-[-0.03em] text-[var(--shell-sidebar-fg)] shadow-[0_14px_36px_rgba(5,10,18,0.18)]">
-          GB
+    <nav className="flex h-full min-h-0 flex-col gap-5 overflow-hidden px-4 py-5">
+      <div className="rounded-[16px] border border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-rail-card-strong),var(--shell-sidebar-hover))] p-4 shadow-[0_14px_36px_rgba(5,10,18,0.16)]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-[var(--shell-sidebar-border)] bg-[rgba(255,255,255,0.06)] text-sm font-semibold tracking-[-0.03em] text-[var(--shell-sidebar-fg)]">
+            VG
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--shell-sidebar-fg)]">
+              Vyapar Genie
+            </div>
+            <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--shell-sidebar-fg-muted)]">
+              Workspace shell
+            </div>
+          </div>
         </div>
-        <div className="rounded-full border border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--shell-sidebar-fg-muted)]">
-          Ops
-        </div>
+      </div>
+      <div className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--shell-sidebar-fg-muted)]">
+        Workflows
       </div>
       <div className="min-h-0 w-full flex-1 space-y-2 overflow-y-auto pr-1">
         {workflows.map((workflow) => {
@@ -123,16 +177,16 @@ export function CompanyNav(props: {
               key={workflow.key}
               href={toCompanyHref(props.companyId, workflow.defaultHref)}
               className={cn(
-                "group flex flex-col items-center gap-2 rounded-[22px] border px-2 py-3 text-center text-[11px] font-medium tracking-[0.01em] transition-all",
+                "group flex items-start gap-3 rounded-[14px] border px-3 py-3 text-left transition-all",
                 active
-                  ? "border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-sidebar-active),var(--shell-sidebar-active-strong))] text-[var(--shell-sidebar-fg)] shadow-[inset_0_1px_0_var(--shell-sidebar-border),0_12px_28px_rgba(5,10,18,0.16)]"
+                  ? "border-[var(--shell-sidebar-border)] bg-[linear-gradient(180deg,var(--shell-sidebar-active),var(--shell-sidebar-active-strong))] text-[var(--shell-sidebar-fg)] shadow-[inset_0_1px_0_var(--shell-sidebar-border),0_12px_28px_rgba(5,10,18,0.14)]"
                   : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] text-[var(--shell-sidebar-fg-muted)] hover:border-[var(--shell-sidebar-border)] hover:bg-[var(--shell-sidebar-hover)] hover:text-[var(--shell-sidebar-fg)]",
               )}
               title={workflow.label}
             >
               <span
                 className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-[18px] border transition-colors",
+                  "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border transition-colors",
                   active
                     ? "border-[var(--shell-sidebar-border)] bg-[var(--shell-rail-card)] text-[var(--shell-sidebar-fg)]"
                     : "border-[color:color-mix(in_srgb,var(--shell-sidebar-border)_72%,transparent)] bg-[color:color-mix(in_srgb,var(--shell-rail-card)_84%,transparent)] text-[var(--shell-sidebar-fg-muted)] group-hover:bg-[var(--shell-sidebar-hover)] group-hover:text-[var(--shell-sidebar-fg)]",
@@ -140,7 +194,12 @@ export function CompanyNav(props: {
               >
                 <Icon className="h-4 w-4" />
               </span>
-              <span className="leading-[1.05rem]">{workflow.shortLabel}</span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold leading-5">{workflow.label}</span>
+                <span className="mt-0.5 block text-xs leading-5 text-[var(--shell-sidebar-fg-muted)] group-hover:text-[var(--shell-sidebar-fg-muted)]">
+                  {workflow.description}
+                </span>
+              </span>
             </Link>
           );
         })}

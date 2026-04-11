@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MarketingHero, PublicSiteShell } from "@/components/public/site-shell";
 import { apiClient } from "@/lib/api/client";
 import { getErrorMessage, logError } from "@/lib/errors";
 import { useBootstrapOnboarding } from "@/lib/onboarding/hooks";
@@ -47,17 +48,43 @@ export default function OnboardingPage() {
   }, [logoFile]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,95,140,0.08),transparent_28%),var(--app-bg)] px-4 py-10 md:px-6">
+    <PublicSiteShell
+      hero={
+        <MarketingHero
+          eyebrow="Self-serve onboarding"
+          title="Create a working company environment in one disciplined setup pass."
+          subtitle="Set up the owner account, company profile, invoice defaults, and initial session without waiting for a manual implementation queue."
+          badges={["Tenant bootstrap", "Invoice-ready", "Owner access"]}
+          actions={
+            <>
+              <Link href="/login">
+                <SecondaryButton type="button">Already have an account?</SecondaryButton>
+              </Link>
+            </>
+          }
+          aside={
+            <div className="public-card-soft-surface rounded-[18px] p-5">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">What gets created</div>
+              <div className="mt-3 grid gap-3 text-sm leading-6 text-[var(--muted-strong)]">
+                <div>A tenant-scoped company workspace with invoice defaults.</div>
+                <div>An owner account with an authenticated session.</div>
+                <div>A `DEFAULT` invoice series using your selected prefix.</div>
+              </div>
+            </div>
+          }
+        />
+      }
+    >
       <div className="mx-auto max-w-6xl">
         <PageHeader
-          eyebrow="Phase C"
+          eyebrow="Workspace creation"
           title="Create your company"
           subtitle="Bootstrap the owner account, company profile, and invoice defaults in one onboarding flow."
-          actions={<Link className="text-sm underline" href="/login">Already have an account?</Link>}
+          actions={<Link className="text-sm font-medium text-[var(--accent)] hover:underline" href="/login">Already have an account?</Link>}
         />
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
+          <Card className="public-card-muted-surface rounded-[18px]">
             <CardHeader>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">Owner account</Badge>
@@ -67,14 +94,14 @@ export default function OnboardingPage() {
               <CardDescription>The onboarding flow creates the company, the owner user, a default invoice series, and signs you in immediately.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-[var(--muted-strong)]">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">A tenant-scoped company record with billing defaults.</div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">An owner user account with an authenticated session.</div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">A `DEFAULT` invoice series using your chosen prefix.</div>
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">A staged GST profile. If GSTIN is provided, verification is marked pending for later implementation.</div>
+              <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-4">A tenant-scoped company record with billing defaults.</div>
+              <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-4">An owner user account with an authenticated session.</div>
+              <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-4">A `DEFAULT` invoice series using your chosen prefix.</div>
+              <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-4">A staged GST profile. If GSTIN is provided, verification is marked pending for later implementation.</div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-[18px]">
             <CardHeader>
               <CardTitle>Onboarding form</CardTitle>
               <CardDescription>Provide the minimum company and owner details to reach a usable dashboard without manual seeding.</CardDescription>
@@ -148,11 +175,11 @@ export default function OnboardingPage() {
                   <TextField label="Logo URL fallback" value={logoUrl} onChange={setLogoUrl} placeholder="Optional" />
                 </div>
 
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                <div className="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-4">
                   <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Company logo</label>
                   <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center">
                     {logoPreviewUrl ? (
-                      <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
+                      <div className="relative h-16 w-16 overflow-hidden rounded-[12px] border border-[var(--border)] bg-white">
                         <Image
                           alt="Selected company logo"
                           className="object-contain p-2"
@@ -162,7 +189,7 @@ export default function OnboardingPage() {
                         />
                       </div>
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] text-xs text-[var(--muted)]">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-[12px] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] text-xs text-[var(--muted)]">
                         No file
                       </div>
                     )}
@@ -198,6 +225,6 @@ export default function OnboardingPage() {
           </Card>
         </div>
       </div>
-    </main>
+    </PublicSiteShell>
   );
 }

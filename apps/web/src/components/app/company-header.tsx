@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronsUpDown,
+  PanelLeftClose,
+  PanelLeftOpen,
   Clock3,
   Command,
   LogOut,
@@ -46,7 +48,7 @@ import {
   toCompanyHref,
 } from "@/components/app/company-shell-config";
 
-const RECENTS_KEY_PREFIX = "gst_billing.recents";
+const RECENTS_KEY_PREFIX = "vyapar_genie.recents";
 
 type RecentItem = {
   href: string;
@@ -57,6 +59,8 @@ type RecentItem = {
 export function CompanyHeader(props: {
   companyId: string;
   onOpenNav?: () => void;
+  railCollapsed?: boolean;
+  onToggleRail?: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -154,15 +158,31 @@ export function CompanyHeader(props: {
               <Menu className="h-5 w-5" />
             </Button>
 
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
+              onClick={props.onToggleRail}
+              aria-label={props.railCollapsed ? "Expand navigation rail" : "Collapse navigation rail"}
+              title={props.railCollapsed ? "Expand navigation rail" : "Collapse navigation rail"}
+            >
+              {props.railCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </Button>
+
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="hidden bg-[var(--shell-subnav-chip)] md:inline-flex">
                   {activeWorkflow?.label ?? "Workspace"}
                 </Badge>
-                <Badge variant="secondary" className="hidden lg:inline-flex">
+                <Badge variant="info" className="hidden lg:inline-flex">
                   {session.user?.assigned_roles?.[0] ?? session.user?.role ?? "operator"}
                 </Badge>
-                <div className="text-sm font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+                <div className="text-base font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                   {label}
                 </div>
               </div>
@@ -175,11 +195,11 @@ export function CompanyHeader(props: {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="ml-auto hidden min-w-[280px] items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:flex"
+              className="ml-auto hidden min-w-[320px] items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface-elevated)] px-3.5 py-2.5 text-left text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] md:flex"
             >
               <Search className="h-4 w-4" />
               <span>Search workflows, pages, and tools</span>
-              <span className="ml-auto rounded-md border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
+              <span className="ml-auto rounded-[8px] border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
                 ⌘K
               </span>
             </button>
@@ -187,7 +207,7 @@ export function CompanyHeader(props: {
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                  <Button variant="secondary" className="gap-2">
                     <Plus className="h-4 w-4" />
                     <span className="hidden md:inline">Quick create</span>
                   </Button>
@@ -210,7 +230,7 @@ export function CompanyHeader(props: {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                  <Button variant="secondary" className="gap-2">
                     <Clock3 className="h-4 w-4" />
                     <span className="hidden md:inline">Recent</span>
                   </Button>
@@ -238,7 +258,7 @@ export function CompanyHeader(props: {
               {mounted ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                    <Button variant="secondary" className="gap-2">
                       <span className="hidden h-2 w-2 rounded-full bg-[var(--success)] md:inline-block" />
                       <span className="hidden max-w-[18ch] truncate md:inline">{label}</span>
                       <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
@@ -248,14 +268,14 @@ export function CompanyHeader(props: {
                     <div className="px-2 py-1.5">
                       <div className="text-xs text-[var(--muted)]">Signed in as</div>
                       <div className="text-sm font-medium truncate">{session.user?.email ?? "—"}</div>
-                    <div className="mt-1 text-xs text-[var(--muted)]">
-                      Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+                      <div className="mt-1 text-xs text-[var(--muted)]">
+                        Roles: {session.user?.assigned_roles?.join(", ") ?? session.user?.role ?? "—"}
+                      </div>
                     </div>
-                  </div>
-                  <ThemeMenuItems />
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => router.push("/dashboard")}>
-                    Switch workspace
+                    <ThemeMenuItems />
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => router.push("/dashboard")}>
+                      Switch workspace
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={async (event) => {
@@ -280,7 +300,7 @@ export function CompanyHeader(props: {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]" disabled>
+                <Button variant="secondary" className="gap-2" disabled>
                   <ChevronsUpDown className="h-4 w-4 text-[var(--muted)]" />
                 </Button>
               )}
@@ -290,7 +310,7 @@ export function CompanyHeader(props: {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="mt-3 flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-sm text-[var(--muted)] shadow-sm md:hidden"
+            className="mt-3 flex w-full items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface-elevated)] px-3.5 py-2.5 text-left text-sm text-[var(--muted)] shadow-[var(--shadow-soft)] md:hidden"
           >
             <Search className="h-4 w-4" />
             <span>Search workflows and pages</span>
@@ -302,9 +322,9 @@ export function CompanyHeader(props: {
           <div className="border-t border-[var(--border)]/80 px-4 py-3 md:px-6">
             <div className="flex items-center gap-3 overflow-x-auto">
               <div className="hidden shrink-0 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--shell-subnav-chip)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-strong)] lg:flex">
-                Active lane
+                Current workflow
               </div>
-              <div className="flex items-center gap-2 rounded-[22px] border border-[var(--border)] bg-[var(--shell-subnav-bg)] p-1.5 shadow-[var(--shadow-soft)]">
+              <div className="flex items-center gap-2 rounded-[14px] border border-[var(--border)] bg-[var(--shell-subnav-bg)] p-1.5 shadow-[var(--shadow-soft)]">
                 {activeWorkflow.links.map((link) => {
                   const href = toCompanyHref(props.companyId, link.href);
                   const active =
@@ -315,7 +335,7 @@ export function CompanyHeader(props: {
                       href={href}
                       title={link.hint}
                       className={cn(
-                        "group rounded-full border px-3 py-2 text-sm whitespace-nowrap transition-colors",
+                        "group rounded-[10px] border px-3 py-2 text-sm whitespace-nowrap transition-colors",
                         active
                           ? "border-[var(--row-selected-border)] bg-[var(--surface-elevated)] font-semibold text-[var(--foreground)] shadow-sm"
                           : "border-transparent text-[var(--muted-strong)] hover:border-[var(--border)] hover:bg-[var(--surface)]",

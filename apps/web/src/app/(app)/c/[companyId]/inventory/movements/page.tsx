@@ -3,8 +3,9 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { formatDateTimeLabel } from "@/lib/format/date";
 import { useStockMovements, useWarehouses } from "@/lib/masters/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SelectField, TextField } from "@/lib/ui/form";
 import {
@@ -56,6 +57,65 @@ export default function InventoryMovementsPage({ params }: Props) {
   }, [filteredRows, selectedMovementId]);
 
   const selectedRow = filteredRows.find((row) => row.id === selectedMovementId) ?? filteredRows[0] ?? null;
+
+  const columns = React.useMemo<ColumnDef<(typeof filteredRows)[number]>[]>(
+    () => [
+      {
+        id: "when",
+        header: "When",
+        accessorFn: (row) => row.createdAt,
+        meta: { label: "When" },
+        cell: ({ row }) => formatDateTimeLabel(row.original.createdAt),
+      },
+      {
+        id: "product",
+        header: "Product",
+        accessorFn: (row) => row.product?.name ?? row.productId,
+        meta: { label: "Product" },
+        cell: ({ row }) => (
+          <Link href={`/c/${companyId}/masters/products/${row.original.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
+            {row.original.product?.name ?? row.original.productId.slice(0, 8)}
+          </Link>
+        ),
+      },
+      {
+        id: "warehouse",
+        header: "Warehouse",
+        accessorFn: (row) => row.warehouse?.name ?? "Company",
+        meta: { label: "Warehouse" },
+        cell: ({ row }) => row.original.warehouse?.name ?? "Company",
+      },
+      {
+        id: "change",
+        header: "Change",
+        accessorFn: (row) => Number(row.changeQty ?? 0),
+        meta: { label: "Change", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.changeQty,
+      },
+      {
+        id: "balance",
+        header: "Balance",
+        accessorFn: (row) => Number(row.balanceQty ?? 0),
+        meta: { label: "Balance", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.balanceQty,
+      },
+      {
+        id: "source",
+        header: "Source",
+        accessorFn: (row) => row.sourceType,
+        meta: { label: "Source" },
+        cell: ({ row }) => row.original.sourceType,
+      },
+      {
+        id: "note",
+        header: "Note",
+        accessorFn: (row) => row.note ?? "",
+        meta: { label: "Note" },
+        cell: ({ row }) => row.original.note ?? "—",
+      },
+    ],
+    [companyId],
+  );
 
   return (
     <div className="space-y-7">
@@ -129,7 +189,7 @@ export default function InventoryMovementsPage({ params }: Props) {
               {selectedRow ? (
                 <QueueMetaList
                   items={[
-                    { label: "When", value: new Date(selectedRow.createdAt).toLocaleString() },
+                    { label: "When", value: formatDateTimeLabel(selectedRow.createdAt) },
                     { label: "Warehouse", value: selectedRow.warehouse?.name ?? "Company" },
                     { label: "Change", value: selectedRow.changeQty },
                     { label: "Balance", value: selectedRow.balanceQty },
@@ -143,42 +203,20 @@ export default function InventoryMovementsPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>When</DataTh>
-                  <DataTh>Product</DataTh>
-                  <DataTh>Warehouse</DataTh>
-                  <DataTh>Change</DataTh>
-                  <DataTh>Balance</DataTh>
-                  <DataTh>Source</DataTh>
-                  <DataTh>Note</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((row) => (
-                  <DataTr
-                    key={row.id}
-                    className={selectedRow?.id === row.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedMovementId(row.id)}
-                  >
-                    <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
-                    <DataTd>
-                      <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
-                        {row.product?.name ?? row.productId.slice(0, 8)}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
-                    <DataTd>{row.changeQty}</DataTd>
-                    <DataTd>{row.balanceQty}</DataTd>
-                    <DataTd>{row.sourceType}</DataTd>
-                    <DataTd>{row.note ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedMovementId(row.id)}
+            rowClassName={(row) =>
+              selectedRow?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "when", desc: true }]}
+            toolbarTitle="Movement ledger"
+            toolbarDescription="Sort and trim visible columns while keeping the selected inventory event and its balance context beside the ledger."
+          />
         </QueueShell>
       ) : null}
     </div>

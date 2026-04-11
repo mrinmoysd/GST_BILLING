@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import {
   type CustomerOutstandingRow,
@@ -12,6 +13,17 @@ import {
   useStockByWarehouse,
 } from "@/lib/reports/hooks";
 import { formatDateLabel } from "@/lib/format/date";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -47,15 +59,48 @@ export default function DistributorAnalyticsPage({ params }: Props) {
     | { fast_moving: ProductMovementRow[]; slow_moving: ProductMovementRow[] }
     | { data?: { fast_moving: ProductMovementRow[]; slow_moving: ProductMovementRow[] } }
     | undefined;
-  const dueCustomers = Array.isArray(outstandingPayload)
-    ? outstandingPayload
-    : (outstandingPayload?.data ?? []);
-  const warehouses = Array.isArray(warehousePayload)
-    ? warehousePayload
-    : (warehousePayload?.data ?? []);
+  const dueCustomers = React.useMemo(
+    () => (Array.isArray(outstandingPayload) ? outstandingPayload : (outstandingPayload?.data ?? [])),
+    [outstandingPayload],
+  );
+  const warehouses = React.useMemo(
+    () => (Array.isArray(warehousePayload) ? warehousePayload : (warehousePayload?.data ?? [])),
+    [warehousePayload],
+  );
   const movement = movementPayload
     ? ("fast_moving" in movementPayload ? movementPayload : movementPayload.data)
     : undefined;
+  const salespeopleChartRows = React.useMemo(
+    () =>
+      (summary?.top_salespeople ?? []).slice(0, 6).map((row) => ({
+        name: row.salesperson_name,
+        grossSales: row.gross_sales,
+      })),
+    [summary?.top_salespeople],
+  );
+  const warehouseChartRows = React.useMemo(
+    () =>
+      warehouses.slice(0, 6).map((row) => ({
+        name: row.warehouse_name,
+        stockValue: row.stock_value,
+      })),
+    [warehouses],
+  );
+  const movementChartRows = React.useMemo(
+    () => [
+      ...((movement?.fast_moving ?? []).slice(0, 4).map((row) => ({
+        name: row.product_name,
+        soldQuantity: row.sold_quantity,
+        tone: "success" as const,
+      }))),
+      ...((movement?.slow_moving ?? []).slice(0, 4).map((row) => ({
+        name: row.product_name,
+        soldQuantity: row.sold_quantity,
+        tone: "warning" as const,
+      }))),
+    ],
+    [movement?.fast_moving, movement?.slow_moving],
+  );
 
   const isLoading =
     dashboard.isLoading ||
@@ -133,6 +178,62 @@ export default function DistributorAnalyticsPage({ params }: Props) {
             <StatCard label="Collections" value={formatMoney(summary.totals.collections)} />
             <StatCard label="Outstanding" value={formatMoney(summary.totals.outstanding)} />
             <StatCard label="Stock value" value={formatMoney(summary.totals.stock_value)} />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-3">
+            <ChartShell
+              title="Sales contribution"
+              subtitle="Who is carrying the top-line burden in the selected period."
+              footer={<ChartLegend items={salespeopleChartRows.map((row) => ({ label: row.name, tone: "primary", value: formatChartCurrency(row.grossSales) }))} />}
+            >
+              <ChartFrame height={280}>
+                <BarChart data={salespeopleChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                  <XAxis dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={64} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="grossSales" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+
+            <ChartShell
+              title="Warehouse value split"
+              subtitle="See where inventory value is sitting before reading the warehouse grid."
+            >
+              <ChartFrame height={280}>
+                <BarChart data={warehouseChartRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                  <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                  <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={96} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="stockValue" radius={[0, 8, 8, 0]}>
+                    {warehouseChartRows.map((row) => (
+                      <Cell key={row.name} fill={getChartSeriesColor("secondary")} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+
+            <ChartShell
+              title="Movement heat"
+              subtitle="Fast-moving rows should dominate; slow-moving stock should stay visible but contained."
+            >
+              <ChartFrame height={280}>
+                <BarChart data={movementChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                  <XAxis dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={52} />
+                  <ChartTooltip valueFormatter={formatChartCompactNumber} />
+                  <Bar dataKey="soldQuantity" radius={[8, 8, 0, 0]}>
+                    {movementChartRows.map((row) => (
+                      <Cell key={row.name} fill={getChartSeriesColor(row.tone)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
           </div>
 
           <WorkspaceSection

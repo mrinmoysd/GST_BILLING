@@ -1,14 +1,16 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageContextStrip, PageHeader } from "@/lib/ui/state";
+import { SecondaryButton } from "@/lib/ui/form";
+import { QueueSavedViews, QueueSegmentBar } from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
 export default function AccountingPage({ params }: Props) {
   const { companyId } = React.use(params);
+  const [segment, setSegment] = React.useState("operations");
+  const [savedView, setSavedView] = React.useState("operations");
   const sections = [
     {
       title: "Operational accounting",
@@ -31,56 +33,67 @@ export default function AccountingPage({ params }: Props) {
     },
   ];
 
+  const visibleSections = sections.filter((section) => {
+    if (segment === "operations") return section.title === "Operational accounting";
+    if (segment === "reports") return section.title === "Financial reports";
+    return true;
+  });
+
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="Finance"
         title="Accounting"
-        subtitle="Use a dedicated hub for journals, ledgers, books, and financial statements."
+        subtitle="Use one finance hub for journals, ledgers, books, and statements, with the operational and reporting lanes separated more clearly."
         badges={[
-          <Badge key="routes" variant="secondary">7 accounting routes</Badge>,
-          <Badge key="mode" variant="outline">Manual-first subsystem</Badge>,
+          <WorkspaceStatBadge key="routes" label="Routes" value={7} />,
+          <WorkspaceStatBadge key="mode" label="Mode" value="Manual-first" variant="outline" />,
         ]}
-        context={
-          <PageContextStrip>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Operational accounting</div>
-                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Ledgers and journals stay close to day-to-day posting work.</div>
-              </div>
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Books</div>
-                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Cash and bank books remain fast entry points for finance operators.</div>
-              </div>
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Statements</div>
-                <div className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">Formal reports stay grouped for review, export, and final checks.</div>
-              </div>
-            </div>
-          </PageContextStrip>
+        actions={
+          <Link href={`/c/${companyId}/dashboard`}>
+            <SecondaryButton type="button">Back to dashboard</SecondaryButton>
+          </Link>
+        }
+      />
+
+      <QueueSegmentBar
+        items={[
+          { id: "operations", label: "Operations", count: sections[0]?.items.length ?? 0 },
+          { id: "reports", label: "Reports and books", count: sections[1]?.items.length ?? 0 },
+        ]}
+        value={segment}
+        onValueChange={setSegment}
+        trailing={
+          <QueueSavedViews
+            items={[
+              { id: "operations", label: "Posting desk" },
+              { id: "reports", label: "Statement review" },
+            ]}
+            value={savedView}
+            onValueChange={(value) => {
+              setSavedView(value);
+              setSegment(value);
+            }}
+          />
         }
       />
 
       <div className="grid gap-5 xl:grid-cols-2">
-        {sections.map((section) => (
-          <Card key={section.title} className="[background-image:var(--panel-highlight)]">
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-              <CardDescription>{section.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3">
+        {visibleSections.map((section) => (
+          <WorkspacePanel key={section.title} title={section.title} subtitle={section.description}>
+            <div className="grid gap-3">
               {section.items.map((item) => (
                 <Link
                   key={item.href}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 transition [background-image:var(--surface-highlight)] hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-panel)]"
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--accent-soft)] hover:bg-[var(--surface-panel)]"
                   href={item.href}
                 >
                   <div className="font-semibold text-[var(--foreground)]">{item.title}</div>
                   <div className="mt-1 text-sm text-[var(--muted)]">{item.hint}</div>
                 </Link>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         ))}
       </div>
     </div>

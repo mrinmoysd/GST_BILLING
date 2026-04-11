@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/public/auth-shell";
 import { getErrorMessage, logError } from "@/lib/errors";
 import { useForgotPassword } from "@/lib/auth/hooks";
 import { InlineError } from "@/lib/ui/state";
-import { PrimaryButton, TextField } from "@/lib/ui/form";
+import { TextField } from "@/lib/ui/form";
 
 export default function ForgotPasswordPage() {
   const forgotPassword = useForgotPassword();
@@ -41,7 +42,7 @@ export default function ForgotPasswordPage() {
       <div className="space-y-6">
         <div className="space-y-2">
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Reset access</div>
-          <div className="font-display text-3xl leading-[0.94] font-semibold tracking-[-0.04em] text-[var(--foreground)]">Prepare a reset link</div>
+          <div className="font-display text-3xl leading-[0.94] font-semibold tracking-[-0.035em] text-[var(--foreground)]">Prepare a reset link</div>
           <div className="text-sm leading-6 text-[var(--muted)]">Enter the account email and the app will prepare the recovery route.</div>
         </div>
         <div className="space-y-4">
@@ -49,16 +50,17 @@ export default function ForgotPasswordPage() {
             {error ? <InlineError message={error} /> : null}
             {message ? <div className="rounded-[22px] border border-[var(--success-soft)] bg-[var(--success-soft)] p-4 text-sm text-[var(--foreground)]">{message}</div> : null}
             {devResetPath ? (
-              <div className="public-card-soft-surface rounded-[24px] p-4 text-sm">
+              <div className="public-card-soft-surface rounded-[14px] p-4 text-sm">
                 <div className="font-medium text-[var(--foreground)]">Development reset link</div>
                 <Link className="mt-2 inline-block text-[var(--accent)] underline" href={devResetPath}>
                   {devResetPath}
                 </Link>
               </div>
             ) : null}
-            <PrimaryButton
+            <Button
               type="button"
               disabled={forgotPassword.isPending}
+              className="w-full"
               onClick={async () => {
                 setError(null);
                 setMessage(null);
@@ -75,7 +77,7 @@ export default function ForgotPasswordPage() {
               }}
             >
               {forgotPassword.isPending ? "Preparing…" : "Request reset"}
-            </PrimaryButton>
+            </Button>
         </div>
       </div>
     </AuthShell>

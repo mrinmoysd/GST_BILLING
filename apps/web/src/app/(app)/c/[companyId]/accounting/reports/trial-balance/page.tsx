@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { useTrialBalance } from "@/lib/billing/hooks";
-import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { DateField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
@@ -12,6 +12,14 @@ import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
+type TrialBalanceRow = {
+  ledger_name?: string | null;
+  top_level?: string | null;
+  debit?: string | number | null;
+  credit?: string | number | null;
+  net_balance?: string | number | null;
+};
+
 
 export default function TrialBalancePage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -19,7 +27,48 @@ export default function TrialBalancePage({ params }: Props) {
   const query = useTrialBalance({ companyId, as_of: asOf || undefined });
 
   const report = query.data?.data;
-  const rows = report?.rows ?? [];
+  const rows = (report?.rows ?? []) as TrialBalanceRow[];
+
+  const columns = React.useMemo<ColumnDef<TrialBalanceRow>[]>(
+    () => [
+      {
+        id: "ledger",
+        header: "Ledger",
+        accessorFn: (row) => row.ledger_name ?? "",
+        meta: { label: "Ledger" },
+        cell: ({ row }) => row.original.ledger_name ?? "—",
+      },
+      {
+        id: "class",
+        header: "Class",
+        accessorFn: (row) => row.top_level ?? "",
+        meta: { label: "Class" },
+        cell: ({ row }) => row.original.top_level ?? "unknown",
+      },
+      {
+        id: "debit",
+        header: "Debit",
+        accessorFn: (row) => Number(row.debit ?? 0),
+        meta: { label: "Debit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => Number(row.original.debit ?? 0).toFixed(2),
+      },
+      {
+        id: "credit",
+        header: "Credit",
+        accessorFn: (row) => Number(row.credit ?? 0),
+        meta: { label: "Credit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => Number(row.original.credit ?? 0).toFixed(2),
+      },
+      {
+        id: "net",
+        header: "Net",
+        accessorFn: (row) => Number(row.net_balance ?? 0),
+        meta: { label: "Net", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => Number(row.original.net_balance ?? 0).toFixed(2),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-7">
@@ -55,34 +104,14 @@ export default function TrialBalancePage({ params }: Props) {
           title="Balances"
           subtitle="Debit and credit balances by ledger with classification and net balance."
         >
-          <DataTableShell>
-            <DataTable className="min-w-[780px]">
-              <DataThead>
-                <tr>
-                  <DataTh>Ledger</DataTh>
-                  <DataTh>Class</DataTh>
-                  <DataTh className="text-right">Debit</DataTh>
-                  <DataTh className="text-right">Credit</DataTh>
-                  <DataTh className="text-right">Net</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <DataEmptyRow colSpan={5} title="No ledgers posted as of this date." />
-                ) : (
-                  rows.map((row, index) => (
-                    <DataTr key={`${row.ledger_name ?? "ledger"}-${index}`}>
-                      <DataTd>{row.ledger_name ?? "—"}</DataTd>
-                      <DataTd>{row.top_level ?? "unknown"}</DataTd>
-                      <DataTd className="text-right">{Number(row.debit ?? 0).toFixed(2)}</DataTd>
-                      <DataTd className="text-right">{Number(row.credit ?? 0).toFixed(2)}</DataTd>
-                      <DataTd className="text-right">{Number(row.net_balance ?? 0).toFixed(2)}</DataTd>
-                    </DataTr>
-                  ))
-                )}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={rows}
+            columns={columns}
+            getRowId={(row, index) => `${row.ledger_name ?? "ledger"}-${index}`}
+            initialSorting={[{ id: "ledger", desc: false }]}
+            toolbarTitle="Trial balance"
+            toolbarDescription="Keep the statement dense and sortable without pushing totals or filters away from the operator."
+          />
         </WorkspaceSection>
       ) : null}
     </div>

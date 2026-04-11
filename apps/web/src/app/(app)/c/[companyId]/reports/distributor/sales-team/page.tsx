@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,6 +12,17 @@ import {
   useOutstandingBySalesperson,
   useSalesBySalesperson,
 } from "@/lib/reports/hooks";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -37,19 +49,48 @@ export default function SalesTeamReportPage({ params }: Props) {
   const salesPayload = sales.data?.data as SalespersonSalesRow[] | { data?: SalespersonSalesRow[] } | undefined;
   const collectionsPayload = collections.data?.data as SalespersonCollectionsRow[] | { data?: SalespersonCollectionsRow[] } | undefined;
   const outstandingPayload = outstanding.data?.data as SalespersonOutstandingRow[] | { data?: SalespersonOutstandingRow[] } | undefined;
-  const salesRows = Array.isArray(salesPayload)
-    ? salesPayload
-    : (salesPayload?.data ?? []);
-  const collectionRows = Array.isArray(collectionsPayload)
-    ? collectionsPayload
-    : (collectionsPayload?.data ?? []);
-  const outstandingRows = Array.isArray(outstandingPayload)
-    ? outstandingPayload
-    : (outstandingPayload?.data ?? []);
+  const salesRows = React.useMemo(
+    () => (Array.isArray(salesPayload) ? salesPayload : (salesPayload?.data ?? [])),
+    [salesPayload],
+  );
+  const collectionRows = React.useMemo(
+    () => (Array.isArray(collectionsPayload) ? collectionsPayload : (collectionsPayload?.data ?? [])),
+    [collectionsPayload],
+  );
+  const outstandingRows = React.useMemo(
+    () => (Array.isArray(outstandingPayload) ? outstandingPayload : (outstandingPayload?.data ?? [])),
+    [outstandingPayload],
+  );
 
   const totalSales = salesRows.reduce((sum, row) => sum + row.gross_sales, 0);
   const totalCollections = collectionRows.reduce((sum, row) => sum + row.collections_amount, 0);
   const totalOutstanding = outstandingRows.reduce((sum, row) => sum + row.outstanding_amount, 0);
+  const salesChartRows = React.useMemo(
+    () =>
+      salesRows.slice(0, 8).map((row) => ({
+        name: row.salesperson_name,
+        grossSales: row.gross_sales,
+        amountPaid: row.amount_paid,
+        amountDue: row.amount_due,
+      })),
+    [salesRows],
+  );
+  const collectionsChartRows = React.useMemo(
+    () =>
+      collectionRows.slice(0, 8).map((row) => ({
+        name: row.salesperson_name,
+        collections: row.collections_amount,
+      })),
+    [collectionRows],
+  );
+  const outstandingChartRows = React.useMemo(
+    () =>
+      outstandingRows.slice(0, 8).map((row) => ({
+        name: row.salesperson_name,
+        outstanding: row.outstanding_amount,
+      })),
+    [outstandingRows],
+  );
 
   return (
     <div className="space-y-7">
@@ -90,6 +131,74 @@ export default function SalesTeamReportPage({ params }: Props) {
           <StatCard label="Outstanding" value={formatMoney(totalOutstanding)} />
         </div>
       ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <ChartShell
+          title="Sales ownership mix"
+          subtitle="Compare billed, collected, and still-due value by salesperson."
+          footer={
+            <ChartLegend
+              items={[
+                { label: "Gross sales", tone: "primary", value: formatChartCurrency(totalSales) },
+                { label: "Collected", tone: "success", value: formatChartCurrency(totalCollections) },
+                { label: "Due", tone: "warning", value: formatChartCurrency(totalOutstanding) },
+              ]}
+            />
+          }
+        >
+          <ChartFrame height={340}>
+            <BarChart data={salesChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+              <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+              <XAxis dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
+              <ChartTooltip valueFormatter={formatChartCurrency} />
+              <Bar dataKey="grossSales" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+              <Bar dataKey="amountPaid" fill={getChartSeriesColor("success")} radius={[8, 8, 0, 0]} />
+              <Bar dataKey="amountDue" fill={getChartSeriesColor("warning")} radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ChartFrame>
+        </ChartShell>
+
+        <div className="grid gap-6">
+          <ChartShell
+            title="Collections by salesperson"
+            subtitle="Who is actually closing the loop from billing into receipts."
+          >
+            <ChartFrame height={170}>
+              <BarChart data={collectionsChartRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={96} />
+                <ChartTooltip valueFormatter={formatChartCurrency} />
+                <Bar dataKey="collections" radius={[0, 8, 8, 0]}>
+                  {collectionsChartRows.map((row) => (
+                    <Cell key={row.name} fill={getChartSeriesColor("secondary")} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartFrame>
+          </ChartShell>
+
+          <ChartShell
+            title="Outstanding concentration"
+            subtitle="Use this to spot which reps need credit-control support."
+          >
+            <ChartFrame height={170}>
+              <BarChart data={outstandingChartRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={96} />
+                <ChartTooltip valueFormatter={formatChartCurrency} />
+                <Bar dataKey="outstanding" radius={[0, 8, 8, 0]}>
+                  {outstandingChartRows.map((row) => (
+                    <Cell key={row.name} fill={getChartSeriesColor("warning")} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartFrame>
+          </ChartShell>
+        </div>
+      </div>
 
       <Card>
         <CardHeader>

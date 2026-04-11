@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth/session";
 import { useSalesOrders } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
 import { formatDateLabel } from "@/lib/format/date";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import {
@@ -26,6 +26,9 @@ import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
+function readOrderNumber(order: SalesOrder) {
+  return order.orderNumber ?? order.order_number ?? order.id;
+}
 
 export default function SalesOrdersPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -75,6 +78,61 @@ export default function SalesOrdersPage({ params }: Props) {
       return true;
     });
   }, [rows, segment]);
+
+  const columns = React.useMemo<ColumnDef<SalesOrder>[]>(
+    () => [
+      {
+        id: "order",
+        header: "Order",
+        accessorFn: (order) => readOrderNumber(order),
+        meta: { label: "Order" },
+        cell: ({ row }) => (
+          <Link
+            className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]"
+            href={`/c/${companyId}/sales/orders/${row.original.id}`}
+          >
+            {readOrderNumber(row.original)}
+          </Link>
+        ),
+      },
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (order) => order.customer?.name ?? "",
+        meta: { label: "Customer" },
+        cell: ({ row }) => row.original.customer?.name ?? "—",
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (order) => order.status ?? "",
+        meta: { label: "Status" },
+        cell: ({ row }) => <QueueRowStateBadge label={row.original.status ?? "—"} />,
+      },
+      {
+        id: "sourceQuote",
+        header: "Source quote",
+        accessorFn: (order) => order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "",
+        meta: { label: "Source quote" },
+        cell: ({ row }) => row.original.quotation?.quoteNumber ?? row.original.quotation?.quote_number ?? "—",
+      },
+      {
+        id: "expectedDispatch",
+        header: "Expected dispatch",
+        accessorFn: (order) => order.expectedDispatchDate ?? order.expected_dispatch_date ?? "",
+        meta: { label: "Expected dispatch" },
+        cell: ({ row }) => formatDateLabel(row.original.expectedDispatchDate ?? row.original.expected_dispatch_date),
+      },
+      {
+        id: "total",
+        header: "Total",
+        accessorFn: (order) => Number(order.total ?? 0),
+        meta: { label: "Total", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.total ?? "—",
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -214,38 +272,20 @@ export default function SalesOrdersPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Order</DataTh>
-                  <DataTh>Customer</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Source quote</DataTh>
-                  <DataTh className="text-right">Total</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((order) => (
-                  <DataTr
-                    key={order.id}
-                    className={selectedOrder?.id === order.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedOrderId(order.id)}
-                  >
-                    <DataTd>
-                      <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]" href={`/c/${companyId}/sales/orders/${order.id}`}>
-                        {order.orderNumber ?? order.order_number ?? order.id}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{order.customer?.name ?? "—"}</DataTd>
-                    <DataTd><QueueRowStateBadge label={order.status ?? "—"} /></DataTd>
-                    <DataTd>{order.quotation?.quoteNumber ?? order.quotation?.quote_number ?? "—"}</DataTd>
-                    <DataTd className="text-right">{order.total ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedOrderId(row.id)}
+            rowClassName={(row) =>
+              selectedOrder?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "expectedDispatch", desc: false }]}
+            toolbarTitle="Order queue"
+            toolbarDescription="Keep commercial capture and fulfillment readiness visible while sorting and trimming columns."
+          />
         </QueueShell>
       ) : null}
     </div>

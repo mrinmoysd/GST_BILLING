@@ -27,8 +27,8 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const sheetVariants: Record<string, string> = {
-  left: "inset-y-0 left-0 h-full w-80 data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left",
-  right: "inset-y-0 right-0 h-full w-80 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
+  left: "inset-y-0 left-0 h-full w-[22rem] data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left",
+  right: "inset-y-0 right-0 h-full w-[22rem] data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
 };
 
 const SheetContent = React.forwardRef<
@@ -42,7 +42,7 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 border border-[var(--border)] bg-[var(--surface-elevated)] p-4 text-[var(--foreground)] shadow-[var(--shadow-overlay)] outline-none",
+        "fixed z-50 border border-[var(--border)] bg-[var(--surface-elevated)] p-5 text-[var(--foreground)] shadow-[var(--shadow-overlay)] [background-image:var(--surface-highlight)] outline-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out duration-200",
         sheetVariants[side],
         className,
@@ -56,11 +56,11 @@ const SheetContent = React.forwardRef<
 SheetContent.displayName = DialogPrimitive.Content.displayName;
 
 function SheetHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center justify-between gap-2", className)} {...props} />;
+  return <div className={cn("flex items-center justify-between gap-3 border-b border-[var(--border)] pb-4", className)} {...props} />;
 }
 
 function SheetTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("text-sm font-semibold", className)} {...props} />;
+  return <h2 className={cn("text-base font-semibold tracking-[-0.02em]", className)} {...props} />;
 }
 
 export { Sheet, SheetTrigger, SheetClose, SheetPortal, SheetOverlay, SheetContent, SheetHeader, SheetTitle };

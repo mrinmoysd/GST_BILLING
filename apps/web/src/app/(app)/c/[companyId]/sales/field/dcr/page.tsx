@@ -8,6 +8,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { isRfcUuid } from "@/lib/ids";
 import { useDcr, useSubmitDcr } from "@/lib/field-sales/hooks";
 import { toastError, toastSuccess } from "@/lib/toast";
+import { Badge } from "@/components/ui/badge";
 import { DateField, PrimaryButton } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
@@ -51,6 +52,7 @@ export default function FieldSalesDcrPage({ params }: Props) {
         eyebrow="Field sales"
         title="Daily call report"
         subtitle="Submit a clean daily closeout built from visits, orders, and recovery actions instead of stitching it together manually."
+        badges={report?.status ? [<Badge key="status" variant="outline">{String(report.status)}</Badge>] : undefined}
       />
 
       <WorkspacePanel title="Report date" subtitle="Open any date to review or submit the rep’s closeout.">
@@ -145,7 +147,7 @@ export default function FieldSalesDcrPage({ params }: Props) {
             <PrimaryButton type="submit" disabled={submit.isPending || !canRunRepWorkspace}>
               {submit.isPending ? "Submitting…" : "Submit DCR"}
             </PrimaryButton>
-            {report?.status ? <div className="text-sm text-[var(--muted)]">Current status: {report.status}</div> : null}
+            {report?.status ? <div className="text-sm text-[var(--muted)]">Current status: {String(report.status)}</div> : null}
           </div>
         </form>
       </WorkspacePanel>

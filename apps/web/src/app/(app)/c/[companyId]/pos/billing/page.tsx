@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
 import { createIdempotencyKey, idempotencyHeaders } from "@/lib/api/idempotency";
 import { getErrorMessage } from "@/lib/errors";
 import { useCustomers, useProducts } from "@/lib/masters/hooks";
 import type { Customer, Product } from "@/lib/masters/types";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -143,10 +143,14 @@ export default function PosBillingPage({ params }: Props) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="POS"
         title="Retail billing"
         subtitle="Use a scan-first cart, complete the sale in one pass, and jump straight into a printable receipt."
+        badges={[
+          <WorkspaceStatBadge key="cart" label="Cart lines" value={cart.length} />,
+          <WorkspaceStatBadge key="payment" label="Mode" value={paymentMethod.toUpperCase()} variant="outline" />,
+        ]}
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href={`/c/${companyId}/pos`}>
@@ -161,16 +165,12 @@ export default function PosBillingPage({ params }: Props) {
 
       <div className="grid gap-6 2xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6">
-          <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,251,0.96))]">
-            <CardHeader>
+          <WorkspacePanel title="Product lookup" subtitle="Use SKU or product name. Barcode scanners can be treated as keyboard input targeting this field.">
+            <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">Search first</Badge>
                 <Badge variant="outline">Enter to add</Badge>
               </div>
-              <CardTitle>Product lookup</CardTitle>
-              <CardDescription>Use SKU or product name. Barcode scanners can be treated as keyboard input targeting this field.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                 <div>
                   <label className="block text-[13px] font-semibold text-[var(--muted-strong)]">Scan or search</label>
@@ -205,7 +205,7 @@ export default function PosBillingPage({ params }: Props) {
 
               {customersQuery.isLoading || productsQuery.isLoading ? <LoadingBlock label="Loading POS data…" /> : null}
               {error ? <InlineError message={error} /> : null}
-              {ok ? <div className="text-sm text-green-700">{ok}</div> : null}
+              {ok ? <div aria-live="polite" className="text-sm text-green-700">{ok}</div> : null}
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
@@ -255,15 +255,11 @@ export default function PosBillingPage({ params }: Props) {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Cart</CardTitle>
-              <CardDescription>Adjust quantities, prices, and discounts before completing the sale.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <WorkspacePanel title="Cart" subtitle="Adjust quantities, prices, and discounts before completing the sale.">
+            <div className="space-y-4">
               {cart.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] p-8 text-sm text-[var(--muted)]">
                   No items in cart. Scan a barcode or pick a product from the lists above.
@@ -342,21 +338,17 @@ export default function PosBillingPage({ params }: Props) {
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         </div>
 
         <div className="space-y-6">
-          <Card className="sticky top-24">
-            <CardHeader>
+          <WorkspacePanel className="sticky top-24" title="Sale summary" subtitle="Complete the transaction, post the payment, and open the receipt immediately.">
+            <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{cart.length} items</Badge>
                 <Badge variant="outline">{paymentMethod.toUpperCase()}</Badge>
               </div>
-              <CardTitle>Sale summary</CardTitle>
-              <CardDescription>Complete the transaction, post the payment, and open the receipt immediately.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="grid gap-3">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Sub-total</div>
@@ -480,8 +472,8 @@ export default function PosBillingPage({ params }: Props) {
                   Clear cart
                 </SecondaryButton>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         </div>
       </div>
     </div>

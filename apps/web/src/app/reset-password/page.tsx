@@ -5,6 +5,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AuthShell } from "@/components/public/auth-shell";
 import { getErrorMessage, logError } from "@/lib/errors";
 import { useResetPassword } from "@/lib/auth/hooks";
@@ -44,46 +46,44 @@ function ResetPasswordContent() {
       <div className="space-y-6">
         <div className="space-y-2">
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Reset password</div>
-          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] text-[var(--foreground)]">Choose a new password</h1>
+          <h1 className="font-display text-3xl leading-none font-semibold tracking-[-0.035em] text-[var(--foreground)]">Choose a new password</h1>
           <p className="text-sm leading-6 text-[var(--muted)]">Set the new password, confirm it, then return to the workspace login.</p>
         </div>
 
         <div className="space-y-4">
           <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">New password</div>
-            <input
+            <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
-              className="public-input h-12 w-full rounded-2xl px-4 text-sm"
             />
           </label>
 
           <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Confirm password</div>
-            <input
+            <Input
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               type="password"
-              className="public-input h-12 w-full rounded-2xl px-4 text-sm"
             />
           </label>
 
           {error ? (
-            <div className="rounded-[22px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
+            <div className="rounded-[12px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {error}
             </div>
           ) : null}
           {ok ? (
-            <div className="rounded-[22px] border border-[var(--success-soft)] bg-[var(--success-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
+            <div className="rounded-[12px] border border-[var(--success-soft)] bg-[var(--success-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {ok}
             </div>
           ) : null}
 
-          <button
+          <Button
             type="button"
             disabled={resetPassword.isPending}
-            className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-94 disabled:opacity-70"
+            className="w-full"
             onClick={async () => {
               setError(null);
               setOk(null);
@@ -101,7 +101,7 @@ function ResetPasswordContent() {
             }}
           >
             {resetPassword.isPending ? "Updating..." : "Update password"}
-          </button>
+          </Button>
         </div>
       </div>
     </AuthShell>

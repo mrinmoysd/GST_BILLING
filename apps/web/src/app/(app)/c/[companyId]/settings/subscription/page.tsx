@@ -27,6 +27,7 @@ import {
 import { toastError, toastInfo, toastSuccess } from "@/lib/toast";
 import { PrimaryButton, SecondaryButton, SelectField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
+import { StatCard } from "@/lib/ui/stat";
 import {
   WorkspaceConfigHero,
   WorkspacePanel,
@@ -52,6 +53,12 @@ function limitLabel(value: number | null | undefined, fallback = "Unlimited") {
   return formatCompactNumber(value);
 }
 
+function enforcementLabel(mode?: StructuredPlanLimits["invoices"]["mode"]) {
+  if (mode === "hard_block") return "Hard block";
+  if (mode === "wallet_overage") return "Wallet overage";
+  return "Warn only";
+}
+
 function UsageMeter(props: {
   label: string;
   used: number;
@@ -63,6 +70,13 @@ function UsageMeter(props: {
     props.limit === null || props.limit === undefined || props.limit <= 0
       ? null
       : Math.max(0, Math.min(100, Math.round((props.used / props.limit) * 100)));
+  const meterColor = props.trialFree
+    ? "var(--secondary)"
+    : ratio !== null && ratio >= 100
+      ? "var(--danger)"
+      : ratio !== null && ratio >= 80
+        ? "var(--warning)"
+        : "var(--accent)";
 
   return (
     <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-muted)] p-4">
@@ -80,8 +94,8 @@ function UsageMeter(props: {
       </div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--surface-elevated)]">
         <div
-          className="h-full rounded-full bg-[var(--accent)] transition-[width]"
-          style={{ width: `${ratio ?? 100}%` }}
+          className="h-full rounded-full transition-[width]"
+          style={{ background: meterColor, width: `${ratio ?? 100}%` }}
         />
       </div>
     </div>
@@ -109,20 +123,21 @@ function PlanCard(props: {
   const overage = overageSummary(props.plan.limits.invoices);
   const companyUpsell = extraSeatSummary(props.plan.limits.companies, "company");
   const userUpsell = extraSeatSummary(props.plan.limits.full_seats, "user");
+  const toneClass = props.current
+    ? "border-[var(--accent)] bg-[var(--surface-panel)] [background-image:var(--panel-highlight)]"
+    : props.selected
+      ? "border-[var(--secondary)] bg-[var(--surface-panel)]"
+      : "border-[var(--border)] bg-[var(--surface-panel-muted)]";
 
   return (
     <div
-      className={`rounded-[30px] border p-6 shadow-[var(--shadow-soft)] transition ${
-        props.selected
-          ? "border-[var(--accent)] bg-[var(--surface-panel)] [background-image:var(--panel-highlight)]"
-          : "border-[var(--border)] bg-[var(--surface-panel-muted)]"
-      }`}
+      className={`rounded-[22px] border p-6 shadow-[var(--shadow-soft)] transition ${toneClass}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">18% GST extra</div>
-          <div className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">{props.plan.name}</div>
-          <div className="mt-2 text-lg font-semibold text-[var(--accent)]">{formatPlanPrice(props.plan)}</div>
+          <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{props.plan.name}</div>
+          <div className="mt-2 text-base font-semibold text-[var(--accent)]">{formatPlanPrice(props.plan)}</div>
         </div>
         <div className="flex flex-col items-end gap-2">
           {props.current ? <Badge variant="secondary">Current</Badge> : null}
@@ -130,7 +145,7 @@ function PlanCard(props: {
         </div>
       </div>
 
-      <div className="mt-5 space-y-3 text-sm text-[var(--muted-strong)]">
+      <div className="mt-5 grid gap-3 text-sm text-[var(--muted-strong)]">
         <div>{seatSummary(props.plan.limits.full_seats, "full")}</div>
         {props.plan.limits.view_only_seats.included > 0 ? (
           <div>{seatSummary(props.plan.limits.view_only_seats, "view")}</div>
@@ -247,7 +262,7 @@ export default function SubscriptionSettingsPage({ params }: Props) {
       <WorkspaceConfigHero
         eyebrow="Commercial"
         title="Subscription and usage"
-        subtitle="See the current plan, trial posture, and metered usage from one commercial workspace. Checkout stays provider-backed, but the product now explains the plan before you commit."
+        subtitle="See the current plan, trial posture, entitlement policy, and metered usage from one commercial workspace. Checkout stays provider-backed, but the product now explains the plan before you commit."
         badges={[
           <WorkspaceStatBadge key="status" label="Status" value={subscription?.status ?? "No subscription"} />,
           <WorkspaceStatBadge key="trial" label="Trial" value={subscription?.trialStatus ?? "Not applicable"} variant="outline" />,
@@ -260,6 +275,42 @@ export default function SubscriptionSettingsPage({ params }: Props) {
       {subscriptionQuery.isError ? <InlineError message={getErrorMessage(subscriptionQuery.error, "Failed to load subscription")} /> : null}
       {plansQuery.isError ? <InlineError message={getErrorMessage(plansQuery.error, "Failed to load pricing plans")} /> : null}
       <BillingWarningStack summary={subscription?.warnings} limit={3} />
+
+      {subscription ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Current plan"
+            value={currentPlan?.name ?? subscription.planName ?? "No plan"}
+            hint={currentPlan ? formatPlanPrice(currentPlan) : "Plan not assigned yet"}
+          />
+          <StatCard
+            label="Trial posture"
+            value={
+              subscription.trialStatus === "trialing"
+                ? `${subscription.trialDaysRemaining ?? 0} days left`
+                : subscription.trialStatus === "trial_expired"
+                  ? "Expired"
+                  : subscription.trialStatus === "converted"
+                    ? "Converted"
+                    : "Not in trial"
+            }
+            tone={trialExpired ? "strong" : "default"}
+            hint={`Writes ${writesBlocked ? "blocked" : "available"}`}
+          />
+          <StatCard
+            label="Invoice policy"
+            value={invoiceSummary(effectiveLimits?.invoices ?? { included_per_month: null, monthly_billing_value_inr: null, mode: "warn_only", overage_price_inr: 0 })}
+            hint={enforcementLabel(effectiveLimits?.invoices?.mode)}
+            tone="quiet"
+          />
+          <StatCard
+            label="Seat posture"
+            value={seatSummary(effectiveLimits?.full_seats ?? { included: 0, max: null, extra_price_inr: 0 }, "full")}
+            hint={companySummary(effectiveLimits?.companies ?? { included: 1, max: null, extra_price_inr: 0 })}
+            tone="quiet"
+          />
+        </div>
+      ) : null}
 
       {writesBlocked ? (
         <WorkspacePanel
@@ -349,9 +400,19 @@ export default function SubscriptionSettingsPage({ params }: Props) {
             />
             {selectedPlan ? (
               <div className="rounded-[24px] border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Selected plan</div>
-                <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{selectedPlan.name}</div>
-                <div className="mt-1 text-sm text-[var(--muted-strong)]">{formatPlanPrice(selectedPlan)}</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Selected plan</div>
+                    <div className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{selectedPlan.name}</div>
+                    <div className="mt-1 text-sm text-[var(--muted-strong)]">{formatPlanPrice(selectedPlan)}</div>
+                  </div>
+                  <Badge variant={trialExpired ? "warning" : "outline"}>{trialExpired ? "Upgrade required" : "Ready for checkout"}</Badge>
+                </div>
+                <div className="mt-4 grid gap-2 text-sm text-[var(--muted-strong)]">
+                  <div>{invoiceSummary(selectedPlan.limits.invoices)}</div>
+                  <div>{seatSummary(selectedPlan.limits.full_seats, "full")}</div>
+                  <div>{companySummary(selectedPlan.limits.companies)}</div>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <PrimaryButton type="button" disabled={checkout.isPending} onClick={() => void startCheckout(selectedPlan.code)}>
                     {checkout.isPending ? "Starting…" : trialExpired ? "Upgrade now" : "Start checkout"}
@@ -414,6 +475,45 @@ export default function SubscriptionSettingsPage({ params }: Props) {
           Period: {formatDate(subscription?.usage?.period_start)} to {formatDate(subscription?.usage?.period_end)}
         </div>
       </WorkspaceSection>
+
+      {effectiveLimits ? (
+        <WorkspaceSection
+          eyebrow="Entitlement policy"
+          title="What this plan actually controls"
+          subtitle="The limits below are the effective resolved limits after plan defaults and any backend commercial overrides."
+        >
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <WorkspacePanel title="Invoice issuance" subtitle="Monthly invoice quota and over-limit handling.">
+              <div className="space-y-2 text-sm text-[var(--muted-strong)]">
+                <div>{invoiceSummary(effectiveLimits.invoices)}</div>
+                {invoiceValueSummary(effectiveLimits.invoices) ? <div>{invoiceValueSummary(effectiveLimits.invoices)}</div> : null}
+                {overageSummary(effectiveLimits.invoices) ? <div>{overageSummary(effectiveLimits.invoices)}</div> : null}
+                <div>Mode: {enforcementLabel(effectiveLimits.invoices.mode)}</div>
+              </div>
+            </WorkspacePanel>
+            <WorkspacePanel title="User seats" subtitle="Current full-right and optional view-only seat policy.">
+              <div className="space-y-2 text-sm text-[var(--muted-strong)]">
+                <div>{seatSummary(effectiveLimits.full_seats, "full")}</div>
+                <div>{seatSummary(effectiveLimits.view_only_seats, "view")}</div>
+                {extraSeatSummary(effectiveLimits.full_seats, "user") ? <div>{extraSeatSummary(effectiveLimits.full_seats, "user")}</div> : null}
+              </div>
+            </WorkspacePanel>
+            <WorkspacePanel title="Company scope" subtitle="How many active companies this subscription can control.">
+              <div className="space-y-2 text-sm text-[var(--muted-strong)]">
+                <div>{companySummary(effectiveLimits.companies)}</div>
+                {extraSeatSummary(effectiveLimits.companies, "company") ? <div>{extraSeatSummary(effectiveLimits.companies, "company")}</div> : null}
+              </div>
+            </WorkspacePanel>
+            <WorkspacePanel title="Trial policy" subtitle="Resolved trial posture used for the current company.">
+              <div className="space-y-2 text-sm text-[var(--muted-strong)]">
+                <div>{effectiveLimits.trial.enabled ? `${effectiveLimits.trial.days} day trial enabled` : "Trial disabled"}</div>
+                <div>{effectiveLimits.trial.allow_full_access ? "Full access during trial" : "Restricted trial access"}</div>
+                <div>{effectiveLimits.trial.block_on_expiry ? "Writes block on expiry" : "Writes remain available on expiry"}</div>
+              </div>
+            </WorkspacePanel>
+          </div>
+        </WorkspaceSection>
+      ) : null}
 
       <WorkspaceSection
         eyebrow="Plan catalog"

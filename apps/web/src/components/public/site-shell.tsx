@@ -49,8 +49,8 @@ export function PublicSiteShell(props: {
 }) {
   const accentClass =
     props.accent === "gold"
-      ? "before:bg-[radial-gradient(circle_at_top_right,rgba(185,120,24,0.16),transparent_34%)]"
-      : "before:bg-[radial-gradient(circle_at_top_left,rgba(15,95,140,0.14),transparent_32%)]";
+      ? "before:bg-[radial-gradient(circle_at_top_right,rgba(15,159,168,0.08),transparent_34%)]"
+      : "before:bg-[radial-gradient(circle_at_top_left,rgba(53,89,224,0.08),transparent_32%)]";
 
   return (
     <div className={cn("relative min-h-screen overflow-hidden bg-[var(--background)]", "before:absolute before:inset-0 before:pointer-events-none", accentClass)}>
@@ -71,12 +71,12 @@ export function PublicHeader() {
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <Link className="flex items-center gap-3" href="/">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--foreground)] text-sm font-semibold text-white shadow-[var(--shadow-soft)]">
-                GB
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[var(--public-border)] bg-[var(--surface)] text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-soft)]">
+                VG
               </div>
               <div>
-                <div className="font-display text-lg leading-none font-semibold text-[var(--foreground)]">GST Billing</div>
-                <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">India-first billing operations</div>
+                <div className="font-display text-lg leading-none font-semibold text-[var(--foreground)]">Vyapar Genie</div>
+                <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">Billing operations for India-first teams</div>
               </div>
             </Link>
             <nav className="hidden items-center gap-1 lg:flex">
@@ -143,7 +143,7 @@ export function PublicFooter() {
         ))}
       </div>
       <div className="border-t border-[var(--public-border)] bg-[var(--public-footer-bottom-bg)] px-4 py-4 text-center text-xs text-[var(--muted)] md:px-6 lg:px-8">
-        GST Billing. Operational software for GST billing, accounting, inventory, and POS.
+        Vyapar Genie. Operational software for billing, GST, accounting, inventory, and POS.
       </div>
     </footer>
   );
@@ -175,8 +175,8 @@ export function FullBleedHero(props: {
             <div className="animate-hero-rise text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--muted)]">
               {props.eyebrow}
             </div>
-            <div className="animate-hero-rise-delay font-display text-6xl leading-[0.9] font-semibold tracking-[-0.055em] text-[var(--foreground)] md:text-7xl lg:text-[6.1rem]">
-              GST Billing
+            <div className="animate-hero-rise-delay font-display text-5xl leading-[0.92] font-semibold tracking-[-0.05em] text-[var(--foreground)] md:text-6xl lg:text-[5.4rem]">
+              Vyapar Genie
             </div>
             <h1 className="animate-hero-rise-delay max-w-xl text-balance text-3xl font-semibold leading-[1.02] tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">
               {props.title}

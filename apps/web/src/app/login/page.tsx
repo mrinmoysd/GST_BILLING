@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AuthShell } from "@/components/public/auth-shell";
 import { getErrorMessage, logError } from "@/lib/errors";
 import { useLogin } from "@/lib/auth/hooks";
@@ -79,7 +81,7 @@ export default function LoginPage() {
       <div className="space-y-6">
         <div className="space-y-2">
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Tenant login</div>
-          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] text-[var(--foreground)]">Sign in</h1>
+          <h1 className="font-display text-3xl leading-none font-semibold tracking-[-0.035em] text-[var(--foreground)]">Sign in</h1>
           <p className="text-sm leading-6 text-[var(--muted)]">
             Your refresh session is stored in an httpOnly cookie so the workspace can restore state securely.
           </p>
@@ -88,39 +90,37 @@ export default function LoginPage() {
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Email</div>
-            <input
+            <Input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               autoComplete="email"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 text-sm text-[var(--foreground)] shadow-sm"
             />
           </label>
 
           <label className="block">
             <div className="mb-2 text-[13px] font-semibold text-[var(--muted-strong)]">Password</div>
-            <input
+            <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               autoComplete="current-password"
-              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 text-sm text-[var(--foreground)] shadow-sm"
             />
           </label>
 
           {error ? (
-            <div className="rounded-[22px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
+            <div className="rounded-[12px] border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--foreground)]">
               {error}
             </div>
           ) : null}
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-94 disabled:opacity-70"
+            className="w-full"
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
-          </button>
+          </Button>
         </form>
       </div>
     </AuthShell>

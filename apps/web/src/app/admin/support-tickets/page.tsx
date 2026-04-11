@@ -4,13 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminApiClient } from "@/lib/admin/api-client";
 import { useAdminSupportTickets } from "@/lib/admin/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateTimeLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { PrimaryButton, SecondaryButton, SelectField } from "@/lib/ui/form";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
+import { QueueInspector, QueueMetaList, QueueRowStateBadge, QueueShell, QueueToolbar } from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 export default function AdminSupportTicketsPage() {
   const [status, setStatus] = React.useState<string>("");
@@ -19,8 +21,9 @@ export default function AdminSupportTicketsPage() {
 
   const query = useAdminSupportTickets({ status: status || undefined, page: 1, limit: 50 });
 
-  const rows =
-    (query.data?.data as unknown as {
+  const rows = React.useMemo(
+    () =>
+      (query.data?.data as unknown as {
       data?: Array<{
         id: string;
         email?: string | null;
@@ -35,26 +38,39 @@ export default function AdminSupportTicketsPage() {
         company_id?: string | null;
         company_name?: string | null;
       }>;
-    })?.data ?? [];
+    })?.data ?? [],
+    [query.data?.data],
+  );
+
+  const [selectedTicketId, setSelectedTicketId] = React.useState("");
+
+  React.useEffect(() => {
+    if (!rows.length) {
+      setSelectedTicketId("");
+      return;
+    }
+    if (!selectedTicketId || !rows.some((row) => row.id === selectedTicketId)) {
+      setSelectedTicketId(rows[0]?.id ?? "");
+    }
+  }, [rows, selectedTicketId]);
+
+  const selectedTicket = rows.find((row) => row.id === selectedTicketId) ?? rows[0] ?? null;
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Admin"
+      <WorkspaceHero
+        tone="admin"
+        eyebrow="Support ops"
         title="Support tickets"
         subtitle="Review inbound support requests and move them through the current status flow."
+        badges={[
+          <WorkspaceStatBadge key="visible" label="In view" value={rows.length} />,
+          <WorkspaceStatBadge key="status" label="Filter" value={status || "All statuses"} variant="outline" />,
+        ]}
       />
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{rows.length} ticket{rows.length === 1 ? "" : "s"} in view</Badge>
-            <Badge variant="outline">{status || "All statuses"}</Badge>
-          </div>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter tickets by status and refresh the current result set.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <QueueToolbar
+        filters={
           <div className="grid gap-3 md:grid-cols-[1fr_200px] md:items-end">
           <div>
             <SelectField label="Filter by status" value={status} onChange={setStatus}>
@@ -80,8 +96,9 @@ export default function AdminSupportTicketsPage() {
             </PrimaryButton>
           </div>
           </div>
-        </CardContent>
-      </Card>
+        }
+        summary={<Badge variant="secondary">{rows.length} ticket{rows.length === 1 ? "" : "s"} in view</Badge>}
+      />
 
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load support tickets")} /> : null}
@@ -89,12 +106,36 @@ export default function AdminSupportTicketsPage() {
       {error ? <InlineError message={error} /> : null}
 
       {query.data && rows.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Ticket queue</CardTitle>
-            <CardDescription>Review request details and update status in place.</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <QueueShell
+          inspector={
+            <QueueInspector
+              eyebrow="Selected ticket"
+              title={selectedTicket?.subject || "(no subject)"}
+              subtitle="Keep ticket context, ownership, and company linkage visible while working the queue."
+            >
+              {selectedTicket ? (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <QueueRowStateBadge label={selectedTicket.status || "—"} />
+                    <QueueRowStateBadge label={selectedTicket.priority || "—"} variant="outline" />
+                  </div>
+                  <QueueMetaList
+                    items={[
+                      { label: "From", value: selectedTicket.email || selectedTicket.name || "—" },
+                      { label: "Created", value: formatDateTimeLabel(selectedTicket.created_at ?? null) },
+                      { label: "Assignee", value: selectedTicket.assignee || "No assignee" },
+                      { label: "Company", value: selectedTicket.company_name || "Unlinked" },
+                    ]}
+                  />
+                  <WorkspacePanel title="Request" subtitle="Latest visible support message." tone="muted">
+                    <div className="text-sm leading-6 text-[var(--muted-strong)]">{selectedTicket.message || "No message body."}</div>
+                  </WorkspacePanel>
+                </>
+              ) : null}
+            </QueueInspector>
+          }
+        >
+          <WorkspacePanel title="Ticket queue" subtitle="Review request details and update status in place.">
             <DataTableShell>
               <DataTable>
                 <DataThead>
@@ -111,8 +152,12 @@ export default function AdminSupportTicketsPage() {
                 </DataThead>
                 <tbody>
                   {rows.map((t) => (
-                    <DataTr key={t.id}>
-                      <DataTd className="whitespace-nowrap">{t.created_at ? new Date(t.created_at).toLocaleString() : "—"}</DataTd>
+                    <DataTr
+                      key={t.id}
+                      className={selectedTicket?.id === t.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
+                      onClick={() => setSelectedTicketId(t.id)}
+                    >
+                      <DataTd className="whitespace-nowrap">{formatDateTimeLabel(t.created_at ?? null)}</DataTd>
                       <DataTd>
                     <div className="font-medium">{t.name || "—"}</div>
                     <div className="text-xs text-[var(--muted)]">{t.email || "—"}</div>
@@ -213,14 +258,14 @@ export default function AdminSupportTicketsPage() {
                 </tbody>
               </DataTable>
             </DataTableShell>
-          </CardContent>
-        </Card>
+          </WorkspacePanel>
+        </QueueShell>
       ) : null}
 
       {query.data && rows.length === 0 ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-[var(--muted)]">No support tickets found.</CardContent>
-        </Card>
+        <WorkspacePanel title="Ticket queue" subtitle="No support tickets found." tone="muted">
+          <div className="text-sm text-[var(--muted)]">Try a different status filter or refresh the current result set.</div>
+        </WorkspacePanel>
       ) : null}
     </div>
   );

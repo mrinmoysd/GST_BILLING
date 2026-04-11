@@ -1,9 +1,20 @@
 "use client";
 
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { type DcrRegisterRow, type MissedVisitRow, type RepVisitProductivityRow, useDcrRegister, useMissedVisits, useRepVisitProductivity } from "@/lib/reports/hooks";
 import { formatDateLabel } from "@/lib/format/date";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -31,18 +42,38 @@ export default function DcrRegisterPage({ params }: Props) {
   const dcrPayload = dcr.data?.data as DcrRegisterRow[] | { data?: DcrRegisterRow[] } | undefined;
   const missedPayload = missed.data?.data as MissedVisitRow[] | { data?: MissedVisitRow[] } | undefined;
   const productivityPayload = productivity.data?.data as RepVisitProductivityRow[] | { data?: RepVisitProductivityRow[] } | undefined;
-  const dcrRows = Array.isArray(dcrPayload)
-    ? dcrPayload
-    : (dcrPayload?.data ?? []);
-  const missedRows = Array.isArray(missedPayload)
-    ? missedPayload
-    : (missedPayload?.data ?? []);
-  const productivityRows = Array.isArray(productivityPayload)
-    ? productivityPayload
-    : (productivityPayload?.data ?? []);
+  const dcrRows = React.useMemo(
+    () => (Array.isArray(dcrPayload) ? dcrPayload : (dcrPayload?.data ?? [])),
+    [dcrPayload],
+  );
+  const missedRows = React.useMemo(
+    () => (Array.isArray(missedPayload) ? missedPayload : (missedPayload?.data ?? [])),
+    [missedPayload],
+  );
+  const productivityRows = React.useMemo(
+    () => (Array.isArray(productivityPayload) ? productivityPayload : (productivityPayload?.data ?? [])),
+    [productivityPayload],
+  );
   const submitted = dcrRows.filter((row) => row.status === "submitted" || row.status === "approved").length;
   const approved = dcrRows.filter((row) => row.status === "approved").length;
   const totalVisits = productivityRows.reduce((sum, row) => sum + row.visits_count, 0);
+  const statusChartRows = React.useMemo(
+    () => [
+      { label: "Draft", value: dcrRows.filter((row) => row.status === "draft").length, tone: "neutral" as const },
+      { label: "Submitted", value: dcrRows.filter((row) => row.status === "submitted").length, tone: "primary" as const },
+      { label: "Approved", value: dcrRows.filter((row) => row.status === "approved").length, tone: "success" as const },
+    ],
+    [dcrRows],
+  );
+  const productivityChartRows = React.useMemo(
+    () =>
+      productivityRows.slice(0, 8).map((row) => ({
+        name: row.salesperson_name,
+        visits: row.visits_count,
+        productive: row.productive_visits,
+      })),
+    [productivityRows],
+  );
 
   return (
     <div className="space-y-7">
@@ -72,6 +103,44 @@ export default function DcrRegisterPage({ params }: Props) {
           <StatCard label="Visits in window" value={String(totalVisits)} />
         </div>
       ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <ChartShell
+          title="DCR submission posture"
+          subtitle="Use this to see whether the closeout process is disciplined before you read the raw register."
+          footer={<ChartLegend items={statusChartRows.map((row) => ({ label: row.label, tone: row.tone, value: row.value }))} />}
+        >
+          <ChartFrame height={300}>
+            <BarChart data={statusChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+              <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+              <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={64} />
+              <ChartTooltip valueFormatter={formatChartCompactNumber} />
+              <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                {statusChartRows.map((row) => (
+                  <Cell key={row.label} fill={getChartSeriesColor(row.tone)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartFrame>
+        </ChartShell>
+
+        <ChartShell
+          title="Visit productivity"
+          subtitle="Compare total visits against productive visits to spot route activity that is not converting."
+        >
+          <ChartFrame height={300}>
+            <BarChart data={productivityChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+              <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+              <XAxis dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={64} />
+              <ChartTooltip valueFormatter={formatChartCompactNumber} />
+              <Bar dataKey="visits" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+              <Bar dataKey="productive" fill={getChartSeriesColor("success")} radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ChartFrame>
+        </ChartShell>
+      </div>
 
       <WorkspacePanel title="DCR register" subtitle="Submission state, closeout quality, and review completion by rep and date.">
         <DataTableShell>

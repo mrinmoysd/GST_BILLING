@@ -34,7 +34,7 @@ export default function Home() {
         <FullBleedHero
           eyebrow="Operational software for Indian businesses"
           title="Run billing, GST, stock, accounting, and retail from one disciplined workspace."
-          subtitle="Built for teams that need invoicing speed without losing tax correctness, stock visibility, or finance control. Start with self-serve onboarding, then operate across collections, GST filing, books, and platform administration."
+          subtitle="Vyapar Genie is built for teams that need invoicing speed without losing tax correctness, stock visibility, or finance control. Start with self-serve onboarding, then operate across collections, GST filing, books, and platform administration."
           actions={
             <>
               <Button asChild size="lg">
@@ -137,7 +137,7 @@ export default function Home() {
               Built as one operating loop, not a chain of disconnected tools.
             </div>
             <p className="mt-4 text-sm leading-7 text-[var(--muted-strong)]">
-              GST Billing is designed so invoices, collections, purchases, tax reporting, and books inherit the same operational truth instead of being re-entered later.
+              Vyapar Genie is designed so invoices, collections, purchases, tax reporting, and books inherit the same operational truth instead of being re-entered later.
             </p>
           </div>
           <div className="grid gap-4">

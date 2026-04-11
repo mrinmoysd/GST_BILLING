@@ -13,6 +13,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+function FieldShell(props: {
+  label: string;
+  children: React.ReactNode;
+  helperText?: string;
+  required?: boolean;
+  className?: string;
+}) {
+  return (
+    <label className={cn("block space-y-2", props.className)}>
+      <div className="flex items-center gap-2">
+        <Label className="text-[13px] font-semibold text-[var(--muted-strong)]">{props.label}</Label>
+        {props.required ? (
+          <span className="rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">
+            Required
+          </span>
+        ) : null}
+      </div>
+      {props.children}
+      {props.helperText ? <div className="text-xs leading-5 text-[var(--muted)]">{props.helperText}</div> : null}
+    </label>
+  );
+}
+
 export function TextField({
   label,
   value,
@@ -29,8 +52,7 @@ export function TextField({
   required?: boolean;
 }) {
   return (
-    <label className="block space-y-2">
-      <Label className="text-[13px] font-semibold text-[var(--muted-strong)]">{label}</Label>
+    <FieldShell label={label} required={required}>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -38,7 +60,7 @@ export function TextField({
         type={type ?? "text"}
         required={required}
       />
-    </label>
+    </FieldShell>
   );
 }
 
@@ -286,8 +308,7 @@ export function SelectField({
   disabled?: boolean;
 }) {
   return (
-    <label className="block space-y-2">
-      <Label className="text-[13px] font-semibold text-[var(--muted-strong)]">{label}</Label>
+    <FieldShell label={label} required={required}>
       <SelectControl
         value={value}
         onChange={onChange}
@@ -299,7 +320,7 @@ export function SelectField({
       >
         {children}
       </SelectControl>
-    </label>
+    </FieldShell>
   );
 }
 
@@ -427,7 +448,7 @@ export function SelectControl({
             ref={triggerRef}
             aria-label={ariaLabel}
             className={cn(
-              "flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-left text-sm text-[var(--foreground)] shadow-sm outline-none transition hover:bg-[var(--surface-elevated)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-60",
+              "flex h-11 w-full items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--surface-field)] px-3.5 py-2.5 text-left text-sm text-[var(--foreground)] shadow-[var(--shadow-soft)] outline-none transition hover:bg-[var(--surface-elevated)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:cursor-not-allowed disabled:bg-[var(--surface-muted)] disabled:text-[var(--muted)] disabled:opacity-100",
               !selectedOption && "text-[var(--muted)]",
               className,
             )}
@@ -440,13 +461,13 @@ export function SelectControl({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="max-h-80 overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-1.5 [background-image:var(--surface-highlight)] shadow-[var(--shadow-overlay)]"
+          className="max-h-80 overflow-y-auto rounded-[14px] border border-[var(--border)] bg-[var(--surface-elevated)] p-1.5 [background-image:var(--surface-highlight)] shadow-[var(--shadow-overlay)]"
           sideOffset={8}
           style={contentWidth ? { width: contentWidth } : undefined}
         >
           {resolvedOptions.map((option) => (
             <DropdownMenuItem
-              className="rounded-xl px-3 py-2.5 text-sm"
+              className="rounded-[10px] px-3 py-2.5 text-sm"
               disabled={option.disabled}
               key={`${option.value}:${option.label}`}
               onSelect={() => onChange(option.value)}

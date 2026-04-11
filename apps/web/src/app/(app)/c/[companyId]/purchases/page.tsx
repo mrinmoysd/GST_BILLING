@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
 import { formatDateLabel } from "@/lib/format/date";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import {
@@ -77,6 +77,51 @@ export default function PurchasesPage({ params }: Props) {
       return true;
     });
   }, [rows, segment]);
+
+  const columns = React.useMemo<ColumnDef<PurchaseRow>[]>(
+    () => [
+      {
+        id: "purchase",
+        header: "Purchase",
+        accessorFn: (purchase) => purchase.id,
+        meta: { label: "Purchase" },
+        cell: ({ row }) => (
+          <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]" href={`/c/${companyId}/purchases/${row.original.id}`}>
+            {row.original.id}
+          </Link>
+        ),
+      },
+      {
+        id: "supplier",
+        header: "Supplier",
+        accessorFn: (purchase) => purchase.supplier?.name ?? "",
+        meta: { label: "Supplier" },
+        cell: ({ row }) => row.original.supplier?.name ?? "—",
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (purchase) => purchase.status ?? "",
+        meta: { label: "Status" },
+        cell: ({ row }) => <QueueRowStateBadge label={row.original.status ?? "—"} />,
+      },
+      {
+        id: "purchaseDate",
+        header: "Purchase date",
+        accessorFn: (purchase) => purchase.purchaseDate ?? purchase.purchase_date ?? "",
+        meta: { label: "Purchase date" },
+        cell: ({ row }) => formatDateLabel(row.original.purchaseDate ?? row.original.purchase_date),
+      },
+      {
+        id: "total",
+        header: "Total",
+        accessorFn: (purchase) => Number(purchase.total ?? 0),
+        meta: { label: "Total", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.total ?? "—",
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -198,40 +243,20 @@ export default function PurchasesPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Purchase</DataTh>
-                  <DataTh>Supplier</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Purchase date</DataTh>
-                  <DataTh className="text-right">Total</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((p) => (
-                  <DataTr
-                    key={p.id}
-                    className={selectedPurchase?.id === p.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedPurchaseId(p.id)}
-                  >
-                    <DataTd>
-                      <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]" href={`/c/${companyId}/purchases/${p.id}`}>
-                        {p.id}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{p.supplier?.name ?? "—"}</DataTd>
-                    <DataTd>
-                      <QueueRowStateBadge label={p.status ?? "—"} />
-                    </DataTd>
-                    <DataTd>{formatDateLabel(p.purchaseDate ?? p.purchase_date)}</DataTd>
-                    <DataTd className="text-right">{p.total ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedPurchaseId(row.id)}
+            rowClassName={(row) =>
+              selectedPurchase?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "purchaseDate", desc: true }]}
+            toolbarTitle="Purchase queue"
+            toolbarDescription="Sort receiving records and control visible columns without leaving the supplier workflow."
+          />
         </QueueShell>
       ) : null}
     </div>

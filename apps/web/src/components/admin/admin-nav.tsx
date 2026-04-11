@@ -98,11 +98,59 @@ const navItems: AdminNavItem[] = [
 export function AdminNav(props: {
   onNavigate?: () => void;
   variant?: "sidebar" | "sheet";
+  collapsed?: boolean;
 }) {
   const pathname = usePathname();
   const { session } = useAdminAuth();
   const sections = ["Control", "Operations", "Governance"] as const;
   const permissions = new Set(session.user?.permissions ?? []);
+
+  if (props.variant === "sidebar" && props.collapsed) {
+    return (
+      <nav className="space-y-3">
+        {sections.map((section) => {
+          const items = navItems.filter(
+            (item) => item.section === section && (!item.permission || permissions.has(item.permission)),
+          );
+          if (items.length === 0) return null;
+          return (
+            <div key={section} className="space-y-1.5">
+              {items.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={props.onNavigate}
+                    title={`${item.label}: ${item.hint}`}
+                    aria-label={item.label}
+                    className={cn(
+                      "group flex items-center justify-center rounded-[14px] border px-2 py-3 text-[var(--muted-strong)] transition",
+                      active
+                        ? "border-[var(--row-selected-border)] bg-[var(--surface-secondary)] text-[var(--foreground)] shadow-sm"
+                        : "border-transparent hover:border-[var(--border)] hover:bg-[var(--surface-muted)]",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-transparent bg-transparent transition-colors",
+                        active
+                          ? "border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--secondary)]"
+                          : "text-[var(--muted)] group-hover:bg-[var(--surface)] group-hover:text-[var(--foreground)]",
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav className={cn("space-y-6", props.variant === "sheet" && "mt-5")}>
@@ -126,7 +174,7 @@ export function AdminNav(props: {
                     href={item.href}
                     onClick={props.onNavigate}
                     className={cn(
-                      "group flex items-start gap-3 rounded-2xl border px-3 py-3 text-sm text-[var(--muted-strong)] transition",
+                      "group flex items-start gap-3 rounded-[14px] border px-3 py-3 text-sm text-[var(--muted-strong)] transition",
                       active
                         ? "border-[var(--row-selected-border)] bg-[var(--surface-secondary)] font-semibold text-[var(--foreground)] shadow-sm"
                         : "border-transparent hover:border-[var(--border)] hover:bg-[var(--surface-muted)]",
@@ -134,7 +182,7 @@ export function AdminNav(props: {
                   >
                     <span
                       className={cn(
-                        "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-transparent bg-transparent transition-colors",
+                        "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-transparent bg-transparent transition-colors",
                         active
                           ? "border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--secondary)]"
                           : "text-[var(--muted)] group-hover:bg-[var(--surface)] group-hover:text-[var(--foreground)]",
@@ -154,7 +202,7 @@ export function AdminNav(props: {
         );
       })}
 
-      <div className="rounded-[24px] border border-[var(--border)] [background-image:var(--surface-header-admin)] p-4 shadow-[var(--shadow-soft)]">
+      <div className="rounded-[16px] border border-[var(--border)] [background-image:var(--surface-header-admin)] p-4 shadow-[var(--shadow-soft)]">
         <div className="flex items-center gap-2 text-sm font-semibold text-[var(--foreground)]">
           <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
           Admin workspace

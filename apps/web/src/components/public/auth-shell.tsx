@@ -29,12 +29,12 @@ export function AuthShell(props: {
     >
       <div className="grid min-h-screen lg:grid-cols-[0.94fr_1.06fr]">
         <section className="relative flex min-h-[38vh] flex-col justify-between overflow-hidden border-b border-[var(--public-border)] px-6 py-8 lg:min-h-screen lg:border-r lg:border-b-0 lg:px-10 lg:py-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(15,95,140,0.16),transparent_28%),radial-gradient(circle_at_78%_30%,rgba(23,32,51,0.12),transparent_34%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(53,89,224,0.12),transparent_28%),radial-gradient(circle_at_78%_30%,rgba(15,159,168,0.08),transparent_34%)]" />
           <div className="relative z-10 flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--foreground)] text-sm font-semibold text-white">GB</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-[12px] border border-[var(--public-border)] bg-[var(--surface)] text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-soft)]">VG</div>
               <div>
-                <div className="font-display text-2xl font-semibold leading-none text-[var(--foreground)]">GST Billing</div>
+                <div className="font-display text-2xl font-semibold leading-none text-[var(--foreground)]">Vyapar Genie</div>
                 <div className="mt-1 text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
                   {admin ? "Internal platform access" : "India-first billing operations"}
                 </div>
@@ -45,7 +45,7 @@ export function AuthShell(props: {
 
           <div className="relative z-10 mt-14 space-y-6 lg:mt-20">
             <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--muted)]">{props.eyebrow}</div>
-            <h1 className="font-display max-w-xl text-5xl leading-[0.92] font-semibold tracking-[-0.05em] text-[var(--foreground)] md:text-6xl">
+            <h1 className="font-display max-w-xl text-4xl leading-[0.94] font-semibold tracking-[-0.045em] text-[var(--foreground)] md:text-5xl">
               {props.title}
             </h1>
             <p className="max-w-lg text-base leading-7 text-[var(--muted-strong)]">{props.subtitle}</p>
@@ -70,7 +70,7 @@ export function AuthShell(props: {
 
         <section className="flex min-h-[62vh] items-center px-4 py-8 md:px-8 lg:min-h-screen lg:px-12">
           <div className="mx-auto w-full max-w-md">
-            <div className="rounded-[32px] border border-[var(--public-border)] bg-[var(--public-auth-panel-bg)] p-6 shadow-[var(--shadow-soft)] backdrop-blur md:p-8">
+            <div className="rounded-[20px] border border-[var(--public-border)] bg-[var(--public-auth-panel-bg)] p-6 shadow-[var(--shadow-soft)] md:p-8">
               {props.children}
             </div>
             {props.footer ? <div className="mt-6 text-sm text-[var(--muted)]">{props.footer}</div> : null}

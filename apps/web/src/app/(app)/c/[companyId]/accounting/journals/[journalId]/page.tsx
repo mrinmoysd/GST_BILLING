@@ -4,7 +4,9 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useJournal } from "@/lib/billing/hooks";
+import { formatDateLabel } from "@/lib/format/date";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
+import { SecondaryButton } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { WorkspaceDetailHero, WorkspacePanel } from "@/lib/ui/workspace";
 import { getErrorMessage } from "@/lib/errors";
@@ -42,7 +44,7 @@ export default function JournalDetailPage({ params }: Props) {
         title={data?.id ?? journalId}
         subtitle="Review the entry context, source posture, and debit-credit body in segmented tabs instead of a flat drill-down sheet."
         metrics={[
-          { label: "Date", value: data?.date ?? "—" },
+          { label: "Date", value: formatDateLabel(data?.date) },
           { label: "Mode", value: data?.is_system_generated ? "System generated" : "Manual" },
           { label: "Source", value: data?.source_type ? `${data.source_type}${data.source_id ? `:${data.source_id}` : ""}` : "—" },
           { label: "Lines", value: lines.length },
@@ -69,9 +71,7 @@ export default function JournalDetailPage({ params }: Props) {
                 subtitle="Accounting detail should stay serious and quiet, with the back path always visible."
               >
                 <Link href={`/c/${companyId}/accounting/journals`}>
-                  <button type="button" className="inline-flex h-10 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--foreground)]">
-                    Back to journals
-                  </button>
+                  <SecondaryButton type="button">Back to journals</SecondaryButton>
                 </Link>
               </DetailRail>
             }
@@ -80,7 +80,7 @@ export default function JournalDetailPage({ params }: Props) {
               <DetailInfoList
                 items={[
                   { label: "Journal ID", value: data?.id ?? journalId },
-                  { label: "Date", value: data?.date ?? "—" },
+                  { label: "Date", value: formatDateLabel(data?.date) },
                   { label: "Mode", value: data?.is_system_generated ? "System generated" : "Manual" },
                   { label: "Source", value: data?.source_type ? `${data.source_type}${data.source_id ? `:${data.source_id}` : ""}` : "—" },
                   { label: "Narration", value: data?.narration || "—" },

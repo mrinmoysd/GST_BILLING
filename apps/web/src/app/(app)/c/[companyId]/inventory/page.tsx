@@ -3,11 +3,25 @@
 import * as React from "react";
 
 import Link from "next/link";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import { useLowStock } from "@/lib/masters/hooks";
+import {
+  ChartEmptyState,
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartNumber,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
 import {
   QueueInspector,
   QueueMetaList,
@@ -16,7 +30,7 @@ import {
   QueueSegmentBar,
   QueueShell,
 } from "@/lib/ui/queue";
-import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -44,6 +58,35 @@ export default function InventoryPage({ params }: Props) {
       return true;
     });
   }, [items, segment]);
+  const shortageUnits = React.useMemo(
+    () =>
+      items.reduce((sum, item) => {
+        const reorderLevel = Number(item.reorderLevel ?? 0);
+        const stock = Number(item.stock ?? 0);
+        return sum + Math.max(0, reorderLevel - stock);
+      }, 0),
+    [items],
+  );
+  const topGapItems = React.useMemo(
+    () =>
+      [...items]
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          gap: Math.max(0, Number(item.reorderLevel ?? 0) - Number(item.stock ?? 0)),
+          stock: Number(item.stock ?? 0),
+        }))
+        .sort((left, right) => right.gap - left.gap)
+        .slice(0, 6),
+    [items],
+  );
+  const severityMix = React.useMemo(
+    () => [
+      { name: "Out of stock", value: counts.critical },
+      { name: "Below reorder", value: Math.max(0, counts.reorderGap - counts.critical) },
+    ].filter((item) => item.value > 0),
+    [counts.critical, counts.reorderGap],
+  );
 
   React.useEffect(() => {
     if (!filteredItems.length) {
@@ -84,6 +127,79 @@ export default function InventoryPage({ params }: Props) {
           </div>
         }
       />
+
+      <WorkspaceSection
+        eyebrow="Control room"
+        title="Inventory attention profile"
+        subtitle="Use the overview to decide whether the next move is replenishment, transfer, or batch review."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Flagged items" value={items.length} hint="Products visible in the current shortage watch." />
+          <StatCard label="Out of stock" value={counts.critical} hint="Products currently at zero or negative stock." tone="quiet" />
+          <StatCard label="Below reorder" value={counts.reorderGap} hint="Products already under their reorder line." tone="quiet" />
+          <StatCard label="Shortage units" value={shortageUnits} hint="Aggregate reorder gap across flagged products." tone="strong" />
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          {topGapItems.length > 0 ? (
+            <ChartShell title="Largest reorder gaps" subtitle="Which products need the quickest buyer or transfer decision.">
+              <ChartFrame height={250}>
+                <BarChart data={topGapItems} layout="vertical" margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                  <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                  <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={108} />
+                  <ChartTooltip valueFormatter={formatChartNumber} />
+                  <Bar dataKey="gap" name="Gap units" fill={getChartSeriesColor("warning")} radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Largest reorder gaps" hint="Gap analysis appears once low-stock products are present." />
+          )}
+
+          {severityMix.length > 0 ? (
+            <ChartShell
+              title="Shortage severity"
+              subtitle="How the current issue mix splits between true stock-outs and reorder pressure."
+              footer={<ChartLegend items={severityMix.map((item, index) => ({ label: item.name, tone: index === 0 ? "danger" : "warning", value: item.value }))} />}
+            >
+              <ChartFrame height={250}>
+                <PieChart>
+                  <Pie data={severityMix} dataKey="value" nameKey="name" innerRadius={50} outerRadius={82} paddingAngle={2}>
+                    {severityMix.map((_, index) => (
+                      <Cell key={severityMix[index]?.name ?? index} fill={index === 0 ? getChartSeriesColor("danger") : getChartSeriesColor("warning")} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip valueFormatter={formatChartNumber} />
+                </PieChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Shortage severity" hint="Severity mix will appear when flagged inventory exists." />
+          )}
+
+          <ChartShell
+            title="Action routing"
+            subtitle="Use the overview to route operators into the correct inventory workflow instead of scanning multiple pages."
+            footer="Transfers solve location imbalance, batches handle lot visibility, and adjustments handle corrections."
+          >
+            <div className="grid gap-3">
+              <Link href={`/c/${companyId}/inventory/transfers`} className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] transition hover:border-[var(--border-strong)]">
+                <div className="text-sm font-semibold text-[var(--foreground)]">Warehouse transfers</div>
+                <div className="mt-1 text-sm text-[var(--muted)]">Rebalance stock across active locations.</div>
+              </Link>
+              <Link href={`/c/${companyId}/inventory/batches`} className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] transition hover:border-[var(--border-strong)]">
+                <div className="text-sm font-semibold text-[var(--foreground)]">Batch review</div>
+                <div className="mt-1 text-sm text-[var(--muted)]">Check lot posture before buying or moving stock.</div>
+              </Link>
+              <Link href={`/c/${companyId}/inventory/movements`} className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] transition hover:border-[var(--border-strong)]">
+                <div className="text-sm font-semibold text-[var(--foreground)]">Movement audit</div>
+                <div className="mt-1 text-sm text-[var(--muted)]">Inspect direction and quantity before adjusting stock.</div>
+              </Link>
+            </div>
+          </ChartShell>
+        </div>
+      </WorkspaceSection>
 
       <QueueSegmentBar
         items={[

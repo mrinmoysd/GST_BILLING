@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowRight, LogOut, Menu, ShieldCheck } from "lucide-react";
+import { ArrowRight, LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumb";
@@ -41,7 +41,11 @@ function makeBreadcrumbs(pathname: string | null) {
   return items;
 }
 
-export function AdminHeader(props: { onOpenNav?: () => void }) {
+export function AdminHeader(props: {
+  onOpenNav?: () => void;
+  railCollapsed?: boolean;
+  onToggleRail?: () => void;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const logout = useAdminLogout();
@@ -68,12 +72,28 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
           <Menu className="h-5 w-5" />
         </Button>
 
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="hidden md:inline-flex"
+          onClick={props.onToggleRail}
+          aria-label={props.railCollapsed ? "Expand admin navigation rail" : "Collapse admin navigation rail"}
+          title={props.railCollapsed ? "Expand admin navigation rail" : "Collapse admin navigation rail"}
+        >
+          {props.railCollapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+        </Button>
+
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Link href="/admin/dashboard" className="font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-              GST Billing Admin
+              Vyapar Genie Admin
             </Link>
-            <Badge variant="secondary" className="hidden md:inline-flex">
+            <Badge variant="info" className="hidden md:inline-flex">
               Internal
             </Badge>
           </div>
@@ -85,7 +105,7 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/dashboard"
-            className="hidden items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] md:inline-flex"
+            className="hidden items-center gap-1 rounded-[10px] border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-sm font-medium text-[var(--muted)] shadow-[var(--shadow-soft)] hover:text-[var(--foreground)] md:inline-flex"
           >
             Tenant app
             <ArrowRight className="h-3.5 w-3.5" />
@@ -94,7 +114,7 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
           {mounted ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]">
+                <Button variant="secondary" className="gap-2">
                   <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
                   <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
                 </Button>
@@ -131,7 +151,7 @@ export function AdminHeader(props: { onOpenNav?: () => void }) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="secondary" className="gap-2 border-[var(--border)] bg-[var(--surface-elevated)]" disabled>
+            <Button variant="secondary" className="gap-2" disabled>
               <ShieldCheck className="h-4 w-4 text-[var(--secondary)]" />
               <span className="max-w-[20ch] truncate">{session.user?.email ?? "Admin"}</span>
             </Button>

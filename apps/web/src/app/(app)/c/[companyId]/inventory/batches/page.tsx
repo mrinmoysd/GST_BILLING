@@ -4,7 +4,8 @@ import Link from "next/link";
 import * as React from "react";
 
 import { useBatchStock, useWarehouses } from "@/lib/masters/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { formatDateLabel } from "@/lib/format/date";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import {
@@ -77,6 +78,52 @@ export default function InventoryBatchesPage({ params }: Props) {
 
   const selectedRow =
     filteredRows.find((row) => `${row.warehouse?.id ?? "company"}_${row.productBatch?.id ?? "batch"}` === selectedKey) ?? filteredRows[0] ?? null;
+
+  const columns = React.useMemo<ColumnDef<(typeof filteredRows)[number]>[]>(
+    () => [
+      {
+        id: "product",
+        header: "Product",
+        accessorFn: (row) => row.productBatch?.product?.name ?? "",
+        meta: { label: "Product" },
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium">{row.original.productBatch?.product?.name ?? "Unknown product"}</div>
+            <div className="text-xs text-[var(--muted)]">{row.original.productBatch?.product?.sku ?? "No SKU"}</div>
+          </div>
+        ),
+      },
+      {
+        id: "warehouse",
+        header: "Warehouse",
+        accessorFn: (row) => row.warehouse?.name ?? "",
+        meta: { label: "Warehouse" },
+        cell: ({ row }) => row.original.warehouse?.name ?? "No warehouse",
+      },
+      {
+        id: "batch",
+        header: "Batch",
+        accessorFn: (row) => row.productBatch?.batchNumber ?? row.productBatch?.batch_number ?? "",
+        meta: { label: "Batch" },
+        cell: ({ row }) => row.original.productBatch?.batchNumber ?? row.original.productBatch?.batch_number ?? "—",
+      },
+      {
+        id: "expiry",
+        header: "Expiry",
+        accessorFn: (row) => row.productBatch?.expiryDate ?? row.productBatch?.expiry_date ?? "",
+        meta: { label: "Expiry" },
+        cell: ({ row }) => formatDateLabel(row.original.productBatch?.expiryDate ?? row.original.productBatch?.expiry_date),
+      },
+      {
+        id: "quantity",
+        header: "Quantity",
+        accessorFn: (row) => Number(row.quantity ?? 0),
+        meta: { label: "Quantity", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.quantity,
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-7">
@@ -182,40 +229,20 @@ export default function InventoryBatchesPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Product</DataTh>
-                  <DataTh>Warehouse</DataTh>
-                  <DataTh>Batch</DataTh>
-                  <DataTh>Expiry</DataTh>
-                  <DataTh>Quantity</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((row) => {
-                  const key = `${row.warehouse?.id ?? "company"}_${row.productBatch?.id ?? "batch"}`;
-                  return (
-                    <DataTr
-                      key={key}
-                      className={selectedKey === key ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
-                      onClick={() => setSelectedKey(key)}
-                    >
-                      <DataTd>
-                        <div className="font-medium">{row.productBatch?.product?.name ?? "Unknown product"}</div>
-                        <div className="text-xs text-[var(--muted)]">{row.productBatch?.product?.sku ?? "No SKU"}</div>
-                      </DataTd>
-                      <DataTd>{row.warehouse?.name ?? "No warehouse"}</DataTd>
-                      <DataTd>{row.productBatch?.batchNumber ?? row.productBatch?.batch_number ?? "—"}</DataTd>
-                      <DataTd>{row.productBatch?.expiryDate ?? row.productBatch?.expiry_date ?? "—"}</DataTd>
-                      <DataTd>{row.quantity}</DataTd>
-                    </DataTr>
-                  );
-                })}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => `${row.warehouse?.id ?? "company"}_${row.productBatch?.id ?? "batch"}`}
+            onRowClick={(row) => setSelectedKey(`${row.warehouse?.id ?? "company"}_${row.productBatch?.id ?? "batch"}`)}
+            rowClassName={(row) =>
+              selectedKey === `${row.original.warehouse?.id ?? "company"}_${row.original.productBatch?.id ?? "batch"}`
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-muted)]"
+            }
+            initialSorting={[{ id: "expiry", desc: false }]}
+            toolbarTitle="Batch explorer"
+            toolbarDescription="Sort and trim batch visibility while keeping the selected expiry posture beside the explorer."
+          />
         </QueueShell>
       ) : null}
     </div>

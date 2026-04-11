@@ -1,8 +1,21 @@
 "use client";
 
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { type RouteCoverageRow, type RouteOutstandingRow, useRouteCoverage, useRouteOutstanding } from "@/lib/reports/hooks";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  formatChartPercent,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
@@ -24,15 +37,35 @@ export default function RouteCoverageReportPage({ params }: Props) {
 
   const coveragePayload = coverage.data?.data as RouteCoverageRow[] | { data?: RouteCoverageRow[] } | undefined;
   const outstandingPayload = outstanding.data?.data as RouteOutstandingRow[] | { data?: RouteOutstandingRow[] } | undefined;
-  const coverageRows = Array.isArray(coveragePayload)
-    ? coveragePayload
-    : (coveragePayload?.data ?? []);
-  const outstandingRows = Array.isArray(outstandingPayload)
-    ? outstandingPayload
-    : (outstandingPayload?.data ?? []);
+  const coverageRows = React.useMemo(
+    () => (Array.isArray(coveragePayload) ? coveragePayload : (coveragePayload?.data ?? [])),
+    [coveragePayload],
+  );
+  const outstandingRows = React.useMemo(
+    () => (Array.isArray(outstandingPayload) ? outstandingPayload : (outstandingPayload?.data ?? [])),
+    [outstandingPayload],
+  );
   const totalPlanned = coverageRows.reduce((sum, row) => sum + row.planned_visits, 0);
   const totalCompleted = coverageRows.reduce((sum, row) => sum + row.completed_visits, 0);
   const totalOutstanding = outstandingRows.reduce((sum, row) => sum + row.outstanding_amount, 0);
+  const routeCoverageChartRows = React.useMemo(
+    () =>
+      coverageRows.slice(0, 8).map((row) => ({
+        route: row.route_name,
+        completionPercent: row.completion_percent / 100,
+        productiveVisits: row.productive_visits,
+        missedVisits: row.missed_visits,
+      })),
+    [coverageRows],
+  );
+  const routeOutstandingChartRows = React.useMemo(
+    () =>
+      outstandingRows.slice(0, 8).map((row) => ({
+        route: row.route_name,
+        outstandingAmount: row.outstanding_amount,
+      })),
+    [outstandingRows],
+  );
 
   return (
     <div className="space-y-7">
@@ -61,6 +94,45 @@ export default function RouteCoverageReportPage({ params }: Props) {
           <StatCard label="Outstanding" value={totalOutstanding.toFixed(2)} />
         </div>
       ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <ChartShell
+          title="Route completion"
+          subtitle="Keep route discipline visible by comparing productive coverage against missed workload."
+          footer={<ChartLegend items={[{ label: "Completion", tone: "primary" }, { label: "Missed visits", tone: "warning" }]} />}
+        >
+          <ChartFrame height={320}>
+            <BarChart data={routeCoverageChartRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+              <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+              <XAxis dataKey="route" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="percent" tickFormatter={formatChartPercent} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
+              <YAxis yAxisId="count" orientation="right" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={60} />
+              <ChartTooltip valueFormatter={formatChartCompactNumber} />
+              <Bar yAxisId="percent" dataKey="completionPercent" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+              <Bar yAxisId="count" dataKey="missedVisits" fill={getChartSeriesColor("warning")} radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ChartFrame>
+        </ChartShell>
+
+        <ChartShell
+          title="Outstanding by route"
+          subtitle="Receivable pressure should follow route productivity, not surprise it."
+        >
+          <ChartFrame height={320}>
+            <BarChart data={routeOutstandingChartRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+              <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+              <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="route" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={88} />
+              <ChartTooltip valueFormatter={formatChartCurrency} />
+              <Bar dataKey="outstandingAmount" radius={[0, 8, 8, 0]}>
+                {routeOutstandingChartRows.map((row) => (
+                  <Cell key={row.route} fill={getChartSeriesColor("danger")} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartFrame>
+        </ChartShell>
+      </div>
 
       <WorkspacePanel title="Coverage by route" subtitle="Planned, completed, missed, and productive counts grouped by route.">
         <DataTableShell>

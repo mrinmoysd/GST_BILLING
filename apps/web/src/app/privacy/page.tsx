@@ -12,7 +12,7 @@ export default function PrivacyPage() {
           {[
             [
               "Privacy overview",
-              "GST Billing processes account, company, billing, document, report, and operational activity data in order to provide the product experience and platform operations.",
+              "Vyapar Genie processes account, company, billing, document, report, and operational activity data in order to provide the product experience and platform operations.",
             ],
             [
               "What the product uses",

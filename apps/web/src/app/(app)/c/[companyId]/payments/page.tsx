@@ -2,16 +2,31 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import { useInvoices, usePayments, usePurchases, useRecordPayment, useUpdatePaymentInstrument } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { useBankAccounts } from "@/lib/finance/hooks";
 import { toastError, toastSuccess } from "@/lib/toast";
+import {
+  ChartEmptyState,
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
-import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
+import { StatCard } from "@/lib/ui/stat";
+import { WorkspaceHero, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -96,6 +111,59 @@ export default function PaymentsPage({ params }: Props) {
     return { all: paymentRows.length, recorded, pendingInstrument, bounced };
   }, [paymentRows]);
 
+  const statusAmount = React.useMemo(
+    () =>
+      paymentRows.reduce<Record<string, number>>((acc, row) => {
+        const key = String(row.instrumentStatus ?? row.instrument_status ?? "untracked").toLowerCase() || "untracked";
+        acc[key] = (acc[key] ?? 0) + Number(row.amount ?? 0);
+        return acc;
+      }, {}),
+    [paymentRows],
+  );
+
+  const methodDistribution = React.useMemo(
+    () =>
+      Object.entries(
+        paymentRows.reduce<Record<string, number>>((acc, row) => {
+          const key = String(row.method ?? "other").toLowerCase();
+          acc[key] = (acc[key] ?? 0) + Number(row.amount ?? 0);
+          return acc;
+        }, {}),
+      ).map(([name, value]) => ({ name: name.toUpperCase(), value })),
+    [paymentRows],
+  );
+
+  const statusDistribution = React.useMemo(
+    () =>
+      Object.entries(statusAmount).map(([name, value]) => ({
+        name: name.replace(/_/g, " "),
+        value,
+      })),
+    [statusAmount],
+  );
+
+  const dailyFlow = React.useMemo(() => {
+    const grouped = paymentRows.reduce<Record<string, number>>((acc, row) => {
+      const dateKey = String(row.paymentDate ?? row.payment_date ?? "").slice(0, 10);
+      if (!dateKey) return acc;
+      acc[dateKey] = (acc[dateKey] ?? 0) + Number(row.amount ?? 0);
+      return acc;
+    }, {});
+
+    return Object.entries(grouped)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .slice(-7)
+      .map(([date, value]) => ({
+        date,
+        label: formatDateLabel(date),
+        value,
+      }));
+  }, [paymentRows]);
+
+  const pendingInstrumentAmount = (statusAmount.received ?? 0) + (statusAmount.deposited ?? 0);
+  const bouncedAmount = statusAmount.bounced ?? 0;
+  const clearedAmount = statusAmount.cleared ?? 0;
+
   const filteredRows = React.useMemo(() => {
     return paymentRows.filter((row) => {
       const status = String(row.instrumentStatus ?? row.instrument_status ?? "").toLowerCase();
@@ -139,6 +207,85 @@ export default function PaymentsPage({ params }: Props) {
           </>
         }
       />
+
+      <WorkspaceSection
+        eyebrow="Control room"
+        title="Receipt posture"
+        subtitle="Keep the queue, instrument state, and method mix in view before you work line by line."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Recorded receipts" value={`₹${paymentTotals.amount.toFixed(2)}`} hint={`${paymentTotals.count} payment record(s) in scope.`} />
+          <StatCard label="Cleared amount" value={`₹${clearedAmount.toFixed(2)}`} hint="Funds already cleared in the banking cycle." tone="quiet" />
+          <StatCard label="Pending instruments" value={`₹${pendingInstrumentAmount.toFixed(2)}`} hint={`${counts.pendingInstrument} line(s) still awaiting bank movement.`} tone="quiet" />
+          <StatCard label="Bounced exposure" value={`₹${bouncedAmount.toFixed(2)}`} hint={`${counts.bounced} line(s) currently marked bounced.`} tone="strong" />
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          {dailyFlow.length > 0 ? (
+            <ChartShell title="Daily receipts" subtitle="Recorded inflow trend for the latest visible payment dates.">
+              <ChartFrame height={250}>
+                <BarChart data={dailyFlow} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                  <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={56} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="value" name="Receipts" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Daily receipts" hint="Receipt trend appears once payment dates are present in the visible queue." />
+          )}
+
+          {statusDistribution.length > 0 ? (
+            <ChartShell
+              title="Instrument state mix"
+              subtitle="Where the receipt queue is currently sitting in the settlement lifecycle."
+              footer={<ChartLegend items={statusDistribution.map((item, index) => ({ label: item.name, tone: index === 0 ? "primary" : index === 1 ? "warning" : index === 2 ? "danger" : "neutral" }))} />}
+            >
+              <ChartFrame height={250}>
+                <PieChart>
+                  <Pie data={statusDistribution} dataKey="value" nameKey="name" innerRadius={50} outerRadius={82} paddingAngle={2}>
+                    {statusDistribution.map((_, index) => (
+                      <Cell
+                        key={statusDistribution[index]?.name ?? index}
+                        fill={
+                          index === 0
+                            ? getChartSeriesColor("primary")
+                            : index === 1
+                              ? getChartSeriesColor("warning")
+                              : index === 2
+                                ? getChartSeriesColor("danger")
+                                : getChartSeriesColor("neutral")
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                </PieChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Instrument state mix" hint="State mix appears once receipt rows are available." />
+          )}
+
+          {methodDistribution.length > 0 ? (
+            <ChartShell title="Payment method mix" subtitle="Channel distribution across cash, UPI, bank, card, and instruments.">
+              <ChartFrame height={250}>
+                <BarChart data={methodDistribution} layout="vertical" margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                  <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                  <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={78} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="value" name="Amount" fill={getChartSeriesColor("secondary")} radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Payment method mix" hint="Method distribution appears once payments have been recorded." />
+          )}
+        </div>
+      </WorkspaceSection>
 
       <QueueSegmentBar
         items={[

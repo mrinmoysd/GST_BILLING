@@ -1,9 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAdminQueueMetrics } from "@/lib/admin/hooks";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
+import { formatDateTimeLabel } from "@/lib/format/date";
+import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 import { getErrorMessage } from "@/lib/errors";
 
 type QueueMetricsPayload = {
@@ -30,128 +31,103 @@ export default function AdminQueuesPage() {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Admin"
+      <WorkspaceHero
+        tone="admin"
+        eyebrow="Operations"
         title="Queues"
-        subtitle="Monitor background queue metrics from a clearer operational screen."
+        subtitle="Monitor background jobs, delivery failures, storage posture, and provider-side event health from one platform operations surface."
+        badges={[
+          <WorkspaceStatBadge key="pdf" label="PDF jobs" value={Object.values(pdfCounts).reduce((sum, value) => sum + Number(value ?? 0), 0)} />,
+          <WorkspaceStatBadge key="exports" label="Export signals" value={Object.keys(data?.export_jobs ?? {}).length} variant="outline" />,
+        ]}
       />
       {query.isLoading ? <LoadingBlock label="Loading…" /> : null}
       {query.isError ? <InlineError message={getErrorMessage(query.error, "Failed to load queue metrics")} /> : null}
       {query.data ? (
         <>
+        <WorkspaceSection eyebrow="Health bands" title="Current queue posture" subtitle="Start with the queue and outbox rollups, then move into recent failed items for intervention.">
         <div className="grid gap-4 xl:grid-cols-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>PDF queue</CardTitle>
-              <CardDescription>Live BullMQ counters for invoice PDF generation.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
+          <WorkspacePanel title="PDF queue" subtitle="Live BullMQ counters for invoice PDF generation.">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(pdfCounts).map(([key, value]) => (
                 <Badge key={key} variant="secondary">
                   {key}: {value}
                 </Badge>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Export jobs</CardTitle>
-              <CardDescription>Database-level status rollup for GST and report exports.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Export jobs" subtitle="Database-level status rollup for GST and report exports.">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(data?.export_jobs ?? {}).map(([key, value]) => (
                 <Badge key={key} variant="outline">
                   {key}: {value}
                 </Badge>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification outbox</CardTitle>
-              <CardDescription>Delivery queue status across queued, sent, and failed notifications.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Notification outbox" subtitle="Delivery queue status across queued, sent, and failed notifications.">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(data?.notification_outbox ?? {}).map(([key, value]) => (
                 <Badge key={key} variant="outline">
                   {key}: {value}
                 </Badge>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Webhook events</CardTitle>
-              <CardDescription>Provider webhook status rollup.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Webhook events" subtitle="Provider webhook status rollup.">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(data?.webhook_events ?? {}).map(([key, value]) => (
                 <Badge key={key} variant="outline">
                   {key}: {value}
                 </Badge>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>File storage</CardTitle>
-              <CardDescription>Stored file distribution by backend.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="File storage" subtitle="Stored file distribution by backend." tone="muted">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(data?.file_storage ?? {}).map(([key, value]) => (
                 <Badge key={key} variant="outline">
                   {key}: {value}
                 </Badge>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         </div>
+        </WorkspaceSection>
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Failed exports</CardTitle>
-              <CardDescription>Recent export failures requiring investigation.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <WorkspacePanel title="Failed exports" subtitle="Recent export failures requiring investigation.">
+            <div className="space-y-3">
               {(data?.recent_failures?.export_jobs ?? []).map((item) => (
                 <div key={item.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                   <div className="font-semibold">{item.type}</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">{item.company_name} · {new Date(item.created_at).toLocaleString()}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{item.company_name} · {formatDateTimeLabel(item.created_at)}</div>
                   <div className="mt-2 text-xs text-[#7e3128]">{item.error || "Export failure"}</div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Failed notifications</CardTitle>
-              <CardDescription>Recent notification delivery failures.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Failed notifications" subtitle="Recent notification delivery failures.">
+            <div className="space-y-3">
               {(data?.recent_failures?.notifications ?? []).map((item) => (
                 <div key={item.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                   <div className="font-semibold">{item.channel}</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">{item.company_name} · {new Date(item.created_at).toLocaleString()}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{item.company_name} · {formatDateTimeLabel(item.created_at)}</div>
                   <div className="mt-2 text-xs text-[#7e3128]">{item.error || "Notification failure"}</div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Failed webhooks</CardTitle>
-              <CardDescription>Recent provider webhook failures.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            </div>
+          </WorkspacePanel>
+          <WorkspacePanel title="Failed webhooks" subtitle="Recent provider webhook failures." tone="muted">
+            <div className="space-y-3">
               {(data?.recent_failures?.webhooks ?? []).map((item) => (
                 <div key={item.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                   <div className="font-semibold">{item.provider}: {item.event_type}</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">{new Date(item.received_at).toLocaleString()}</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{formatDateTimeLabel(item.received_at)}</div>
                   <div className="mt-2 text-xs text-[#7e3128]">{item.error || "Webhook failure"}</div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </WorkspacePanel>
         </div>
         </>
       ) : null}

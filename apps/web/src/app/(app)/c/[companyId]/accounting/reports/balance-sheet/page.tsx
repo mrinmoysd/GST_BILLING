@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { useBalanceSheet } from "@/lib/billing/hooks";
-import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
@@ -21,34 +21,40 @@ function BalanceSheetSectionPanel(props: {
   description: string;
   rows: SectionRow[];
 }) {
+  const columns = React.useMemo<ColumnDef<SectionRow>[]>(
+    () => [
+      {
+        id: "ledger",
+        header: "Ledger",
+        accessorFn: (row) => row.ledger_name,
+        meta: { label: "Ledger" },
+        cell: ({ row }) => (
+          <Link className="font-semibold text-[var(--foreground)] hover:text-[var(--accent)]" href={`/c/${props.companyId}/accounting/ledgers`}>
+            {row.original.ledger_name}
+          </Link>
+        ),
+      },
+      {
+        id: "amount",
+        header: "Amount",
+        accessorFn: (row) => row.amount,
+        meta: { label: "Amount", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.amount.toFixed(2),
+      },
+    ],
+    [props.companyId],
+  );
+
   return (
     <WorkspacePanel title={props.title} subtitle={props.description}>
-      <DataTableShell>
-        <DataTable>
-          <DataThead>
-            <tr>
-              <DataTh>Ledger</DataTh>
-              <DataTh className="text-right">Amount</DataTh>
-            </tr>
-          </DataThead>
-          <tbody>
-            {props.rows.length === 0 ? (
-              <DataEmptyRow colSpan={2} title={`No ${props.title.toLowerCase()} rows as of this date.`} />
-            ) : (
-              props.rows.map((row) => (
-                <DataTr key={row.ledger_id}>
-                  <DataTd>
-                    <Link className="font-semibold text-[var(--foreground)] hover:text-[var(--accent)]" href={`/c/${props.companyId}/accounting/ledgers`}>
-                      {row.ledger_name}
-                    </Link>
-                  </DataTd>
-                  <DataTd className="text-right">{row.amount.toFixed(2)}</DataTd>
-                </DataTr>
-              ))
-            )}
-          </tbody>
-        </DataTable>
-      </DataTableShell>
+      <DataGrid
+        data={props.rows}
+        columns={columns}
+        getRowId={(row) => row.ledger_id}
+        initialSorting={[{ id: "amount", desc: true }]}
+        emptyTitle={`No ${props.title.toLowerCase()} rows as of this date.`}
+        toolbarTitle={`${props.title} statement`}
+      />
     </WorkspacePanel>
   );
 }

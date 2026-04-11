@@ -3,7 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import type { Customer } from "@/lib/masters/types";
 import { useCustomers } from "@/lib/masters/hooks";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -44,6 +44,54 @@ export default function CustomersPage({ params }: Props) {
       return true;
     });
   }, [customers, segment]);
+
+  const columns = React.useMemo<ColumnDef<Customer>[]>(
+    () => [
+      {
+        id: "name",
+        header: "Name",
+        accessorFn: (customer) => customer.name,
+        meta: { label: "Name" },
+        cell: ({ row }) => (
+          <Link
+            className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
+            href={`/c/${companyId}/masters/customers/${row.original.id}`}
+          >
+            {row.original.name}
+          </Link>
+        ),
+      },
+      {
+        id: "email",
+        header: "Email",
+        accessorFn: (customer) => customer.email ?? "",
+        meta: { label: "Email" },
+        cell: ({ row }) => row.original.email ?? "—",
+      },
+      {
+        id: "phone",
+        header: "Phone",
+        accessorFn: (customer) => customer.phone ?? "",
+        meta: { label: "Phone" },
+        cell: ({ row }) => row.original.phone ?? "—",
+      },
+      {
+        id: "salesperson",
+        header: "Salesperson",
+        accessorFn: (customer) => customer.salesperson?.name ?? customer.salesperson?.email ?? "",
+        meta: { label: "Salesperson" },
+        cell: ({ row }) => row.original.salesperson?.name ?? row.original.salesperson?.email ?? "—",
+      },
+      {
+        id: "overdue",
+        header: "Overdue",
+        accessorFn: (customer) => Number(customer.summary?.credit?.overdue_amount ?? 0),
+        meta: { label: "Overdue", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => Number(row.original.summary?.credit?.overdue_amount ?? 0).toFixed(2),
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredCustomers.length) {
@@ -169,41 +217,20 @@ export default function CustomersPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Name</DataTh>
-                  <DataTh>Email</DataTh>
-                  <DataTh>Phone</DataTh>
-                  <DataTh>Salesperson</DataTh>
-                  <DataTh className="text-right">Overdue</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredCustomers.map((c) => (
-                  <DataTr
-                    key={c.id}
-                    className={selectedCustomer?.id === c.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
-                    onClick={() => setSelectedCustomerId(c.id)}
-                  >
-                    <DataTd>
-                      <Link
-                        className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
-                        href={`/c/${companyId}/masters/customers/${c.id}`}
-                      >
-                        {c.name}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{c.email ?? "—"}</DataTd>
-                    <DataTd>{c.phone ?? "—"}</DataTd>
-                    <DataTd>{c.salesperson?.name ?? c.salesperson?.email ?? "—"}</DataTd>
-                    <DataTd className="text-right">{Number(c.summary?.credit?.overdue_amount ?? 0).toFixed(2)}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredCustomers}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedCustomerId(row.id)}
+            rowClassName={(row) =>
+              selectedCustomer?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-muted)]"
+            }
+            initialSorting={[{ id: "name", desc: false }]}
+            toolbarTitle="Customer directory"
+            toolbarDescription="Sort the directory and tailor visible columns while keeping the commercial inspector in view."
+          />
         </QueueShell>
       ) : null}
     </div>

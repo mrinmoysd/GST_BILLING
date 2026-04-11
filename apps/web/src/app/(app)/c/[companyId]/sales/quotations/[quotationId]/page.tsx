@@ -16,6 +16,7 @@ import {
 } from "@/lib/billing/hooks";
 import type { Quotation } from "@/lib/billing/types";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
@@ -106,8 +107,8 @@ export default function QuotationDetailPage({ params }: Props) {
           items={[
             { label: "Customer", value: quote.customer?.name ?? "—" },
             { label: "Status", value: quote.status ?? "—" },
-            { label: "Issue date", value: quote.issueDate?.slice?.(0, 10) ?? quote.issue_date ?? "—" },
-            { label: "Expiry", value: quote.expiryDate?.slice?.(0, 10) ?? quote.expiry_date ?? "—" },
+            { label: "Issue date", value: formatDateLabel(quote.issueDate ?? quote.issue_date) },
+            { label: "Expiry", value: formatDateLabel(quote.expiryDate ?? quote.expiry_date) },
             { label: "Total", value: quote.total ?? "—" },
           ]}
         />
@@ -123,7 +124,7 @@ export default function QuotationDetailPage({ params }: Props) {
         subtitle={`Commercial offer for ${quote.customer?.name ?? "customer"} with a tracked path into invoice draft conversion.`}
         badges={[
           <Badge key="status" variant="secondary">{quote.status ?? "draft"}</Badge>,
-          <Badge key="expiry" variant="outline">Expiry: {quote.expiryDate?.slice?.(0, 10) ?? quote.expiry_date ?? "—"}</Badge>,
+          <Badge key="expiry" variant="outline">Expiry: {formatDateLabel(quote.expiryDate ?? quote.expiry_date)}</Badge>,
         ]}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -179,7 +180,7 @@ export default function QuotationDetailPage({ params }: Props) {
         }
         metrics={[
           { label: "Customer", value: quote.customer?.name ?? "—" },
-          { label: "Issue date", value: quote.issueDate?.slice?.(0, 10) ?? quote.issue_date ?? "—" },
+          { label: "Issue date", value: formatDateLabel(quote.issueDate ?? quote.issue_date) },
           { label: "Subtotal", value: quote.sub_total ?? quote.subTotal ?? "—" },
           { label: "Total", value: quote.total ?? "—" },
         ]}

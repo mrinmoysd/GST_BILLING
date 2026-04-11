@@ -4,15 +4,36 @@ import Link from "next/link";
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useInventoryAdjustment, useLowStock, useProducts, useStockMovements, useWarehouses } from "@/lib/masters/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
-import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateTimeLabel } from "@/lib/format/date";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
+import { useInventoryAdjustment, useLowStock, useProducts, useStockMovements, useWarehouses } from "@/lib/masters/hooks";
+import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import {
+  QueueInspector,
+  QueueMetaList,
+  QueueQuickActions,
+  QueueSavedViews,
+  QueueSegmentBar,
+  QueueShell,
+  QueueToolbar,
+} from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
 
+type MovementRow = {
+  id: string;
+  createdAt: string;
+  productId: string;
+  product?: { name?: string | null };
+  warehouse?: { name?: string | null } | null;
+  changeQty: string | number;
+  balanceQty: string | number;
+  sourceType: string;
+  note?: string | null;
+};
 
 export default function InventoryAdjustmentsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -27,45 +48,138 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
   const [changeQty, setChangeQty] = React.useState("");
   const [note, setNote] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+  const [segment, setSegment] = React.useState("all");
+  const [savedView, setSavedView] = React.useState("all");
+  const [selectedMovementId, setSelectedMovementId] = React.useState("");
 
-  const productRows = (productsQuery.data?.data ?? []) as Array<{ id: string; name: string; stock?: string | number | null }>;
-  const lowStockRows = Array.isArray(lowStockQuery.data?.data) ? lowStockQuery.data.data : [];
-  const movementRows = movementsQuery.data?.data.data ?? [];
+  const productRows = React.useMemo(
+    () => (productsQuery.data?.data ?? []) as Array<{ id: string; name: string; stock?: string | number | null }>,
+    [productsQuery.data],
+  );
+  const lowStockRows = React.useMemo(
+    () => (Array.isArray(lowStockQuery.data?.data) ? lowStockQuery.data.data : []),
+    [lowStockQuery.data],
+  );
+  const movementRows = React.useMemo<MovementRow[]>(
+    () => (movementsQuery.data?.data.data ?? []) as MovementRow[],
+    [movementsQuery.data],
+  );
+
+  const counts = React.useMemo(() => {
+    const inbound = movementRows.filter((row) => Number(row.changeQty ?? 0) > 0).length;
+    const outbound = movementRows.filter((row) => Number(row.changeQty ?? 0) < 0).length;
+    const manual = movementRows.filter((row) => String(row.sourceType ?? "").toUpperCase().includes("ADJUST")).length;
+    return { all: movementRows.length, inbound, outbound, manual };
+  }, [movementRows]);
+
+  const filteredRows = React.useMemo(() => {
+    return movementRows.filter((row) => {
+      if (segment === "inbound") return Number(row.changeQty ?? 0) > 0;
+      if (segment === "outbound") return Number(row.changeQty ?? 0) < 0;
+      if (segment === "manual") return String(row.sourceType ?? "").toUpperCase().includes("ADJUST");
+      return true;
+    });
+  }, [movementRows, segment]);
+
+  React.useEffect(() => {
+    if (!filteredRows.length) {
+      setSelectedMovementId("");
+      return;
+    }
+    if (!selectedMovementId || !filteredRows.some((row) => row.id === selectedMovementId)) {
+      setSelectedMovementId(filteredRows[0]?.id ?? "");
+    }
+  }, [filteredRows, selectedMovementId]);
+
+  const selectedMovement = filteredRows.find((row) => row.id === selectedMovementId) ?? filteredRows[0] ?? null;
+
+  const columns = React.useMemo<ColumnDef<MovementRow>[]>(
+    () => [
+      {
+        id: "when",
+        header: "When",
+        accessorFn: (row) => row.createdAt,
+        meta: { label: "When" },
+        cell: ({ row }) => formatDateTimeLabel(row.original.createdAt),
+      },
+      {
+        id: "product",
+        header: "Product",
+        accessorFn: (row) => row.product?.name ?? row.productId,
+        meta: { label: "Product" },
+        cell: ({ row }) => (
+          <Link href={`/c/${companyId}/masters/products/${row.original.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
+            {row.original.product?.name ?? row.original.productId.slice(0, 8)}
+          </Link>
+        ),
+      },
+      {
+        id: "warehouse",
+        header: "Warehouse",
+        accessorFn: (row) => row.warehouse?.name ?? "Company",
+        meta: { label: "Warehouse" },
+        cell: ({ row }) => row.original.warehouse?.name ?? "Company",
+      },
+      {
+        id: "change",
+        header: "Change",
+        accessorFn: (row) => Number(row.changeQty ?? 0),
+        meta: { label: "Change", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.changeQty,
+      },
+      {
+        id: "balance",
+        header: "Balance",
+        accessorFn: (row) => Number(row.balanceQty ?? 0),
+        meta: { label: "Balance", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.balanceQty,
+      },
+      {
+        id: "source",
+        header: "Source",
+        accessorFn: (row) => row.sourceType,
+        meta: { label: "Source" },
+        cell: ({ row }) => row.original.sourceType,
+      },
+    ],
+    [companyId],
+  );
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
         eyebrow="Inventory"
         title="Stock adjustments"
-        subtitle="Apply manual stock corrections from a dedicated adjustment workspace and review the latest inventory activity."
-        actions={<Link href={`/c/${companyId}/inventory`}><SecondaryButton type="button">Back</SecondaryButton></Link>}
+        subtitle="Apply manual stock corrections from a dedicated control point and keep the resulting inventory movements close to the adjustment workspace."
+        badges={[
+          <WorkspaceStatBadge key="low" label="Low-stock watch" value={lowStockRows.length} />,
+          <WorkspaceStatBadge key="manual" label="Manual entries" value={counts.manual} variant="outline" />,
+        ]}
+        actions={
+          <Link href={`/c/${companyId}/inventory`}>
+            <SecondaryButton type="button">Back to inventory</SecondaryButton>
+          </Link>
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{lowStockRows.length} low-stock item{lowStockRows.length === 1 ? "" : "s"}</Badge>
-              <Badge variant="outline">Manual correction</Badge>
-            </div>
-            <CardTitle>Apply adjustment</CardTitle>
-            <CardDescription>Use positive quantities to add stock and negative quantities to reduce stock.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <SelectField
-                label="Product"
-                value={productId}
-                onChange={setProductId}
-                options={[
-                  { value: "", label: "Select…" },
-                  ...productRows.map((product) => ({
-                    value: product.id,
-                    label: `${product.name}${product.stock !== undefined && product.stock !== null ? ` (${product.stock})` : ""}`,
-                  })),
-                ]}
-              />
-            </div>
+        <WorkspacePanel
+          title="Apply adjustment"
+          subtitle="Use positive quantities to add stock, negative quantities to reduce stock, and optionally scope the correction to a warehouse."
+        >
+          <div className="space-y-4">
+            <SelectField
+              label="Product"
+              value={productId}
+              onChange={setProductId}
+              options={[
+                { value: "", label: "Select…" },
+                ...productRows.map((product) => ({
+                  value: product.id,
+                  label: `${product.name}${product.stock !== undefined && product.stock !== null ? ` (${product.stock})` : ""}`,
+                })),
+              ]}
+            />
             <div className="grid gap-4 md:grid-cols-3">
               <SelectField
                 label="Warehouse"
@@ -92,7 +206,12 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
                 if (!productId) return setError("Select a product.");
                 if (!Number.isFinite(qty) || qty === 0) return setError("Enter a non-zero quantity.");
                 try {
-                  await adjust.mutateAsync({ productId, changeQty: qty, note: note || undefined, warehouseId: warehouseId || undefined });
+                  await adjust.mutateAsync({
+                    productId,
+                    changeQty: qty,
+                    note: note || undefined,
+                    warehouseId: warehouseId || undefined,
+                  });
                   setChangeQty("");
                   setNote("");
                 } catch (err: unknown) {
@@ -102,78 +221,122 @@ export default function InventoryAdjustmentsPage({ params }: Props) {
             >
               {adjust.isPending ? "Applying…" : "Apply adjustment"}
             </PrimaryButton>
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
-        <div className="space-y-6">
-          <Card className="[background-image:var(--surface-highlight)]">
-            <CardHeader>
-              <CardTitle>Low stock watch</CardTitle>
-              <CardDescription>Products currently at or below reorder level.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {lowStockRows.length > 0 ? (
-                lowStockRows.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/c/${companyId}/masters/products/${product.id}`}
-                    className="block rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)] transition hover:border-[var(--border-strong)]"
-                  >
-                    <div className="font-medium text-[var(--foreground)]">{product.name}</div>
-                    <div className="mt-1 text-sm text-[var(--muted)]">Stock {product.stock ?? "—"} | Reorder {product.reorderLevel ?? "—"}</div>
-                  </Link>
-                ))
-              ) : (
-                <EmptyState title="No low-stock items" hint="Current stock levels are above reorder thresholds." className="p-6" />
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <WorkspacePanel
+          title="Low-stock watch"
+          subtitle="Keep a short reorder-pressure watchlist beside the adjustment desk so manual corrections are grounded in current stock posture."
+        >
+          <div className="space-y-3">
+            {lowStockRows.length > 0 ? (
+              lowStockRows.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/c/${companyId}/masters/products/${product.id}`}
+                  className="block rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 transition hover:border-[var(--border-strong)]"
+                >
+                  <div className="font-medium text-[var(--foreground)]">{product.name}</div>
+                  <div className="mt-1 text-sm text-[var(--muted)]">Stock {product.stock ?? "—"} | Reorder {product.reorderLevel ?? "—"}</div>
+                </Link>
+              ))
+            ) : (
+              <EmptyState title="No low-stock items" hint="Current stock levels are above reorder thresholds." className="p-6" />
+            )}
+          </div>
+        </WorkspacePanel>
       </div>
 
       {productsQuery.isLoading || movementsQuery.isLoading ? <LoadingBlock label="Loading inventory workspace…" /> : null}
       {productsQuery.isError ? <InlineError message={getErrorMessage(productsQuery.error, "Failed to load products")} /> : null}
       {movementsQuery.isError ? <InlineError message={getErrorMessage(movementsQuery.error, "Failed to load movements")} /> : null}
 
-      {movementRows.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent stock movements</CardTitle>
-            <CardDescription>The latest movement records after purchases, invoice issues, or manual adjustments.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>When</DataTh>
-                    <DataTh>Product</DataTh>
-                    <DataTh>Warehouse</DataTh>
-                    <DataTh>Change</DataTh>
-                    <DataTh>Balance</DataTh>
-                    <DataTh>Source</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {movementRows.map((row) => (
-                    <DataTr key={row.id}>
-                      <DataTd>{new Date(row.createdAt).toLocaleString()}</DataTd>
-                      <DataTd>
-                        <Link href={`/c/${companyId}/masters/products/${row.productId}`} className="font-medium text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]">
-                          {row.product?.name ?? row.productId.slice(0, 8)}
-                        </Link>
-                      </DataTd>
-                      <DataTd>{row.warehouse?.name ?? "Company"}</DataTd>
-                      <DataTd>{row.changeQty}</DataTd>
-                      <DataTd>{row.balanceQty}</DataTd>
-                      <DataTd>{row.sourceType}</DataTd>
-                    </DataTr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
-          </CardContent>
-        </Card>
+      {filteredRows.length > 0 ? (
+        <>
+          <QueueSegmentBar
+            items={[
+              { id: "all", label: "All movement", count: counts.all },
+              { id: "manual", label: "Manual adjustments", count: counts.manual },
+              { id: "inbound", label: "Inbound", count: counts.inbound },
+              { id: "outbound", label: "Outbound", count: counts.outbound },
+            ]}
+            value={segment}
+            onValueChange={setSegment}
+            trailing={
+              <QueueSavedViews
+                items={[
+                  { id: "all", label: "Recent ledger" },
+                  { id: "manual", label: "Adjustment trail" },
+                  { id: "outbound", label: "Stock depletion" },
+                ]}
+                value={savedView}
+                onValueChange={(value) => {
+                  setSavedView(value);
+                  setSegment(value);
+                }}
+              />
+            }
+          />
+
+          <QueueToolbar
+            filters={<></>}
+            summary={
+              <>
+                <Badge variant="secondary">{filteredRows.length} in view</Badge>
+                <Badge variant="outline">{counts.manual} manual</Badge>
+              </>
+            }
+          />
+
+          <QueueShell
+            inspector={
+              <QueueInspector
+                eyebrow="Selected movement"
+                title={selectedMovement?.product?.name ?? selectedMovement?.productId?.slice?.(0, 8) ?? "Select movement"}
+                subtitle="Keep movement source, balance context, and note history visible while you review recent stock adjustments."
+                footer={
+                  selectedMovement ? (
+                    <QueueQuickActions>
+                      <Link href={`/c/${companyId}/masters/products/${selectedMovement.productId}`}>
+                        <SecondaryButton type="button">Open product</SecondaryButton>
+                      </Link>
+                    </QueueQuickActions>
+                  ) : null
+                }
+              >
+                {selectedMovement ? (
+                  <QueueMetaList
+                    items={[
+                      { label: "When", value: formatDateTimeLabel(selectedMovement.createdAt) },
+                      { label: "Warehouse", value: selectedMovement.warehouse?.name ?? "Company" },
+                      { label: "Change", value: selectedMovement.changeQty },
+                      { label: "Balance", value: selectedMovement.balanceQty },
+                      { label: "Source", value: selectedMovement.sourceType },
+                      { label: "Note", value: selectedMovement.note ?? "—" },
+                    ]}
+                  />
+                ) : (
+                  <div className="text-sm text-[var(--muted)]">Select a movement row to inspect the source and balance context.</div>
+                )}
+              </QueueInspector>
+            }
+          >
+            <DataGrid
+              data={filteredRows}
+              columns={columns}
+              getRowId={(row) => row.id}
+              onRowClick={(row) => setSelectedMovementId(row.id)}
+              rowClassName={(row) =>
+                selectedMovement?.id === row.original.id
+                  ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                  : "hover:bg-[var(--surface-secondary)]"
+              }
+              initialSorting={[{ id: "when", desc: true }]}
+              toolbarTitle="Recent stock movements"
+              toolbarDescription="Review the latest inventory ledger while keeping the selected movement and its source context beside the table."
+            />
+          </QueueShell>
+        </>
       ) : null}
     </div>
   );

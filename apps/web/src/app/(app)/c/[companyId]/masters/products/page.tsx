@@ -3,7 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { useProducts } from "@/lib/masters/hooks";
 import { formatQuantityWithUnit, formatUnitLabel } from "@/lib/masters/product-units";
 import type { Product } from "@/lib/masters/types";
@@ -52,6 +52,71 @@ export default function ProductsPage({ params }: Props) {
       return true;
     });
   }, [rows, segment]);
+
+  const columns = React.useMemo<ColumnDef<Product>[]>(
+    () => [
+      {
+        id: "name",
+        header: "Name",
+        accessorFn: (row) => row.name,
+        meta: { label: "Name" },
+        cell: ({ row }) => (
+          <Link
+            className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
+            href={`/c/${companyId}/masters/products/${row.original.id}`}
+          >
+            {row.original.name}
+          </Link>
+        ),
+      },
+      {
+        id: "sku",
+        header: "SKU",
+        accessorFn: (row) => row.sku ?? "",
+        meta: { label: "SKU" },
+        cell: ({ row }) => row.original.sku ?? "—",
+      },
+      {
+        id: "hsn",
+        header: "HSN",
+        accessorFn: (row) => row.hsn ?? "",
+        meta: { label: "HSN" },
+        cell: ({ row }) => row.original.hsn ?? "—",
+      },
+      {
+        id: "unit",
+        header: "Unit",
+        accessorFn: (row) => formatUnitLabel(row.unit),
+        meta: { label: "Unit" },
+        cell: ({ row }) => formatUnitLabel(row.original.unit),
+      },
+      {
+        id: "tracking",
+        header: "Tracking",
+        accessorFn: (row) =>
+          Boolean(row.batchTrackingEnabled ?? row.batch_tracking_enabled)
+            ? Boolean(row.expiryTrackingEnabled ?? row.expiry_tracking_enabled)
+              ? "Batch + expiry"
+              : "Batch"
+            : "Standard",
+        meta: { label: "Tracking" },
+        cell: ({ row }) =>
+          Boolean(row.original.batchTrackingEnabled ?? row.original.batch_tracking_enabled)
+            ? Boolean(row.original.expiryTrackingEnabled ?? row.original.expiry_tracking_enabled)
+              ? "Batch + expiry"
+              : "Batch"
+            : "Standard",
+      },
+      {
+        id: "stock",
+        header: "Stock",
+        accessorFn: (row) => Number(row.stock ?? 0),
+        meta: { label: "Stock", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => formatQuantityWithUnit(row.original.stock, row.original.unit),
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -178,49 +243,20 @@ export default function ProductsPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Name</DataTh>
-                  <DataTh>SKU</DataTh>
-                  <DataTh>HSN</DataTh>
-                  <DataTh>Unit</DataTh>
-                  <DataTh>Tracking</DataTh>
-                  <DataTh className="text-right">Stock</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((p) => (
-                  <DataTr
-                    key={p.id}
-                    className={selectedProduct?.id === p.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
-                    onClick={() => setSelectedProductId(p.id)}
-                  >
-                    <DataTd>
-                      <Link
-                        className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
-                        href={`/c/${companyId}/masters/products/${p.id}`}
-                      >
-                        {p.name}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{p.sku ?? "—"}</DataTd>
-                    <DataTd>{p.hsn ?? "—"}</DataTd>
-                    <DataTd>{formatUnitLabel(p.unit)}</DataTd>
-                    <DataTd>
-                      {Boolean(p.batchTrackingEnabled ?? p.batch_tracking_enabled)
-                        ? Boolean(p.expiryTrackingEnabled ?? p.expiry_tracking_enabled)
-                          ? "Batch + expiry"
-                          : "Batch"
-                        : "Standard"}
-                    </DataTd>
-                    <DataTd className="text-right">{formatQuantityWithUnit(p.stock, p.unit)}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedProductId(row.id)}
+            rowClassName={(row) =>
+              selectedProduct?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-muted)]"
+            }
+            initialSorting={[{ id: "name", desc: false }]}
+            toolbarTitle="Product catalog"
+            toolbarDescription="Sort, trim columns, and keep the stock inspector beside the catalog queue."
+          />
         </QueueShell>
       ) : null}
     </div>

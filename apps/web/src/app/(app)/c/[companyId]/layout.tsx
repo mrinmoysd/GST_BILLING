@@ -24,6 +24,26 @@ export default function CompanyLayout({ params, children }: Props) {
   const router = useRouter();
   const { session, bootstrapped } = useAuth();
   const [navOpen, setNavOpen] = React.useState(false);
+  const [railCollapsed, setRailCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("vyapar_genie.tenant_rail_collapsed");
+      setRailCollapsed(saved === "true");
+    } catch {
+      setRailCollapsed(false);
+    }
+  }, []);
+
+  const handleToggleRail = React.useCallback(() => {
+    setRailCollapsed((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem("vyapar_genie.tenant_rail_collapsed", String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
 
   React.useEffect(() => {
     if (!bootstrapped) return;
@@ -60,7 +80,7 @@ export default function CompanyLayout({ params, children }: Props) {
     <div className="min-h-dvh bg-[var(--background)] text-[var(--foreground)]">
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
         <SheetContent side="left" className="border-[var(--shell-sidebar-border)] [background:var(--shell-sidebar-bg)] text-[var(--shell-sidebar-fg)] md:hidden">
-          <div className="font-semibold text-lg tracking-[-0.02em]">GST Billing</div>
+          <div className="font-semibold text-lg tracking-[-0.02em]">Vyapar Genie</div>
           <div className="mt-1 break-all text-xs text-[var(--shell-sidebar-fg-muted)]">
             Company: {session.company?.name ?? companyId}
           </div>
@@ -68,17 +88,25 @@ export default function CompanyLayout({ params, children }: Props) {
         </SheetContent>
       </Sheet>
 
-      <div className="md:grid md:grid-cols-[116px_1fr]">
+      <div
+        className="md:grid"
+        style={{ gridTemplateColumns: railCollapsed ? "88px minmax(0,1fr)" : "320px minmax(0,1fr)" }}
+      >
         <aside className="hidden border-r border-[var(--shell-sidebar-border)] [background:var(--shell-sidebar-bg)] md:block">
           <div className="sticky top-0 h-screen overflow-hidden">
-            <CompanyNav companyId={companyId} variant="sidebar" />
+            <CompanyNav companyId={companyId} variant="sidebar" collapsed={railCollapsed} />
           </div>
         </aside>
 
-        <div className="min-w-0 [background-image:linear-gradient(180deg,transparent,rgba(255,255,255,0.02))]">
-          <CompanyHeader companyId={companyId} onOpenNav={() => setNavOpen(true)} />
-          <main className="px-4 py-5 md:px-7 md:py-7">
-            <div className="mx-auto w-full max-w-[1440px]">
+        <div className="min-w-0 [background-image:linear-gradient(180deg,transparent,rgba(255,255,255,0.015))]">
+          <CompanyHeader
+            companyId={companyId}
+            onOpenNav={() => setNavOpen(true)}
+            railCollapsed={railCollapsed}
+            onToggleRail={handleToggleRail}
+          />
+          <main className="px-4 py-5 md:px-8 md:py-8">
+            <div className="mx-auto w-full max-w-[1480px]">
               {canAccessRoute ? (
                 children
               ) : (

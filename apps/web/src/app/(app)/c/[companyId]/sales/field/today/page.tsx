@@ -9,13 +9,15 @@ import { getErrorMessage } from "@/lib/errors";
 import { useCreateVisit, useGenerateVisitPlans, useMyCustomers, useMySummary } from "@/lib/field-sales/hooks";
 import { isRfcUuid } from "@/lib/ids";
 import { toastError, toastSuccess } from "@/lib/toast";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero, WorkspacePanel } from "@/lib/ui/workspace";
 
 type Props = { params: Promise<{ companyId: string }> };
+
+type VisitRow = NonNullable<NonNullable<ReturnType<typeof useMySummary>["data"]>["data"]>["visits"][number];
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -42,6 +44,95 @@ export default function FieldSalesTodayPage({ params }: Props) {
 
   const data = summary.data?.data;
   const customerRows = customers.data?.data?.data ?? [];
+
+  const columns = React.useMemo<ColumnDef<VisitRow>[]>(
+    () => [
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (visit) => visit.customer_name,
+        meta: { label: "Customer" },
+        cell: ({ row }) => row.original.customer_name,
+      },
+      {
+        id: "route",
+        header: "Route",
+        accessorFn: (visit) => visit.route_name ?? "",
+        meta: { label: "Route" },
+        cell: ({ row }) => row.original.route_name ?? "—",
+      },
+      {
+        id: "beat",
+        header: "Beat",
+        accessorFn: (visit) => visit.beat_name ?? "",
+        meta: { label: "Beat" },
+        cell: ({ row }) => row.original.beat_name ?? "—",
+      },
+      {
+        id: "priority",
+        header: "Priority",
+        accessorFn: (visit) => visit.priority ?? "",
+        meta: { label: "Priority" },
+        cell: ({ row }) => row.original.priority ?? "—",
+      },
+      {
+        id: "outstanding",
+        header: "Outstanding",
+        accessorFn: (visit) => Number(visit.outstanding_amount ?? 0),
+        meta: { label: "Outstanding", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.outstanding_amount.toFixed(2),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (visit) => visit.status,
+        meta: { label: "Status" },
+        cell: ({ row }) => row.original.status,
+      },
+      {
+        id: "action",
+        header: "Action",
+        accessorFn: (visit) => visit.visit_id ?? visit.visit_plan_id,
+        meta: { label: "Action" },
+        cell: ({ row }) =>
+          row.original.visit_id ? (
+            <Link
+              className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]"
+              href={`/c/${companyId}/sales/field/visits/${row.original.visit_id}`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              Open visit
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]"
+              onClick={async (event) => {
+                event.stopPropagation();
+                try {
+                  const res = await createVisit.mutateAsync({ visit_plan_id: row.original.visit_plan_id });
+                  const nextVisitId =
+                    (res.data as { data?: { id?: string } }).data?.id ??
+                    ((res as unknown as { data?: { id?: string } }).data?.id);
+                  if (nextVisitId) {
+                    router.push(`/c/${companyId}/sales/field/visits/${nextVisitId}`);
+                  }
+                } catch (err) {
+                  toastError(err, {
+                    fallback: "Failed to start visit.",
+                    context: "field-today-start-visit",
+                    metadata: { companyId, visitPlanId: row.original.visit_plan_id },
+                  });
+                }
+              }}
+            >
+              Start visit
+            </button>
+          ),
+      },
+    ],
+    [companyId, createVisit, router],
+  );
 
   return (
     <div className="space-y-7">
@@ -130,64 +221,14 @@ export default function FieldSalesTodayPage({ params }: Props) {
           ) : null}
 
           {data?.visits?.length ? (
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>Customer</DataTh>
-                    <DataTh>Route</DataTh>
-                    <DataTh>Beat</DataTh>
-                    <DataTh>Priority</DataTh>
-                    <DataTh>Outstanding</DataTh>
-                    <DataTh>Status</DataTh>
-                    <DataTh>Action</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {data.visits.map((visit) => (
-                    <DataTr key={visit.visit_plan_id}>
-                      <DataTd>{visit.customer_name}</DataTd>
-                      <DataTd>{visit.route_name ?? "—"}</DataTd>
-                      <DataTd>{visit.beat_name ?? "—"}</DataTd>
-                      <DataTd>{visit.priority ?? "—"}</DataTd>
-                      <DataTd>{visit.outstanding_amount.toFixed(2)}</DataTd>
-                      <DataTd>{visit.status}</DataTd>
-                      <DataTd>
-                        {visit.visit_id ? (
-                          <Link className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]" href={`/c/${companyId}/sales/field/visits/${visit.visit_id}`}>
-                            Open visit
-                          </Link>
-                        ) : (
-                          <button
-                            type="button"
-                            className="text-sm font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]"
-                            onClick={async () => {
-                              try {
-                                const res = await createVisit.mutateAsync({ visit_plan_id: visit.visit_plan_id });
-                                const nextVisitId =
-                                  (res.data as { data?: { id?: string } }).data?.id ??
-                                  ((res as unknown as { data?: { id?: string } }).data?.id);
-                                if (nextVisitId) {
-                                  router.push(`/c/${companyId}/sales/field/visits/${nextVisitId}`);
-                                }
-                              } catch (err) {
-                                toastError(err, {
-                                  fallback: "Failed to start visit.",
-                                  context: "field-today-start-visit",
-                                  metadata: { companyId, visitPlanId: visit.visit_plan_id },
-                                });
-                              }
-                            }}
-                          >
-                            Start visit
-                          </button>
-                        )}
-                      </DataTd>
-                    </DataTr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
+            <DataGrid
+              data={data.visits}
+              columns={columns}
+              getRowId={(row) => row.visit_id ?? row.visit_plan_id}
+              initialSorting={[{ id: "outstanding", desc: true }]}
+              toolbarTitle="Visit worklist"
+              toolbarDescription="Sort the day’s route queue without leaving the rep workspace."
+            />
           ) : null}
         </WorkspacePanel>
 

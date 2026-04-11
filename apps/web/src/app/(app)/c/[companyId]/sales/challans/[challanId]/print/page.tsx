@@ -3,10 +3,11 @@
 import * as React from "react";
 
 import { useDeliveryChallan } from "@/lib/billing/hooks";
+import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { usePrintTemplates } from "@/lib/migration/hooks";
 import { SecondaryButton } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
-import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; challanId: string }> };
 
@@ -64,7 +65,7 @@ export default function DeliveryChallanPrintPage({ params }: Props) {
               {challan.challanNumber ?? challan.challan_number ?? challan.id}
             </div>
             <div className="mt-2 text-sm text-slate-600">
-              Date: {String(challan.challanDate ?? challan.challan_date ?? "—")}
+              Date: {formatDateLabel(challan.challanDate ?? challan.challan_date ?? null)}
             </div>
             <div className="text-sm text-slate-600">
               Status: {String(challan.status ?? "—")}
@@ -129,8 +130,11 @@ export default function DeliveryChallanPrintPage({ params }: Props) {
         ) : null}
 
         {visibleSections.has("footer") ? (
-          <div className="border-t pt-4 text-sm text-slate-600">
-            {layout.footer?.text ?? "Generated from the active challan print template."}
+          <div className="space-y-3 border-t pt-4 text-sm text-slate-600">
+            <div>{layout.footer?.text ?? "Generated from the active challan print template."}</div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+              Print output reflects the live challan, dispatch, and delivery data captured in Vyapar Genie at the time of generation.
+            </div>
           </div>
         ) : null}
       </div>

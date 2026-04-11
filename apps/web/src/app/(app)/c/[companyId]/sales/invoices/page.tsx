@@ -9,7 +9,7 @@ import type { Invoice } from "@/lib/billing/types";
 import { useAuth } from "@/lib/auth/session";
 import { formatDateLabel } from "@/lib/format/date";
 import { useInvoiceSeries } from "@/lib/settings/invoiceSeriesHooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
@@ -86,6 +86,51 @@ export default function InvoicesPage({ params }: Props) {
       return true;
     });
   }, [rows, segment]);
+
+  const columns = React.useMemo<ColumnDef<Invoice>[]>(
+    () => [
+      {
+        id: "invoice",
+        header: "Invoice",
+        accessorFn: (invoice) => readInvoiceNumber(invoice),
+        meta: { label: "Invoice" },
+        cell: ({ row }) => (
+          <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-strong)]" href={`/c/${companyId}/sales/invoices/${row.original.id}`}>
+            {readInvoiceNumber(row.original)}
+          </Link>
+        ),
+      },
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (invoice) => invoice.customer?.name ?? "",
+        meta: { label: "Customer" },
+        cell: ({ row }) => row.original.customer?.name ?? "—",
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (invoice) => invoice.status ?? "",
+        meta: { label: "Status" },
+        cell: ({ row }) => <QueueRowStateBadge label={row.original.status ?? "—"} />,
+      },
+      {
+        id: "issueDate",
+        header: "Issue date",
+        accessorFn: (invoice) => invoice.issueDate ?? invoice.issue_date ?? "",
+        meta: { label: "Issue date" },
+        cell: ({ row }) => readInvoiceDate(row.original),
+      },
+      {
+        id: "total",
+        header: "Total",
+        accessorFn: (invoice) => Number(invoice.total ?? 0),
+        meta: { label: "Total", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.total ?? "—",
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -213,42 +258,20 @@ export default function InvoicesPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Invoice</DataTh>
-                  <DataTh>Customer</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Issue date</DataTh>
-                  <DataTh className="text-right">Total</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((inv) => (
-                  <DataTr
-                    key={inv.id}
-                    className={selectedInvoice?.id === inv.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedInvoiceId(inv.id)}
-                  >
-                    <DataTd>
-                      <Link className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-strong)]" href={`/c/${companyId}/sales/invoices/${inv.id}`}>
-                        {readInvoiceNumber(inv)}
-                      </Link>
-                    </DataTd>
-                    <DataTd>
-                      {inv.customer?.name ?? "—"}
-                    </DataTd>
-                    <DataTd>
-                      <QueueRowStateBadge label={inv.status ?? "—"} />
-                    </DataTd>
-                    <DataTd>{readInvoiceDate(inv)}</DataTd>
-                    <DataTd className="text-right">{inv.total ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedInvoiceId(row.id)}
+            rowClassName={(row) =>
+              selectedInvoice?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "issueDate", desc: true }]}
+            toolbarTitle="Invoice queue"
+            toolbarDescription="Sort and trim visible columns without leaving the billing workspace."
+          />
         </QueueShell>
       ) : null}
     </div>
