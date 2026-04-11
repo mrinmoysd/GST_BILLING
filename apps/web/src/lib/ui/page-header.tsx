@@ -50,7 +50,7 @@ export function PageContextStrip(props: {
   return (
     <div
       className={cn(
-        "grid gap-4 rounded-[24px] border border-[var(--border)] bg-[var(--surface-panel-glass)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--panel-highlight)] backdrop-blur-sm md:p-5",
+        "grid gap-4 rounded-[16px] border border-[var(--border)] bg-[var(--surface-panel-glass)] p-4 shadow-[var(--shadow-soft)] [background-image:var(--panel-highlight)] backdrop-blur-sm md:p-5",
         props.inset ? "mt-1" : "",
         props.className,
       )}
@@ -80,7 +80,7 @@ export function PageHeader(props: {
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[32px] border shadow-[var(--shadow-soft)]",
+        "overflow-hidden rounded-[20px] border shadow-[var(--shadow-soft)]",
         getHeaderToneClasses(tone),
         size === "hero" ? "p-6 md:p-8" : "p-5 md:p-6",
         props.className,
@@ -93,7 +93,7 @@ export function PageHeader(props: {
             <h1
               className={cn(
                 "font-display font-semibold tracking-[-0.045em] text-[var(--foreground)]",
-                size === "hero" ? "max-w-4xl text-4xl leading-[0.94] md:text-5xl" : "max-w-3xl text-3xl leading-[0.96] md:text-[2.6rem]",
+                size === "hero" ? "max-w-4xl text-4xl leading-[0.94] md:text-5xl" : "max-w-3xl text-[1.9rem] leading-[1.02] md:text-[2.35rem]",
               )}
             >
               {props.title}
@@ -115,7 +115,7 @@ export function PageHeader(props: {
       {props.metrics?.length ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {props.metrics.map((metric) => (
-            <div key={String(metric.label)} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
+            <div key={String(metric.label)} className="rounded-[14px] border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-4 shadow-[var(--shadow-soft)] [background-image:var(--surface-highlight)]">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{metric.label}</div>
               <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{metric.value}</div>
             </div>

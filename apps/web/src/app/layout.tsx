@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import { ThemeScript } from "@/lib/theme/script";
@@ -9,18 +9,12 @@ const manrope = Manrope({
   variable: "--font-manrope",
 });
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  variable: "--font-cormorant",
-  weight: ["400", "500", "600", "700"],
-});
-
 export const metadata: Metadata = {
   title: {
-    default: "GST Billing",
-    template: "%s | GST Billing",
+    default: "Vyapar Genie",
+    template: "%s | Vyapar Genie",
   },
-  description: "GST billing, purchases, inventory, accounting, POS, and reporting workspace for India-first business operations.",
+  description: "Vyapar Genie is a billing, GST, inventory, accounting, POS, and reporting workspace for disciplined India-first business operations.",
 };
 
 export default function RootLayout({
@@ -33,7 +27,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className={`${manrope.variable} ${cormorant.variable} antialiased`}>
+      <body className={`${manrope.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

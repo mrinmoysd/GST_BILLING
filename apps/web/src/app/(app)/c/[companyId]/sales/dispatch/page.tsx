@@ -7,7 +7,7 @@ import { useDispatchQueue } from "@/lib/billing/hooks";
 import type { DispatchQueueRow } from "@/lib/billing/types";
 import { formatDateLabel } from "@/lib/format/date";
 import { useWarehouses } from "@/lib/masters/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { SelectField, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueRowStateBadge, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
@@ -75,6 +75,62 @@ export default function DispatchQueuePage({ params }: Props) {
       return true;
     });
   }, [rows, segment, today]);
+
+  const columns = React.useMemo<ColumnDef<DispatchQueueRow>[]>(
+    () => [
+      {
+        id: "order",
+        header: "Order",
+        accessorFn: (row) => String(row.order_number ?? row.sales_order_id ?? ""),
+        meta: { label: "Order" },
+        cell: ({ row }) => String(row.original.order_number ?? row.original.sales_order_id),
+      },
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (row) => String((row.customer as { name?: string } | undefined)?.name ?? ""),
+        meta: { label: "Customer" },
+        cell: ({ row }) => String((row.original.customer as { name?: string } | undefined)?.name ?? "—"),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (row) => String(row.status ?? ""),
+        meta: { label: "Status" },
+        cell: ({ row }) => <QueueRowStateBadge label={String(row.original.status ?? "—")} />,
+      },
+      {
+        id: "expectedDispatch",
+        header: "Expected dispatch",
+        accessorFn: (row) => String(row.expected_dispatch_date ?? ""),
+        meta: { label: "Expected dispatch" },
+        cell: ({ row }) => formatDateLabel(String(row.original.expected_dispatch_date ?? "")),
+      },
+      {
+        id: "pendingQuantity",
+        header: "Pending qty",
+        accessorFn: (row) => Number(row.pending_dispatch_quantity ?? 0),
+        meta: { label: "Pending qty", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => Number(row.original.pending_dispatch_quantity ?? 0).toFixed(2),
+      },
+      {
+        id: "nextStep",
+        header: "Next step",
+        accessorFn: (row) => String(row.sales_order_id),
+        meta: { label: "Next step" },
+        cell: ({ row }) => (
+          <Link
+            className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-panel)] px-3 py-1.5 text-sm font-medium text-[var(--secondary)] transition hover:border-[var(--secondary)]/30 hover:bg-[var(--surface-secondary)]"
+            href={`/c/${companyId}/sales/orders/${row.original.sales_order_id}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            Create challan
+          </Link>
+        ),
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -196,43 +252,20 @@ export default function DispatchQueuePage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Order</DataTh>
-                  <DataTh>Customer</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Expected dispatch</DataTh>
-                  <DataTh className="text-right">Pending qty</DataTh>
-                  <DataTh>Next step</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((row) => (
-                  <DataTr
-                    key={String(row.sales_order_id)}
-                    className={selectedRow?.sales_order_id === row.sales_order_id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedOrderId(String(row.sales_order_id))}
-                  >
-                    <DataTd>{String(row.order_number ?? row.sales_order_id)}</DataTd>
-                    <DataTd>{String((row.customer as { name?: string } | undefined)?.name ?? "—")}</DataTd>
-                    <DataTd><QueueRowStateBadge label={String(row.status ?? "—")} /></DataTd>
-                    <DataTd>{formatDateLabel(String(row.expected_dispatch_date ?? ""))}</DataTd>
-                    <DataTd className="text-right">{Number(row.pending_dispatch_quantity ?? 0).toFixed(2)}</DataTd>
-                    <DataTd>
-                      <Link
-                        className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-panel)] px-3 py-1.5 text-sm font-medium text-[var(--secondary)] transition hover:border-[var(--secondary)]/30 hover:bg-[var(--surface-secondary)]"
-                        href={`/c/${companyId}/sales/orders/${row.sales_order_id}`}
-                      >
-                        Create challan
-                      </Link>
-                    </DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => String(row.sales_order_id)}
+            onRowClick={(row) => setSelectedOrderId(String(row.sales_order_id))}
+            rowClassName={(row) =>
+              selectedRow?.sales_order_id === row.original.sales_order_id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "expectedDispatch", desc: false }]}
+            toolbarTitle="Dispatch queue"
+            toolbarDescription="Sort and trim the queue while keeping the dispatch inspector and warehouse filter in view."
+          />
         </QueueShell>
       ) : null}
     </div>

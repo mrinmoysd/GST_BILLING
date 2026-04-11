@@ -14,6 +14,21 @@ export type SalesSummaryReport = {
   currency: string;
 };
 
+export type ReportSeriesGrain = "day" | "week" | "month";
+
+export type SalesSummarySeriesPoint = {
+  period: string;
+  period_start: string;
+  period_end: string;
+  gross_sales: number;
+  net_sales: number;
+  tax_total: number;
+  amount_paid: number;
+  balance_due: number;
+  invoices_count: number;
+  average_invoice: number;
+};
+
 export type PurchasesSummaryReport = {
   gross_purchases: number;
   net_purchases: number;
@@ -21,6 +36,17 @@ export type PurchasesSummaryReport = {
   purchases_count: number;
   average_purchase: number;
   currency: string;
+};
+
+export type PurchasesSummarySeriesPoint = {
+  period: string;
+  period_start: string;
+  period_end: string;
+  gross_purchases: number;
+  net_purchases: number;
+  tax_total: number;
+  purchases_count: number;
+  average_purchase: number;
 };
 
 export type OutstandingInvoiceRow = {
@@ -54,6 +80,19 @@ export type ProfitSnapshotReport = {
   currency: string;
   is_estimate?: boolean;
   note?: string;
+};
+
+export type ProfitSnapshotSeriesPoint = {
+  period: string;
+  period_start: string;
+  period_end: string;
+  revenue: number;
+  cogs: number;
+  gross_profit: number;
+  net_profit: number;
+  gross_margin_percent: number;
+  net_margin_percent: number;
+  is_estimate: boolean;
 };
 
 export type SalespersonSalesRow = {
@@ -252,6 +291,19 @@ export type DcrRegisterRow = {
   reviewed_by?: { id: string; name?: string | null; email?: string | null } | null;
 };
 
+export type CommercialAuditSeriesPoint = {
+  period: string;
+  period_start: string;
+  period_end: string;
+  total_events: number;
+  manual_override_events: number;
+  warning_events: number;
+  customer_override_events: number;
+  price_list_events: number;
+  product_price_events: number;
+  unique_documents: number;
+};
+
 export type SchemeUsageRow = {
   scheme_code: string;
   scheme_name: string;
@@ -359,6 +411,29 @@ export function useSalesSummary(args: { companyId: string; from?: string; to?: s
   });
 }
 
+export function useSalesSummarySeries(args: {
+  companyId: string;
+  from?: string;
+  to?: string;
+  grain?: ReportSeriesGrain;
+  enabled?: boolean;
+}) {
+  const { companyId, from, to, grain = "day", enabled = true } = args;
+  const qs = new URLSearchParams();
+  qs.set("grain", grain);
+  if (from) qs.set("from", from);
+  if (to) qs.set("to", to);
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "reports", "sales", "summary-series", { from, to, grain }],
+    queryFn: async () =>
+      apiClient.get<{
+        data: SalesSummarySeriesPoint[];
+        meta: { from?: string | null; to?: string | null; grain: ReportSeriesGrain; currency: string };
+      }>(companyPath(companyId, `/reports/sales/summary-series?${qs.toString()}`)),
+  });
+}
+
 export function usePurchasesSummary(args: { companyId: string; from?: string; to?: string }) {
   const { companyId, from, to } = args;
   const qs = new URLSearchParams();
@@ -368,6 +443,29 @@ export function usePurchasesSummary(args: { companyId: string; from?: string; to
     queryKey: ["companies", companyId, "reports", "purchases", "summary", { from, to }],
     queryFn: async () =>
       apiClient.get<PurchasesSummaryReport>(companyPath(companyId, `/reports/purchases/summary?${qs.toString()}`)),
+  });
+}
+
+export function usePurchasesSummarySeries(args: {
+  companyId: string;
+  from?: string;
+  to?: string;
+  grain?: ReportSeriesGrain;
+  enabled?: boolean;
+}) {
+  const { companyId, from, to, grain = "day", enabled = true } = args;
+  const qs = new URLSearchParams();
+  qs.set("grain", grain);
+  if (from) qs.set("from", from);
+  if (to) qs.set("to", to);
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "reports", "purchases", "summary-series", { from, to, grain }],
+    queryFn: async () =>
+      apiClient.get<{
+        data: PurchasesSummarySeriesPoint[];
+        meta: { from?: string | null; to?: string | null; grain: ReportSeriesGrain; currency: string };
+      }>(companyPath(companyId, `/reports/purchases/summary-series?${qs.toString()}`)),
   });
 }
 
@@ -412,6 +510,36 @@ export function useProfitSnapshot(args: { companyId: string; from?: string; to?:
     queryKey: ["companies", companyId, "reports", "profit", "snapshot", { from, to }],
     queryFn: async () =>
       apiClient.get<ProfitSnapshotReport>(companyPath(companyId, `/reports/profit/snapshot?${qs.toString()}`)),
+  });
+}
+
+export function useProfitSnapshotSeries(args: {
+  companyId: string;
+  from?: string;
+  to?: string;
+  grain?: ReportSeriesGrain;
+  enabled?: boolean;
+}) {
+  const { companyId, from, to, grain = "day", enabled = true } = args;
+  const qs = new URLSearchParams();
+  qs.set("grain", grain);
+  if (from) qs.set("from", from);
+  if (to) qs.set("to", to);
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "reports", "profit", "snapshot-series", { from, to, grain }],
+    queryFn: async () =>
+      apiClient.get<{
+        data: ProfitSnapshotSeriesPoint[];
+        meta: {
+          from?: string | null;
+          to?: string | null;
+          grain: ReportSeriesGrain;
+          currency: string;
+          is_estimate: boolean;
+          note?: string;
+        };
+      }>(companyPath(companyId, `/reports/profit/snapshot-series?${qs.toString()}`)),
   });
 }
 
@@ -592,6 +720,29 @@ export function useCommercialAuditReport(args: { companyId: string; limit?: numb
       apiClient.get<{ data: CommercialAuditReportRow[]; meta: { limit: number } }>(
         companyPath(companyId, `/reports/distributor/commercial/audit?${qs.toString()}`),
       ),
+  });
+}
+
+export function useCommercialAuditSeries(args: {
+  companyId: string;
+  from?: string;
+  to?: string;
+  grain?: ReportSeriesGrain;
+  enabled?: boolean;
+}) {
+  const { companyId, from, to, grain = "day", enabled = true } = args;
+  const qs = new URLSearchParams();
+  qs.set("grain", grain);
+  if (from) qs.set("from", from);
+  if (to) qs.set("to", to);
+  return useQuery({
+    enabled,
+    queryKey: ["companies", companyId, "reports", "distributor", "commercial", "audit-series", { from, to, grain }],
+    queryFn: async () =>
+      apiClient.get<{
+        data: CommercialAuditSeriesPoint[];
+        meta: { from?: string | null; to?: string | null; grain: ReportSeriesGrain };
+      }>(companyPath(companyId, `/reports/distributor/commercial/audit-series?${qs.toString()}`)),
   });
 }
 

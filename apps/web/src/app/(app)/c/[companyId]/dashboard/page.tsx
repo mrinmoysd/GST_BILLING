@@ -3,11 +3,25 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, FilePlus2, PackagePlus, ReceiptIndianRupee, Users2, Wallet } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { useInvoices, usePayments, usePurchases } from "@/lib/billing/hooks";
 import { useAuth } from "@/lib/auth/session";
+import { formatDateLabel } from "@/lib/format/date";
 import { useLowStock, useWarehouses } from "@/lib/masters/hooks";
 import { useDistributorDashboard, useOutstandingInvoices, useSalesSummary } from "@/lib/reports/hooks";
+import {
+  ChartEmptyState,
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
@@ -65,6 +79,33 @@ export default function CompanyDashboardPage({ params }: Props) {
     [outstandingPayload?.data],
   );
   const activeWarehouseCount = activeWarehousesPayload?.meta?.total ?? activeWarehousesPayload?.data?.length ?? 0;
+  const topSalespeopleChart = React.useMemo(
+    () =>
+      (distributorDashboard?.top_salespeople ?? []).slice(0, 5).map((row) => ({
+        name: row.salesperson_name,
+        value: Number(row.gross_sales ?? 0),
+        invoices: Number(row.invoices_count ?? 0),
+      })),
+    [distributorDashboard?.top_salespeople],
+  );
+  const duesChart = React.useMemo(
+    () =>
+      (distributorDashboard?.top_due_customers ?? []).slice(0, 5).map((row) => ({
+        name: row.customer_name,
+        value: Number(row.outstanding_amount ?? 0),
+        invoices: Number(row.invoices_count ?? 0),
+      })),
+    [distributorDashboard?.top_due_customers],
+  );
+  const warehouseChart = React.useMemo(
+    () =>
+      (distributorDashboard?.warehouse_snapshot ?? []).slice(0, 5).map((row) => ({
+        name: row.warehouse_name,
+        stockValue: Number(row.stock_value ?? 0),
+        lowStockLines: Number(row.low_stock_lines ?? 0),
+      })),
+    [distributorDashboard?.warehouse_snapshot],
+  );
 
   const recentActivity = React.useMemo(() => {
     const invoices = (recentInvoicesPayload?.data ?? []).map((row) => ({
@@ -287,6 +328,120 @@ export default function CompanyDashboardPage({ params }: Props) {
         </div>
       </WorkspaceSection>
 
+      <WorkspaceSection
+        eyebrow="Visuals"
+        title="Operator control room"
+        subtitle="The charts stay restrained and answer three questions quickly: who is selling, where dues sit, and which warehouses are absorbing value."
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          {topSalespeopleChart.length > 0 ? (
+            <ChartShell
+              title="Sales contribution"
+              subtitle="Gross sales by top rep for the selected window."
+              footer={
+                <ChartLegend
+                  items={[
+                    {
+                      label: "Top rep",
+                      tone: "primary",
+                      value: topSalespeopleChart[0] ? `${topSalespeopleChart[0].name} · ${formatChartCurrency(topSalespeopleChart[0].value)}` : "—",
+                    },
+                  ]}
+                />
+              }
+            >
+              <ChartFrame height={260}>
+                <BarChart data={topSalespeopleChart} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                  <XAxis dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={54} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="value" name="Gross sales" fill={getChartSeriesColor("primary")} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Sales contribution" hint="Rep contribution charts appear once attributed invoices are available in the selected period." />
+          )}
+
+          {duesChart.length > 0 ? (
+            <ChartShell
+              title="Due concentration"
+              subtitle="Outstanding exposure by top due customers."
+              footer={
+                <ChartLegend
+                  items={[
+                    {
+                      label: "Largest due",
+                      tone: "warning",
+                      value: duesChart[0] ? `${duesChart[0].name} · ${formatChartCurrency(duesChart[0].value)}` : "—",
+                    },
+                  ]}
+                />
+              }
+            >
+              <ChartFrame height={260}>
+                <BarChart data={duesChart} layout="vertical" margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                  <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                  <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={108} />
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                  <Bar dataKey="value" name="Outstanding" fill={getChartSeriesColor("warning")} radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Due concentration" hint="Customer due concentration will appear when open receivables are present." />
+          )}
+
+          {warehouseChart.length > 0 ? (
+            <ChartShell
+              title="Warehouse value split"
+              subtitle="Stock value held by active warehouse locations."
+              footer={
+                <ChartLegend
+                  items={warehouseChart.map((row, index) => ({
+                    label: row.name,
+                    tone: index === 0 ? "secondary" : index === 1 ? "primary" : "neutral",
+                  }))}
+                />
+              }
+            >
+              <ChartFrame height={260}>
+                <PieChart>
+                  <Pie
+                    data={warehouseChart}
+                    dataKey="stockValue"
+                    nameKey="name"
+                    innerRadius={56}
+                    outerRadius={84}
+                    paddingAngle={2}
+                  >
+                    {warehouseChart.map((_, index) => (
+                      <Cell
+                        key={warehouseChart[index]?.name ?? index}
+                        fill={
+                          index === 0
+                            ? getChartSeriesColor("secondary")
+                            : index === 1
+                              ? getChartSeriesColor("primary")
+                              : index === 2
+                                ? getChartSeriesColor("warning")
+                                : getChartSeriesColor("neutral")
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <ChartTooltip valueFormatter={formatChartCurrency} />
+                </PieChart>
+              </ChartFrame>
+            </ChartShell>
+          ) : (
+            <ChartEmptyState title="Warehouse value split" hint="Warehouse value distribution will appear once warehouse analytics are available." />
+          )}
+        </div>
+      </WorkspaceSection>
+
       <section className="grid gap-4 xl:grid-cols-3">
         <WorkspacePanel title="Top salespeople" subtitle="Who is driving invoiced value this period.">
           <div className="space-y-3">
@@ -439,7 +594,7 @@ export default function CompanyDashboardPage({ params }: Props) {
                       <div className="mt-1 font-medium text-[var(--foreground)]">{activity.title}</div>
                       <div className="mt-1 text-sm text-[var(--muted)]">{activity.meta}</div>
                     </div>
-                    <div className="text-xs text-[var(--muted)]">{new Date(activity.when).toLocaleDateString()}</div>
+                    <div className="text-xs text-[var(--muted)]">{formatDateLabel(activity.when)}</div>
                   </div>
                 </Link>
               ))

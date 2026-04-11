@@ -986,19 +986,44 @@ export class InventoryService {
     // If neither exists, treat as 0.
     const thr = threshold ?? 0;
 
-    const where: any = {
+    const where: Prisma.ProductWhereInput = {
       companyId,
       deletedAt: null,
-      OR: [{ reorderLevel: { not: null } }, { reorderLevel: null }],
     };
 
-    const products = await this.prisma.product.findMany({ where });
-    const low = products.filter((p: (typeof products)[number]) => {
+    const products = await this.prisma.product.findMany({
+      where,
+      orderBy: [{ stock: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        companyId: true,
+        categoryId: true,
+        name: true,
+        sku: true,
+        hsn: true,
+        unit: true,
+        price: true,
+        costPrice: true,
+        taxRate: true,
+        stock: true,
+        reorderLevel: true,
+        batchTrackingEnabled: true,
+        expiryTrackingEnabled: true,
+        batchIssuePolicy: true,
+        nearExpiryDays: true,
+        metadata: true,
+        deletedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    const low = products.filter((product) => {
+      const stock = Number(product.stock ?? 0);
       const level =
-        p.reorderLevel === null
-          ? new Decimal(thr)
-          : new Decimal(p.reorderLevel);
-      return new Decimal(p.stock).lte(level);
+        product.reorderLevel === null || product.reorderLevel === undefined
+          ? thr
+          : Number(product.reorderLevel);
+      return stock <= level;
     });
 
     const total = low.length;

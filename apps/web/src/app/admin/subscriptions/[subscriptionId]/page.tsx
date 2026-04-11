@@ -10,12 +10,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { getErrorMessage } from "@/lib/errors";
 import {
+  asStructuredPlanLimits,
+  companySummary,
+  extraSeatSummary,
+  formatCurrencyInr,
+  invoiceSummary,
+  invoiceValueSummary,
+  overageSummary,
+  seatSummary,
+} from "@/lib/settings/subscriptionCommerce";
+import {
   useAdminSubscription,
   useUpdateAdminSubscription,
   useUpdateAdminSubscriptionOverrides,
 } from "@/lib/admin/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
+import { StatCard } from "@/lib/ui/stat";
 
 type Props = {
   params: Promise<{ subscriptionId: string }>;
@@ -53,6 +64,11 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
         provider_health?: { failed_webhooks?: number; last_webhook_status?: string | null };
       }
     | undefined;
+  const effectiveLimits = asStructuredPlanLimits(subscription?.entitlement?.effective_limits);
+  const warningCount = subscription?.warnings?.items.length ?? 0;
+  const issuedInvoices = subscription?.usage_summary?.summary?.issued_invoice_count ?? 0;
+  const billedValue = subscription?.usage_summary?.summary?.invoice_billed_value_inr ?? 0;
+  const activeFullSeats = subscription?.usage_summary?.summary?.active_full_seat_count ?? 0;
 
   const currentPlan = subscription?.current?.plan;
 
@@ -171,6 +187,18 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
             </Card>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              label="Commercial warnings"
+              value={warningCount}
+              hint={subscription.warnings?.highest_severity ?? "none"}
+              tone={warningCount > 0 ? "quiet" : "default"}
+            />
+            <StatCard label="Issued invoices" value={issuedInvoices} hint="Current billing window" />
+            <StatCard label="Billed value" value={formatCurrencyInr(billedValue)} hint="Current billing window" />
+            <StatCard label="Active full seats" value={activeFullSeats} hint={`View-only: ${subscription?.usage_summary?.summary?.active_view_only_seat_count ?? 0}`} />
+          </div>
+
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
@@ -233,6 +261,55 @@ export default function AdminSubscriptionDetailPage({ params }: Props) {
               </CardContent>
             </Card>
           </div>
+
+          {effectiveLimits ? (
+            <div className="grid gap-4 lg:grid-cols-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoice policy</CardTitle>
+                  <CardDescription>Resolved invoice limit and enforcement posture.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-[var(--muted-strong)]">
+                  <div>{invoiceSummary(effectiveLimits.invoices)}</div>
+                  {invoiceValueSummary(effectiveLimits.invoices) ? <div>{invoiceValueSummary(effectiveLimits.invoices)}</div> : null}
+                  {overageSummary(effectiveLimits.invoices) ? <div>{overageSummary(effectiveLimits.invoices)}</div> : null}
+                  <div>Mode: {effectiveLimits.invoices.mode}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Seat policy</CardTitle>
+                  <CardDescription>Resolved seat posture after plan and overrides.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-[var(--muted-strong)]">
+                  <div>{seatSummary(effectiveLimits.full_seats, "full")}</div>
+                  <div>{seatSummary(effectiveLimits.view_only_seats, "view")}</div>
+                  {extraSeatSummary(effectiveLimits.full_seats, "user") ? <div>{extraSeatSummary(effectiveLimits.full_seats, "user")}</div> : null}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Company policy</CardTitle>
+                  <CardDescription>Resolved active-company allowance on this subscription.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-[var(--muted-strong)]">
+                  <div>{companySummary(effectiveLimits.companies)}</div>
+                  {extraSeatSummary(effectiveLimits.companies, "company") ? <div>{extraSeatSummary(effectiveLimits.companies, "company")}</div> : null}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Trial policy</CardTitle>
+                  <CardDescription>Resolved trial rules applied to this company.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-[var(--muted-strong)]">
+                  <div>{effectiveLimits.trial.enabled ? `${effectiveLimits.trial.days} days` : "Disabled"}</div>
+                  <div>{effectiveLimits.trial.allow_full_access ? "Full access during trial" : "Restricted during trial"}</div>
+                  <div>{effectiveLimits.trial.block_on_expiry ? "Blocks on expiry" : "No block on expiry"}</div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
 
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
             <Card>

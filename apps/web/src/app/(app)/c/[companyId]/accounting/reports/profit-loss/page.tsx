@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { useProfitLoss } from "@/lib/billing/hooks";
-import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { DateField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { StatCard } from "@/lib/ui/stat";
@@ -12,6 +12,8 @@ import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel } from "@/lib/ui/work
 import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
+
+type StatementRow = { ledger_id: string; ledger_name: string; amount: number };
 
 
 export default function ProfitLossPage({ params }: Props) {
@@ -22,8 +24,32 @@ export default function ProfitLossPage({ params }: Props) {
 
   const report = query.data?.data;
   const summary = report?.summary ?? { income: 0, expense: 0, profit: 0 };
-  const incomeRows = report?.income ?? [];
-  const expenseRows = report?.expenses ?? [];
+  const incomeRows = (report?.income ?? []) as StatementRow[];
+  const expenseRows = (report?.expenses ?? []) as StatementRow[];
+
+  const statementColumns = React.useMemo<ColumnDef<StatementRow>[]>(
+    () => [
+      {
+        id: "ledger",
+        header: "Ledger",
+        accessorFn: (row) => row.ledger_name,
+        meta: { label: "Ledger" },
+        cell: ({ row }) => (
+          <Link className="font-semibold text-[var(--foreground)] hover:text-[var(--accent)]" href={`/c/${companyId}/accounting/ledgers`}>
+            {row.original.ledger_name}
+          </Link>
+        ),
+      },
+      {
+        id: "amount",
+        header: "Amount",
+        accessorFn: (row) => row.amount,
+        meta: { label: "Amount", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.amount.toFixed(2),
+      },
+    ],
+    [companyId],
+  );
 
   return (
     <div className="space-y-7">
@@ -66,61 +92,25 @@ export default function ProfitLossPage({ params }: Props) {
       {report ? (
         <div className="grid gap-6 xl:grid-cols-2">
           <WorkspacePanel title="Income ledgers" subtitle="Revenue recognized in the selected reporting window.">
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>Ledger</DataTh>
-                    <DataTh className="text-right">Amount</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {incomeRows.length === 0 ? (
-                    <DataEmptyRow colSpan={2} title="No income activity in this period." />
-                  ) : (
-                    incomeRows.map((row) => (
-                      <DataTr key={row.ledger_id}>
-                        <DataTd>
-                          <Link className="font-semibold text-[var(--foreground)] hover:text-[var(--accent)]" href={`/c/${companyId}/accounting/ledgers`}>
-                            {row.ledger_name}
-                          </Link>
-                        </DataTd>
-                        <DataTd className="text-right">{row.amount.toFixed(2)}</DataTd>
-                      </DataTr>
-                    ))
-                  )}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
+            <DataGrid
+              data={incomeRows}
+              columns={statementColumns}
+              getRowId={(row) => row.ledger_id}
+              initialSorting={[{ id: "amount", desc: true }]}
+              emptyTitle="No income activity in this period."
+              toolbarTitle="Income statement"
+            />
           </WorkspacePanel>
 
           <WorkspacePanel title="Expense ledgers" subtitle="Cost and operating expenses hitting the selected period.">
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>Ledger</DataTh>
-                    <DataTh className="text-right">Amount</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {expenseRows.length === 0 ? (
-                    <DataEmptyRow colSpan={2} title="No expense activity in this period." />
-                  ) : (
-                    expenseRows.map((row) => (
-                      <DataTr key={row.ledger_id}>
-                        <DataTd>
-                          <Link className="font-semibold text-[var(--foreground)] hover:text-[var(--accent)]" href={`/c/${companyId}/accounting/ledgers`}>
-                            {row.ledger_name}
-                          </Link>
-                        </DataTd>
-                        <DataTd className="text-right">{row.amount.toFixed(2)}</DataTd>
-                      </DataTr>
-                    ))
-                  )}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
+            <DataGrid
+              data={expenseRows}
+              columns={statementColumns}
+              getRowId={(row) => row.ledger_id}
+              initialSorting={[{ id: "amount", desc: true }]}
+              emptyTitle="No expense activity in this period."
+              toolbarTitle="Expense statement"
+            />
           </WorkspacePanel>
         </div>
       ) : null}

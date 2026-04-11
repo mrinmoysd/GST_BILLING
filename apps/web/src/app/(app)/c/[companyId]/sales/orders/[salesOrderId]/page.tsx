@@ -14,6 +14,7 @@ import {
   useSalesOrder,
 } from "@/lib/billing/hooks";
 import type { SalesOrder } from "@/lib/billing/types";
+import { formatDateLabel } from "@/lib/format/date";
 import { getErrorMessage } from "@/lib/errors";
 import { useWarehouses } from "@/lib/masters/hooks";
 import { toastError, toastSuccess } from "@/lib/toast";
@@ -144,10 +145,10 @@ export default function SalesOrderDetailPage({ params }: Props) {
           items={[
             { label: "Customer", value: order.customer?.name ?? "—" },
             { label: "Status", value: order.status ?? "—" },
-            { label: "Order date", value: order.orderDate?.slice?.(0, 10) ?? order.order_date ?? "—" },
+            { label: "Order date", value: formatDateLabel(order.orderDate ?? order.order_date) },
             {
               label: "Expected dispatch",
-              value: order.expectedDispatchDate?.slice?.(0, 10) ?? order.expected_dispatch_date ?? "—",
+              value: formatDateLabel(order.expectedDispatchDate ?? order.expected_dispatch_date),
             },
             { label: "Total", value: order.total ?? "—" },
           ]}
@@ -203,8 +204,8 @@ export default function SalesOrderDetailPage({ params }: Props) {
         }
         metrics={[
           { label: "Customer", value: order.customer?.name ?? "—" },
-          { label: "Order date", value: order.orderDate?.slice?.(0, 10) ?? order.order_date ?? "—" },
-          { label: "Expected dispatch", value: order.expectedDispatchDate?.slice?.(0, 10) ?? order.expected_dispatch_date ?? "—" },
+          { label: "Order date", value: formatDateLabel(order.orderDate ?? order.order_date) },
+          { label: "Expected dispatch", value: formatDateLabel(order.expectedDispatchDate ?? order.expected_dispatch_date) },
           { label: "Total", value: order.total ?? "—" },
         ]}
       />

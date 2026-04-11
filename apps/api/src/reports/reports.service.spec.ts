@@ -9,6 +9,7 @@ describe('ReportsService', () => {
     invoice: { findMany: jest.Mock; count: jest.Mock };
     purchase: { findMany: jest.Mock };
     invoiceItem: { findMany: jest.Mock };
+    commercialAuditLog: { findMany: jest.Mock };
     $transaction: jest.Mock;
   };
 
@@ -22,6 +23,9 @@ describe('ReportsService', () => {
         findMany: jest.fn(),
       },
       invoiceItem: {
+        findMany: jest.fn(),
+      },
+      commercialAuditLog: {
         findMany: jest.fn(),
       },
       $transaction: jest.fn((queries: unknown[]) => Promise.all(queries)),
@@ -109,6 +113,94 @@ describe('ReportsService', () => {
       average_purchase: 118,
       currency: 'INR',
     });
+  });
+
+  it('salesSummarySeries groups invoice metrics by requested week bucket', async () => {
+    prisma.invoice.findMany.mockResolvedValue([
+      {
+        issueDate: new Date('2026-03-03T00:00:00.000Z'),
+        subTotal: { toString: () => '100.00' },
+        taxTotal: { toString: () => '18.00' },
+        total: { toString: () => '118.00' },
+        amountPaid: { toString: () => '80.00' },
+        balanceDue: { toString: () => '38.00' },
+      },
+      {
+        issueDate: new Date('2026-03-05T00:00:00.000Z'),
+        subTotal: { toString: () => '200.00' },
+        taxTotal: { toString: () => '36.00' },
+        total: { toString: () => '236.00' },
+        amountPaid: { toString: () => '236.00' },
+        balanceDue: { toString: () => '0.00' },
+      },
+    ]);
+
+    const result = await svc.salesSummarySeries({
+      companyId: 'c1',
+      grain: 'week',
+    });
+
+    expect(result.meta).toEqual({
+      from: null,
+      to: null,
+      grain: 'week',
+      currency: 'INR',
+    });
+    expect(result.data).toEqual([
+      {
+        period: '2026-03-02',
+        period_start: '2026-03-02',
+        period_end: '2026-03-08',
+        gross_sales: 354,
+        net_sales: 300,
+        tax_total: 54,
+        amount_paid: 316,
+        balance_due: 38,
+        invoices_count: 2,
+        average_invoice: 177,
+      },
+    ]);
+  });
+
+  it('purchasesSummarySeries groups purchase metrics by month bucket', async () => {
+    prisma.purchase.findMany.mockResolvedValue([
+      {
+        purchaseDate: new Date('2026-03-01T00:00:00.000Z'),
+        subTotal: { toString: () => '120.00' },
+        taxTotal: { toString: () => '21.60' },
+        total: { toString: () => '141.60' },
+      },
+      {
+        purchaseDate: new Date('2026-03-22T00:00:00.000Z'),
+        subTotal: { toString: () => '80.00' },
+        taxTotal: { toString: () => '14.40' },
+        total: { toString: () => '94.40' },
+      },
+    ]);
+
+    const result = await svc.purchasesSummarySeries({
+      companyId: 'c1',
+      grain: 'month',
+    });
+
+    expect(result.meta).toEqual({
+      from: null,
+      to: null,
+      grain: 'month',
+      currency: 'INR',
+    });
+    expect(result.data).toEqual([
+      {
+        period: '2026-03-01',
+        period_start: '2026-03-01',
+        period_end: '2026-03-31',
+        gross_purchases: 236,
+        net_purchases: 200,
+        tax_total: 36,
+        purchases_count: 2,
+        average_purchase: 118,
+      },
+    ]);
   });
 
   it('outstandingInvoices returns normalized rows and pagination meta', async () => {
@@ -217,5 +309,118 @@ describe('ReportsService', () => {
       is_estimate: true,
       note: 'Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.',
     });
+  });
+
+  it('profitSnapshotSeries merges revenue and cogs into shared period buckets', async () => {
+    prisma.invoice.findMany.mockResolvedValue([
+      {
+        issueDate: new Date('2026-03-01T00:00:00.000Z'),
+        total: { toString: () => '200.00' },
+      },
+      {
+        issueDate: new Date('2026-03-02T00:00:00.000Z'),
+        total: { toString: () => '100.00' },
+      },
+    ]);
+    prisma.purchase.findMany.mockResolvedValue([
+      {
+        purchaseDate: new Date('2026-03-02T00:00:00.000Z'),
+        total: { toString: () => '75.00' },
+      },
+    ]);
+
+    const result = await svc.profitSnapshotSeries({
+      companyId: 'c1',
+      grain: 'day',
+    });
+
+    expect(result.meta).toEqual({
+      from: null,
+      to: null,
+      grain: 'day',
+      currency: 'INR',
+      is_estimate: true,
+      note: 'Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.',
+    });
+    expect(result.data).toEqual([
+      {
+        period: '2026-03-01',
+        period_start: '2026-03-01',
+        period_end: '2026-03-01',
+        revenue: 200,
+        cogs: 0,
+        gross_profit: 200,
+        net_profit: 200,
+        gross_margin_percent: 100,
+        net_margin_percent: 100,
+        is_estimate: true,
+      },
+      {
+        period: '2026-03-02',
+        period_start: '2026-03-02',
+        period_end: '2026-03-02',
+        revenue: 100,
+        cogs: 75,
+        gross_profit: 25,
+        net_profit: 25,
+        gross_margin_percent: 25,
+        net_margin_percent: 25,
+        is_estimate: true,
+      },
+    ]);
+  });
+
+  it('commercialAuditSeries groups audit pressure by source and override signals', async () => {
+    prisma.commercialAuditLog.findMany.mockResolvedValue([
+      {
+        createdAt: new Date('2026-03-03T10:00:00.000Z'),
+        documentId: 'doc-1',
+        action: 'price_applied',
+        pricingSource: 'customer_override',
+        overrideReason: 'special rate',
+        warnings: ['manual review'],
+      },
+      {
+        createdAt: new Date('2026-03-04T10:00:00.000Z'),
+        documentId: 'doc-2',
+        action: 'price_applied',
+        pricingSource: 'pricing_tier_price_list',
+        overrideReason: null,
+        warnings: [],
+      },
+      {
+        createdAt: new Date('2026-03-04T12:00:00.000Z'),
+        documentId: 'doc-2',
+        action: 'override_applied',
+        pricingSource: 'product_price',
+        overrideReason: null,
+        warnings: null,
+      },
+    ]);
+
+    const result = await svc.commercialAuditSeries({
+      companyId: 'c1',
+      grain: 'week',
+    });
+
+    expect(result.meta).toEqual({
+      from: null,
+      to: null,
+      grain: 'week',
+    });
+    expect(result.data).toEqual([
+      {
+        period: '2026-03-02',
+        period_start: '2026-03-02',
+        period_end: '2026-03-08',
+        total_events: 3,
+        manual_override_events: 2,
+        warning_events: 1,
+        customer_override_events: 1,
+        price_list_events: 1,
+        product_price_events: 1,
+        unique_documents: 2,
+      },
+    ]);
   });
 });

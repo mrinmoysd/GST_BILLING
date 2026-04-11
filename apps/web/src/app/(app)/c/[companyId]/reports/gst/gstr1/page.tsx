@@ -1,10 +1,22 @@
 "use client";
 
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { gstExportDownloadUrl, useCreateGstExport, useGstExportJob, useGstReport } from "@/lib/reports/hooks";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  formatChartCurrency,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataEmptyRow, DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { DateField, PrimaryButton, SelectField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -207,6 +219,58 @@ export default function GstCompliancePage({ params }: Props) {
               { label: "SGST ITC", value: formatMoney(itcPayload?.eligible_itc?.sgst_amount) },
               { label: "IGST ITC", value: formatMoney(itcPayload?.eligible_itc?.igst_amount) },
             ];
+  const gstr1CompositionRows = React.useMemo(
+    () => [
+      { label: "B2B", value: gstr1Payload?.summary?.b2b_count ?? 0, tone: "primary" as const },
+      { label: "B2C", value: gstr1Payload?.summary?.b2c_count ?? 0, tone: "secondary" as const },
+      { label: "Credit notes", value: gstr1Payload?.summary?.credit_note_count ?? 0, tone: "warning" as const },
+    ],
+    [gstr1Payload?.summary?.b2b_count, gstr1Payload?.summary?.b2c_count, gstr1Payload?.summary?.credit_note_count],
+  );
+  const hsnValueRows = React.useMemo(
+    () =>
+      (gstr1Payload?.hsn_summary ?? []).slice(0, 8).map((row) => ({
+        name: row.hsn_code || "UNSPECIFIED",
+        taxableValue: asNumber(row.taxable_value),
+      })),
+    [gstr1Payload?.hsn_summary],
+  );
+  const gstr3bRows = React.useMemo(
+    () => [
+      { label: "Taxable", value: asNumber(gstr3bPayload?.net_outward_supplies?.taxable_value), tone: "primary" as const },
+      { label: "CGST", value: asNumber(gstr3bPayload?.net_outward_supplies?.cgst_amount), tone: "secondary" as const },
+      { label: "SGST", value: asNumber(gstr3bPayload?.net_outward_supplies?.sgst_amount), tone: "info" as const },
+      { label: "IGST", value: asNumber(gstr3bPayload?.net_outward_supplies?.igst_amount), tone: "warning" as const },
+    ],
+    [
+      gstr3bPayload?.net_outward_supplies?.cgst_amount,
+      gstr3bPayload?.net_outward_supplies?.igst_amount,
+      gstr3bPayload?.net_outward_supplies?.sgst_amount,
+      gstr3bPayload?.net_outward_supplies?.taxable_value,
+    ],
+  );
+  const hsnChartRows = React.useMemo(
+    () =>
+      (hsnPayload?.rows ?? []).slice(0, 10).map((row) => ({
+        name: row.hsn_code || "UNSPECIFIED",
+        taxableValue: asNumber(row.taxable_value),
+      })),
+    [hsnPayload?.rows],
+  );
+  const itcRows = React.useMemo(
+    () => [
+      { label: "CGST", value: asNumber(itcPayload?.eligible_itc?.cgst_amount), tone: "secondary" as const },
+      { label: "SGST", value: asNumber(itcPayload?.eligible_itc?.sgst_amount), tone: "info" as const },
+      { label: "IGST", value: asNumber(itcPayload?.eligible_itc?.igst_amount), tone: "warning" as const },
+      { label: "CESS", value: asNumber(itcPayload?.eligible_itc?.cess_amount), tone: "danger" as const },
+    ],
+    [
+      itcPayload?.eligible_itc?.cess_amount,
+      itcPayload?.eligible_itc?.cgst_amount,
+      itcPayload?.eligible_itc?.igst_amount,
+      itcPayload?.eligible_itc?.sgst_amount,
+    ],
+  );
 
   return (
     <div className="space-y-7">
@@ -298,6 +362,47 @@ export default function GstCompliancePage({ params }: Props) {
         <div className="space-y-6">
           {view === "gstr1" ? (
             <>
+              <div className="grid gap-6 xl:grid-cols-2">
+                <ChartShell
+                  title="Return composition"
+                  subtitle="Keep the outward filing mix visible before reading the invoice-level tables."
+                  footer={<ChartLegend items={gstr1CompositionRows.map((row) => ({ label: row.label, tone: row.tone, value: row.value }))} />}
+                >
+                  <ChartFrame height={300}>
+                    <BarChart data={gstr1CompositionRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                      <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                      <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={56} />
+                      <ChartTooltip valueFormatter={formatChartCompactNumber} />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {gstr1CompositionRows.map((row, index) => (
+                          <Cell key={`${row.label}-${index}`} fill={getChartSeriesColor(row.tone)} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ChartFrame>
+                </ChartShell>
+
+                <ChartShell
+                  title="HSN taxable concentration"
+                  subtitle="Validate which HSN buckets dominate outward taxable value for the filing window."
+                >
+                  <ChartFrame height={300}>
+                    <BarChart data={hsnValueRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                      <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                      <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={88} />
+                      <ChartTooltip valueFormatter={formatChartCurrency} />
+                      <Bar dataKey="taxableValue" radius={[0, 8, 8, 0]}>
+                        {hsnValueRows.map((row, index) => (
+                          <Cell key={`${row.name}-${index}`} fill={getChartSeriesColor("primary")} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ChartFrame>
+                </ChartShell>
+              </div>
+
               <div className="grid gap-4 xl:grid-cols-2">
                 <Card>
                   <CardHeader>
@@ -509,6 +614,26 @@ export default function GstCompliancePage({ params }: Props) {
 
           {view === "gstr3b" ? (
             <div className="grid gap-6 xl:grid-cols-2">
+              <ChartShell
+                title="Net outward liability"
+                subtitle="See the liability mix before working through the section-wise return cards."
+                footer={<ChartLegend items={gstr3bRows.map((row) => ({ label: row.label, tone: row.tone, value: formatChartCurrency(row.value) }))} />}
+              >
+                <ChartFrame height={300}>
+                  <BarChart data={gstr3bRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                    <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                    <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={70} />
+                    <ChartTooltip valueFormatter={formatChartCurrency} />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {gstr3bRows.map((row, index) => (
+                        <Cell key={`${row.label}-${index}`} fill={getChartSeriesColor(row.tone)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartFrame>
+              </ChartShell>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Outward taxable supplies</CardTitle>
@@ -564,46 +689,83 @@ export default function GstCompliancePage({ params }: Props) {
           ) : null}
 
           {view === "hsn-summary" ? (
-            <ComplianceTableCard title="HSN summary" description="Export-ready HSN-wise tax rollup for the selected filing period.">
-              <DataTableShell>
-                <DataTable>
-                  <DataThead>
-                    <tr>
-                      <DataTh>HSN</DataTh>
-                      <DataTh>Rate</DataTh>
-                      <DataTh className="text-right">Qty</DataTh>
-                      <DataTh className="text-right">Taxable</DataTh>
-                      <DataTh className="text-right">CGST</DataTh>
-                      <DataTh className="text-right">SGST</DataTh>
-                      <DataTh className="text-right">IGST</DataTh>
-                      <DataTh className="text-right">CESS</DataTh>
-                    </tr>
-                  </DataThead>
-                  <tbody>
-                    {(hsnPayload?.rows ?? []).length === 0 ? (
-                      <DataEmptyRow colSpan={8} title="No HSN rows in this period." />
-                    ) : (
-                      (hsnPayload?.rows ?? []).map((row, index) => (
-                        <DataTr key={`${row.hsn_code}-${row.rate}-${index}`}>
-                          <DataTd>{row.hsn_code || "UNSPECIFIED"}</DataTd>
-                          <DataTd>{row.rate || "0"}</DataTd>
-                          <DataTd className="text-right">{Number(row.quantity ?? 0).toFixed(2)}</DataTd>
-                          <DataTd className="text-right">{formatMoney(row.taxable_value)}</DataTd>
-                          <DataTd className="text-right">{formatMoney(row.cgst_amount)}</DataTd>
-                          <DataTd className="text-right">{formatMoney(row.sgst_amount)}</DataTd>
-                          <DataTd className="text-right">{formatMoney(row.igst_amount)}</DataTd>
-                          <DataTd className="text-right">{formatMoney(row.cess_amount)}</DataTd>
-                        </DataTr>
-                      ))
-                    )}
-                  </tbody>
-                </DataTable>
-              </DataTableShell>
-            </ComplianceTableCard>
+            <>
+              <ChartShell
+                title="HSN taxable value"
+                subtitle="The visual rollup should match the detailed HSN export rows below."
+              >
+                <ChartFrame height={320}>
+                  <BarChart data={hsnChartRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                    <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                    <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={88} />
+                    <ChartTooltip valueFormatter={formatChartCurrency} />
+                    <Bar dataKey="taxableValue" radius={[0, 8, 8, 0]} fill={getChartSeriesColor("primary")} />
+                  </BarChart>
+                </ChartFrame>
+              </ChartShell>
+
+              <ComplianceTableCard title="HSN summary" description="Export-ready HSN-wise tax rollup for the selected filing period.">
+                <DataTableShell>
+                  <DataTable>
+                    <DataThead>
+                      <tr>
+                        <DataTh>HSN</DataTh>
+                        <DataTh>Rate</DataTh>
+                        <DataTh className="text-right">Qty</DataTh>
+                        <DataTh className="text-right">Taxable</DataTh>
+                        <DataTh className="text-right">CGST</DataTh>
+                        <DataTh className="text-right">SGST</DataTh>
+                        <DataTh className="text-right">IGST</DataTh>
+                        <DataTh className="text-right">CESS</DataTh>
+                      </tr>
+                    </DataThead>
+                    <tbody>
+                      {(hsnPayload?.rows ?? []).length === 0 ? (
+                        <DataEmptyRow colSpan={8} title="No HSN rows in this period." />
+                      ) : (
+                        (hsnPayload?.rows ?? []).map((row, index) => (
+                          <DataTr key={`${row.hsn_code}-${row.rate}-${index}`}>
+                            <DataTd>{row.hsn_code || "UNSPECIFIED"}</DataTd>
+                            <DataTd>{row.rate || "0"}</DataTd>
+                            <DataTd className="text-right">{Number(row.quantity ?? 0).toFixed(2)}</DataTd>
+                            <DataTd className="text-right">{formatMoney(row.taxable_value)}</DataTd>
+                            <DataTd className="text-right">{formatMoney(row.cgst_amount)}</DataTd>
+                            <DataTd className="text-right">{formatMoney(row.sgst_amount)}</DataTd>
+                            <DataTd className="text-right">{formatMoney(row.igst_amount)}</DataTd>
+                            <DataTd className="text-right">{formatMoney(row.cess_amount)}</DataTd>
+                          </DataTr>
+                        ))
+                      )}
+                    </tbody>
+                  </DataTable>
+                </DataTableShell>
+              </ComplianceTableCard>
+            </>
           ) : null}
 
           {view === "itc" ? (
             <>
+              <ChartShell
+                title="Eligible ITC mix"
+                subtitle="Compare recoverable tax buckets before reviewing the purchase-level eligibility rows."
+                footer={<ChartLegend items={itcRows.map((row) => ({ label: row.label, tone: row.tone, value: formatChartCurrency(row.value) }))} />}
+              >
+                <ChartFrame height={300}>
+                  <BarChart data={itcRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                    <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                    <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={70} />
+                    <ChartTooltip valueFormatter={formatChartCurrency} />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {itcRows.map((row, index) => (
+                        <Cell key={`${row.label}-${index}`} fill={getChartSeriesColor(row.tone)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartFrame>
+              </ChartShell>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Eligible ITC summary</CardTitle>

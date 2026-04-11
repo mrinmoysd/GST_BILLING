@@ -5,7 +5,9 @@ import * as React from "react";
 
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
+import { formatDateLabel } from "@/lib/format/date";
 import { useCustomer } from "@/lib/masters/hooks";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { getErrorMessage } from "@/lib/errors";
@@ -92,6 +94,63 @@ export default function CustomerLedgerPage({ params }: Props) {
   const rows = data?.rows ?? [];
   const total = data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const columns = React.useMemo<ColumnDef<LedgerRow>[]>(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        accessorFn: (row) => row.date,
+        meta: { label: "Date" },
+        cell: ({ row }) => formatDateLabel(row.original.date),
+      },
+      {
+        id: "description",
+        header: "Description",
+        accessorFn: (row) => row.description,
+        meta: { label: "Description" },
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium">
+              {row.original.type === "invoice" && row.original.invoice_id ? (
+                <Link className="underline" href={`/c/${companyId}/sales/invoices/${row.original.invoice_id}`}>
+                  {row.original.description}
+                </Link>
+              ) : (
+                row.original.description
+              )}
+            </div>
+            <div className="text-xs capitalize text-[var(--muted)]">
+              {row.original.type}
+              {row.original.type === "payment" && row.original.payment_method ? ` · ${row.original.payment_method}` : ""}
+              {row.original.type === "payment" && row.original.payment_reference ? ` · Ref ${row.original.payment_reference}` : ""}
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "debit",
+        header: "Debit",
+        accessorFn: (row) => row.debit,
+        meta: { label: "Debit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.debit ? formatMoney(row.original.debit) : "—"),
+      },
+      {
+        id: "credit",
+        header: "Credit",
+        accessorFn: (row) => row.credit,
+        meta: { label: "Credit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.credit ? formatMoney(row.original.credit) : "—"),
+      },
+      {
+        id: "balance",
+        header: "Balance",
+        accessorFn: (row) => row.balance,
+        meta: { label: "Balance", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => formatMoney(row.original.balance),
+      },
+    ],
+    [companyId],
+  );
 
   return (
     <div className="space-y-6">
@@ -152,63 +211,14 @@ export default function CustomerLedgerPage({ params }: Props) {
       ) : null}
 
       {!loading && !error && rows.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--shadow-soft)]">
-          <table className="w-full text-sm">
-            <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Date</th>
-                <th className="text-left px-4 py-3 font-medium">Description</th>
-                <th className="text-right px-4 py-3 font-medium">Debit</th>
-                <th className="text-right px-4 py-3 font-medium">Credit</th>
-                <th className="text-right px-4 py-3 font-medium">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.ref_id} className="border-t">
-                  <td className="px-4 py-3 whitespace-nowrap">{r.date || "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium">
-                      {r.type === "invoice" && r.invoice_id ? (
-                        <Link
-                          className="underline"
-                          href={`/c/${companyId}/sales/invoices/${r.invoice_id}`}
-                        >
-                          {r.description}
-                        </Link>
-                      ) : (
-                        r.description
-                      )}
-                    </div>
-                    <div className="text-xs capitalize text-[var(--muted)]">
-                      {r.type}
-                      {r.type === "payment" && r.payment_method ? ` · ${r.payment_method}` : ""}
-                      {r.type === "payment" && r.payment_reference ? ` · Ref ${r.payment_reference}` : ""}
-                    </div>
-                    {r.type === "payment" ? (
-                      <div className="mt-1 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
-                        <Link className="underline" href={`/c/${companyId}/payments`}>
-                          Open payments workspace
-                        </Link>
-                        {r.invoice_id ? (
-                          <Link
-                            className="underline"
-                            href={`/c/${companyId}/sales/invoices/${r.invoice_id}`}
-                          >
-                            {`Invoice ${r.invoice_number ?? r.invoice_id}`}
-                          </Link>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-right">{r.debit ? formatMoney(r.debit) : "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.credit ? formatMoney(r.credit) : "—"}</td>
-                  <td className="px-4 py-3 text-right">{formatMoney(r.balance)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataGrid
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.ref_id}
+          initialSorting={[{ id: "date", desc: true }]}
+          toolbarTitle="Customer ledger"
+          toolbarDescription="Use the ledger as the dense financial audit trail behind the customer profile."
+        />
       ) : null}
 
       {data ? (

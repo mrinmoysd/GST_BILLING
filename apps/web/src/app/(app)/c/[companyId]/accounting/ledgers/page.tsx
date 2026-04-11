@@ -3,7 +3,8 @@
 import * as React from "react";
 
 import { useCreateLedger, useLedgers } from "@/lib/billing/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { formatDateLabel } from "@/lib/format/date";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { QueueInspector, QueueMetaList, QueueQuickActions, QueueShell, QueueToolbar } from "@/lib/ui/queue";
@@ -11,6 +12,14 @@ import { WorkspaceHero, WorkspacePanel, WorkspaceStatBadge } from "@/lib/ui/work
 import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
+
+type LedgerRow = {
+  id: string;
+  name?: string | null;
+  type?: string | null;
+  account_code?: string | null;
+  createdAt?: string | null;
+};
 
 
 export default function LedgersPage({ params }: Props) {
@@ -24,7 +33,7 @@ export default function LedgersPage({ params }: Props) {
   const [selectedLedgerId, setSelectedLedgerId] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
-  const rows = React.useMemo(() => query.data?.data ?? [], [query.data]);
+  const rows = React.useMemo(() => (query.data?.data ?? []) as LedgerRow[], [query.data]);
   const filteredRows = React.useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
@@ -51,6 +60,40 @@ export default function LedgersPage({ params }: Props) {
       return acc;
     }, {});
   }, [rows]);
+
+  const columns = React.useMemo<ColumnDef<LedgerRow>[]>(
+    () => [
+      {
+        id: "name",
+        header: "Name",
+        accessorFn: (ledger) => ledger.name ?? "",
+        meta: { label: "Name" },
+        cell: ({ row }) => <div className="font-medium text-[var(--foreground)]">{row.original.name ?? "—"}</div>,
+      },
+      {
+        id: "type",
+        header: "Type",
+        accessorFn: (ledger) => ledger.type ?? "",
+        meta: { label: "Type" },
+        cell: ({ row }) => row.original.type ?? "—",
+      },
+      {
+        id: "code",
+        header: "Code",
+        accessorFn: (ledger) => ledger.account_code ?? "",
+        meta: { label: "Code" },
+        cell: ({ row }) => row.original.account_code ?? "—",
+      },
+      {
+        id: "createdAt",
+        header: "Created",
+        accessorFn: (ledger) => ledger.createdAt ?? "",
+        meta: { label: "Created" },
+        cell: ({ row }) => formatDateLabel(row.original.createdAt),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-7">
@@ -136,30 +179,20 @@ export default function LedgersPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Name</DataTh>
-                  <DataTh>Type</DataTh>
-                  <DataTh>Code</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((ledger) => (
-                  <DataTr
-                    key={ledger.id}
-                    className={selectedLedger?.id === ledger.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedLedgerId(ledger.id)}
-                  >
-                    <DataTd>{ledger.name}</DataTd>
-                    <DataTd>{ledger.type ?? "—"}</DataTd>
-                    <DataTd>{ledger.account_code ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedLedgerId(row.id)}
+            rowClassName={(row) =>
+              selectedLedger?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "name", desc: false }]}
+            toolbarTitle="Chart of accounts"
+            toolbarDescription="Sort and trim visible columns while keeping the selected account context beside the ledger register."
+          />
         </QueueShell>
       ) : null}
     </div>

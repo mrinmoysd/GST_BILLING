@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInvoice } from "@/lib/billing/hooks";
 import type { Invoice, InvoiceItem } from "@/lib/billing/types";
+import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { usePrintTemplates } from "@/lib/migration/hooks";
 import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton } from "@/lib/ui/form";
-import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string; invoiceId: string }> };
 
@@ -129,9 +130,9 @@ export default function PosReceiptPage({ params }: Props) {
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div className="space-y-1 text-center">
-                <div className="text-base font-semibold">GST Billing</div>
+                <div className="text-base font-semibold">Vyapar Genie</div>
                 <div>Invoice {invoice.invoice_no ?? invoice.id.slice(0, 8)}</div>
-                <div>Date {invoice.issue_date ?? "—"}</div>
+                <div>Date {formatDateLabel(invoice.issue_date ?? null)}</div>
               </div>
 
               {visibleSections.has("party") ? (
@@ -183,8 +184,11 @@ export default function PosReceiptPage({ params }: Props) {
               ) : null}
 
               {visibleSections.has("footer") ? (
-                <div className="text-center text-xs text-black/60">
+                <div className="space-y-2 text-center text-xs text-black/60">
                   {layout.footer?.text ?? "Thank you for your purchase."}
+                  <div className="rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/65">
+                    This receipt is generated from the live invoice record and is ready for thermal print or PDF save.
+                  </div>
                 </div>
               ) : null}
 

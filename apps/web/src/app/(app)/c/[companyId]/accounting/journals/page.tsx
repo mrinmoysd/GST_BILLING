@@ -6,8 +6,9 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { useAccountingPeriodLock, useCreateJournal, useJournals, useLedgers, useUpdateAccountingPeriodLock } from "@/lib/billing/hooks";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 import { toastError, toastSuccess } from "@/lib/toast";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
@@ -16,6 +17,13 @@ import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection, Wo
 type Props = { params: Promise<{ companyId: string }> };
 
 type LineDraft = { side: "debit" | "credit"; ledgerId: string; amount: string };
+type JournalRow = {
+  id: string;
+  date?: string | null;
+  is_system_generated?: boolean | null;
+  source_type?: string | null;
+  source_id?: string | null;
+};
 
 export default function JournalsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -39,7 +47,7 @@ export default function JournalsPage({ params }: Props) {
   const [error, setError] = React.useState<string | null>(null);
 
   const ledgerRows = ledgers.data?.data ?? [];
-  const journals = query.data?.data.data ?? [];
+  const journals = (query.data?.data.data ?? []) as JournalRow[];
   const lockData = periodLock.data?.data.data;
 
   React.useEffect(() => {
@@ -55,6 +63,44 @@ export default function JournalsPage({ params }: Props) {
       return acc;
     },
     { debit: 0, credit: 0 },
+  );
+
+  const journalColumns = React.useMemo<ColumnDef<JournalRow>[]>(
+    () => [
+      {
+        id: "id",
+        header: "ID",
+        accessorFn: (journal) => journal.id,
+        meta: { label: "ID" },
+        cell: ({ row }) => (
+          <Link className="font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]" href={`/c/${companyId}/accounting/journals/${row.original.id}`}>
+            {row.original.id}
+          </Link>
+        ),
+      },
+      {
+        id: "date",
+        header: "Date",
+        accessorFn: (journal) => journal.date ?? "",
+        meta: { label: "Date" },
+        cell: ({ row }) => formatDateLabel(row.original.date),
+      },
+      {
+        id: "mode",
+        header: "Mode",
+        accessorFn: (journal) => journal.is_system_generated ? "Auto" : "Manual",
+        meta: { label: "Mode" },
+        cell: ({ row }) => (row.original.is_system_generated ? "Auto" : "Manual"),
+      },
+      {
+        id: "source",
+        header: "Source",
+        accessorFn: (journal) => journal.source_type ? `${journal.source_type}${journal.source_id ? `:${journal.source_id}` : ""}` : "—",
+        meta: { label: "Source" },
+        cell: ({ row }) => row.original.source_type ? `${row.original.source_type}${row.original.source_id ? `:${row.original.source_id}` : ""}` : "—",
+      },
+    ],
+    [companyId],
   );
 
   return (
@@ -270,32 +316,14 @@ export default function JournalsPage({ params }: Props) {
 
       {query.data && journals.length > 0 ? (
         <WorkspaceSection eyebrow="Accounting stream" title="Recent journals" subtitle="Most recent journal entries returned by the current query.">
-            <DataTableShell>
-              <DataTable className="min-w-[760px]">
-                <DataThead>
-                  <tr>
-                    <DataTh>ID</DataTh>
-                    <DataTh>Date</DataTh>
-                    <DataTh>Mode</DataTh>
-                    <DataTh>Source</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {journals.map((j) => (
-                    <DataTr key={j.id}>
-                      <DataTd>
-                        <Link className="font-medium text-[var(--secondary-strong)] transition hover:text-[var(--foreground)]" href={`/c/${companyId}/accounting/journals/${j.id}`}>
-                          {j.id}
-                        </Link>
-                      </DataTd>
-                      <DataTd>{j.date ?? "—"}</DataTd>
-                      <DataTd>{j.is_system_generated ? "Auto" : "Manual"}</DataTd>
-                      <DataTd>{j.source_type ? `${j.source_type}${j.source_id ? `:${j.source_id}` : ""}` : "—"}</DataTd>
-                    </DataTr>
-                  ))}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
+          <DataGrid
+            data={journals}
+            columns={journalColumns}
+            getRowId={(row) => row.id}
+            initialSorting={[{ id: "date", desc: true }]}
+            toolbarTitle="Journal stream"
+            toolbarDescription="Review the current accounting stream with sortable columns and less visual noise."
+          />
         </WorkspaceSection>
       ) : null}
     </div>

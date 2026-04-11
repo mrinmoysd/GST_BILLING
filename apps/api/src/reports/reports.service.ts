@@ -5,6 +5,76 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private normalizeSeriesGrain(grain?: string): 'day' | 'week' | 'month' {
+    if (grain === 'week' || grain === 'month') return grain;
+    return 'day';
+  }
+
+  private numberFromDecimalLike(
+    value: { toString(): string } | number | null | undefined,
+  ) {
+    if (value == null) return 0;
+    return typeof value === 'number' ? value : Number(value.toString());
+  }
+
+  private utcDateOnly(date: Date) {
+    return new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    );
+  }
+
+  private bucketStart(date: Date, grain: 'day' | 'week' | 'month') {
+    const base = this.utcDateOnly(date);
+    if (grain === 'month') {
+      return new Date(
+        Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1),
+      );
+    }
+
+    if (grain === 'week') {
+      const day = base.getUTCDay();
+      const diff = (day + 6) % 7;
+      const start = new Date(base);
+      start.setUTCDate(base.getUTCDate() - diff);
+      return start;
+    }
+
+    return base;
+  }
+
+  private bucketEnd(
+    start: Date,
+    grain: 'day' | 'week' | 'month',
+  ) {
+    const end = new Date(start);
+    if (grain === 'month') {
+      end.setUTCMonth(end.getUTCMonth() + 1);
+      end.setUTCDate(0);
+      return end;
+    }
+
+    if (grain === 'week') {
+      end.setUTCDate(end.getUTCDate() + 6);
+      return end;
+    }
+
+    return end;
+  }
+
+  private formatDateKey(date: Date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  private buildPeriodMeta(date: Date, grain: 'day' | 'week' | 'month') {
+    const start = this.bucketStart(date, grain);
+    const end = this.bucketEnd(start, grain);
+    return {
+      period: this.formatDateKey(start),
+      period_start: this.formatDateKey(start),
+      period_end: this.formatDateKey(end),
+    };
+  }
+
   private buildDateRange(from?: string, to?: string) {
     return from || to
       ? {
@@ -95,6 +165,83 @@ export class ReportsService {
     };
   }
 
+  async salesSummarySeries(args: {
+    companyId: string;
+    from?: string;
+    to?: string;
+    grain?: string;
+  }) {
+    const issueDate = this.buildDateRange(args.from, args.to);
+    const grain = this.normalizeSeriesGrain(args.grain);
+    const rows = await this.prisma.invoice.findMany({
+      where: {
+        companyId: args.companyId,
+        status: { in: ['issued', 'paid'] },
+        ...(issueDate ? { issueDate } : {}),
+      },
+      select: {
+        issueDate: true,
+        subTotal: true,
+        taxTotal: true,
+        total: true,
+        amountPaid: true,
+        balanceDue: true,
+      },
+      orderBy: [{ issueDate: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    const grouped = new Map<
+      string,
+      {
+        period: string;
+        period_start: string;
+        period_end: string;
+        gross_sales: number;
+        net_sales: number;
+        tax_total: number;
+        amount_paid: number;
+        balance_due: number;
+        invoices_count: number;
+      }
+    >();
+
+    for (const row of rows) {
+      if (!row.issueDate) continue;
+      const meta = this.buildPeriodMeta(row.issueDate, grain);
+      const current = grouped.get(meta.period) ?? {
+        ...meta,
+        gross_sales: 0,
+        net_sales: 0,
+        tax_total: 0,
+        amount_paid: 0,
+        balance_due: 0,
+        invoices_count: 0,
+      };
+
+      current.gross_sales += this.numberFromDecimalLike(row.total);
+      current.net_sales += this.numberFromDecimalLike(row.subTotal);
+      current.tax_total += this.numberFromDecimalLike(row.taxTotal);
+      current.amount_paid += this.numberFromDecimalLike(row.amountPaid);
+      current.balance_due += this.numberFromDecimalLike(row.balanceDue);
+      current.invoices_count += 1;
+      grouped.set(meta.period, current);
+    }
+
+    return {
+      data: Array.from(grouped.values()).map((row) => ({
+        ...row,
+        average_invoice:
+          row.invoices_count > 0 ? row.gross_sales / row.invoices_count : 0,
+      })),
+      meta: {
+        from: args.from ?? null,
+        to: args.to ?? null,
+        grain,
+        currency: 'INR',
+      },
+    };
+  }
+
   async purchasesSummary(args: {
     companyId: string;
     from?: string;
@@ -155,6 +302,78 @@ export class ReportsService {
         tax_total: totals.tax_total,
         purchases_count: totals.count,
         average_purchase: averagePurchase,
+        currency: 'INR',
+      },
+    };
+  }
+
+  async purchasesSummarySeries(args: {
+    companyId: string;
+    from?: string;
+    to?: string;
+    grain?: string;
+  }) {
+    const purchaseDate = this.buildDateRange(args.from, args.to);
+    const grain = this.normalizeSeriesGrain(args.grain);
+    const rows = await this.prisma.purchase.findMany({
+      where: {
+        companyId: args.companyId,
+        status: { in: ['received', 'cancelled', 'draft'] },
+        ...(purchaseDate ? { purchaseDate } : {}),
+      },
+      select: {
+        purchaseDate: true,
+        subTotal: true,
+        taxTotal: true,
+        total: true,
+      },
+      orderBy: [{ purchaseDate: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    const grouped = new Map<
+      string,
+      {
+        period: string;
+        period_start: string;
+        period_end: string;
+        gross_purchases: number;
+        net_purchases: number;
+        tax_total: number;
+        purchases_count: number;
+      }
+    >();
+
+    for (const row of rows) {
+      const purchaseDate = row.purchaseDate;
+      if (!purchaseDate) continue;
+      const meta = this.buildPeriodMeta(purchaseDate, grain);
+      const current = grouped.get(meta.period) ?? {
+        ...meta,
+        gross_purchases: 0,
+        net_purchases: 0,
+        tax_total: 0,
+        purchases_count: 0,
+      };
+
+      current.gross_purchases += this.numberFromDecimalLike(row.total);
+      current.net_purchases += this.numberFromDecimalLike(row.subTotal);
+      current.tax_total += this.numberFromDecimalLike(row.taxTotal);
+      current.purchases_count += 1;
+      grouped.set(meta.period, current);
+    }
+
+    return {
+      data: Array.from(grouped.values()).map((row) => ({
+        ...row,
+        average_purchase:
+          row.purchases_count > 0
+            ? row.gross_purchases / row.purchases_count
+            : 0,
+      })),
+      meta: {
+        from: args.from ?? null,
+        to: args.to ?? null,
+        grain,
         currency: 'INR',
       },
     };
@@ -365,6 +584,106 @@ export class ReportsService {
         cogs: purchaseTotal,
         gross_profit: grossProfit,
         net_profit: grossProfit,
+        currency: 'INR',
+        is_estimate: true,
+        note: 'Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.',
+      },
+    };
+  }
+
+  async profitSnapshotSeries(args: {
+    companyId: string;
+    from?: string;
+    to?: string;
+    grain?: string;
+  }) {
+    const grain = this.normalizeSeriesGrain(args.grain);
+    const salesDate = this.buildDateRange(args.from, args.to);
+    const purchaseDate = this.buildDateRange(args.from, args.to);
+    const [sales, purchases] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: {
+          companyId: args.companyId,
+          status: { in: ['issued', 'paid'] },
+          ...(salesDate ? { issueDate: salesDate } : {}),
+        },
+        select: {
+          issueDate: true,
+          total: true,
+        },
+        orderBy: [{ issueDate: 'asc' }, { createdAt: 'asc' }],
+      }),
+      this.prisma.purchase.findMany({
+        where: {
+          companyId: args.companyId,
+          status: 'received',
+          ...(purchaseDate ? { purchaseDate } : {}),
+        },
+        select: {
+          purchaseDate: true,
+          total: true,
+        },
+        orderBy: [{ purchaseDate: 'asc' }, { createdAt: 'asc' }],
+      }),
+    ]);
+
+    const grouped = new Map<
+      string,
+      {
+        period: string;
+        period_start: string;
+        period_end: string;
+        revenue: number;
+        cogs: number;
+      }
+    >();
+
+    for (const row of sales) {
+      if (!row.issueDate) continue;
+      const meta = this.buildPeriodMeta(row.issueDate, grain);
+      const current = grouped.get(meta.period) ?? {
+        ...meta,
+        revenue: 0,
+        cogs: 0,
+      };
+      current.revenue += this.numberFromDecimalLike(row.total);
+      grouped.set(meta.period, current);
+    }
+
+    for (const row of purchases) {
+      const purchaseDate = row.purchaseDate;
+      if (!purchaseDate) continue;
+      const meta = this.buildPeriodMeta(purchaseDate, grain);
+      const current = grouped.get(meta.period) ?? {
+        ...meta,
+        revenue: 0,
+        cogs: 0,
+      };
+      current.cogs += this.numberFromDecimalLike(row.total);
+      grouped.set(meta.period, current);
+    }
+
+    return {
+      data: Array.from(grouped.values())
+        .sort((a, b) => a.period.localeCompare(b.period))
+        .map((row) => {
+          const grossProfit = row.revenue - row.cogs;
+          const marginPercent =
+            row.revenue > 0 ? (grossProfit / row.revenue) * 100 : 0;
+
+          return {
+            ...row,
+            gross_profit: grossProfit,
+            net_profit: grossProfit,
+            gross_margin_percent: marginPercent,
+            net_margin_percent: marginPercent,
+            is_estimate: true,
+          };
+        }),
+      meta: {
+        from: args.from ?? null,
+        to: args.to ?? null,
+        grain,
         currency: 'INR',
         is_estimate: true,
         note: 'Profit uses purchase totals as a temporary COGS proxy until true inventory costing is introduced.',
@@ -1204,6 +1523,112 @@ export class ReportsService {
         snapshot: row.snapshot,
       })),
       meta: { limit: args.limit },
+    };
+  }
+
+  async commercialAuditSeries(args: {
+    companyId: string;
+    from?: string;
+    to?: string;
+    grain?: string;
+  }) {
+    const createdAt = this.buildDateRange(args.from, args.to);
+    const grain = this.normalizeSeriesGrain(args.grain);
+    const rows = await this.prisma.commercialAuditLog.findMany({
+      where: {
+        companyId: args.companyId,
+        ...(createdAt ? { createdAt } : {}),
+      },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        createdAt: true,
+        documentId: true,
+        action: true,
+        pricingSource: true,
+        overrideReason: true,
+        warnings: true,
+      },
+    });
+
+    const grouped = new Map<
+      string,
+      {
+        period: string;
+        period_start: string;
+        period_end: string;
+        total_events: number;
+        manual_override_events: number;
+        warning_events: number;
+        customer_override_events: number;
+        price_list_events: number;
+        product_price_events: number;
+        unique_documents: Set<string>;
+      }
+    >();
+
+    for (const row of rows) {
+      const meta = this.buildPeriodMeta(row.createdAt, grain);
+      const current = grouped.get(meta.period) ?? {
+        ...meta,
+        total_events: 0,
+        manual_override_events: 0,
+        warning_events: 0,
+        customer_override_events: 0,
+        price_list_events: 0,
+        product_price_events: 0,
+        unique_documents: new Set<string>(),
+      };
+
+      current.total_events += 1;
+      current.unique_documents.add(row.documentId);
+
+      const pricingSource = row.pricingSource ?? null;
+      const action = row.action.toLowerCase();
+      const hasWarnings =
+        Array.isArray(row.warnings) && row.warnings.length > 0;
+      const isManualOverride =
+        Boolean(row.overrideReason) ||
+        pricingSource === 'customer_override' ||
+        action.includes('override');
+
+      if (isManualOverride) current.manual_override_events += 1;
+      if (hasWarnings) current.warning_events += 1;
+      if (pricingSource === 'customer_override') {
+        current.customer_override_events += 1;
+      }
+      if (
+        pricingSource === 'pricing_tier_price_list' ||
+        pricingSource === 'global_price_list'
+      ) {
+        current.price_list_events += 1;
+      }
+      if (pricingSource === 'product_price') {
+        current.product_price_events += 1;
+      }
+
+      grouped.set(meta.period, current);
+    }
+
+    return {
+      data: Array.from(grouped.values())
+        .sort((a, b) => a.period.localeCompare(b.period))
+        .map((row) => ({
+          period: row.period,
+          period_start: row.period_start,
+          period_end: row.period_end,
+          total_events: row.total_events,
+          manual_override_events: row.manual_override_events,
+          warning_events: row.warning_events,
+          customer_override_events: row.customer_override_events,
+          price_list_events: row.price_list_events,
+          product_price_events: row.product_price_events,
+          unique_documents: row.unique_documents.size,
+        })),
+      meta: {
+        from: args.from ?? null,
+        to: args.to ?? null,
+        grain,
+      },
     };
   }
 

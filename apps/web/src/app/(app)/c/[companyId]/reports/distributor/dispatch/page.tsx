@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { useWarehouses } from "@/lib/masters/hooks";
 import { type DispatchOperationsReport, useDispatchOperationsReport } from "@/lib/reports/hooks";
 import { formatDateLabel, formatDateTimeLabel } from "@/lib/format/date";
+import {
+  ChartFrame,
+  ChartLegend,
+  ChartShell,
+  ChartTooltip,
+  formatChartCompactNumber,
+  getChartAxisColor,
+  getChartGridColor,
+  getChartSeriesColor,
+} from "@/lib/ui/chart";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
 import { SelectField, TextField } from "@/lib/ui/form";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -42,6 +53,26 @@ export default function DispatchOperationsReportPage({ params }: Props) {
       ? warehousePayload
       : ((warehousePayload as { data?: Array<{ id: string; name?: string; code?: string }> } | undefined)?.data ?? [])
     ) as Array<{ id: string; name?: string; code?: string }>;
+  const backlogRows = React.useMemo(
+    () =>
+      data
+        ? [
+            { label: "Pending orders", value: data.totals.pending_dispatch_orders, tone: "warning" as const },
+            { label: "Partial orders", value: data.totals.partial_orders, tone: "secondary" as const },
+            { label: "In transit", value: data.totals.dispatched_not_delivered, tone: "primary" as const },
+            { label: "Delivered not invoiced", value: data.totals.delivered_not_invoiced, tone: "danger" as const },
+          ]
+        : [],
+    [data],
+  );
+  const qtyRows = React.useMemo(
+    () =>
+      (data?.pending_dispatch ?? []).slice(0, 6).map((row) => ({
+        name: String(row.order_number ?? row.sales_order_id ?? "Order"),
+        pendingQuantity: Number(row.pending_dispatch_quantity ?? 0),
+      })),
+    [data?.pending_dispatch],
+  );
 
   return (
     <div className="space-y-7">
@@ -120,6 +151,47 @@ export default function DispatchOperationsReportPage({ params }: Props) {
             <StatCard label="Partial orders" value={String(data.totals.partial_orders)} />
             <StatCard label="In-transit challans" value={String(data.totals.dispatched_not_delivered)} />
             <StatCard label="Delivered not invoiced" value={String(data.totals.delivered_not_invoiced)} />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <ChartShell
+              title="Dispatch queue mix"
+              subtitle="Use this to see whether warehouse load is mostly fresh backlog, partial spillover, or follow-up exceptions."
+              footer={<ChartLegend items={backlogRows.map((row) => ({ label: row.label, tone: row.tone, value: row.value }))} />}
+            >
+              <ChartFrame height={300}>
+                <BarChart data={backlogRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={getChartGridColor()} />
+                  <XAxis dataKey="label" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={56} />
+                  <ChartTooltip valueFormatter={formatChartCompactNumber} />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {backlogRows.map((row) => (
+                      <Cell key={row.label} fill={getChartSeriesColor(row.tone)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
+
+            <ChartShell
+              title="Largest pending dispatch quantities"
+              subtitle="The biggest open dispatch quantities should shape the next warehouse cycle."
+            >
+              <ChartFrame height={300}>
+                <BarChart data={qtyRows} layout="vertical" margin={{ top: 8, right: 12, bottom: 8, left: 8 }}>
+                  <CartesianGrid horizontal={false} stroke={getChartGridColor()} />
+                  <XAxis type="number" tickFormatter={formatChartCompactNumber} tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: getChartAxisColor(), fontSize: 12 }} axisLine={false} tickLine={false} width={84} />
+                  <ChartTooltip valueFormatter={formatChartCompactNumber} />
+                  <Bar dataKey="pendingQuantity" radius={[0, 8, 8, 0]}>
+                    {qtyRows.map((row) => (
+                      <Cell key={row.name} fill={getChartSeriesColor("warning")} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartFrame>
+            </ChartShell>
           </div>
 
           <WorkspaceSection

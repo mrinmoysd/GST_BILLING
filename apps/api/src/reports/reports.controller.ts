@@ -24,6 +24,16 @@ export class ReportsController {
     return this.reports.salesSummary({ companyId, from, to });
   }
 
+  @Get('sales/summary-series')
+  salesSummarySeries(
+    @Param('companyId') companyId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('grain') grain?: 'day' | 'week' | 'month',
+  ) {
+    return this.reports.salesSummarySeries({ companyId, from, to, grain });
+  }
+
   @Get('purchases/summary')
   purchasesSummary(
     @Param('companyId') companyId: string,
@@ -31,6 +41,16 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     return this.reports.purchasesSummary({ companyId, from, to });
+  }
+
+  @Get('purchases/summary-series')
+  purchasesSummarySeries(
+    @Param('companyId') companyId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('grain') grain?: 'day' | 'week' | 'month',
+  ) {
+    return this.reports.purchasesSummarySeries({ companyId, from, to, grain });
   }
 
   @Get('sales/outstanding')
@@ -72,6 +92,16 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     return this.reports.profitSnapshot({ companyId, from, to });
+  }
+
+  @Get('profit/snapshot-series')
+  profitSnapshotSeries(
+    @Param('companyId') companyId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('grain') grain?: 'day' | 'week' | 'month',
+  ) {
+    return this.reports.profitSnapshotSeries({ companyId, from, to, grain });
   }
 
   @Get('distributor/sales-by-salesperson')
@@ -178,6 +208,21 @@ export class ReportsController {
     return this.reports.commercialAudit({
       companyId,
       limit: Number(limit ?? 50),
+    });
+  }
+
+  @Get('distributor/commercial/audit-series')
+  commercialAuditSeries(
+    @Param('companyId') companyId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('grain') grain?: 'day' | 'week' | 'month',
+  ) {
+    return this.reports.commercialAuditSeries({
+      companyId,
+      from,
+      to,
+      grain,
     });
   }
 

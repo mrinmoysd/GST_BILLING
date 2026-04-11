@@ -9,11 +9,13 @@ import {
   useUpdateAdminInternalUser,
 } from "@/lib/admin/hooks";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateTimeLabel } from "@/lib/format/date";
 import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
-import { InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
+import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectControl, SelectField, TextField } from "@/lib/ui/form";
+import { QueueToolbar } from "@/lib/ui/queue";
+import { WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
 
 type RoleOption = {
   code: string;
@@ -83,7 +85,7 @@ function InternalUserActions(props: {
           ))}
         </div>
       </DataTd>
-      <DataTd>{props.row.last_login ? new Date(props.row.last_login).toLocaleString() : "Never"}</DataTd>
+      <DataTd>{formatDateTimeLabel(props.row.last_login ?? null, "Never")}</DataTd>
       <DataTd className="text-right">
         <div className="inline-flex gap-2">
           <SecondaryButton
@@ -154,19 +156,20 @@ export default function AdminInternalUsersPage() {
 
   return (
     <div className="space-y-7">
-      <PageHeader
+      <WorkspaceHero
+        tone="admin"
         eyebrow="Governance"
         title="Internal users"
         subtitle="Manage internal admin operators, role assignments, and privileged access for the SaaS control plane."
+        badges={[
+          <WorkspaceStatBadge key="users" label="Admins" value={rows.length} />,
+          <WorkspaceStatBadge key="roles" label="Role profiles" value={roles.length} variant="outline" />,
+        ]}
       />
 
       <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create internal admin</CardTitle>
-            <CardDescription>Provision an operator with a dedicated admin role and credentials.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <WorkspacePanel title="Create internal admin" subtitle="Provision an operator with a dedicated admin role and credentials.">
+          <div className="space-y-3">
             <TextField label="Name" value={name} onChange={setName} />
             <TextField label="Email" value={email} onChange={setEmail} required />
             <TextField label="Temporary password" type="password" value={password} onChange={setPassword} required />
@@ -202,19 +205,15 @@ export default function AdminInternalUsersPage() {
               Create admin user
             </PrimaryButton>
             {error ? <InlineError message={error} /> : null}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
 
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{rows.length} admin user{rows.length === 1 ? "" : "s"}</Badge>
-              <Badge variant="outline">{roles.length} role profiles</Badge>
-            </div>
-            <CardTitle>Role catalog</CardTitle>
-            <CardDescription>Internal admin roles use a lightweight fixed permission bundle.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2">
+        <WorkspacePanel title="Role catalog" subtitle="Internal admin roles use a lightweight fixed permission bundle." tone="muted">
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Badge variant="secondary">{rows.length} admin user{rows.length === 1 ? "" : "s"}</Badge>
+            <Badge variant="outline">{roles.length} role profiles</Badge>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
             {roles.map((option) => (
               <div key={option.code} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
                 <div className="font-semibold">{option.label}</div>
@@ -227,25 +226,22 @@ export default function AdminInternalUsersPage() {
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </WorkspacePanel>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Operator directory</CardTitle>
-          <CardDescription>Search internal admins and change role or active status inline.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="max-w-sm">
-            <TextField label="Search" value={q} onChange={setQ} placeholder="email, name, or role" />
-          </div>
+      <WorkspaceSection eyebrow="Directory" title="Operator directory" subtitle="Search internal admins and change role or active status inline.">
+        <QueueToolbar
+          filters={<div className="max-w-sm"><TextField label="Search" value={q} onChange={setQ} placeholder="email, name, or role" /></div>}
+          summary={<Badge variant="secondary">{rows.length} admins in view</Badge>}
+        />
 
           {rolesQuery.isLoading || usersQuery.isLoading ? <LoadingBlock label="Loading internal admin users..." /> : null}
           {rolesQuery.isError ? <InlineError message={getErrorMessage(rolesQuery.error, "Failed to load role catalog")} /> : null}
           {usersQuery.isError ? <InlineError message={getErrorMessage(usersQuery.error, "Failed to load internal users")} /> : null}
 
           {rows.length > 0 ? (
+            <WorkspacePanel title="Operator roster" subtitle="Privilege, activity, and password reset actions are available inline.">
             <DataTableShell>
               <DataTable>
                 <DataThead>
@@ -279,9 +275,9 @@ export default function AdminInternalUsersPage() {
                 </tbody>
               </DataTable>
             </DataTableShell>
+            </WorkspacePanel>
           ) : null}
-        </CardContent>
-      </Card>
+      </WorkspaceSection>
     </div>
   );
 }

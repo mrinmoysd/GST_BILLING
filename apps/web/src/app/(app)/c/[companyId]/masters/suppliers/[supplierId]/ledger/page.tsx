@@ -5,6 +5,8 @@ import * as React from "react";
 
 import { apiClient } from "@/lib/api/client";
 import { companyPath } from "@/lib/api/companyRoutes";
+import { formatDateLabel } from "@/lib/format/date";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { EmptyState, InlineError, LoadingBlock, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, TextField } from "@/lib/ui/form";
 import { getErrorMessage } from "@/lib/errors";
@@ -31,6 +33,13 @@ type LedgerResp = {
   };
 };
 
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export default function SupplierLedgerPage({ params }: Props) {
   const { companyId, supplierId } = React.use(params);
@@ -77,6 +86,51 @@ export default function SupplierLedgerPage({ params }: Props) {
   const rows = data?.rows ?? [];
   const total = data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const columns = React.useMemo<ColumnDef<LedgerRow>[]>(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        accessorFn: (row) => row.date,
+        meta: { label: "Date" },
+        cell: ({ row }) => formatDateLabel(row.original.date),
+      },
+      {
+        id: "description",
+        header: "Description",
+        accessorFn: (row) => row.description,
+        meta: { label: "Description" },
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium">{row.original.description}</div>
+            <div className="text-xs text-[var(--muted)]">{row.original.type}</div>
+          </div>
+        ),
+      },
+      {
+        id: "debit",
+        header: "Debit",
+        accessorFn: (row) => row.debit,
+        meta: { label: "Debit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.debit ? formatMoney(row.original.debit) : "—"),
+      },
+      {
+        id: "credit",
+        header: "Credit",
+        accessorFn: (row) => row.credit,
+        meta: { label: "Credit", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.credit ? formatMoney(row.original.credit) : "—"),
+      },
+      {
+        id: "balance",
+        header: "Balance",
+        accessorFn: (row) => row.balance,
+        meta: { label: "Balance", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => formatMoney(row.original.balance),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-6">
@@ -132,33 +186,14 @@ export default function SupplierLedgerPage({ params }: Props) {
       ) : null}
 
       {!loading && !error && rows.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-[var(--shadow-soft)]">
-          <table className="w-full text-sm">
-            <thead className="[background-image:var(--table-header-highlight)] text-[var(--muted-strong)]">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">Date</th>
-                <th className="text-left px-4 py-3 font-medium">Description</th>
-                <th className="text-right px-4 py-3 font-medium">Debit</th>
-                <th className="text-right px-4 py-3 font-medium">Credit</th>
-                <th className="text-right px-4 py-3 font-medium">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.ref_id} className="border-t">
-                  <td className="px-4 py-3 whitespace-nowrap">{r.date || "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{r.description}</div>
-                    <div className="text-xs text-[var(--muted)]">{r.type}</div>
-                  </td>
-                  <td className="px-4 py-3 text-right">{r.debit ? r.debit : "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.credit ? r.credit : "—"}</td>
-                  <td className="px-4 py-3 text-right">{r.balance}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataGrid
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.ref_id}
+          initialSorting={[{ id: "date", desc: true }]}
+          toolbarTitle="Supplier ledger"
+          toolbarDescription="Use the ledger as the payable-facing audit trail behind the supplier profile."
+        />
       ) : null}
 
       {data ? (

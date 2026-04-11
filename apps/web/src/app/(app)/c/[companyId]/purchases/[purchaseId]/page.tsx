@@ -3,8 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import {
   openPurchaseBill,
   useCancelPurchase,
@@ -66,6 +65,39 @@ export default function PurchaseDetailPage({ params }: Props) {
   const isDraft = purchaseStatus === "DRAFT";
   const hasBillAttachment = Boolean(purchase?.billUrl || purchase?.billOriginalName || purchase?.bill_original_name);
   const purchaseDateLabel = formatDateLabel(purchase?.purchaseDate ?? purchase?.purchase_date);
+  const paymentColumns = React.useMemo<ColumnDef<(typeof paymentsForPurchase)[number]>[]>(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        accessorFn: (payment) => payment.paymentDate ?? payment.payment_date ?? "",
+        meta: { label: "Date" },
+        cell: ({ row }) => formatDateLabel(row.original.paymentDate ?? row.original.payment_date),
+      },
+      {
+        id: "method",
+        header: "Method",
+        accessorFn: (payment) => payment.method,
+        meta: { label: "Method" },
+        cell: ({ row }) => row.original.method,
+      },
+      {
+        id: "reference",
+        header: "Reference",
+        accessorFn: (payment) => payment.reference ?? "",
+        meta: { label: "Reference" },
+        cell: ({ row }) => row.original.reference ?? "—",
+      },
+      {
+        id: "amount",
+        header: "Amount",
+        accessorFn: (payment) => Number(payment.amount ?? 0),
+        meta: { label: "Amount", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.amount,
+      },
+    ],
+    [],
+  );
 
   const returnedByItem = React.useMemo(() => {
     const bucket = new Map<string, number>();
@@ -175,8 +207,8 @@ export default function PurchaseDetailPage({ params }: Props) {
           <WorkspaceStatBadge key="returned" label="Returned" value={totalReturned.toFixed(2)} variant="outline" />,
         ]}
         actions={
-          <Link className="text-sm underline" href={`/c/${companyId}/purchases`}>
-            Back
+          <Link href={`/c/${companyId}/purchases`}>
+            <SecondaryButton type="button">Back</SecondaryButton>
           </Link>
         }
         metrics={
@@ -436,12 +468,8 @@ export default function PurchaseDetailPage({ params }: Props) {
           </DetailTabPanel>
 
           <DetailTabPanel value="payments" rail={detailRail}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Payments</CardTitle>
-                <CardDescription>Record supplier payments and review settlement activity for this purchase.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
+            <WorkspacePanel title="Payments" subtitle="Record supplier settlements and review payment activity tied to this purchase.">
+              <div className="space-y-5">
                 <form
                   className="grid items-end gap-4 md:grid-cols-4"
                   onSubmit={async (event) => {
@@ -491,41 +519,28 @@ export default function PurchaseDetailPage({ params }: Props) {
                 {paymentsQuery.isLoading ? <LoadingBlock label="Loading payments…" /> : null}
                 {paymentsQuery.isError ? <InlineError message={getErrorMessage(paymentsQuery.error, "Failed to load payments")} /> : null}
 
-                {paymentsQuery.data ? (
-                  <DataTableShell>
-                    <DataTable>
-                      <DataThead>
-                        <tr>
-                          <DataTh>Date</DataTh>
-                          <DataTh>Method</DataTh>
-                          <DataTh>Reference</DataTh>
-                          <DataTh className="text-right">Amount</DataTh>
-                        </tr>
-                      </DataThead>
-                      <tbody>
-                        {paymentsForPurchase.map((payment) => (
-                          <DataTr key={payment.id}>
-                            <DataTd>{formatDateLabel(payment.paymentDate ?? payment.payment_date)}</DataTd>
-                            <DataTd>{payment.method}</DataTd>
-                            <DataTd>{payment.reference ?? "—"}</DataTd>
-                            <DataTd className="text-right">{payment.amount}</DataTd>
-                          </DataTr>
-                        ))}
-                      </tbody>
-                    </DataTable>
-                  </DataTableShell>
+                {paymentsQuery.data && paymentsForPurchase.length > 0 ? (
+                  <DataGrid
+                    data={paymentsForPurchase}
+                    columns={paymentColumns}
+                    getRowId={(row) => row.id}
+                    initialSorting={[{ id: "date", desc: true }]}
+                    toolbarTitle="Settlement activity"
+                    toolbarDescription="Keep settlement dates, references, and amounts in one reviewable payment register."
+                  />
                 ) : null}
-              </CardContent>
-            </Card>
+                {paymentsQuery.data && paymentsForPurchase.length === 0 ? (
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
+                    No payments have been recorded for this purchase yet.
+                  </div>
+                ) : null}
+              </div>
+            </WorkspacePanel>
           </DetailTabPanel>
 
           <DetailTabPanel value="activity" rail={detailRail}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Lifecycle history</CardTitle>
-                <CardDescription>Track receive, return, payment, bill attachment, and cancellation events.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+            <WorkspacePanel title="Lifecycle history" subtitle="Track receive, return, payment, bill attachment, and cancellation events in one audit strip.">
+              <div className="space-y-3">
                 {lifecycleEvents.length === 0 ? (
                   <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
                     No lifecycle history has been recorded yet.
@@ -538,8 +553,8 @@ export default function PurchaseDetailPage({ params }: Props) {
                     </div>
                   ))
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </WorkspacePanel>
           </DetailTabPanel>
         </DetailTabs>
       ) : null}

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import {
   useAdminSubscriptionPlans,
   useAdminSubscriptions,
@@ -12,6 +12,14 @@ import {
   useUpdateAdminSubscriptionPlan,
 } from "@/lib/admin/hooks";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
+import {
+  asStructuredPlanLimits,
+  companySummary,
+  formatPlanPrice,
+  invoiceSummary,
+  invoiceValueSummary,
+  seatSummary,
+} from "@/lib/settings/subscriptionCommerce";
 import { PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
 import { StatCard } from "@/lib/ui/stat";
 import { WorkspaceFilterBar, WorkspaceHero, WorkspacePanel, WorkspaceSection, WorkspaceStatBadge } from "@/lib/ui/workspace";
@@ -64,6 +72,64 @@ export default function AdminSubscriptionsPage() {
     | undefined;
   const plansPayload = plansQuery.data as { data?: PlanRow[] } | undefined;
   const plans = plansPayload?.data ?? [];
+  const subscriptionColumns = React.useMemo<ColumnDef<Record<string, unknown>>[]>(
+    () => [
+      {
+        id: "company",
+        header: "Company",
+        accessorFn: (row) => String(row.company_name ?? "—"),
+        meta: { label: "Company" },
+        cell: ({ row }) => (
+          <>
+            <Link href={`/admin/subscriptions/${String(row.original.id)}`} className="font-semibold hover:text-[var(--accent)] hover:underline">
+              {String(row.original.company_name ?? "—")}
+            </Link>
+            <div className="text-xs text-[var(--muted)]">{String(row.original.owner_email ?? "—")}</div>
+          </>
+        ),
+      },
+      {
+        id: "plan",
+        header: "Plan",
+        accessorFn: (row) => String(row.plan ?? row.planId ?? row.plan_id ?? "—"),
+        meta: { label: "Plan" },
+        cell: ({ row }) => <span className="font-semibold">{String(row.original.plan ?? row.original.planId ?? row.original.plan_id ?? "—")}</span>,
+      },
+      {
+        id: "provider",
+        header: "Provider",
+        accessorFn: (row) => String(row.provider ?? "—"),
+        meta: { label: "Provider" },
+        cell: ({ row }) => String(row.original.provider ?? "—"),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (row) => String(row.status ?? "—"),
+        meta: { label: "Status" },
+        cell: ({ row }) => (
+          <Badge variant={String(row.original.status ?? "") === "past_due" ? "warning" : "secondary"}>
+            {String(row.original.status ?? "—")}
+          </Badge>
+        ),
+      },
+      {
+        id: "providerRef",
+        header: "Provider ref",
+        accessorFn: (row) => String(row.provider_subscription_id ?? "—"),
+        meta: { label: "Provider ref" },
+        cell: ({ row }) => <span className="max-w-[18ch] truncate text-xs text-[var(--muted)]">{String(row.original.provider_subscription_id ?? "—")}</span>,
+      },
+      {
+        id: "createdAt",
+        header: "Created",
+        accessorFn: (row) => String(row.createdAt ?? ""),
+        meta: { label: "Created" },
+        cell: ({ row }) => (row.original.createdAt ? new Date(String(row.original.createdAt)).toLocaleDateString("en-IN") : "—"),
+      },
+    ],
+    [],
+  );
 
   function resetPlanForm() {
     setEditingPlanId(null);
@@ -177,21 +243,38 @@ export default function AdminSubscriptionsPage() {
             {plansQuery.isError ? <InlineError message={getErrorMessage(plansQuery.error, "Failed to load plans")} /> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {plans.map((plan) => (
-                <div key={plan.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-4">
+                <div key={plan.id} className="rounded-[18px] border border-[var(--border)] bg-[var(--surface-muted)] p-4 shadow-[var(--shadow-soft)]">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-sm font-semibold">{plan.name}</div>
                       <div className="text-xs text-[var(--muted)]">{plan.code}</div>
+                      <div className="mt-1 text-sm font-medium text-[var(--accent)]">{formatPlanPrice({
+                        ...plan,
+                        billing_interval: plan.billing_interval === "year" ? "year" : "month",
+                        limits: asStructuredPlanLimits(plan.limits) ?? {
+                          full_seats: { included: 0, max: null, extra_price_inr: 0 },
+                          view_only_seats: { included: 0, max: null, extra_price_inr: 0 },
+                          invoices: { included_per_month: null, monthly_billing_value_inr: null, mode: "warn_only", overage_price_inr: 0 },
+                          companies: { included: 1, max: null, extra_price_inr: 0 },
+                          features: {},
+                          enforcement: { allow_add_ons: true },
+                          trial: { enabled: true, days: plan.trial_days ?? 30, require_payment_method_upfront: false, allow_full_access: true, allow_grace_period: false, block_on_expiry: true },
+                        },
+                      })}</div>
                     </div>
                     <Badge variant={plan.is_active === false ? "outline" : "secondary"}>
                       {plan.is_active === false ? "Inactive" : "Active"}
                     </Badge>
                   </div>
-                  <div className="mt-3 space-y-1 text-sm text-[var(--muted-strong)]">
-                    <div>INR {plan.price_inr}/{plan.billing_interval}</div>
+                  <div className="mt-3 grid gap-2 text-sm text-[var(--muted-strong)]">
+                    <div>{seatSummary((asStructuredPlanLimits(plan.limits)?.full_seats) ?? { included: 0, max: null, extra_price_inr: 0 }, "full")}</div>
+                    <div>{invoiceSummary((asStructuredPlanLimits(plan.limits)?.invoices) ?? { included_per_month: null, monthly_billing_value_inr: null, mode: "warn_only", overage_price_inr: 0 })}</div>
+                    {invoiceValueSummary((asStructuredPlanLimits(plan.limits)?.invoices) ?? { included_per_month: null, monthly_billing_value_inr: null, mode: "warn_only", overage_price_inr: 0 }) ? (
+                      <div>{invoiceValueSummary((asStructuredPlanLimits(plan.limits)?.invoices) ?? { included_per_month: null, monthly_billing_value_inr: null, mode: "warn_only", overage_price_inr: 0 })}</div>
+                    ) : null}
+                    <div>{companySummary((asStructuredPlanLimits(plan.limits)?.companies) ?? { included: 1, max: null, extra_price_inr: 0 })}</div>
                     <div>Trial: {plan.trial_days ?? 30} days</div>
-                    <div>Public: {plan.is_public ? "Yes" : "No"}</div>
-                    <div>Order: {plan.display_order ?? 100}</div>
+                    <div>Public: {plan.is_public ? "Yes" : "No"} · Order: {plan.display_order ?? 100}</div>
                   </div>
                   <div className="mt-3 flex gap-2">
                     <SecondaryButton type="button" onClick={() => loadPlan(plan)}>
@@ -247,7 +330,7 @@ export default function AdminSubscriptionsPage() {
               <label className="block space-y-2">
                 <div className="text-[13px] font-semibold text-[var(--muted-strong)]">Structured limits JSON</div>
                 <textarea
-                  className="min-h-[280px] w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-field)] px-4 py-3 font-mono text-xs text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
+                  className="min-h-[280px] w-full rounded-[14px] border border-[var(--border)] bg-[var(--surface-field)] px-4 py-3 font-mono text-xs text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
                   value={limitsJson}
                   onChange={(event) => setLimitsJson(event.target.value)}
                 />
@@ -291,39 +374,14 @@ export default function AdminSubscriptionsPage() {
           title="Subscriptions in view"
           subtitle="The table is the primary remediation and drill-in surface for plan, provider, and billing status review."
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Company</DataTh>
-                  <DataTh>Plan</DataTh>
-                  <DataTh>Provider</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Provider ref</DataTh>
-                  <DataTh>Created</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {rows.map((row, index) => (
-                  <DataTr key={String(row.id ?? index)}>
-                    <DataTd>
-                      <Link href={`/admin/subscriptions/${String(row.id)}`} className="font-semibold hover:text-[var(--accent)] hover:underline">
-                        {String(row.company_name ?? "—")}
-                      </Link>
-                      <div className="text-xs text-[var(--muted)]">{String(row.owner_email ?? "—")}</div>
-                    </DataTd>
-                    <DataTd className="font-semibold">{String(row.plan ?? row.planId ?? row.plan_id ?? "—")}</DataTd>
-                    <DataTd>{String(row.provider ?? "—")}</DataTd>
-                    <DataTd>
-                      <Badge variant={String(row.status ?? "") === "past_due" ? "outline" : "secondary"}>{String(row.status ?? "—")}</Badge>
-                    </DataTd>
-                    <DataTd className="max-w-[18ch] truncate text-xs text-[var(--muted)]">{String(row.provider_subscription_id ?? "—")}</DataTd>
-                    <DataTd>{row.createdAt ? new Date(String(row.createdAt)).toLocaleDateString() : "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={rows}
+            columns={subscriptionColumns}
+            getRowId={(row, index) => String(row.id ?? index)}
+            initialSorting={[{ id: "createdAt", desc: true }]}
+            toolbarTitle="Subscription oversight"
+            toolbarDescription="Sort the billing register and adjust visible columns while preserving the current admin remediation flow."
+          />
         </WorkspaceSection>
       ) : null}
     </div>

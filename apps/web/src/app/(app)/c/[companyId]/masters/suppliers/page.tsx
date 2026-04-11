@@ -3,8 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { useSuppliers } from "@/lib/masters/hooks";
 import type { Supplier } from "@/lib/masters/types";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
@@ -13,6 +12,7 @@ import {
   QueueInspector,
   QueueMetaList,
   QueueQuickActions,
+  QueueRowStateBadge,
   QueueSavedViews,
   QueueSegmentBar,
   QueueShell,
@@ -20,6 +20,7 @@ import {
 } from "@/lib/ui/queue";
 import { WorkspaceHero, WorkspaceStatBadge } from "@/lib/ui/workspace";
 import { getErrorMessage } from "@/lib/errors";
+import { formatDateLabel } from "@/lib/format/date";
 
 
 type Props = { params: Promise<{ companyId: string }> };
@@ -52,6 +53,47 @@ export default function SuppliersPage({ params }: Props) {
       return true;
     });
   }, [segment, suppliers]);
+
+  const columns = React.useMemo<ColumnDef<Supplier>[]>(
+    () => [
+      {
+        id: "name",
+        header: "Name",
+        accessorFn: (supplier) => supplier.name,
+        meta: { label: "Name" },
+        cell: ({ row }) => (
+          <Link
+            className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
+            href={`/c/${companyId}/masters/suppliers/${row.original.id}`}
+          >
+            {row.original.name}
+          </Link>
+        ),
+      },
+      {
+        id: "email",
+        header: "Email",
+        accessorFn: (supplier) => supplier.email ?? "",
+        meta: { label: "Email" },
+        cell: ({ row }) => row.original.email ?? "—",
+      },
+      {
+        id: "phone",
+        header: "Phone",
+        accessorFn: (supplier) => supplier.phone ?? "",
+        meta: { label: "Phone" },
+        cell: ({ row }) => row.original.phone ?? "—",
+      },
+      {
+        id: "createdAt",
+        header: "Created",
+        accessorFn: (supplier) => supplier.createdAt ?? "",
+        meta: { label: "Created" },
+        cell: ({ row }) => formatDateLabel(row.original.createdAt),
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredSuppliers.length) {
@@ -111,8 +153,8 @@ export default function SuppliersPage({ params }: Props) {
         filters={<TextField label="Search suppliers" value={q} onChange={setQ} placeholder="Name / email / phone" />}
         summary={
           <>
-            <Badge variant="secondary">{filteredSuppliers.length} in view</Badge>
-            <Badge variant="outline">{total} total</Badge>
+            <QueueRowStateBadge label={`${filteredSuppliers.length} in view`} />
+            <QueueRowStateBadge label={`${counts.missingContact} missing contact`} variant="outline" />
           </>
         }
       />
@@ -159,7 +201,7 @@ export default function SuppliersPage({ params }: Props) {
                   items={[
                     { label: "Email", value: selectedSupplier.email ?? "—" },
                     { label: "Phone", value: selectedSupplier.phone ?? "—" },
-                    { label: "Created", value: selectedSupplier.createdAt?.slice?.(0, 10) ?? "—" },
+                    { label: "Created", value: formatDateLabel(selectedSupplier.createdAt) },
                   ]}
                 />
               ) : (
@@ -168,37 +210,20 @@ export default function SuppliersPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Name</DataTh>
-                  <DataTh>Email</DataTh>
-                  <DataTh>Phone</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredSuppliers.map((s) => (
-                  <DataTr
-                    key={s.id}
-                    className={selectedSupplier?.id === s.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-muted)]"}
-                    onClick={() => setSelectedSupplierId(s.id)}
-                  >
-                    <DataTd>
-                      <Link
-                        className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] hover:underline"
-                        href={`/c/${companyId}/masters/suppliers/${s.id}`}
-                      >
-                        {s.name}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{s.email ?? "—"}</DataTd>
-                    <DataTd>{s.phone ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredSuppliers}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedSupplierId(row.id)}
+            rowClassName={(row) =>
+              selectedSupplier?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-muted)]"
+            }
+            initialSorting={[{ id: "name", desc: false }]}
+            toolbarTitle="Supplier directory"
+            toolbarDescription="Use the grid for scanning and the inspector for the next payable action."
+          />
         </QueueShell>
       ) : null}
     </div>

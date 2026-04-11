@@ -2,8 +2,9 @@
 
 import * as React from "react";
 
+import { formatDateLabel } from "@/lib/format/date";
 import { useBankBook } from "@/lib/billing/hooks";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { DateField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import { QueueInspector, QueueMetaList, QueueSavedViews, QueueSegmentBar, QueueShell, QueueToolbar } from "@/lib/ui/queue";
@@ -12,6 +13,13 @@ import { WorkspaceHero } from "@/lib/ui/workspace";
 import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
+
+type BankBookRow = {
+  date: string;
+  narration: string | null;
+  amount: number;
+  runningBalance: number;
+};
 
 
 export default function BankBookPage({ params }: Props) {
@@ -66,6 +74,47 @@ export default function BankBookPage({ params }: Props) {
   }, [filteredRows, selectedRowKey]);
 
   const selectedRow = filteredRows.find((row, index) => `${row.date}-${index}` === selectedRowKey) ?? filteredRows[0] ?? null;
+
+  const columns = React.useMemo<ColumnDef<BankBookRow>[]>(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        accessorFn: (row) => row.date,
+        meta: { label: "Date" },
+        cell: ({ row }) => formatDateLabel(row.original.date),
+      },
+      {
+        id: "narration",
+        header: "Narration",
+        accessorFn: (row) => row.narration ?? "",
+        meta: { label: "Narration" },
+        cell: ({ row }) => row.original.narration ?? "—",
+      },
+      {
+        id: "receipt",
+        header: "Receipt",
+        accessorFn: (row) => (row.amount >= 0 ? row.amount : 0),
+        meta: { label: "Receipt", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.amount >= 0 ? row.original.amount.toFixed(2) : "—"),
+      },
+      {
+        id: "payment",
+        header: "Payment",
+        accessorFn: (row) => (row.amount < 0 ? Math.abs(row.amount) : 0),
+        meta: { label: "Payment", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => (row.original.amount < 0 ? Math.abs(row.original.amount).toFixed(2) : "—"),
+      },
+      {
+        id: "runningBalance",
+        header: "Running balance",
+        accessorFn: (row) => row.runningBalance,
+        meta: { label: "Running balance", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.runningBalance.toFixed(2),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-7">
@@ -137,37 +186,30 @@ export default function BankBookPage({ params }: Props) {
               </QueueInspector>
             }
           >
-            <DataTableShell>
-              <DataTable>
-                <DataThead>
-                  <tr>
-                    <DataTh>Date</DataTh>
-                    <DataTh>Narration</DataTh>
-                    <DataTh className="text-right">Receipt</DataTh>
-                    <DataTh className="text-right">Payment</DataTh>
-                    <DataTh className="text-right">Running balance</DataTh>
-                  </tr>
-                </DataThead>
-                <tbody>
-                  {filteredRows.map((item, index) => {
-                    const key = `${item.date}-${index}`;
-                    return (
-                      <DataTr
-                        key={key}
-                        className={selectedRowKey === key ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                        onClick={() => setSelectedRowKey(key)}
-                      >
-                        <DataTd>{item.date}</DataTd>
-                        <DataTd>{item.narration ?? "—"}</DataTd>
-                        <DataTd className="text-right">{item.amount >= 0 ? item.amount.toFixed(2) : "—"}</DataTd>
-                        <DataTd className="text-right">{item.amount < 0 ? Math.abs(item.amount).toFixed(2) : "—"}</DataTd>
-                        <DataTd className="text-right">{item.runningBalance.toFixed(2)}</DataTd>
-                      </DataTr>
-                    );
-                  })}
-                </tbody>
-              </DataTable>
-            </DataTableShell>
+            <DataGrid
+              data={filteredRows}
+              columns={columns}
+              getRowId={(row, index) => `${row.date}-${index}`}
+              onRowClick={(row) => {
+                const idx = filteredRows.findIndex(
+                  (candidate) =>
+                    candidate.date === row.date &&
+                    candidate.narration === row.narration &&
+                    candidate.amount === row.amount &&
+                    candidate.runningBalance === row.runningBalance,
+                );
+                setSelectedRowKey(`${row.date}-${idx >= 0 ? idx : 0}`);
+              }}
+              rowClassName={(row) => {
+                const key = `${row.original.date}-${row.index}`;
+                return selectedRowKey === key
+                  ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                  : "hover:bg-[var(--surface-secondary)]";
+              }}
+              initialSorting={[{ id: "date", desc: true }]}
+              toolbarTitle="Bank ledger"
+              toolbarDescription="Keep the bank book dense and readable while the inspector preserves the selected transaction posture."
+            />
           </QueueShell>
         </>
       ) : null}

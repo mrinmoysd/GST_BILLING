@@ -18,7 +18,7 @@ export function Toaster() {
       duration={4200}
       toastOptions={{
         className:
-          "border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-soft)]",
+          "rounded-[14px] border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-soft)]",
       }}
     />
   );

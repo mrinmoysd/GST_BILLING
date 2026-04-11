@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth/session";
 import { useQuotations } from "@/lib/billing/hooks";
 import type { Quotation } from "@/lib/billing/types";
 import { formatDateLabel } from "@/lib/format/date";
-import { DataTable, DataTableShell, DataTd, DataTh, DataThead, DataTr } from "@/lib/ui/datatable";
+import { DataGrid, type ColumnDef } from "@/lib/ui/data-grid";
 import { SecondaryButton, TextField } from "@/lib/ui/form";
 import { EmptyState, InlineError, LoadingBlock } from "@/lib/ui/state";
 import {
@@ -26,6 +26,9 @@ import { getErrorMessage } from "@/lib/errors";
 
 type Props = { params: Promise<{ companyId: string }> };
 
+function readQuoteNumber(quotation: Quotation) {
+  return quotation.quoteNumber ?? quotation.quote_number ?? quotation.id;
+}
 
 export default function QuotationsPage({ params }: Props) {
   const { companyId } = React.use(params);
@@ -75,6 +78,54 @@ export default function QuotationsPage({ params }: Props) {
       return true;
     });
   }, [rows, segment]);
+
+  const columns = React.useMemo<ColumnDef<Quotation>[]>(
+    () => [
+      {
+        id: "quote",
+        header: "Quote",
+        accessorFn: (quotation) => readQuoteNumber(quotation),
+        meta: { label: "Quote" },
+        cell: ({ row }) => (
+          <Link
+            className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]"
+            href={`/c/${companyId}/sales/quotations/${row.original.id}`}
+          >
+            {readQuoteNumber(row.original)}
+          </Link>
+        ),
+      },
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (quotation) => quotation.customer?.name ?? "",
+        meta: { label: "Customer" },
+        cell: ({ row }) => row.original.customer?.name ?? "—",
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (quotation) => quotation.status ?? "",
+        meta: { label: "Status" },
+        cell: ({ row }) => <QueueRowStateBadge label={row.original.status ?? "—"} />,
+      },
+      {
+        id: "expiry",
+        header: "Expiry",
+        accessorFn: (quotation) => quotation.expiryDate ?? quotation.expiry_date ?? "",
+        meta: { label: "Expiry" },
+        cell: ({ row }) => formatDateLabel(row.original.expiryDate ?? row.original.expiry_date),
+      },
+      {
+        id: "total",
+        header: "Total",
+        accessorFn: (quotation) => Number(quotation.total ?? 0),
+        meta: { label: "Total", headerClassName: "text-right", cellClassName: "text-right" },
+        cell: ({ row }) => row.original.total ?? "—",
+      },
+    ],
+    [companyId],
+  );
 
   React.useEffect(() => {
     if (!filteredRows.length) {
@@ -199,43 +250,20 @@ export default function QuotationsPage({ params }: Props) {
             </QueueInspector>
           }
         >
-          <DataTableShell>
-            <DataTable>
-              <DataThead>
-                <tr>
-                  <DataTh>Quote</DataTh>
-                  <DataTh>Customer</DataTh>
-                  <DataTh>Status</DataTh>
-                  <DataTh>Expiry</DataTh>
-                  <DataTh className="text-right">Total</DataTh>
-                </tr>
-              </DataThead>
-              <tbody>
-                {filteredRows.map((quote) => (
-                  <DataTr
-                    key={quote.id}
-                    className={selectedQuotation?.id === quote.id ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]" : "cursor-pointer hover:bg-[var(--surface-secondary)]"}
-                    onClick={() => setSelectedQuotationId(quote.id)}
-                  >
-                    <DataTd>
-                      <Link
-                        className="font-semibold text-[var(--secondary)] transition hover:text-[var(--secondary-hover)]"
-                        href={`/c/${companyId}/sales/quotations/${quote.id}`}
-                      >
-                        {quote.quoteNumber ?? quote.quote_number ?? quote.id}
-                      </Link>
-                    </DataTd>
-                    <DataTd>{quote.customer?.name ?? "—"}</DataTd>
-                    <DataTd>
-                      <QueueRowStateBadge label={quote.status ?? "—"} />
-                    </DataTd>
-                    <DataTd>{formatDateLabel(quote.expiryDate ?? quote.expiry_date)}</DataTd>
-                    <DataTd className="text-right">{quote.total ?? "—"}</DataTd>
-                  </DataTr>
-                ))}
-              </tbody>
-            </DataTable>
-          </DataTableShell>
+          <DataGrid
+            data={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onRowClick={(row) => setSelectedQuotationId(row.id)}
+            rowClassName={(row) =>
+              selectedQuotation?.id === row.original.id
+                ? "border-t border-[var(--row-selected-border)] bg-[var(--row-selected-bg)]"
+                : "hover:bg-[var(--surface-secondary)]"
+            }
+            initialSorting={[{ id: "expiry", desc: false }]}
+            toolbarTitle="Quotation pipeline"
+            toolbarDescription="Sort and trim visible columns while keeping the commercial inspector beside the quote queue."
+          />
         </QueueShell>
       ) : null}
     </div>

@@ -11,7 +11,7 @@ export default function TermsPage() {
         <div className="space-y-8 text-sm leading-7 text-[var(--muted-strong)]">
           <section className="space-y-3">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Use of the service</h2>
-            <p>Use of GST Billing is subject to lawful business operation, valid account ownership, and compliance with billing, tax, accounting, and data obligations applicable to your business.</p>
+            <p>Use of Vyapar Genie is subject to lawful business operation, valid account ownership, and compliance with billing, tax, accounting, and data obligations applicable to your business.</p>
           </section>
           <section className="space-y-3 border-t border-[var(--public-border)] pt-6">
             <h2 className="text-base font-semibold text-[var(--foreground)]">Commercial terms still required</h2>

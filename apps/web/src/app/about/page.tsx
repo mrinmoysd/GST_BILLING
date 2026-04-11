@@ -11,7 +11,7 @@ export default function AboutPage() {
         <FullBleedHero
           eyebrow="About the operating thesis"
           title="Built around the real operating tension between speed, compliance, and control."
-          subtitle="GST Billing is not positioned as a generic invoicing tool. The thesis is narrower and stronger: Indian businesses need one product surface where billing, GST, stock, collections, and books stay connected."
+          subtitle="Vyapar Genie is not positioned as a generic invoicing tool. The thesis is narrower and stronger: Indian businesses need one product surface where billing, GST, stock, collections, and books stay connected."
           actions={
             <>
               <Button asChild size="lg">
