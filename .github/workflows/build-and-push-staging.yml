@@ -3,7 +3,7 @@ name: Build and Push Staging
 on:
   push:
     branches:
-      - develop
+      - staging
   workflow_dispatch:
 
 permissions:
