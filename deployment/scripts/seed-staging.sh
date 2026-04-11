@@ -28,7 +28,7 @@ if [[ "$SEED_MODE" == "reset_then_seed" ]]; then
   compose run --rm api npx prisma migrate reset --force --skip-seed --schema prisma/schema.prisma
 fi
 
-compose run --rm api npm --workspace apps/api run prisma:migrate:deploy
+compose run --rm api npm --workspace apps/api run prisma:migrate:deploy:prod
 compose up -d api web caddy
 
 for attempt in $(seq 1 30); do

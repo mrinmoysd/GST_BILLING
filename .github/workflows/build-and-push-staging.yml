@@ -3,7 +3,7 @@ name: Build and Push Staging
 on:
   push:
     branches:
-      - develop
+      - staging
   workflow_dispatch:
 
 permissions:
@@ -37,9 +37,9 @@ jobs:
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
           echo "REGISTRY_PATH=registry.digitalocean.com/${REGISTRY_NAME}" >> "$GITHUB_ENV"
           echo "API_IMAGE_SHA=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-api:${GITHUB_SHA}" >> "$GITHUB_ENV"
-          echo "API_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-api:develop-latest" >> "$GITHUB_ENV"
+          echo "API_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-api:staging-latest" >> "$GITHUB_ENV"
           echo "WEB_IMAGE_SHA=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-web:${GITHUB_SHA}" >> "$GITHUB_ENV"
-          echo "WEB_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-web:develop-latest" >> "$GITHUB_ENV"
+          echo "WEB_IMAGE_BRANCH=registry.digitalocean.com/${REGISTRY_NAME}/vyapar-genie-web:staging-latest" >> "$GITHUB_ENV"
 
       - name: Build API image
         run: |

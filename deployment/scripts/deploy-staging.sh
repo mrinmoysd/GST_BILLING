@@ -29,7 +29,7 @@ compose() {
 
 compose pull api web caddy postgres redis
 compose up -d postgres redis
-compose run --rm api npm --workspace apps/api run prisma:migrate:deploy
+compose run --rm api npm --workspace apps/api run prisma:migrate:deploy:prod
 compose up -d --no-build api web caddy
 
 for attempt in $(seq 1 30); do
