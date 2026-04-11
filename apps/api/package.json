@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prisma:generate": "dotenv -e ../../.env -- prisma generate --schema ../../prisma/schema.prisma",
+    "prisma:generate:prod": "prisma generate --schema ../../prisma/schema.prisma",
     "prisma:migrate:dev": "dotenv -e ../../.env -- prisma migrate dev --schema ../../prisma/schema.prisma",
     "prisma:migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy --schema ../../prisma/schema.prisma",
     "prisma:migrate:deploy:prod": "prisma migrate deploy --schema ../../prisma/schema.prisma",
