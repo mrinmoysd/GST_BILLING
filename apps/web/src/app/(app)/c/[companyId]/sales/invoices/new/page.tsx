@@ -544,8 +544,8 @@ export default function NewInvoicePage({ params }: Props) {
               </div>
             }
           >
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
+          <table className="min-w-[880px] w-full text-sm">
             <thead className="bg-[var(--surface-muted)] text-[var(--muted-strong)]">
               <tr>
                 <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Product</th>
