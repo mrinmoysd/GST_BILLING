@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await refreshMe();
       } catch (error) {
         setSessionHint(false);
-        logError(error, "auth-bootstrap-refresh");
+        logError(error, "auth-bootstrap-refresh", undefined, { level: "warn" });
       } finally {
         if (!cancelled) setBootstrapped(true);
       }
