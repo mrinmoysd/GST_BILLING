@@ -55,6 +55,128 @@ export class InventoryService {
    * - Always updates Product.stock and writes StockMovement in the SAME transaction.
    * - Enforces Company.allowNegativeStock unless overrideAllowNegative is true.
    */
+  async assertStockAvailable(args: {
+    tx?: Prisma.TransactionClient;
+    companyId: string;
+    warehouseId?: string;
+    items: Array<{ productId: string; quantity: Decimal }>;
+  }) {
+    if (!args.items.length) return;
+
+    const client = args.tx ?? this.prisma;
+
+    const run = async (txc: Prisma.TransactionClient | PrismaService) => {
+      const company = await txc.company.findUnique({
+        where: { id: args.companyId },
+        select: { allowNegativeStock: true },
+      });
+      if (!company) throw new UnprocessableEntityException('Company not found');
+      if (company.allowNegativeStock) return;
+
+      if (args.warehouseId) {
+        const warehouse = await txc.warehouse.findFirst({
+          where: {
+            id: args.warehouseId,
+            companyId: args.companyId,
+            isActive: true,
+          },
+          select: { id: true },
+        });
+        if (!warehouse) {
+          throw new UnprocessableEntityException('Warehouse not found');
+        }
+      }
+
+      const requiredByProduct = new Map<string, Decimal>();
+      for (const item of args.items) {
+        if (item.quantity.lte(0)) continue;
+        const current = requiredByProduct.get(item.productId) ?? new Decimal(0);
+        requiredByProduct.set(item.productId, current.add(item.quantity));
+      }
+      if (!requiredByProduct.size) return;
+
+      const productIds = Array.from(requiredByProduct.keys());
+      const products = await txc.product.findMany({
+        where: {
+          companyId: args.companyId,
+          id: { in: productIds },
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          stock: true,
+        },
+      });
+
+      if (products.length !== productIds.length) {
+        throw new UnprocessableEntityException('One or more products not found');
+      }
+
+      const productById = new Map(products.map((product) => [product.id, product]));
+
+      let warehouseStockByProduct = new Map<string, Decimal>();
+      if (args.warehouseId) {
+        const warehouseStocks = await txc.warehouseStock.findMany({
+          where: {
+            companyId: args.companyId,
+            warehouseId: args.warehouseId,
+            productId: { in: productIds },
+          },
+          select: {
+            productId: true,
+            quantity: true,
+          },
+        });
+        warehouseStockByProduct = new Map(
+          warehouseStocks.map((row) => [row.productId, new Decimal(row.quantity)]),
+        );
+      }
+
+      for (const [productId, required] of requiredByProduct.entries()) {
+        const product = productById.get(productId);
+        if (!product) {
+          throw new UnprocessableEntityException('One or more products not found');
+        }
+
+        const globalCurrent = new Decimal(product.stock ?? 0);
+        if (globalCurrent.lt(required)) {
+          throw new UnprocessableEntityException({
+            code: 'INSUFFICIENT_STOCK',
+            message: `Insufficient stock for ${product.name}`,
+            details: {
+              productId,
+              required: required.toString(),
+              available: globalCurrent.toString(),
+            },
+          });
+        }
+
+        if (args.warehouseId) {
+          const warehouseCurrent =
+            warehouseStockByProduct.get(productId) ?? new Decimal(0);
+          if (warehouseCurrent.lt(required)) {
+            throw new UnprocessableEntityException({
+              code: 'INSUFFICIENT_WAREHOUSE_STOCK',
+              message: `Insufficient stock in selected warehouse for ${product.name}`,
+              details: {
+                productId,
+                warehouseId: args.warehouseId,
+                required: required.toString(),
+                available: warehouseCurrent.toString(),
+              },
+            });
+          }
+        }
+      }
+    };
+
+    if (args.tx) return run(client);
+    return this.prisma.$transaction(async (txc: Prisma.TransactionClient) =>
+      run(txc),
+    );
+  }
+
   async adjustStock(args: {
     tx?: Prisma.TransactionClient;
     companyId: string;

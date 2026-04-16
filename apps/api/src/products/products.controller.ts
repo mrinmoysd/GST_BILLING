@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -96,12 +97,19 @@ export class ProductsController {
     @Param('productId') productId: string,
     @Body() dto: StockAdjustmentDto,
   ) {
+    const delta = dto.change_qty ?? dto.delta;
+    if (delta === undefined || delta === null || Number.isNaN(Number(delta))) {
+      throw new BadRequestException('delta or change_qty is required');
+    }
+
     const data = await this.inventory.adjustStock({
       companyId,
       productId,
-      delta: new Decimal(dto.delta),
-      sourceType: 'manual',
+      delta: new Decimal(delta),
+      sourceType: (dto.source_type as any) ?? 'manual',
+      sourceId: dto.source_id,
       note: dto.reason,
+      warehouseId: dto.warehouse_id,
     });
     return { data };
   }

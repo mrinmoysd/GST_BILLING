@@ -483,6 +483,16 @@ export class InvoicesService {
               };
             }));
 
+            await this.inventory.assertStockAvailable({
+              tx,
+              companyId: args.companyId,
+              warehouseId: args.dto.warehouse_id ?? undefined,
+              items: itemsComputed.map((item) => ({
+                productId: item.productId,
+                quantity: item.totalQuantity,
+              })),
+            });
+
             const subTotal = itemsComputed.reduce(
               (acc, i) => acc.add(i.lineSubTotal),
               new Decimal(0),
