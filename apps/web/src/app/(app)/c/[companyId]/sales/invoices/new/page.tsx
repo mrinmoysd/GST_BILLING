@@ -24,6 +24,7 @@ import {
 import { InlineError, PageHeader } from "@/lib/ui/state";
 import { PrimaryButton, SecondaryButton, SelectControl, SelectField, TextField } from "@/lib/ui/form";
 import { getErrorMessage } from "@/lib/errors";
+import { toastError } from "@/lib/toast";
 
 type Props = { params: Promise<{ companyId: string }> };
 
@@ -43,6 +44,36 @@ function formatPricingSource(source?: string | null) {
     default:
       return "Resolved price";
   }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function formatInvoiceCreateError(error: unknown) {
+  const fallback = getErrorMessage(error, "Failed to create invoice");
+  if (!isObject(error)) return fallback;
+
+  const code = typeof error.code === "string" ? error.code : undefined;
+  if (code !== "INSUFFICIENT_STOCK" && code !== "INSUFFICIENT_WAREHOUSE_STOCK") {
+    return fallback;
+  }
+
+  const details = isObject(error.details) ? error.details : null;
+  const available =
+    details && (typeof details.available === "string" || typeof details.available === "number")
+      ? String(details.available)
+      : null;
+  const baseMessage =
+    typeof error.message === "string" && error.message.trim().length > 0
+      ? error.message.trim()
+      : fallback;
+
+  if (!available) return baseMessage;
+  if (code === "INSUFFICIENT_WAREHOUSE_STOCK") {
+    return `${baseMessage}. Available in selected warehouse is ${available}`;
+  }
+  return `${baseMessage}. Available is ${available}`;
 }
 
 export default function NewInvoicePage({ params }: Props) {
@@ -392,7 +423,14 @@ export default function NewInvoicePage({ params }: Props) {
             });
             router.replace(`/c/${companyId}/sales/invoices/${res.data.id}`);
           } catch (e: unknown) {
-            setError(getErrorMessage(e, "Failed to create invoice"));
+            const message = formatInvoiceCreateError(e);
+            setError(message);
+            toastError(e, {
+              fallback: "Failed to create invoice.",
+              title: message,
+              context: "invoice-create",
+              metadata: { companyId, customerId, warehouseId },
+            });
           }
         }}
       >
