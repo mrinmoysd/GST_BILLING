@@ -67,6 +67,8 @@ function resolveTotalQuantityForStock(item: {
 
 @Injectable()
 export class InvoicesService {
+  private readonly txOptions = { maxWait: 10_000, timeout: 60_000 };
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly invoiceNumber: InvoiceNumberService,
@@ -594,6 +596,7 @@ export class InvoicesService {
 
             return { data: invoice };
           },
+          this.txOptions,
         );
 
         return { status: 201, body, data: body.data };
@@ -790,7 +793,7 @@ export class InvoicesService {
           },
         },
       };
-    });
+    }, this.txOptions);
     await this.usage.syncInvoiceUsageForCompany({
       companyId: args.companyId,
     });
@@ -902,7 +905,7 @@ export class InvoicesService {
           total: invoice.total.toString(),
         },
       };
-    });
+    }, this.txOptions);
     await this.usage.syncInvoiceUsageForCompany({
       companyId: args.companyId,
     });
@@ -1181,7 +1184,7 @@ export class InvoicesService {
       });
 
       return { data: creditNote };
-    });
+    }, this.txOptions);
   }
 
   async shareInvoice(args: {
@@ -1228,7 +1231,7 @@ export class InvoicesService {
           pdf_url: invoice.pdfUrl ?? `/api/companies/${args.companyId}/invoices/${invoice.id}/pdf`,
         },
       };
-    });
+    }, this.txOptions);
   }
 
   private deriveInvoiceStatusAfterCredit(args: {
