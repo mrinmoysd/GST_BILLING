@@ -21,7 +21,7 @@ import {
 import { getErrorMessage } from "@/lib/errors";
 import { formatDateLabel } from "@/lib/format/date";
 import { useInvoiceSeries } from "@/lib/settings/invoiceSeriesHooks";
-import { toastError, toastSuccess } from "@/lib/toast";
+import { toastError, toastFormError, toastSuccess } from "@/lib/toast";
 import { DetailInfoList, DetailRail, DetailTabPanel, DetailTabs } from "@/lib/ui/detail";
 import { InlineError, LoadingBlock } from "@/lib/ui/state";
 import { DateField, PrimaryButton, SecondaryButton, SelectField, TextField } from "@/lib/ui/form";
@@ -72,6 +72,24 @@ function readInvoiceDueDate(
   invoice: { dueDate?: string | null; due_date?: string | null } | null | undefined,
 ) {
   return formatDateLabel(invoice?.dueDate ?? invoice?.due_date);
+}
+
+function readRemainingDue(
+  invoice:
+    | {
+        balanceDue?: string | number | null;
+        total?: string | number | null;
+        amountPaid?: string | number | null;
+      }
+    | null
+    | undefined,
+) {
+  const balanceDue = Number(invoice?.balanceDue ?? 0);
+  if (Number.isFinite(balanceDue)) return Math.max(0, balanceDue);
+  const total = Number(invoice?.total ?? 0);
+  const amountPaid = Number(invoice?.amountPaid ?? 0);
+  if (!Number.isFinite(total) || !Number.isFinite(amountPaid)) return 0;
+  return Math.max(0, total - amountPaid);
 }
 
 export default function InvoiceDetailPage({ params }: Props) {
@@ -172,6 +190,7 @@ export default function InvoiceDetailPage({ params }: Props) {
     () => creditNotes.reduce((sum, note) => sum + Number((note as { total?: string | number | null }).total ?? 0), 0),
     [creditNotes],
   );
+  const remainingDue = React.useMemo(() => readRemainingDue(invoice), [invoice]);
   const invoiceDetailRail = invoice ? (
     <>
       <DetailRail
@@ -647,7 +666,25 @@ export default function InvoiceDetailPage({ params }: Props) {
                     event.preventDefault();
                     setError(null);
                     setOk(null);
-                    if (!payAmount || Number(payAmount) <= 0) return setError("Enter a valid amount.");
+                    if (!payAmount || Number(payAmount) <= 0) {
+                      const message = "Enter a valid amount.";
+                      setError(message);
+                      toastFormError(message);
+                      return;
+                    }
+                    const enteredAmount = Number(payAmount);
+                    if (remainingDue <= 0) {
+                      const message = "Invoice has no remaining due.";
+                      setError(message);
+                      toastFormError(message);
+                      return;
+                    }
+                    if (enteredAmount > remainingDue) {
+                      const message = `Payment amount cannot exceed remaining due ${remainingDue.toFixed(2)}.`;
+                      setError(message);
+                      toastFormError(message);
+                      return;
+                    }
                     try {
                       await recordPayment.mutateAsync({
                         invoice_id: invoiceId,
@@ -688,7 +725,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                   />
                   <TextField label="Reference" value={payReference} onChange={setPayReference} placeholder="Optional" />
                   <div className="flex gap-3">
-                    <PrimaryButton type="submit" disabled={recordPayment.isPending}>
+                    <PrimaryButton type="submit" disabled={recordPayment.isPending || remainingDue <= 0}>
                       {recordPayment.isPending ? "Recording…" : "Record"}
                     </PrimaryButton>
                     <SecondaryButton type="button" onClick={() => setPayDate(new Date().toISOString().slice(0, 10))}>
@@ -697,6 +734,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                   </div>
                   <div className="md:col-span-2">
                     <DateField label="Payment date" value={payDate} onChange={setPayDate} />
+                  </div>
+                  <div className="md:col-span-4 text-xs text-[var(--muted)]">
+                    Remaining due: {remainingDue.toFixed(2)}
                   </div>
                 </form>
 
