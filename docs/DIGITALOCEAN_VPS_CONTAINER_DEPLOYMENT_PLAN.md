@@ -1,8 +1,8 @@
 # Vyapar Genie DigitalOcean VPS Container Deployment Plan
 
 **Date**: March 31, 2026  
-**Purpose**: Define the end-to-end deployment plan for running **Vyapar Genie** on a single DigitalOcean VPS using containers, GitHub Actions, and the `develop` branch as the staging deployment branch.  
-**Status**: V1-V3 implemented; V4 runbook prepared; V4 execution and V5-V6 pending  
+**Purpose**: Define the end-to-end deployment plan for running **Vyapar Genie** on a single DigitalOcean VPS using containers, GitHub Actions, and the `staging` branch as the staging deployment branch.  
+**Status**: V1-V3 implemented; V4 partially executed on April 11, 2026; V5-V6 pending. Deployment preflight was revalidated on April 11, 2026, including a production-safe Prisma migration path for the staging container flow.  
 **Decision**: This document supersedes the older App Platform-first direction in [DIGITALOCEAN_STAGING_CICD_SPEC.md](/Users/tanmoybhadra/Documents/Mrinmoy_Work/GST_BILLING_SOFTWARE/docs/DIGITALOCEAN_STAGING_CICD_SPEC.md) for the VPS rollout path.
 
 Primary repo anchors:
@@ -55,7 +55,7 @@ This is the recommended path because:
 - there are **no GitHub workflows**
 - the runtime is still only two app processes plus Postgres and Redis
 - queueing is embedded in the API process
-- the current objective is **staging-quality deployment on `develop`**, not cluster orchestration
+- the current objective is **staging-quality deployment on `staging`**, not cluster orchestration
 
 ---
 
@@ -71,12 +71,21 @@ This is the recommended path because:
 
 ## 2.2 What does not exist yet
 
-- no live DigitalOcean project resources yet
-- no live DOCR repository configured yet
-- no Droplet bootstrap completed yet
-- no self-hosted runner attached yet
-- no GitHub environment secrets/variables configured yet
+- no confirmed live DOCR repository configured yet
+- no `DO_API_TOKEN` wired into GitHub staging secrets yet
+- no first real staging image build/push executed yet
 - no first real staging deployment executed yet
+
+## 2.2.1 What now exists in staging execution reality
+
+- staging Droplet exists at `104.236.85.110`
+- GoDaddy DNS already points `staging.vyapargenie.in` to the Droplet
+- Droplet bootstrap has been executed
+- `/opt/vyapar-genie` directory layout now exists on the server
+- Docker Engine and Docker Compose plugin are installed
+- UFW is active for `22`, `80`, and `443`
+- self-hosted GitHub runner `vyapar-genie-staging` is installed and online with label `gst-billing-staging`
+- GitHub `staging` environment exists and now has the non-DigitalOcean secrets populated
 
 ## 2.3 Deployment-affecting code constraints
 
@@ -108,7 +117,7 @@ This is simpler and safer than using separate web/api subdomains because the app
 
 Branch and environment policy:
 
-- `develop` -> deploy to **staging**
+- `staging` -> deploy to **staging**
 - `main` -> reserved for later **production**
 
 Initial naming recommendation:
@@ -116,7 +125,7 @@ Initial naming recommendation:
 - product name: `Vyapar Genie`
 - DO project: `vyapar-genie-platform`
 - Droplet hostname: `vyapar-genie-staging`
-- Registry: `vyapargenie`
+- Registry: `vyapar-app`
 - staging domain: `staging.yourdomain.com`
 - production app domain: `app.yourdomain.com`
 - app directory on server: `/opt/vyapar-genie`
@@ -314,8 +323,8 @@ Create these workflows:
 
 Trigger:
 
-- `pull_request` to `develop`
-- `push` to `develop`
+- `pull_request` to `staging`
+- `push` to `staging`
 
 Responsibilities:
 
@@ -330,7 +339,7 @@ Responsibilities:
 
 Trigger:
 
-- `push` to `develop`
+- `push` to `staging`
 - `workflow_dispatch`
 
 Responsibilities:
@@ -338,9 +347,11 @@ Responsibilities:
 - build API image
 - build web image
 - tag with:
-  - commit SHA
-  - `develop-latest`
+  - commit SHA plus service suffix, for example `<sha>-api` and `<sha>-web`
+  - service latest tags, `staging-api-latest` and `staging-web-latest`
 - push to DOCR
+
+For the current `vyapar-app` registry tier, both images must live inside a single DOCR repository and be separated by tags rather than separate repository names.
 
 ### `deploy-staging.yml`
 
@@ -653,13 +664,17 @@ This file must not be committed to git.
 
 Tag both images with:
 
-- full commit SHA
-- `develop-latest`
+- full commit SHA plus service suffix
+- service latest tags for staging
 
 Recommended image names:
 
-- `registry.digitalocean.com/gstbilling/gst-billing-api:<sha>`
-- `registry.digitalocean.com/gstbilling/gst-billing-web:<sha>`
+- `registry.digitalocean.com/<registry>/vyapar-genie:<sha>-api`
+- `registry.digitalocean.com/<registry>/vyapar-genie:<sha>-web`
+- `registry.digitalocean.com/<registry>/vyapar-genie:staging-api-latest`
+- `registry.digitalocean.com/<registry>/vyapar-genie:staging-web-latest`
+
+This single-repository tagging model is required when the DOCR plan allows only one repository.
 
 The compose file should accept:
 
@@ -743,9 +758,9 @@ This aligns with the current local seeding strategy already verified in the repo
 
 ## 13. Deployment flow
 
-## 13.1 Normal `develop` deployment
+## 13.1 Normal `staging` deployment
 
-1. code is merged to `develop`
+1. code is merged to `staging`
 2. GitHub Actions runs CI
 3. images build on GitHub-hosted runner
 4. images push to DOCR
@@ -777,7 +792,7 @@ Rollback is image-tag based:
 
 ## 14.1 Pre-deploy validation
 
-Every `develop` deploy must pass:
+Every `staging` deploy must pass:
 
 - API typecheck
 - API build
@@ -961,7 +976,7 @@ Scope:
 
 Done when:
 
-- `develop` can push images and trigger a deploy path
+- `staging` can push images and trigger a deploy path
 
 Implemented in:
 

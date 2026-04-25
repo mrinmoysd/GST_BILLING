@@ -148,6 +148,15 @@ export class PaymentsService {
               if (invoice.status !== 'issued') {
                 throw new BadRequestException('Can only pay an issued invoice');
               }
+              const remainingDue = new Decimal(invoice.balanceDue);
+              if (remainingDue.lte(0)) {
+                throw new BadRequestException('Invoice has no remaining due');
+              }
+              if (amount.gt(remainingDue)) {
+                throw new BadRequestException(
+                  `Payment amount cannot exceed remaining due ${remainingDue.toFixed(2)}`,
+                );
+              }
             }
 
             if (targetPurchaseId) {

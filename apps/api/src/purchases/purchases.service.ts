@@ -22,6 +22,11 @@ function toDecimal(value: string | undefined, fallback = '0'): Decimal {
 
 @Injectable()
 export class PurchasesService {
+  private readonly txOptions = {
+    maxWait: 10_000,
+    timeout: 60_000,
+  } as const;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
@@ -295,6 +300,7 @@ export class PurchasesService {
 
         return { data: purchase };
       },
+      this.txOptions,
     );
 
     return body;
@@ -391,7 +397,7 @@ export class PurchasesService {
       });
 
       return { data: updated };
-    });
+    }, this.txOptions);
   }
 
   async cancel(args: { companyId: string; purchaseId: string }) {
@@ -475,7 +481,7 @@ export class PurchasesService {
       });
 
       return { data: updated };
-    });
+    }, this.txOptions);
   }
 
   async attachBill(args: {
@@ -773,7 +779,7 @@ export class PurchasesService {
       });
 
       return { data: purchaseReturn };
-    });
+    }, this.txOptions);
   }
 
   private derivePurchaseStatusAfterReturn(args: {

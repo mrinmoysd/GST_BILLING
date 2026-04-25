@@ -6,6 +6,8 @@ export type AppError = NormalizedApiError & {
   rawMessage?: string;
 };
 
+type AppLogLevel = "error" | "warn" | "info";
+
 type NormalizeOptions = {
   fallback?: string;
 };
@@ -146,9 +148,18 @@ export function logError(
   error: unknown,
   context: string,
   metadata?: Record<string, unknown>,
+  options?: { level?: AppLogLevel },
 ) {
   const normalized = normalizeError(error);
-  console.error("[app-error]", {
+  const level = options?.level ?? "error";
+  const logger =
+    level === "warn"
+      ? console.warn
+      : level === "info"
+        ? console.info
+        : console.error;
+
+  logger("[app-error]", {
     context,
     status: normalized.status,
     code: normalized.code,
